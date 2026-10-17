@@ -1,0 +1,40 @@
+import Foundation
+import Synchronization
+import Testing
+@testable import Muntathir
+
+private final class FeedURLProtocol: URLProtocol, @unchecked Sendable {
+    struct State: Sendable {
+        var statuses: [Int] = []
+        var bodies: [Data] = []
+        var tags: [String?] = []
+    }
+    static let state = Mutex(State())
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override func startLoading() {
+        let next = Self.state.withLock { value -> (Int, Data) in
+            value.tags.append(request.value(forHTTPHeaderField: "If-None-Match"))
+            return (value.statuses.removeFirst(), value.bodies.removeFirst())
+        }
+        let response = HTTPURLResponse(url: request.url!, statusCode: next.0, httpVersion: nil, headerFields: ["ETag": "fixture-v1"])!
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: next.1)
+        client?.urlProtocolDidFinishLoading(self)
+    }
+    override func stopLoading() {}
+}
+struct FeedClientTests {
+    @Test func conditionalRefreshAndLastGoodCache() async throws {
+        let good = Data(#"{"schemaVersion":1,"announcements":[]}"#.utf8)
+        FeedURLProtocol.state.withLock { $0 = .init(statuses: [200, 304, 200, 503], bodies: [good, Data(), Data("broken".utf8), Data()], tags: []) }
+        let config = URLSessionConfiguration.ephemeral; config.protocolClasses = [FeedURLProtocol.self]
+        let session = URLSession(configuration: config)
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: folder); session.invalidateAndCancel() }
+        let client = FeedClient(url: URL(string: "https://example.invalid/feed.json")!, cacheURL: folder.appendingPathComponent("cache.json"), session: session)
+        for _ in 0..<4 { #expect(try await client.refresh().schemaVersion == 1) }
+        let tags = FeedURLProtocol.state.withLock { $0.tags }
+        #expect(tags == [nil, "fixture-v1", "fixture-v1", "fixture-v1"])
+    }
+}

@@ -1,43 +1,53 @@
-//
-//  MuntathirUITests.swift
-//  MuntathirUITests
-//
-//  Created by Mo on 10/17/26.
-//
-
 import XCTest
 
 final class MuntathirUITests: XCTestCase {
-
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
-        continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
-    }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
-    @MainActor
-    func testExample() throws {
-        // UI tests must launch the application that they test.
+    @MainActor func testTodayShowsMeccaPrayerSchedule() {
         let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // XCUIAutomation Documentation
-        // https://developer.apple.com/documentation/xcuiautomation
+        XCTAssertTrue(app.staticTexts["Prayer times"].waitForExistence(timeout: 10))
+        for prayer in ["fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"] {
+            XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "prayer-" + prayer).firstMatch.exists)
+        }
+        XCTAssertFalse(app.staticTexts["Today’s observances"].exists)
+        XCTAssertFalse(app.staticTexts["Daily ayah"].exists)
     }
 
-    @MainActor
-    func testLaunchPerformance() throws {
-        // This measures how long it takes to launch your application.
-        measure(metrics: [XCTApplicationLaunchMetric()]) {
-            XCUIApplication().launch()
-        }
+    @MainActor func testPrayerSetupIsVisibleOnToday() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["Prayer times"].waitForExistence(timeout: 10))
+        app.buttons["Choose a location"].firstMatch.tap()
+        XCTAssertTrue(app.searchFields["Search for a city"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Use device location"].exists)
+    }
+
+    @MainActor func testEnglishNavigationAndManualCorrection() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["Prayer times"].waitForExistence(timeout: 10))
+        app.descendants(matching: .any).matching(identifier: "Calendar").firstMatch.tap()
+        app.buttons["Adjust this month"].tap()
+        XCTAssertTrue(app.navigationBars["Adjust month"].waitForExistence(timeout: 5))
+        app.buttons["Save"].tap()
+        XCTAssertTrue(app.staticTexts["Manual month correction"].waitForExistence(timeout: 5))
+        app.descendants(matching: .any).matching(identifier: "Qibla").firstMatch.tap()
+        XCTAssertTrue(app.staticTexts["Choose a location"].exists)
+        app.buttons["Settings"].tap()
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
+        app.buttons["Location, Not selected"].tap()
+        XCTAssertTrue(app.searchFields["Search for a city"].waitForExistence(timeout: 5))
+    }
+    @MainActor func testArabicNavigation() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "-AppleLanguages", "(ar)", "-AppleLocale", "ar_SA"]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["أوقات الصلاة"].waitForExistence(timeout: 10))
+        app.descendants(matching: .any).matching(identifier: "التقويم").firstMatch.tap()
+        XCTAssertTrue(app.navigationBars["التقويم"].exists)
+        app.descendants(matching: .any).matching(identifier: "القبلة").firstMatch.tap()
+        XCTAssertTrue(app.staticTexts["اختر موقعًا"].exists)
     }
 }

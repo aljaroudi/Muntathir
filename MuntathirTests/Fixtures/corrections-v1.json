@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "announcements": [
+    {
+      "id": "fixture-only-1448-01",
+      "revision": 1,
+      "method": "nakedEye",
+      "sourceID": "fixture-only-not-a-real-source",
+      "coverage": {
+        "countries": [],
+        "polygons": [[
+          {"latitude": 23, "longitude": 45},
+          {"latitude": 25, "longitude": 45},
+          {"latitude": 25, "longitude": 48},
+          {"latitude": 23, "longitude": 48}
+        ]]
+      },
+      "month": {"year": 1448, "month": 1},
+      "start": {"year": 2026, "month": 6, "day": 16}
+    }
+  ]
+}
