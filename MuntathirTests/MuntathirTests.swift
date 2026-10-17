@@ -200,3 +200,11 @@ struct PreferenceMigrationTests {
         #expect(preferences.hiddenPrayers.isEmpty)
     }
 }
+
+@MainActor struct BackgroundRefreshTests {
+    @Test func appLaunchRegistersRefreshHandler() {
+        #expect(BackgroundRefresh.isRegistered)
+        let identifiers = Bundle.main.object(forInfoDictionaryKey: "BGTaskSchedulerPermittedIdentifiers") as? [String]
+        #expect(identifiers?.contains(BackgroundRefresh.identifier) == true)
+    }
+}

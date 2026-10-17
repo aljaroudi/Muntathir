@@ -45,3 +45,9 @@ Mecca regression coordinates: 21.4225° N, 39.8262° E, Asia/Riyadh. On October 
 Settings can hide Asr and Isha from the schedule and next-prayer display without changing notification choices. Both choices survive relaunch and sync with preferences. Device coordinates survive relaunch locally, without reverse geocoding or iCloud upload. City search remains available through MapKit.
 
 The October 17 refinement build passed all 22 simulator tests, including both Mecca methods, preference migration, device-location restoration, and Arabic/English UI navigation. Physical-device heading and notification checks remain required.
+
+## Background feed verification
+
+Background requests use an earliest start of six hours after scheduling; iOS controls actual delivery. Foreground notification rebuilds also resubmit that request, so this is not a fixed six-hour polling timer. Prayer times are calculated locally and do not require a feed.
+
+The background refresh path accepts an optional FeedClient. Production leaves it nil until a real HTTPS endpoint and selected source are configured. Integration tests inject a URLSession transport serving corrections-v1.json and exercise the same refresh entry point, including HTTP 200, ETag/304, malformed JSON recovery, server-error cache recovery, geographic exclusion, and confirmed calendar resolution. These are simulated HTTP responses, not proof of a deployed server or physical-device background delivery.

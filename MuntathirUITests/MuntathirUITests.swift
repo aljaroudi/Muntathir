@@ -1,6 +1,18 @@
 import XCTest
 
 final class MuntathirUITests: XCTestCase {
+    @MainActor func testLaunchWithBackgroundRefreshSchedulingEnabled() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "--ui-testing-background-refresh",
+                               "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        for _ in 0..<2 {
+            app.launch()
+            XCTAssertTrue(app.staticTexts["Prayer times"].waitForExistence(timeout: 10))
+            XCTAssertEqual(app.state, .runningForeground)
+            app.terminate()
+        }
+    }
+
     @MainActor func testTodayShowsMeccaPrayerSchedule() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]

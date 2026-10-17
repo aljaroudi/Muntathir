@@ -40,6 +40,7 @@ struct Preferences: Codable, Equatable, Sendable {
     let content = ContentLibrary()
     let locationService = LocationService()
     let notifications = NotificationService()
+    private let feedClient: FeedClient?
     private let defaults: UserDefaults
     private let cloud: NSUbiquitousKeyValueStore?
     private var observer: NSObjectProtocol?
@@ -49,8 +50,9 @@ struct Preferences: Codable, Equatable, Sendable {
     var zone: TimeZone { location?.timeZone ?? .current }
     var engine: CalendarEngine { (try? CalendarEngine(timeZone: zone, manual: preferences.overrides, confirmed: confirmations.map(\.correction))) ?? (try! CalendarEngine(timeZone: zone)) }
 
-    init(defaults: UserDefaults = .standard, cloud: NSUbiquitousKeyValueStore? = .default) {
+    init(defaults: UserDefaults = .standard, cloud: NSUbiquitousKeyValueStore? = .default, feedClient: FeedClient? = nil) {
         self.defaults = defaults; self.cloud = cloud
+        self.feedClient = feedClient
         let decoded = defaults.data(forKey: key).flatMap { try? JSONDecoder().decode(Preferences.self, from: $0) }
         preferences = decoded?.isValid == true ? decoded! : Preferences()
         liveLocation = defaults.data(forKey: "deviceLocation.v1")
@@ -107,10 +109,28 @@ struct Preferences: Codable, Equatable, Sendable {
         let relevant = matching.filter { $0.month >= currentMonth && $0.month <= currentMonth.advanced(1) }
         await notifications.announce(relevant, enabled: preferences.announcementNotifications)
     }
-    func refreshInBackground() async {
-        BackgroundRefresh.schedule()
+    @discardableResult func refreshInBackground() async -> Bool {
+        var succeeded = true
+        if let feedClient, let requestedLocation = location, let requestedSource = preferences.selectedSourceID {
+            do {
+                let feed = try await feedClient.refresh()
+                try Task.checkCancellation()
+                // A response for an old location or source must not update the current calendar.
+                guard location == requestedLocation, preferences.selectedSourceID == requestedSource else { return false }
+                try await receive(feed)
+            } catch {
+                succeeded = false
+            }
+        }
+        guard !Task.isCancelled else { return false }
         reschedule()
-        await notificationTask?.value
+        let work = notificationTask
+        await withTaskCancellationHandler {
+            await work?.value
+        } onCancel: {
+            work?.cancel()
+        }
+        return succeeded && !Task.isCancelled
     }
     func reschedule() {
         BackgroundRefresh.schedule()
