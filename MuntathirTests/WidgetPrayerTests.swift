@@ -92,3 +92,34 @@ struct CompactWidgetTests {
         #expect(settings.upcomingTimes(after: date, limit: 0).isEmpty)
     }
 }
+
+struct CalendarWidgetTests {
+    @Test func correctionsSurviveSharingAndReset() throws {
+        let zone = try #require(TimeZone(identifier: "Asia/Riyadh"))
+        let baseline = try CalendarEngine(timeZone: zone)
+        let month = HijriMonth(year: 1448, month: 1)
+        let start = baseline.addingDays(1, to: baseline.start(of: month))
+        let correction = MonthCorrection(month: month, start: CivilDate(start, in: zone), provenance: .manual, sourceID: nil)
+        let settings = WidgetCalendarSettings(timeZoneID: zone.identifier, manual: [correction])
+        let suite = "CalendarWidget.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        #expect(settings.write(to: defaults))
+        let restored = WidgetCalendarSettings.read(from: defaults)
+        #expect(restored.engine.resolve(start).day == 1)
+        #expect(restored.engine.resolve(start).provenance == .manual)
+        #expect(!settings.write(to: defaults))
+        #expect(WidgetCalendarSettings(timeZoneID: zone.identifier).write(to: defaults))
+        #expect(WidgetCalendarSettings.read(from: defaults).engine.resolve(start).day == 2)
+    }
+
+    @Test func timelineUsesLocalMidnightAcrossDST() throws {
+        let settings = WidgetCalendarSettings(timeZoneID: "America/New_York")
+        let date = try #require(CivilDate(year: 2026, month: 3, day: 8).date(in: settings.zone))
+        let dates = settings.timelineDates(from: date)
+        #expect(dates.count == 8)
+        #expect(dates[1].timeIntervalSince(date) == 23 * 3600)
+        #expect(dates.dropFirst().allSatisfy { settings.engine.gregorian.component(.hour, from: $0) == 0 })
+        #expect(WidgetCalendarSettings().timelineDates(from: date).count == 8)
+    }
+}

@@ -106,6 +106,7 @@ struct Preferences: Codable, Equatable, Sendable {
         let matching = try feed.matching(location: location, sourceID: preferences.selectedSourceID)
         _ = try CalendarEngine(timeZone: zone, manual: preferences.overrides, confirmed: matching.map(\.correction))
         confirmations = matching
+        syncWidgets()
         let currentMonth = engine.resolve(Date()).month
         let relevant = matching.filter { $0.month >= currentMonth && $0.month <= currentMonth.advanced(1) }
         await notifications.announce(relevant, enabled: preferences.announcementNotifications)
@@ -133,12 +134,17 @@ struct Preferences: Codable, Equatable, Sendable {
         }
         return succeeded && !Task.isCancelled
     }
+    private func syncWidgets() {
+        guard !ProcessInfo.processInfo.arguments.contains("--ui-testing") else { return }
+        let prayersChanged = WidgetPrayerStore.write(.init(location: location, method: preferences.prayerMethod,
+                                                          asrRule: preferences.asrRule, hiddenPrayers: preferences.hiddenPrayers))
+        let calendarChanged = WidgetCalendarSettings(timeZoneID: location?.timeZoneID,
+                                                     manual: preferences.overrides,
+                                                     confirmed: confirmations.map(\.correction)).write()
+        if prayersChanged || calendarChanged { WidgetCenter.shared.reloadAllTimelines() }
+    }
     func reschedule() {
-        if !ProcessInfo.processInfo.arguments.contains("--ui-testing"),
-           WidgetPrayerStore.write(.init(location: location, method: preferences.prayerMethod,
-                                         asrRule: preferences.asrRule, hiddenPrayers: preferences.hiddenPrayers)) {
-            WidgetCenter.shared.reloadAllTimelines()
-        }
+        syncWidgets()
         BackgroundRefresh.schedule()
         let previous = notificationTask
         previous?.cancel()

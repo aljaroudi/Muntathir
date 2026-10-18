@@ -79,3 +79,29 @@ struct PrayerCountdownFormat: DiscreteFormatStyle {
         return target.addingTimeInterval(-minutes * 60 - 0.001)
     }
 }
+
+struct WidgetCalendarSettings: Codable, Equatable, Sendable {
+    var timeZoneID: String?
+    var manual: [MonthCorrection] = []
+    var confirmed: [MonthCorrection] = []
+    var zone: TimeZone { timeZoneID.flatMap(TimeZone.init(identifier:)) ?? .current }
+    var engine: CalendarEngine {
+        (try? CalendarEngine(timeZone: zone, manual: manual, confirmed: confirmed))
+            ?? (try! CalendarEngine(timeZone: zone))
+    }
+    func timelineDates(from date: Date) -> [Date] {
+        let calendar = engine.gregorian
+        let midnight = calendar.startOfDay(for: date)
+        return [date] + (1...7).compactMap { calendar.date(byAdding: .day, value: $0, to: midnight) }
+    }
+    static let key = "widgetCalendarSettings.v1"
+    static func read(from defaults: UserDefaults? = UserDefaults(suiteName: WidgetPrayerStore.groupID)) -> Self {
+        defaults?.data(forKey: key).flatMap { try? JSONDecoder().decode(Self.self, from: $0) } ?? Self()
+    }
+    @discardableResult func write(to defaults: UserDefaults? = UserDefaults(suiteName: WidgetPrayerStore.groupID)) -> Bool {
+        guard let defaults, let data = try? JSONEncoder().encode(self),
+              defaults.data(forKey: Self.key) == nil || Self.read(from: defaults) != self else { return false }
+        defaults.set(data, forKey: Self.key)
+        return true
+    }
+}

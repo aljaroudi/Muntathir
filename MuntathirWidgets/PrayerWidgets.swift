@@ -209,6 +209,7 @@ struct CombinedPrayerWidget: Widget {
         UpcomingPrayerWidget()
         PrayerTimesWidget()
         CombinedPrayerWidget()
+        IslamicCalendarWidget()
     }
 }
 
@@ -261,3 +262,89 @@ private enum WidgetPreviewData {
 #Preview("Location needed", as: .systemSmall) {
     UpcomingPrayerWidget()
 } timeline: { PrayerEntry(date: .now, settings: nil) }
+
+struct IslamicDateEntry: TimelineEntry {
+    let date: Date
+    var settings = WidgetCalendarSettings()
+}
+
+struct IslamicDateProvider: TimelineProvider {
+    func placeholder(in context: Context) -> IslamicDateEntry { IslamicDateEntry(date: .now) }
+    func getSnapshot(in context: Context, completion: @escaping (IslamicDateEntry) -> Void) {
+        completion(IslamicDateEntry(date: .now, settings: .read()))
+    }
+    func getTimeline(in context: Context, completion: @escaping (Timeline<IslamicDateEntry>) -> Void) {
+        let settings = WidgetCalendarSettings.read()
+        let dates = settings.timelineDates(from: .now)
+        completion(Timeline(entries: dates.map { IslamicDateEntry(date: $0, settings: settings) },
+                            policy: .atEnd))
+    }
+}
+
+struct IslamicDateWidgetView: View {
+    let entry: IslamicDateEntry
+    @Environment(\.widgetFamily) private var family
+    @Environment(\.locale) private var locale
+
+    var body: some View {
+        let engine = entry.settings.engine
+        let day = engine.resolve(entry.date)
+        let month = monthName(day.month, engine: engine)
+        Group {
+            if family == .accessoryInline {
+                Text("\(day.day.formatted(.number.locale(locale))) \(month)")
+            } else {
+                VStack(spacing: family == .systemSmall ? 6 : 0) {
+                    Text(day.day, format: .number.locale(locale))
+                        .font(family == .systemSmall ? .system(size: 52, weight: .semibold, design: .rounded) : .title2.weight(.semibold))
+                        .widgetAccentable()
+                    Text(month)
+                        .font(family == .systemSmall ? .headline : .caption)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(family == .accessoryCircular ? 2 : 1)
+                        .minimumScaleFactor(0.7)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(day.day.formatted(.number.locale(locale))) \(month)")
+            }
+        }
+        .containerBackground(.background, for: .widget)
+    }
+
+    private func monthName(_ month: HijriMonth, engine: CalendarEngine) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.calendar = engine.baseline
+        formatter.timeZone = engine.timeZone
+        formatter.dateFormat = "MMMM"
+        return formatter.string(from: engine.baselineStart(month))
+    }
+}
+
+struct IslamicCalendarWidget: Widget {
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: "IslamicCalendar", provider: IslamicDateProvider()) {
+            IslamicDateWidgetView(entry: $0)
+        }
+        .configurationDisplayName("Islamic calendar")
+        .description("The Hijri day and month.")
+        .supportedFamilies([.systemSmall, .accessoryInline, .accessoryCircular, .accessoryRectangular])
+    }
+}
+
+#Preview("Calendar · Small", as: .systemSmall) {
+    IslamicCalendarWidget()
+} timeline: { IslamicDateEntry(date: .now) }
+
+#Preview("Calendar · Inline", as: .accessoryInline) {
+    IslamicCalendarWidget()
+} timeline: { IslamicDateEntry(date: .now) }
+
+#Preview("Calendar · Circular", as: .accessoryCircular) {
+    IslamicCalendarWidget()
+} timeline: { IslamicDateEntry(date: .now) }
+
+#Preview("Calendar · Rectangular", as: .accessoryRectangular) {
+    IslamicCalendarWidget()
+} timeline: { IslamicDateEntry(date: .now) }
