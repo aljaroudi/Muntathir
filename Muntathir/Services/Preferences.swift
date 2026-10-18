@@ -4,7 +4,7 @@ import WidgetKit
 
 struct Preferences: Codable, Equatable, Sendable {
     var savedLocation: SavedLocation?
-    var prayerMethod: PrayerMethod = .tehran
+    var prayerMethod: PrayerMethod = .jafari
     var imsakMinutes = 10
     var enabledPrayers: Set<PrayerName> = [.fajr, .dhuhr, .maghrib]
     var announcementNotifications = false

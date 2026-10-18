@@ -9,12 +9,10 @@ struct TodayView: View {
             let now = context.date
             let engine = model.engine
             Page {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(now.formatted(.dateTime.weekday(.wide).day().month(.wide).inZone(model.zone)))
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 12)
+                Text(now.formatted(.dateTime.weekday(.wide).day().month(.wide).inZone(model.zone)))
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 12)
 
                 if let location = model.location {
                     let prayers = PrayerCalculator.times(
@@ -39,14 +37,9 @@ struct TodayView: View {
                     Card {
                         if prayers.isEmpty {
                             ContentUnavailableView {
-                                Label(
-                                    "Prayer Times Unavailable",
-                                    systemImage: "clock"
-                                )
+                                Label("Prayer Times Unavailable", systemImage: "clock")
                             } description: {
-                                Text(
-                                    "This location needs to be updated to calculate prayer times."
-                                )
+                                Text("This location needs to be updated to calculate prayer times.")
                             } actions: {
                                 NavigationLink("Choose a location") {
                                     LocationPicker()
@@ -75,9 +68,7 @@ struct TodayView: View {
                             )
                             .padding(.vertical, 5)
                             .accessibilityElement(children: .combine)
-                            .accessibilityIdentifier(
-                                "prayer-\(prayer.name.rawValue)"
-                            )
+                            .accessibilityIdentifier("prayer-\(prayer.name.rawValue)")
                             if prayer.id != prayers.last?.id {
                                 Divider()
                             }

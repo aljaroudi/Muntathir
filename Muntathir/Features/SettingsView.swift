@@ -41,21 +41,21 @@ struct SettingsView: View {
                     Stepper(value: Binding(get: { model.preferences.imsakMinutes }, set: { value in
                         model.update { $0.imsakMinutes = value }
                     }), in: 0 ... 120) {
-                        LabeledContent("Imsak before Fajr", value: String(localized: "\(model.preferences.imsakMinutes) minutes"))
+                        LabeledContent(
+                            "Imsak before Fajr",
+                            value: Duration.seconds(model.preferences.imsakMinutes * 60),
+                            format: .units(allowed: [.minutes], width: .wide)
+                        )
                     }
-                    Text("Imsak is a precaution before calculated Fajr, not a separate start of fasting.")
-                        .font(.caption).foregroundStyle(.secondary)
                 } header: {
                     Text("Prayer calculations")
                 } footer: {
-                    Text(
-                        "Tehran calculates Maghrib after sunset. Methods may differ from your local authority."
-                    )
+                    Text("Imsak is a precaution before calculated Fajr.")
                 }
                 Section {
                     LabeledContent(
                         "Baseline",
-                        value: String(localized: "Calculated — Umm al-Qura")
+                        value: String(localized: "Umm al-Qura")
                     )
                     ForEach(SightingMethod.allCases, id: \.rawValue) { method in
                         LabeledContent(
@@ -155,8 +155,9 @@ struct LocationPicker: View {
             }
             ForEach(model.locationService.results, id: \.self) { item in
                 Button {
-                    if let saved = model.locationService.saved(item) {
-                        model.select(saved)
+                    if let location = model.locationService.saved(item) {
+                        usingDeviceLocation = false
+                        model.select(location)
                         dismiss()
                     }
                 } label: {
@@ -206,13 +207,6 @@ struct LicensesView: View {
                 Text(
                     "Hijri baseline: Apple Foundation, Umm al-Qura. Calculated dates are not sighting confirmations."
                 )
-            }
-            Section("Quran") {
-                Link(
-                    "Tanzil Project",
-                    destination: URL(string: "https://tanzil.net")!
-                )
-                Text(license("Tanzil-LICENSE"))
             }
             Section("Library license") { Text(license("Adhan-LICENSE")) }
             Section("Events") {

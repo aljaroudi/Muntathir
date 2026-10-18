@@ -39,7 +39,7 @@ struct ContentLibrary: Sendable {
     init(bundle: Bundle = .main) {
         events = bundle.url(forResource: "events", withExtension: "json")
             .flatMap { try? Data(contentsOf: $0) }.flatMap { try? JSONDecoder().decode([IslamicEvent].self, from: $0) } ?? []
-        let text = bundle.url(forResource: "quran-uthmani", withExtension: "txt")
+        let text = bundle.url(forResource: "quran-daily", withExtension: "txt")
             .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? ""
         verses = text.split(separator: "\n").compactMap { line in
             let fields = line.split(separator: "|", maxSplits: 2, omittingEmptySubsequences: false)
@@ -53,11 +53,6 @@ struct ContentLibrary: Sendable {
     }
 
     func verse(on date: Date, timeZone: TimeZone) -> Ayah? {
-        guard !verses.isEmpty else { return nil }
-        let civil = CivilDate(date, in: timeZone)
-        // FNV-1a gives a stable day selection across launches, devices and future clients.
-        let key = "\(civil.year)-\(civil.month)-\(civil.day)"
-        let hash = key.utf8.reduce(UInt64(14_695_981_039_346_656_037)) { ($0 ^ UInt64($1)) &* 1_099_511_628_211 }
-        return verses[Int(hash % UInt64(verses.count))]
+        verses.randomElement()
     }
 }

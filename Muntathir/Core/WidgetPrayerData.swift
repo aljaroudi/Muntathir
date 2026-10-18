@@ -108,8 +108,14 @@ struct PrayerCountdownFormat: DiscreteFormatStyle {
     func format(_ date: Date) -> AttributedString {
         let minutes = max(0, ceil(target.timeIntervalSince(date) / 60))
         let value = Duration.seconds(minutes * 60)
-        return AttributedString(value.formatted(.units(allowed: [.hours, .minutes], width: .narrow,
-                                                       maximumUnitCount: 2).locale(locale)))
+        return AttributedString(
+            value.formatted(
+                .units(
+                    allowed: [.hours, .minutes],
+                    width: .narrow,
+                    maximumUnitCount: 2).locale(locale)
+            )
+        )
     }
 
     func discreteInput(after date: Date) -> Date? {
