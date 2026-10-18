@@ -38,18 +38,13 @@ struct SettingsView: View {
                             Text($0.title).tag($0)
                         }
                     }
-                    Picker(
-                        "Asr convention",
-                        selection: Binding(
-                            get: { model.preferences.asrRule },
-                            set: { value in model.update { $0.asrRule = value }
-                            }
-                        )
-                    ) {
-                        ForEach(AsrRule.allCases, id: \.rawValue) {
-                            Text($0.title).tag($0)
-                        }
+                    Stepper(value: Binding(get: { model.preferences.imsakMinutes }, set: { value in
+                        model.update { $0.imsakMinutes = value }
+                    }), in: 0 ... 120) {
+                        LabeledContent("Imsak before Fajr", value: String(localized: "\(model.preferences.imsakMinutes) minutes"))
                     }
+                    Text("Imsak is a precaution before calculated Fajr, not a separate start of fasting.")
+                        .font(.caption).foregroundStyle(.secondary)
                 } header: {
                     Text("Prayer calculations")
                 } footer: {
@@ -77,58 +72,9 @@ struct SettingsView: View {
                         "Live sources are not connected yet. Use the Calendar tab to adjust a month manually."
                     )
                 }
-                Section {
-                    ForEach(PrayerName.optionalTimes) { prayer in
-                        Toggle(
-                            prayer.title,
-                            isOn: Binding(
-                                get: { model.preferences.isVisible(prayer) },
-                                set: { visible in
-                                    model.update {
-                                        if visible {
-                                            $0.hiddenPrayers.remove(prayer)
-                                        } else {
-                                            $0.hiddenPrayers.insert(prayer)
-                                        }
-                                    }
-                                }
-                            )
-                        )
-                    }
-                } header: {
-                    Text("Visible prayer times")
-                } footer: {
-                    Text(
-                        "Hiding a time does not change its notification setting."
-                    )
-                }
-                Section {
-                    ForEach(PrayerName.notifiable) { prayer in
-                        Toggle(
-                            prayer.title,
-                            isOn: Binding(
-                                get: {
-                                    model.preferences.enabledPrayers.contains(
-                                        prayer
-                                    )
-                                },
-                                set: { value in
-                                    Task {
-                                        await model.setPrayer(
-                                            prayer,
-                                            enabled: value
-                                        )
-                                    }
-                                }
-                            )
-                        )
-                    }
-                } header: {
-                    Text("Prayer notifications")
-                } footer: {
-                    Text(
-                        "Alerts are scheduled for the next 10 days. Open the app regularly to refresh them."
-                    )
+                Section("Prayers") {
+                    NavigationLink("Visibility") { PrayerVisibilitySettings() }
+                    NavigationLink("Notifications") { PrayerNotificationSettings() }
                 }
                 Section {
                     Toggle(
@@ -288,5 +234,52 @@ struct LicensesView: View {
         Bundle.main.url(forResource: name, withExtension: "txt").flatMap {
             try? String(contentsOf: $0, encoding: .utf8)
         } ?? ""
+    }
+}
+
+struct PrayerVisibilitySettings: View {
+    @Environment(AppModel.self) private var model
+    var body: some View {
+        Form {
+            Section {
+                ForEach(PrayerName.allCases) { prayer in
+                    Toggle(prayer.title, isOn: Binding(get: { model.preferences.isVisible(prayer) }, set: { visible in
+                        model.update {
+                            if visible {
+                                $0.hiddenPrayers.remove(prayer)
+                            } else if !prayer.isRequired {
+                                $0.hiddenPrayers.insert(prayer)
+                            }
+                        }
+                    })).disabled(prayer.isRequired)
+                }
+            } footer: { Text("Hiding a time does not change its notification setting.") }
+        }.navigationTitle("Visibility")
+    }
+}
+
+struct PrayerNotificationSettings: View {
+    @Environment(AppModel.self) private var model
+    var body: some View {
+        Form {
+            Section {
+                ForEach(PrayerName.allCases) { prayer in
+                    Toggle(prayer.title, isOn: Binding(get: { model.preferences.enabledPrayers.contains(prayer) }, set: { enabled in
+                        Task { await model.setPrayer(prayer, enabled: enabled) }
+                    }))
+                }
+            } footer: {
+                Text("Alerts are scheduled for up to 10 days. Open the app regularly to refresh them.")
+            }
+        }.navigationTitle("Notifications")
+            .task {
+                if !model.preferences.enabledPrayers.isEmpty {
+                    if await model.notifications.authorize() {
+                        model.reschedule()
+                    } else {
+                        model.error = String(localized: "Notifications are disabled. Enable them in system Settings.")
+                    }
+                }
+            }
     }
 }

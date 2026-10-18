@@ -20,13 +20,6 @@ struct SavedLocation: Codable, Hashable, Sendable {
     }
 }
 
-enum AsrRule: String, Codable, CaseIterable, Sendable {
-    case standard, hanafi
-    var title: String {
-        self == .standard ? String(localized: "Standard (including Jafari)") : String(localized: "Hanafi")
-    }
-}
-
 enum PrayerMethod: String, Codable, CaseIterable, Identifiable, Sendable {
     case jafari, tehran, muslimWorldLeague, egyptian, karachi, ummAlQura, dubai, moonsightingCommittee, northAmerica, kuwait, qatar, singapore, turkey
     var id: String {
@@ -53,13 +46,14 @@ enum PrayerMethod: String, Codable, CaseIterable, Identifiable, Sendable {
 }
 
 enum PrayerName: String, Codable, CaseIterable, Identifiable, Sendable {
-    case fajr, sunrise, dhuhr, asr, sunset, maghrib, isha, midnight
+    case imsak, fajr, sunrise, dhuhr, asr, sunset, maghrib, isha, midnight
     var id: String {
         rawValue
     }
 
     var title: String {
         switch self {
+        case .imsak: String(localized: "Imsak")
         case .fajr: String(localized: "Fajr")
         case .sunrise: String(localized: "Sunrise")
         case .dhuhr: String(localized: "Dhuhr")
@@ -73,6 +67,7 @@ enum PrayerName: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var symbol: String {
         switch self {
+        case .imsak: "moonset"
         case .fajr: "sun.horizon"
         case .sunrise: "sunrise"
         case .dhuhr: "sun.max"
@@ -86,6 +81,15 @@ enum PrayerName: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var isRequired: Bool {
         self == .fajr || self == .dhuhr || self == .maghrib
+    }
+
+    var rakaaCount: Int? {
+        switch self {
+        case .fajr: 2
+        case .dhuhr, .asr, .isha: 4
+        case .maghrib: 3
+        default: nil
+        }
     }
 
     var isPrayer: Bool {
@@ -114,7 +118,7 @@ struct PrayerMoment: Identifiable, Sendable {
 }
 
 enum PrayerCalculator {
-    static func times(on date: Date, location: SavedLocation, method: PrayerMethod, asrRule: AsrRule = .standard) -> [PrayerMoment] {
+    static func times(on date: Date, location: SavedLocation, method: PrayerMethod, imsakMinutes: Int = 10) -> [PrayerMoment] {
         // Display metadata must not suppress astronomical calculations for a valid coordinate.
         guard location.hasValidCoordinates else { return [] }
         let engine = try! CalendarEngine(timeZone: location.timeZone)
@@ -127,7 +131,7 @@ enum PrayerCalculator {
             parameters.maghribAngle = 4
             parameters.ishaAngle = 14
         }
-        parameters.madhab = asrRule == .hanafi ? .hanafi : .shafi
+        parameters.madhab = .shafi
         parameters.highLatitudeRule = HighLatitudeRule.recommended(for: coordinates)
         // Use the independent calculated calendar for the preset's Ramadan interval.
         if method == .ummAlQura || method == .qatar, engine.baseline.component(.month, from: date) == 9 {
@@ -145,7 +149,7 @@ enum PrayerCalculator {
             guard let sunset = PrayerTimes(coordinates: coordinates, date: components, calculationParameters: sunsetParameters),
                   times.maghrib > sunset.maghrib else { return [] }
         }
-        var result: [PrayerMoment] = [.init(name: .fajr, date: times.fajr), .init(name: .sunrise, date: times.sunrise),
+        var result: [PrayerMoment] = [.init(name: .imsak, date: times.fajr.addingTimeInterval(-Double(min(120, max(0, imsakMinutes))) * 60)), .init(name: .fajr, date: times.fajr), .init(name: .sunrise, date: times.sunrise),
                                       .init(name: .dhuhr, date: times.dhuhr), .init(name: .asr, date: times.asr),
                                       .init(name: .sunset, date: solar.maghrib), .init(name: .maghrib, date: times.maghrib), .init(name: .isha, date: times.isha)]
         let tomorrow = engine.addingDays(1, to: date)

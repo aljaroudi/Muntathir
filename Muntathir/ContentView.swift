@@ -9,6 +9,9 @@ struct ContentView: View {
             Tab("Today", systemImage: "sun.max") {
                 shell { TodayView() }
             }
+            if UIDevice.current.userInterfaceIdiom == .phone {
+                Tab("Prayer counter", systemImage: "hand.point.up") { PrayerCounterView() }
+            }
             Tab("Calendar", systemImage: "calendar") {
                 shell { CalendarScreen() }
             }

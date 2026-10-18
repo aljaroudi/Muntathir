@@ -62,7 +62,7 @@ struct WatchPrayerView: View {
 }
 
 #Preview("Prayer times") {
-    WatchPrayerView(settings: .init(prayers: .init(location: .init(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh"), method: .tehran, asrRule: .standard, hiddenPrayers: [.asr, .isha]), calendar: .init(timeZoneID: "Asia/Riyadh")))
+    WatchPrayerView(settings: .init(prayers: .init(location: .init(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh"), method: .tehran, hiddenPrayers: [.asr, .isha]), calendar: .init(timeZoneID: "Asia/Riyadh")))
 }
 
 #Preview("Waiting for iPhone") {

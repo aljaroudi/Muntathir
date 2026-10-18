@@ -9,7 +9,7 @@ struct WatchSettingsTests {
         let suite = "Watch.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        var settings = WatchSettings(prayers: .init(location: location, method: .jafari, asrRule: .standard, hiddenPrayers: [.asr, .isha]), calendar: .init(timeZoneID: location.timeZoneID))
+        var settings = WatchSettings(prayers: .init(location: location, method: .jafari, hiddenPrayers: [.asr, .isha]), calendar: .init(timeZoneID: location.timeZoneID))
         let engine = try CalendarEngine(timeZone: location.timeZone)
         let month = HijriMonth(year: 1448, month: 5)
         let start = engine.addingDays(1, to: engine.start(of: month))
@@ -29,7 +29,7 @@ struct WatchSettingsTests {
     }
 
     @Test func upcomingPrayersSkipHiddenTimesOnPhoneAndWatch() throws {
-        let settings = WidgetPrayerSettings(location: location, method: .tehran, asrRule: .standard, hiddenPrayers: [.asr, .isha])
+        let settings = WidgetPrayerSettings(location: location, method: .tehran, hiddenPrayers: [.asr, .isha])
         let date = try #require(CivilDate(year: 2026, month: 10, day: 18).date(in: location.timeZone))
         let times = settings.prayers(on: date)
         let dhuhr = try #require(times.first { $0.name == .dhuhr })
@@ -44,7 +44,7 @@ struct WatchSettingsTests {
     }
 
     @Test func invalidLocationIsRejected() throws {
-        var settings = WatchSettings(prayers: .init(location: location, method: .tehran, asrRule: .standard, hiddenPrayers: []), calendar: .init())
+        var settings = WatchSettings(prayers: .init(location: location, method: .tehran, hiddenPrayers: []), calendar: .init())
         settings.prayers.location = .init(latitude: 100, longitude: 39, name: "Invalid", countryCode: "SA", timeZoneID: "Asia/Riyadh")
         #expect(throws: (any Error).self) { try WatchSettings.decode(settings.encoded()) }
     }

@@ -12,7 +12,7 @@ enum NotificationPlan {
         var calendar = Calendar(identifier: .gregorian); calendar.timeZone = location.timeZone
         return (0 ..< 10).flatMap { offset -> [ScheduledPrayer] in
             let day = calendar.date(byAdding: .day, value: offset, to: now)!
-            return PrayerCalculator.times(on: day, location: location, method: preferences.prayerMethod, asrRule: preferences.asrRule).compactMap { prayer in
+            return PrayerCalculator.times(on: day, location: location, method: preferences.prayerMethod, imsakMinutes: preferences.imsakMinutes).compactMap { prayer in
                 guard preferences.enabledPrayers.contains(prayer.name), prayer.date > now else { return nil }
                 return ScheduledPrayer(id: "prayer.\(Int(prayer.date.timeIntervalSince1970)).\(prayer.name.rawValue)", name: prayer.name, date: prayer.date)
             }
@@ -37,8 +37,8 @@ enum NotificationPlan {
         guard generation == token, !Task.isCancelled, settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional else { return }
         for prayer in NotificationPlan.make(now: Date(), preferences: preferences, location: location).prefix(50) {
             guard generation == token, !Task.isCancelled else { return }
-            let content = UNMutableNotificationContent(); content.title = prayer.name.title
-            content.body = location.name; content.sound = .default
+            let content = UNMutableNotificationContent(); content.title = prayer.name.isPrayer ? String(localized: "Time for prayer") : prayer.name.title
+            content.body = prayer.name.notificationBody; content.sound = .default
             var calendar = Calendar(identifier: .gregorian); calendar.timeZone = .gmt
             var parts = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: prayer.date); parts.timeZone = .gmt
             let request = UNNotificationRequest(identifier: prayer.id, content: content, trigger: UNCalendarNotificationTrigger(dateMatching: parts, repeats: false))
@@ -63,5 +63,18 @@ enum NotificationPlan {
             } catch { continue }
         }
         defaults.set(Array(delivered), forKey: "announcements.delivered")
+    }
+}
+
+extension PrayerName {
+    var notificationBody: String {
+        switch self {
+        case .fajr: String(localized: "Fajr prayer")
+        case .dhuhr: String(localized: "Dhuhr prayer")
+        case .asr: String(localized: "Asr prayer")
+        case .maghrib: String(localized: "Maghrib prayer")
+        case .isha: String(localized: "Isha prayer")
+        default: title
+        }
     }
 }

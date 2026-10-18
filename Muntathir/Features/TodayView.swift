@@ -3,6 +3,7 @@ import SwiftUI
 struct TodayView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.locale) private var locale
+
     var body: some View {
         TimelineView(.periodic(from: .now, by: 60)) { context in
             let now = context.date
@@ -20,7 +21,7 @@ struct TodayView: View {
                         on: now,
                         location: location,
                         method: model.preferences.prayerMethod,
-                        asrRule: model.preferences.asrRule
+                        imsakMinutes: model.preferences.imsakMinutes
                     ).filter { model.preferences.isVisible($0.name) }
                     let tomorrow = engine.addingDays(1, to: now)
                     let next =
@@ -29,7 +30,7 @@ struct TodayView: View {
                                 on: tomorrow,
                                 location: location,
                                 method: model.preferences.prayerMethod,
-                                asrRule: model.preferences.asrRule
+                                imsakMinutes: model.preferences.imsakMinutes
                             )).first {
                             $0.name.isPrayer
                                 && model.preferences.isVisible($0.name)
@@ -105,13 +106,16 @@ struct TodayView: View {
                 }
                 if let verse = model.content.verse(on: now, timeZone: model.zone) {
                     Card {
-                        Text("Daily ayah").font(.headline)
-                        Text(verse.text).font(.title2).lineSpacing(12)
+                        Text("Daily ayah")
+                            .font(.headline)
+                        Text(verse.text)
+                            .font(.title2).lineSpacing(12)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .environment(\.layoutDirection, .rightToLeft)
                             .textSelection(.enabled)
                         Text(verse.id)
-                            .font(.caption).foregroundStyle(.secondary)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }.navigationTitle(title(now, engine: engine))
@@ -125,7 +129,6 @@ struct TodayView: View {
         formatter.calendar = engine.baseline
         formatter.timeZone = engine.timeZone
         formatter.dateFormat = "MMMM"
-        return
-            "\(day.day.formatted(.number.locale(locale))) \(formatter.string(from: engine.baselineStart(day.month)))"
+        return "\(day.day.formatted(.number.locale(locale))) \(formatter.string(from: engine.baselineStart(day.month)))"
     }
 }

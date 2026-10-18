@@ -6,10 +6,10 @@ import Testing
 struct WidgetPrayerTests {
     let location = SavedLocation(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh")
     @Test func hiddenPrayersAndNextDayRollover() throws {
-        let settings = WidgetPrayerSettings(location: location, method: .tehran, asrRule: .standard, hiddenPrayers: [.asr, .isha])
+        let settings = WidgetPrayerSettings(location: location, method: .tehran, hiddenPrayers: [.asr, .isha])
         let day = try #require(CivilDate(year: 2026, month: 10, day: 18).date(in: location.timeZone))
         let prayers = settings.prayers(on: day)
-        #expect(prayers.map(\.name) == [.fajr, .sunrise, .dhuhr, .sunset, .maghrib, .midnight])
+        #expect(prayers.map(\.name) == [.imsak, .fajr, .sunrise, .dhuhr, .sunset, .maghrib, .midnight])
         let maghrib = try #require(prayers.first { $0.name == .maghrib })
         let next = try #require(settings.nextPrayer(after: maghrib.date))
         #expect(next.name == .fajr)
@@ -21,7 +21,7 @@ struct WidgetPrayerTests {
     }
 
     @Test func countdownTimelineHasMinuteUpdatesAndNonemptyUpcomingPrayers() throws {
-        let settings = WidgetPrayerSettings(location: location, method: .tehran, asrRule: .standard, hiddenPrayers: [.asr, .isha])
+        let settings = WidgetPrayerSettings(location: location, method: .tehran, hiddenPrayers: [.asr, .isha])
         let start = try #require(CivilDate(year: 2026, month: 10, day: 18).date(in: location.timeZone)).addingTimeInterval(20 * 3600 + 17)
         let dates = settings.timelineDates(from: start)
         let nextMinute = floor(start.timeIntervalSince1970 / 60) * 60 + 60
@@ -35,7 +35,7 @@ struct WidgetPrayerTests {
     }
 
     @Test func missingLocationDoesNotInventTimes() {
-        let settings = WidgetPrayerSettings(location: nil, method: .tehran, asrRule: .standard, hiddenPrayers: [])
+        let settings = WidgetPrayerSettings(location: nil, method: .tehran, hiddenPrayers: [])
         #expect(settings.prayers(on: .now).isEmpty)
         #expect(settings.nextPrayer(after: .now) == nil)
     }
@@ -44,7 +44,7 @@ struct WidgetPrayerTests {
         let suite = "Widgets.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        var settings = WidgetPrayerSettings(location: location, method: .jafari, asrRule: .standard, hiddenPrayers: [.isha])
+        var settings = WidgetPrayerSettings(location: location, method: .jafari, hiddenPrayers: [.isha])
         #expect(WidgetPrayerStore.write(settings, to: defaults))
         #expect(WidgetPrayerStore.read(from: defaults) == settings)
         #expect(!WidgetPrayerStore.write(settings, to: defaults))
@@ -91,7 +91,7 @@ struct AdditionalPrayerTimesTests {
         preferences.hiddenPrayers = Set(PrayerName.allCases)
         #expect(PrayerName.allCases.filter { preferences.isVisible($0) } == [.fajr, .dhuhr, .maghrib])
         let location = SavedLocation(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh")
-        let widget = WidgetPrayerSettings(location: location, method: .tehran, asrRule: .standard, hiddenPrayers: preferences.hiddenPrayers)
+        let widget = WidgetPrayerSettings(location: location, method: .tehran, hiddenPrayers: preferences.hiddenPrayers)
         #expect(widget.prayers(on: Date()).map(\.name) == [.fajr, .dhuhr, .maghrib])
     }
 }
@@ -99,11 +99,11 @@ struct AdditionalPrayerTimesTests {
 struct CompactWidgetTests {
     @Test func upcomingTimesAreLimitedAndRollIntoTomorrow() throws {
         let location = SavedLocation(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh")
-        let settings = WidgetPrayerSettings(location: location, method: .tehran, asrRule: .standard,
+        let settings = WidgetPrayerSettings(location: location, method: .tehran,
                                             hiddenPrayers: [.sunrise, .asr, .sunset, .isha, .midnight])
         let date = try #require(CivilDate(year: 2026, month: 10, day: 18).date(in: location.timeZone)).addingTimeInterval(20 * 3600)
         let upcoming = settings.upcomingTimes(after: date)
-        #expect(upcoming.map(\.name) == [.fajr, .dhuhr, .maghrib])
+        #expect(upcoming.map(\.name) == [.imsak, .fajr, .dhuhr])
         #expect(upcoming.allSatisfy { $0.date > date })
         #expect(settings.upcomingTimes(after: date, limit: 2).count == 2)
         #expect(settings.upcomingTimes(after: date, limit: 0).isEmpty)

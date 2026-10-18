@@ -13,7 +13,7 @@ struct WatchEntry: TimelineEntry {
     }
 
     static var preview: Self {
-        .init(date: .now, settings: .init(prayers: .init(location: .init(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh"), method: .tehran, asrRule: .standard, hiddenPrayers: [.asr, .isha]), calendar: .init(timeZoneID: "Asia/Riyadh")))
+        .init(date: .now, settings: .init(prayers: .init(location: .init(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh"), method: .tehran, hiddenPrayers: [.asr, .isha]), calendar: .init(timeZoneID: "Asia/Riyadh")))
     }
 }
 

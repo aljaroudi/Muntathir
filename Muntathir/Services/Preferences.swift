@@ -5,8 +5,8 @@ import WidgetKit
 struct Preferences: Codable, Equatable, Sendable {
     var savedLocation: SavedLocation?
     var prayerMethod: PrayerMethod = .tehran
-    var asrRule: AsrRule = .standard
-    var enabledPrayers: Set<PrayerName> = []
+    var imsakMinutes = 10
+    var enabledPrayers: Set<PrayerName> = [.fajr, .dhuhr, .maghrib]
     var announcementNotifications = false
     var selectedSourceID: String?
     var overrides: [MonthCorrection] = []
@@ -16,7 +16,7 @@ struct Preferences: Codable, Equatable, Sendable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case savedLocation, prayerMethod, asrRule, enabledPrayers, announcementNotifications, selectedSourceID, overrides, hiddenPrayers
+        case savedLocation, prayerMethod, imsakMinutes, enabledPrayers, announcementNotifications, selectedSourceID, overrides, hiddenPrayers
     }
 
     init() {}
@@ -24,8 +24,8 @@ struct Preferences: Codable, Equatable, Sendable {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         savedLocation = try c.decodeIfPresent(SavedLocation.self, forKey: .savedLocation)
         prayerMethod = try c.decodeIfPresent(PrayerMethod.self, forKey: .prayerMethod) ?? .tehran
-        asrRule = try c.decodeIfPresent(AsrRule.self, forKey: .asrRule) ?? .standard
-        enabledPrayers = try c.decodeIfPresent(Set<PrayerName>.self, forKey: .enabledPrayers) ?? []
+        imsakMinutes = try min(120, max(0, c.decodeIfPresent(Int.self, forKey: .imsakMinutes) ?? 10))
+        enabledPrayers = try c.decodeIfPresent(Set<PrayerName>.self, forKey: .enabledPrayers) ?? [.fajr, .dhuhr, .maghrib]
         announcementNotifications = try c.decodeIfPresent(Bool.self, forKey: .announcementNotifications) ?? false
         selectedSourceID = try c.decodeIfPresent(String.self, forKey: .selectedSourceID)
         overrides = try c.decodeIfPresent([MonthCorrection].self, forKey: .overrides) ?? []
@@ -163,7 +163,7 @@ struct Preferences: Codable, Equatable, Sendable {
     private func syncWidgets() {
         guard !ProcessInfo.processInfo.arguments.contains("--ui-testing") else { return }
         let prayers = WidgetPrayerSettings(location: location, method: preferences.prayerMethod,
-                                           asrRule: preferences.asrRule, hiddenPrayers: preferences.hiddenPrayers)
+                                           hiddenPrayers: preferences.hiddenPrayers, imsakMinutes: preferences.imsakMinutes)
         let calendar = WidgetCalendarSettings(timeZoneID: location?.timeZoneID,
                                               manual: preferences.overrides, confirmed: confirmations.map(\.correction))
         let prayersChanged = WidgetPrayerStore.write(prayers)

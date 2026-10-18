@@ -54,7 +54,7 @@ The background refresh path accepts an optional FeedClient. Production leaves it
 
 ## iOS and CarPlay widgets
 
-The embedded MuntathirWidgets extension provides Upcoming prayer, Prayer times, and Countdown and prayer times. All three support small and medium Home Screen widgets; iOS 26 exposes the small versions in CarPlay. Add them through the Home Screen widget gallery, or Settings → General → CarPlay → your car → Widgets.
+The embedded MuntathirWidgets extension provides Upcoming prayer and Prayer times (countdown plus schedule). Both support small and medium Home Screen widgets; iOS 26 exposes the small versions in CarPlay. Add them through the Home Screen widget gallery, or Settings → General → CarPlay → your car → Widgets.
 
 Open Muntathir once and choose a location. Widgets use the app's method, Asr convention, and hidden-prayer choices. The app shares only those settings and selected coordinates through the local App Group, group.com.aljaroudi.Muntathir. Both targets require that App Group in their signing profiles. GPS coordinates are not uploaded to iCloud.
 
@@ -80,6 +80,22 @@ The `MuntathirWatch` scheme builds the watchOS 26+ companion app and its WidgetK
 
 WatchConnectivity transfers the latest location, method, visibility settings, and Hijri month corrections. The watch caches this snapshot and calculates times locally while disconnected. Open the iPhone app after installation or configuration changes. Delivery is opportunistic; changes can take time to reach a disconnected watch. Invalid snapshots preserve the last valid settings.
 
-Three complications are included: Hijri day/month, next prayer time, and countdown. All support inline, circular, rectangular (including Smart Stack), and corner families, with SwiftUI previews. Next-prayer and countdown displays on both platforms exclude hidden prayers and non-prayer times such as sunrise, sunset, and Islamic midnight. The schedule-only widget can still show those times if enabled.
+Three complications are included: Hijri day/month, next prayer time, and countdown. All support inline, circular, rectangular (including Smart Stack), and corner families, with SwiftUI previews. Next-prayer and countdown displays on both platforms exclude hidden prayers and non-prayer times such as sunrise, sunset, and Islamic midnight. The medium Prayer times widget also shows enabled non-prayer times.
 
 Enable the existing `group.com.aljaroudi.Muntathir` App Group for both watch targets when signing. App Groups share data between the watch app and its extension; WatchConnectivity transfers it between devices. Paired-device sync and watch-face rendering require device validation; the current development host has the watchOS SDK but no watchOS simulator runtime.
+
+
+## Prayer counter (iPhone)
+
+Open the **Prayer counter** tab, choose a prayer, and test placement with the phone face-up on the mat. Start with the sensor uncovered. The black screen shows the current rakaa, starting at 1; the first sujood turns it gray, and the second advances it. The final pair leaves the target number white until exit. No session history is saved.
+
+Proximity monitoring is required; there is no camera, light-sensor, or manual fallback. A cycle requires at least 1 second near and 1 second continuously far. Leaving the app or locking the phone interrupts counting; an interrupted session cannot resume. Proximity-induced display blanking alone must not interrupt the session. Monitoring and idle-lock overrides are released when counting ends or the presentation closes.
+
+Before release, validate mat placement, display recovery, sensor timing, lock/background interruptions, and a full four-rakaa session on physical notch and Dynamic Island iPhones. The simulator can verify unsupported-sensor UI and the pure counting state machine, but cannot establish detection accuracy. These timing thresholds are provisional until those device checks pass.
+
+
+Prayer calculations now always use standard Asr. Legacy Hanafi preferences are ignored without losing location, visibility, or notification choices. Imsak defaults to a precautionary 10 minutes before calculated Fajr, adjustable from 0–120 minutes in prayer calculations; it syncs to watch and widgets. It never becomes the upcoming prayer or counter default.
+
+The counter selects the most recent visible prayer, checking the previous day before Fajr; without a location it starts with Fajr. Settings → Prayers contains Visibility and Notifications. Fajr, Dhuhr, and Maghrib remain visible; new notification preferences enable those three, while existing choices are preserved. Opening Notifications requests device permission. All listed times can have alerts independently of visibility; the nearest 50 fit the local notification budget.
+
+The combined countdown/schedule widget is now named **Prayer times**, retaining its existing widget kind. The redundant schedule-only widget has been removed; existing copies of that removed widget should be replaced from the widget gallery. The separate **Upcoming prayer** widget remains available.

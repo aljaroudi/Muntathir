@@ -3,12 +3,38 @@ import Foundation
 struct WidgetPrayerSettings: Codable, Equatable, Sendable {
     var location: SavedLocation?
     var method: PrayerMethod
-    var asrRule: AsrRule
     var hiddenPrayers: Set<PrayerName>
+    var imsakMinutes = 10
+
+    init(location: SavedLocation?, method: PrayerMethod, hiddenPrayers: Set<PrayerName>, imsakMinutes: Int = 10) {
+        self.location = location
+        self.method = method
+        self.hiddenPrayers = hiddenPrayers
+        self.imsakMinutes = min(120, max(0, imsakMinutes))
+    }
+
+    private enum CodingKeys: String, CodingKey { case location, method, hiddenPrayers, imsakMinutes }
+
+    init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        try self.init(location: c.decodeIfPresent(SavedLocation.self, forKey: .location),
+                      method: c.decode(PrayerMethod.self, forKey: .method),
+                      hiddenPrayers: c.decodeIfPresent(Set<PrayerName>.self, forKey: .hiddenPrayers) ?? [],
+                      imsakMinutes: c.decodeIfPresent(Int.self, forKey: .imsakMinutes) ?? 10)
+    }
+
+    func previousPrayer(at date: Date) -> PrayerMoment? {
+        guard let location else { return nil }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = location.timeZone
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: date)!
+        return (prayers(on: yesterday) + prayers(on: date))
+            .filter { $0.name.isPrayer && $0.date <= date }.max { $0.date < $1.date }
+    }
 
     func prayers(on date: Date) -> [PrayerMoment] {
         guard let location else { return [] }
-        return PrayerCalculator.times(on: date, location: location, method: method, asrRule: asrRule)
+        return PrayerCalculator.times(on: date, location: location, method: method, imsakMinutes: imsakMinutes)
             .filter { $0.name.isVisible(hidden: hiddenPrayers) }
     }
 
