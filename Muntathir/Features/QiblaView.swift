@@ -22,10 +22,10 @@ struct QiblaView: View {
                                 .degrees(bearing - (model.locationService.heading ?? 0))
                             )
                     }
-                        .frame(maxWidth: 280).aspectRatio(1, contentMode: .fit)
-                        .frame(maxWidth: .infinity).padding(.vertical)
-                        .environment(\.layoutDirection, .leftToRight)
-                        .accessibilityHidden(true)
+                    .frame(maxWidth: 280).aspectRatio(1, contentMode: .fit)
+                    .frame(maxWidth: .infinity).padding(.vertical)
+                    .environment(\.layoutDirection, .leftToRight)
+                    .accessibilityHidden(true)
                     Text(
                         "\(degrees, format: .measurement(width: .narrow, usage: .asProvided, numberFormatStyle: .number.precision(.fractionLength(1)))) from true north"
                     ).font(.title3)

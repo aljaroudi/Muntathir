@@ -12,10 +12,13 @@ struct MuntathirApp: App {
             if ProcessInfo.processInfo.arguments.contains("--ui-testing-mecca") {
                 model.select(SavedLocation(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh"))
             }
-        } else { model = AppModel() }
+        } else {
+            model = AppModel()
+        }
         _model = State(initialValue: model)
         BackgroundRefresh.register { await model.refreshInBackground() }
     }
+
     var body: some Scene {
         WindowGroup { ContentView().environment(model) }
     }

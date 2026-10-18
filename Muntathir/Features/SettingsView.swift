@@ -141,8 +141,8 @@ struct SettingsView: View {
                                 Task {
                                     let allowed =
                                         value
-                                        ? await model.notifications.authorize()
-                                        : true
+                                            ? await model.notifications.authorize()
+                                            : true
                                     if allowed {
                                         model.update {
                                             $0.announcementNotifications = value
@@ -150,7 +150,7 @@ struct SettingsView: View {
                                     } else {
                                         model.error = String(
                                             localized:
-                                                "Notifications are disabled. Enable them in system Settings."
+                                            "Notifications are disabled. Enable them in system Settings."
                                         )
                                     }
                                 }
@@ -181,6 +181,7 @@ struct SettingsView: View {
         }
     }
 }
+
 struct LocationPicker: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -200,7 +201,9 @@ struct LocationPicker: View {
                     Label(current.name, systemImage: "location.fill")
                 }
             }
-            if model.locationService.isBusy { ProgressView() }
+            if model.locationService.isBusy {
+                ProgressView()
+            }
             if let message = model.locationService.message {
                 Text(message).foregroundStyle(.secondary)
             }
@@ -243,6 +246,7 @@ struct LocationPicker: View {
         }
     }
 }
+
 struct LicensesView: View {
     var body: some View {
         List {
@@ -273,12 +277,13 @@ struct LicensesView: View {
                     "Event references",
                     destination: URL(
                         string:
-                            "https://al-islam.org/islam-faith-practice-history-sayyid-muhammad-rizvi/lesson-17-twelve-caliphs-or-imams"
+                        "https://al-islam.org/islam-faith-practice-history-sayyid-muhammad-rizvi/lesson-17-twelve-caliphs-or-imams"
                     )!
                 )
             }
         }.navigationTitle("Sources and licenses")
     }
+
     private func license(_ name: String) -> String {
         Bundle.main.url(forResource: name, withExtension: "txt").flatMap {
             try? String(contentsOf: $0, encoding: .utf8)

@@ -17,6 +17,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyKilometer
     }
+
     func search(_ query: String) async {
         let id = UUID()
         requestID = id
@@ -26,7 +27,11 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
         }
         isBusy = true
         message = nil
-        defer { if requestID == id { isBusy = false } }
+        defer {
+            if requestID == id {
+                isBusy = false
+            }
+        }
         do {
             let request = MKLocalSearch.Request()
             request.naturalLanguageQuery = query
@@ -38,14 +43,15 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
                 message = String(localized: "No places found.")
             }
         } catch {
-            if requestID == id && !Task.isCancelled {
+            if requestID == id, !Task.isCancelled {
                 message = String(
                     localized:
-                        "Place search is unavailable. Try again when online."
+                    "Place search is unavailable. Try again when online."
                 )
             }
         }
     }
+
     func saved(_ item: MKMapItem) -> SavedLocation? {
         guard let zone = item.timeZone else {
             message = String(
@@ -64,6 +70,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
             timeZoneID: zone.identifier
         )
     }
+
     func locate() {
         message = nil
         switch manager.authorizationStatus {
@@ -74,21 +81,26 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
         default:
             message = String(
                 localized:
-                    "Location access is disabled. Search for a city instead."
+                "Location access is disabled. Search for a city instead."
             )
         }
     }
+
     func startHeading() {
         guard CLLocationManager.headingAvailable() else {
             message = String(
                 localized:
-                    "Compass unavailable. Use the bearing from true north."
+                "Compass unavailable. Use the bearing from true north."
             )
             return
         }
         manager.startUpdatingHeading()
     }
-    func stopHeading() { manager.stopUpdatingHeading() }
+
+    func stopHeading() {
+        manager.stopUpdatingHeading()
+    }
+
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         if manager.authorizationStatus == .authorizedWhenInUse
             || manager.authorizationStatus == .authorizedAlways
@@ -96,12 +108,13 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
             locate()
         }
     }
+
     func locationManager(
-        _ manager: CLLocationManager,
+        _: CLLocationManager,
         didUpdateLocations locations: [CLLocation]
     ) {
         guard let location = locations.last, location.horizontalAccuracy >= 0,
-            CLLocationCoordinate2DIsValid(location.coordinate)
+              CLLocationCoordinate2DIsValid(location.coordinate)
         else { return }
         // Coordinates are sufficient. Device time zone supplies local civil time.
         current = SavedLocation(
@@ -113,23 +126,25 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
         )
         isBusy = false
     }
+
     func locationManager(
-        _ manager: CLLocationManager,
-        didFailWithError error: Error
+        _: CLLocationManager,
+        didFailWithError _: Error
     ) {
         isBusy = false
         message = String(
             localized:
-                "Could not find your location. Search for a city instead."
+            "Could not find your location. Search for a city instead."
         )
     }
+
     func locationManager(
-        _ manager: CLLocationManager,
+        _: CLLocationManager,
         didUpdateHeading newHeading: CLHeading
     ) {
         headingAccuracy = newHeading.headingAccuracy
         heading =
             newHeading.trueHeading >= 0 && newHeading.headingAccuracy >= 0
-            ? newHeading.trueHeading : nil
+                ? newHeading.trueHeading : nil
     }
 }

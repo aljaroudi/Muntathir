@@ -4,6 +4,7 @@ struct CalendarScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.locale) private var locale
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
     @State private var now = Date()
     @State private var selection = Date()
@@ -13,7 +14,7 @@ struct CalendarScreen: View {
         let engine = model.engine
         let month = engine.resolve(now).month.advanced(monthOffset)
         let days = engine.days(in: month)
-        Page {
+        VStack(spacing: 12) {
             Card {
                 HStack {
                     Button("Previous month", systemImage: "chevron.backward") { monthOffset -= 1; selection = engine.start(of: month.advanced(-1)) }.labelStyle(.iconOnly).disabled(month.year <= 1300 && month.month == 1)
@@ -23,12 +24,16 @@ struct CalendarScreen: View {
                     Button("Next month", systemImage: "chevron.forward") { monthOffset += 1; selection = engine.start(of: month.advanced(1)) }.labelStyle(.iconOnly).disabled(month.year >= 1600 && month.month == 12)
                 }
                 if typeSize.isAccessibilitySize {
-                    ForEach(days, id: \.self) { date in dayButton(date, engine: engine) }
+                    ScrollView {
+                        LazyVStack {
+                            ForEach(days, id: \.self) { date in dayButton(date, engine: engine) }
+                        }
+                    }.frame(maxHeight: 240)
                 } else {
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 7), spacing: 8) {
-                        ForEach(0..<7, id: \.self) { index in Text(weekday(index, engine: engine)).font(.caption2).foregroundStyle(.secondary) }
+                        ForEach(0 ..< 7, id: \.self) { index in Text(weekday(index, engine: engine)).font(.caption2).foregroundStyle(.secondary) }
                         let blanks = (engine.gregorian.component(.weekday, from: days[0]) - engine.gregorian.firstWeekday + 7) % 7
-                        ForEach(0..<blanks, id: \.self) { _ in Color.clear.frame(height: 48).accessibilityHidden(true) }
+                        ForEach(0 ..< blanks, id: \.self) { _ in Color.clear.frame(height: 48).accessibilityHidden(true) }
                         ForEach(days, id: \.self) { date in dayButton(date, engine: engine) }
                     }
                 }
@@ -37,36 +42,85 @@ struct CalendarScreen: View {
                     Spacer()
                     Button("Adjust this month", systemImage: "calendar.badge.clock") { correcting = true }.labelStyle(.iconOnly)
                 }
-                ProvenanceLabel(provenance: engine.resolve(selection).provenance).font(.caption).foregroundStyle(.secondary)
             }
-            Card {
-                Text(selection.formatted(.dateTime.day().month(.wide).inZone(model.zone))).foregroundStyle(.secondary)
-                EventRows(events: model.content.events(on: engine.resolve(selection)))
-            }
-            if let verse = model.content.verse(on: now, timeZone: model.zone) {
-                Card {
-                    DisclosureGroup("Daily ayah") {
-                    Text(verse.text).font(.title2).lineSpacing(12)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .environment(\.layoutDirection, .rightToLeft).textSelection(.enabled)
-                    Text(verse.id).font(.caption).foregroundStyle(.secondary)
-                    Link("Tanzil Project", destination: URL(string: "https://tanzil.net")!).font(.caption)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(spacing: 10) {
+                        ForEach(days, id: \.self) { date in
+                            let day = engine.resolve(date)
+                            let events = model.content.events(on: day)
+                            let selected = engine.gregorian.isDate(date, inSameDayAs: selection)
+                            if !events.isEmpty || selected {
+                                HStack(alignment: .top, spacing: 14) {
+                                    VStack(spacing: 3) {
+                                        Text(day.day, format: .number).font(.title2.weight(.semibold))
+                                        Text(date.formatted(.dateTime.day().month(.abbreviated).inZone(model.zone)))
+                                            .font(.caption2).foregroundStyle(.secondary)
+                                    }.frame(minWidth: 52)
+                                    VStack(alignment: .leading, spacing: 12) {
+                                        if events.isEmpty {
+                                            Text("No observances today").foregroundStyle(.secondary)
+                                        }
+                                        ForEach(events) { event in
+                                            NavigationLink {
+                                                EventDetail(event: event)
+                                            } label: {
+                                                HStack {
+                                                    Text(event.title(arabic: locale.language.languageCode?.identifier == "ar"))
+                                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                                    Image(systemName: "chevron.forward").font(.caption)
+                                                        .foregroundStyle(.tertiary)
+                                                }.contentShape(.rect)
+                                            }.buttonStyle(.plain)
+                                        }
+                                    }.frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                                .padding(16)
+                                .background(selected ? Color.accentColor.opacity(0.08) : Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 16))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .strokeBorder(selected ? Color.accentColor : .clear, lineWidth: 1.5)
+                                }
+                                .accessibilityAddTraits(selected ? .isSelected : [])
+                                .id(day.day)
+                            }
+                        }
+                    }.padding(.bottom)
+                }
+                .onAppear {
+                    proxy.scrollTo(engine.resolve(selection).day, anchor: .top)
+                }
+                .onChange(of: selection) { _, date in
+                    withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
+                        proxy.scrollTo(engine.resolve(date).day, anchor: .top)
                     }
                 }
             }
-        }.navigationTitle("Calendar")
-            .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in now = Date() }
-            .onChange(of: scenePhase) { _, phase in if phase == .active { now = Date() } }
-            .sheet(isPresented: $correcting) { CorrectionView(month: month, start: engine.start(of: month)) }
+        }
+        .frame(maxWidth: 760)
+        .padding(.horizontal)
+        .frame(maxWidth: .infinity)
+        .background(Color(.systemGroupedBackground))
+        .navigationTitle("Calendar")
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in now = Date() }
+        .onChange(of: scenePhase) {
+            _, phase in if phase == .active {
+                now = Date()
+            }
+        }
+        .sheet(isPresented: $correcting) { CorrectionView(month: month, start: engine.start(of: month)) }
     }
+
     private func monthTitle(_ month: HijriMonth, engine: CalendarEngine) -> String {
         let f = DateFormatter(); f.locale = locale; f.calendar = engine.baseline; f.timeZone = engine.timeZone; f.dateFormat = "MMMM y"
         return f.string(from: engine.baselineStart(month))
     }
+
     private func weekday(_ index: Int, engine: CalendarEngine) -> String {
         let f = DateFormatter(); f.locale = locale
         return f.shortWeekdaySymbols[(index + engine.gregorian.firstWeekday - 1) % 7]
     }
+
     private func dayButton(_ date: Date, engine: CalendarEngine) -> some View {
         let day = engine.resolve(date)
         let selected = engine.gregorian.isDate(date, inSameDayAs: selection)
@@ -82,6 +136,7 @@ struct CalendarScreen: View {
             .accessibilityValue(selected ? String(localized: "Selected") : "")
     }
 }
+
 struct CorrectionView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -95,7 +150,9 @@ struct CorrectionView: View {
                 DatePicker("First Gregorian day", selection: $start, displayedComponents: .date)
                     .environment(\.calendar, Calendar(identifier: .gregorian)).environment(\.timeZone, model.zone)
                 Text("This is a manual correction, not a confirmed announcement.").font(.footnote)
-                if let error { Text(error).foregroundStyle(.red) }
+                if let error {
+                    Text(error).foregroundStyle(.red)
+                }
                 Button("Reset to calculated date", role: .destructive) { model.reset(month); dismiss() }
             }.navigationTitle("Adjust month").toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }

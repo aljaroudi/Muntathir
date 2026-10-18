@@ -6,10 +6,11 @@ struct ScheduledPrayer: Identifiable, Sendable {
     let name: PrayerName
     let date: Date
 }
+
 enum NotificationPlan {
     static func make(now: Date, preferences: Preferences, location: SavedLocation) -> [ScheduledPrayer] {
         var calendar = Calendar(identifier: .gregorian); calendar.timeZone = location.timeZone
-        return (0..<10).flatMap { offset -> [ScheduledPrayer] in
+        return (0 ..< 10).flatMap { offset -> [ScheduledPrayer] in
             let day = calendar.date(byAdding: .day, value: offset, to: now)!
             return PrayerCalculator.times(on: day, location: location, method: preferences.prayerMethod, asrRule: preferences.asrRule).compactMap { prayer in
                 guard preferences.enabledPrayers.contains(prayer.name), prayer.date > now else { return nil }
@@ -18,10 +19,14 @@ enum NotificationPlan {
         }.sorted { $0.date < $1.date }
     }
 }
+
 @MainActor final class NotificationService {
     private let center = UNUserNotificationCenter.current()
     private var generation = UUID()
-    func authorize() async -> Bool { (try? await center.requestAuthorization(options: [.alert, .sound])) ?? false }
+    func authorize() async -> Bool {
+        await (try? center.requestAuthorization(options: [.alert, .sound])) ?? false
+    }
+
     func rebuild(preferences: Preferences, location: SavedLocation?) async {
         let token = UUID(); generation = token
         let pending = await center.pendingNotificationRequests()
@@ -38,9 +43,12 @@ enum NotificationPlan {
             var parts = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: prayer.date); parts.timeZone = .gmt
             let request = UNNotificationRequest(identifier: prayer.id, content: content, trigger: UNCalendarNotificationTrigger(dateMatching: parts, repeats: false))
             try? await center.add(request)
-            if generation != token || Task.isCancelled { center.removePendingNotificationRequests(withIdentifiers: [prayer.id]); return }
+            if generation != token || Task.isCancelled {
+                center.removePendingNotificationRequests(withIdentifiers: [prayer.id]); return
+            }
         }
     }
+
     func announce(_ rows: [Announcement], enabled: Bool, defaults: UserDefaults = .standard) async {
         guard enabled else { return }
         var delivered = Set(defaults.stringArray(forKey: "announcements.delivered") ?? [])

@@ -1,6 +1,6 @@
 import Foundation
-import Testing
 @testable import Muntathir
+import Testing
 
 struct CalendarTests {
     let zone = TimeZone(identifier: "Asia/Riyadh")!
@@ -18,18 +18,20 @@ struct CalendarTests {
         #expect(engine.resolve(ashura).day == 10)
         #expect(ContentLibrary().events(on: engine.resolve(ashura)).contains { $0.id == "husayn-death" })
     }
+
     @Test(arguments: [-3, -1, 1, 3]) func allNeighboringMonthsRemainValid(offset: Int) throws {
         let base = try CalendarEngine(timeZone: zone)
         let month = HijriMonth(year: 1448, month: 1)
         let row = MonthCorrection(month: month, start: CivilDate(base.addingDays(offset, to: base.start(of: month)), in: zone), provenance: .manual, sourceID: nil)
         let engine = try CalendarEngine(timeZone: zone, manual: [row])
-        for index in -12...12 {
+        for index in -12 ... 12 {
             let candidate = month.advanced(index)
-            #expect((29...30).contains(engine.days(in: candidate).count))
+            #expect((29 ... 30).contains(engine.days(in: candidate).count))
             #expect(engine.resolve(engine.start(of: candidate)).month == candidate)
             #expect(engine.resolve(engine.start(of: candidate)).day == 1)
         }
     }
+
     @Test func rejectConflictingAnchorsAndInvalidDates() throws {
         let base = try CalendarEngine(timeZone: zone), month = HijriMonth(year: 1448, month: 1)
         let first = MonthCorrection(month: month, start: CivilDate(base.start(of: month), in: zone), provenance: .manual, sourceID: nil)
@@ -37,11 +39,12 @@ struct CalendarTests {
         #expect(throws: CalendarError.self) { try CalendarEngine(timeZone: zone, manual: [first, second]) }
         #expect(CivilDate(year: 2026, month: 2, day: 30).date(in: zone) == nil)
     }
+
     @Test func futureAnchorConverges() throws {
         let base = try CalendarEngine(timeZone: zone), month = HijriMonth(year: 1448, month: 1)
         let rows = [month, month.advanced(4)].map { MonthCorrection(month: $0, start: CivilDate(base.addingDays(1, to: base.start(of: $0)), in: zone), provenance: .manual, sourceID: nil) }
         let engine = try CalendarEngine(timeZone: zone, manual: rows)
-        #expect((0..<5).allSatisfy { (29...30).contains(engine.days(in: month.advanced($0)).count) })
+        #expect((0 ..< 5).allSatisfy { (29 ... 30).contains(engine.days(in: month.advanced($0)).count) })
         #expect(engine.resolve(engine.start(of: month.advanced(2))).provenance == .calculated)
     }
 }
@@ -53,7 +56,7 @@ struct ContentTests {
         #expect(Set(library.verses.map(\.id)).count == 6236)
         #expect(library.events.count >= 30)
         #expect(Set(library.events.map(\.id)).count == library.events.count)
-        let zone = TimeZone(identifier: "Asia/Riyadh")!
+        let zone = try #require(TimeZone(identifier: "Asia/Riyadh"))
         let day = try #require(CivilDate(year: 2026, month: 10, day: 17).date(in: zone))
         #expect(library.verse(on: day, timeZone: zone)?.id == library.verse(on: day.addingTimeInterval(300), timeZone: zone)?.id)
         #expect(library.verse(on: day, timeZone: zone)?.id != library.verse(on: day.addingTimeInterval(86400), timeZone: zone)?.id)
@@ -67,6 +70,7 @@ struct PrayerTests {
         let variance: Int?
         let times: [[String: String]]
     }
+
     @Test(arguments: ["Tehran-Tehran", "London-MoonsightingCommittee", "Singapore-Singapore"])
     func matchesReferenceFixtures(name: String) throws {
         let url = try #require(Bundle(for: BundleMarker.self).url(forResource: name, withExtension: "json"))
@@ -86,11 +90,13 @@ struct PrayerTests {
             }
         }
     }
+
     @Test func highLatitudeFailureIsHonest() throws {
         let location = SavedLocation(latitude: 89, longitude: 0, name: "Polar", countryCode: "", timeZoneID: "GMT")
         let date = try #require(CivilDate(year: 2026, month: 6, day: 21).date(in: .gmt))
         #expect(PrayerCalculator.times(on: date, location: location, method: .tehran).isEmpty)
     }
+
     @Test func schedulesFuturePrayersOnly() throws {
         let location = SavedLocation(latitude: 24.7, longitude: 46.7, name: "Riyadh", countryCode: "SA", timeZoneID: "Asia/Riyadh")
         var preferences = Preferences(); preferences.enabledPrayers = [.fajr, .maghrib]
@@ -103,6 +109,7 @@ struct PrayerTests {
         #expect(NotificationPlan.make(now: now, preferences: preferences, location: location).isEmpty)
     }
 }
+
 private final class BundleMarker: NSObject {}
 
 struct FeedTests {
@@ -125,6 +132,7 @@ struct FeedTests {
         #expect(throws: CalendarError.self) { try CorrectionsFeed.decode(JSONEncoder().encode(CorrectionsFeed(schemaVersion: 2, announcements: []))) }
         #expect(throws: CalendarError.self) { try CorrectionsFeed.decode(JSONEncoder().encode(CorrectionsFeed(schemaVersion: 1, announcements: [row, row]))) }
     }
+
     @Test func dateLinePolygon() {
         let coverage = Coverage(countries: [], polygons: [[.init(latitude: -10, longitude: 170), .init(latitude: 10, longitude: 170), .init(latitude: 10, longitude: -170), .init(latitude: -10, longitude: -170)]])
         #expect(coverage.contains(.init(latitude: 0, longitude: 179, name: "Date line", countryCode: "", timeZoneID: "GMT")))
@@ -164,6 +172,7 @@ struct PrayerBoundaryTests {
         let sunset = try #require(PrayerCalculator.times(on: date, location: location, method: .ummAlQura).first { $0.name == .maghrib })
         #expect(shia.date > sunset.date)
     }
+
     @Test func correctionsDoNotChangePrayerMath() throws {
         let location = SavedLocation(latitude: 24.7, longitude: 46.7, name: "Riyadh", countryCode: "SA", timeZoneID: "Asia/Riyadh")
         let date = try #require(CivilDate(year: 2026, month: 3, day: 1).date(in: location.timeZone))
@@ -185,6 +194,7 @@ struct MeccaPrayerTests {
         #expect(calendar.component(.hour, from: maghrib.date) == 18)
         #expect(calendar.component(.minute, from: maghrib.date) == (method == .jafari ? 9 : 11))
     }
+
     @Test func gpsWithoutPlaceNameStillCalculates() throws {
         let location = SavedLocation(latitude: 21.4225, longitude: 39.8262, name: "", countryCode: "", timeZoneID: "Asia/Riyadh")
         let date = try #require(CivilDate(year: 2026, month: 10, day: 17).date(in: location.timeZone))

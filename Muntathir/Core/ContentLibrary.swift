@@ -6,8 +6,11 @@ struct EventReference: Codable, Hashable, Sendable {
     let edition: String?
     let volume: String?
     let page: String?
-    var description: String { [book, author, edition, volume, page].compactMap { $0 }.joined(separator: " · ") }
+    var description: String {
+        [book, author, edition, volume, page].compactMap(\.self).joined(separator: " · ")
+    }
 }
+
 struct IslamicEvent: Codable, Identifiable, Hashable, Sendable {
     let id: String
     let month: Int
@@ -16,14 +19,20 @@ struct IslamicEvent: Codable, Identifiable, Hashable, Sendable {
     let titleAR: String
     let convention: String?
     let references: [EventReference]
-    func title(arabic: Bool) -> String { arabic ? titleAR : titleEN }
+    func title(arabic: Bool) -> String {
+        arabic ? titleAR : titleEN
+    }
 }
+
 struct Ayah: Identifiable, Sendable {
     let surah: Int
     let number: Int
     let text: String
-    var id: String { "\(surah):\(number)" }
+    var id: String {
+        "\(surah):\(number)"
+    }
 }
+
 struct ContentLibrary: Sendable {
     let events: [IslamicEvent]
     let verses: [Ayah]
@@ -38,13 +47,17 @@ struct ContentLibrary: Sendable {
             return Ayah(surah: surah, number: number, text: String(fields[2]))
         }
     }
-    func events(on day: ResolvedDay) -> [IslamicEvent] { events.filter { $0.month == day.month.month && $0.day == day.day } }
+
+    func events(on day: ResolvedDay) -> [IslamicEvent] {
+        events.filter { $0.month == day.month.month && $0.day == day.day }
+    }
+
     func verse(on date: Date, timeZone: TimeZone) -> Ayah? {
         guard !verses.isEmpty else { return nil }
         let civil = CivilDate(date, in: timeZone)
         // FNV-1a gives a stable day selection across launches, devices and future clients.
         let key = "\(civil.year)-\(civil.month)-\(civil.day)"
-        let hash = key.utf8.reduce(UInt64(14695981039346656037)) { ($0 ^ UInt64($1)) &* 1099511628211 }
+        let hash = key.utf8.reduce(UInt64(14_695_981_039_346_656_037)) { ($0 ^ UInt64($1)) &* 1_099_511_628_211 }
         return verses[Int(hash % UInt64(verses.count))]
     }
 }

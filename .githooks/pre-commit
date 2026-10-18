@@ -1,0 +1,14 @@
+#!/bin/sh
+set -eu
+cd "$(git rev-parse --show-toplevel)"
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+if ! command -v swiftformat >/dev/null 2>&1; then
+    echo "SwiftFormat is required. Install it with: brew install swiftformat" >&2
+    exit 1
+fi
+swiftformat . --swift-version 6
+# Never auto-stage: that could include unrelated or partially staged changes.
+if ! git diff --quiet -- '*.swift'; then
+    echo "Review and stage the formatted Swift files, then commit again." >&2
+    exit 1
+fi

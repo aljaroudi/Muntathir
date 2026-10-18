@@ -63,3 +63,13 @@ The extension uses the same Adhan source and pinned dependency as the app. Timel
 Simulator validation covers compilation/embedding, settings serialization, hidden prayers, midnight entries, next-day Fajr, and the exact English 1h 13m countdown format. Physical CarPlay layout and signed-device App Group provisioning still need device validation.
 
 Sunset uses Adhan's neutral calculation parameters without Maghrib adjustments. Islamic midnight is the midpoint from that sunset to the following day's Fajr under the selected method, rounded to the nearest minute. This is not civil or solar midnight. No WeatherKit or network request is needed. Fajr, Dhuhr, and Maghrib remain visible even if old stored preferences contain them in the hidden set; Sunrise, Asr, Sunset, Isha, and Islamic midnight can be hidden. Sunset and midnight are not prayer-notification or next-prayer countdown targets.
+
+### Commit formatting
+
+Install SwiftFormat (`brew install swiftformat`), then enable the tracked hook in each clone:
+
+```sh
+git config core.hooksPath .githooks
+```
+
+The pre-commit hook runs `swiftformat . --swift-version 6`. If Swift files differ from the index afterward, review and stage them before retrying. The hook never stages changes automatically.

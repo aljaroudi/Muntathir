@@ -10,7 +10,7 @@ struct TodayView: View {
             Page {
                 VStack(alignment: .leading, spacing: 12) {
                     Text(now.formatted(.dateTime.weekday(.wide).day().month(.wide).inZone(model.zone)))
-                    .foregroundStyle(.secondary)
+                        .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, 12)
@@ -25,33 +25,17 @@ struct TodayView: View {
                     let tomorrow = engine.addingDays(1, to: now)
                     let next =
                         (prayers
-                        + PrayerCalculator.times(
-                            on: tomorrow,
-                            location: location,
-                            method: model.preferences.prayerMethod,
-                            asrRule: model.preferences.asrRule
-                        )).first {
+                            + PrayerCalculator.times(
+                                on: tomorrow,
+                                location: location,
+                                method: model.preferences.prayerMethod,
+                                asrRule: model.preferences.asrRule
+                            )).first {
                             $0.name.isPrayer
                                 && model.preferences.isVisible($0.name)
                                 && $0.date > now
                         }
                     Card {
-                        Text("Prayer times").font(.headline)
-                        if let next {
-                            HStack(alignment: .firstTextBaseline) {
-                                Label("Next prayer", systemImage: "clock").font(
-                                    .subheadline
-                                )
-                                Text(next.name.title).fontWeight(.semibold)
-                                Spacer()
-                                Text(next.date, style: .relative)
-                                    .monospacedDigit().font(.subheadline)
-                            }
-                            .foregroundStyle(Color.accentColor)
-                            .accessibilityElement(children: .combine)
-                            
-                            Divider()
-                        }
                         if prayers.isEmpty {
                             ContentUnavailableView {
                                 Label(
@@ -70,8 +54,14 @@ struct TodayView: View {
                         }
                         ForEach(prayers) { prayer in
                             HStack {
-                                Text(prayer.name.title)
-                                Spacer()
+                                Label(prayer.name.title, systemImage: prayer.name.symbol)
+                                Spacer(minLength: 8)
+                                if prayer.name == next?.name, let next {
+                                    Text(PrayerCountdownFormat(target: next.date, locale: locale).format(now))
+                                        .font(.caption).monospacedDigit()
+                                        .padding(.horizontal, 8).padding(.vertical, 4)
+                                        .background(Color.accentColor.opacity(0.1), in: .capsule)
+                                }
                                 Text(
                                     prayer.date.formatted(.dateTime.hour().minute().inZone(model.zone))
                                 )
@@ -87,7 +77,9 @@ struct TodayView: View {
                             .accessibilityIdentifier(
                                 "prayer-\(prayer.name.rawValue)"
                             )
-                            if prayer.id != prayers.last?.id { Divider() }
+                            if prayer.id != prayers.last?.id {
+                                Divider()
+                            }
                         }
                     }
                 } else {
@@ -111,9 +103,21 @@ struct TodayView: View {
                         }
                     }
                 }
+                if let verse = model.content.verse(on: now, timeZone: model.zone) {
+                    Card {
+                        Text("Daily ayah").font(.headline)
+                        Text(verse.text).font(.title2).lineSpacing(12)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .environment(\.layoutDirection, .rightToLeft)
+                            .textSelection(.enabled)
+                        Text(verse.id)
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                }
             }.navigationTitle(title(now, engine: engine))
         }
     }
+
     private func title(_ date: Date, engine: CalendarEngine) -> String {
         let day = engine.resolve(date)
         let formatter = DateFormatter()
@@ -122,6 +126,6 @@ struct TodayView: View {
         formatter.timeZone = engine.timeZone
         formatter.dateFormat = "MMMM"
         return
-            "\(day.day.formatted()) \(formatter.string(from: engine.baselineStart(day.month)))"
+            "\(day.day.formatted(.number.locale(locale))) \(formatter.string(from: engine.baselineStart(day.month)))"
     }
 }

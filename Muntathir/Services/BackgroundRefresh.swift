@@ -28,7 +28,7 @@ import BackgroundTasks
         let arguments = ProcessInfo.processInfo.arguments
         guard
             !arguments.contains("--ui-testing")
-                || arguments.contains("--ui-testing-background-refresh")
+            || arguments.contains("--ui-testing-background-refresh")
         else { return }
         let request = BGAppRefreshTaskRequest(identifier: identifier)
         request.earliestBeginDate = Date(timeIntervalSinceNow: 12 * 60 * 60)

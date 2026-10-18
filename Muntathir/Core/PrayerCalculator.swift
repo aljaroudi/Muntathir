@@ -1,5 +1,5 @@
-import Foundation
 import Adhan
+import Foundation
 
 struct SavedLocation: Codable, Hashable, Sendable {
     var latitude: Double
@@ -7,19 +7,32 @@ struct SavedLocation: Codable, Hashable, Sendable {
     var name: String
     var countryCode: String
     var timeZoneID: String
-    var timeZone: TimeZone { TimeZone(identifier: timeZoneID) ?? .gmt }
-    var hasValidCoordinates: Bool {
-        latitude.isFinite && longitude.isFinite && (-90...90).contains(latitude) && (-180...180).contains(longitude)
+    var timeZone: TimeZone {
+        TimeZone(identifier: timeZoneID) ?? .gmt
     }
-    var isValid: Bool { hasValidCoordinates && TimeZone(identifier: timeZoneID) != nil && !name.isEmpty }
+
+    var hasValidCoordinates: Bool {
+        latitude.isFinite && longitude.isFinite && (-90 ... 90).contains(latitude) && (-180 ... 180).contains(longitude)
+    }
+
+    var isValid: Bool {
+        hasValidCoordinates && TimeZone(identifier: timeZoneID) != nil && !name.isEmpty
+    }
 }
+
 enum AsrRule: String, Codable, CaseIterable, Sendable {
     case standard, hanafi
-    var title: String { self == .standard ? String(localized: "Standard (including Jafari)") : String(localized: "Hanafi") }
+    var title: String {
+        self == .standard ? String(localized: "Standard (including Jafari)") : String(localized: "Hanafi")
+    }
 }
+
 enum PrayerMethod: String, Codable, CaseIterable, Identifiable, Sendable {
     case jafari, tehran, muslimWorldLeague, egyptian, karachi, ummAlQura, dubai, moonsightingCommittee, northAmerica, kuwait, qatar, singapore, turkey
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
+
     var title: String {
         switch self {
         case .jafari: String(localized: "Shia — Jafari (Qum)")
@@ -38,9 +51,13 @@ enum PrayerMethod: String, Codable, CaseIterable, Identifiable, Sendable {
         }
     }
 }
+
 enum PrayerName: String, Codable, CaseIterable, Identifiable, Sendable {
     case fajr, sunrise, dhuhr, asr, sunset, maghrib, isha, midnight
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
+
     var title: String {
         switch self {
         case .fajr: String(localized: "Fajr")
@@ -53,17 +70,49 @@ enum PrayerName: String, Codable, CaseIterable, Identifiable, Sendable {
         case .isha: String(localized: "Isha")
         }
     }
-    var isRequired: Bool { self == .fajr || self == .dhuhr || self == .maghrib }
-    var isPrayer: Bool { [.fajr, .dhuhr, .asr, .maghrib, .isha].contains(self) }
-    func isVisible(hidden: Set<Self>) -> Bool { isRequired || !hidden.contains(self) }
-    static var optionalTimes: [Self] { allCases.filter { !$0.isRequired } }
-    static var notifiable: [Self] { allCases.filter(\.isPrayer) }
+
+    var symbol: String {
+        switch self {
+        case .fajr: "sun.horizon"
+        case .sunrise: "sunrise"
+        case .dhuhr: "sun.max"
+        case .asr: "sun.haze"
+        case .sunset: "sunset"
+        case .maghrib: "moon.haze"
+        case .isha: "moon.stars"
+        case .midnight: "moon.zzz"
+        }
+    }
+
+    var isRequired: Bool {
+        self == .fajr || self == .dhuhr || self == .maghrib
+    }
+
+    var isPrayer: Bool {
+        [.fajr, .dhuhr, .asr, .maghrib, .isha].contains(self)
+    }
+
+    func isVisible(hidden: Set<Self>) -> Bool {
+        isRequired || !hidden.contains(self)
+    }
+
+    static var optionalTimes: [Self] {
+        allCases.filter { !$0.isRequired }
+    }
+
+    static var notifiable: [Self] {
+        allCases.filter(\.isPrayer)
+    }
 }
+
 struct PrayerMoment: Identifiable, Sendable {
     let name: PrayerName
     let date: Date
-    var id: String { name.rawValue }
+    var id: String {
+        name.rawValue
+    }
 }
+
 enum PrayerCalculator {
     static func times(on date: Date, location: SavedLocation, method: PrayerMethod, asrRule: AsrRule = .standard) -> [PrayerMoment] {
         // Display metadata must not suppress astronomical calculations for a valid coordinate.
@@ -81,7 +130,7 @@ enum PrayerCalculator {
         parameters.madhab = asrRule == .hanafi ? .hanafi : .shafi
         parameters.highLatitudeRule = HighLatitudeRule.recommended(for: coordinates)
         // Use the independent calculated calendar for the preset's Ramadan interval.
-        if (method == .ummAlQura || method == .qatar), engine.baseline.component(.month, from: date) == 9 {
+        if method == .ummAlQura || method == .qatar, engine.baseline.component(.month, from: date) == 9 {
             parameters.ishaInterval += 30
         }
         guard let times = PrayerTimes(coordinates: coordinates, date: components, calculationParameters: parameters) else { return [] }
@@ -97,8 +146,8 @@ enum PrayerCalculator {
                   times.maghrib > sunset.maghrib else { return [] }
         }
         var result: [PrayerMoment] = [.init(name: .fajr, date: times.fajr), .init(name: .sunrise, date: times.sunrise),
-                .init(name: .dhuhr, date: times.dhuhr), .init(name: .asr, date: times.asr),
-                .init(name: .sunset, date: solar.maghrib), .init(name: .maghrib, date: times.maghrib), .init(name: .isha, date: times.isha)]
+                                      .init(name: .dhuhr, date: times.dhuhr), .init(name: .asr, date: times.asr),
+                                      .init(name: .sunset, date: solar.maghrib), .init(name: .maghrib, date: times.maghrib), .init(name: .isha, date: times.isha)]
         let tomorrow = engine.addingDays(1, to: date)
         let nextComponents = engine.gregorian.dateComponents([.year, .month, .day], from: tomorrow)
         if let next = PrayerTimes(coordinates: coordinates, date: nextComponents, calculationParameters: parameters) {
@@ -107,6 +156,7 @@ enum PrayerCalculator {
         }
         return result
     }
+
     static func qibla(_ location: SavedLocation) -> Double {
         Qibla(coordinates: Coordinates(latitude: location.latitude, longitude: location.longitude)).direction
     }

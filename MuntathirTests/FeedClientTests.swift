@@ -1,7 +1,7 @@
 import Foundation
+@testable import Muntathir
 import Synchronization
 import Testing
-@testable import Muntathir
 
 private final class FeedURLProtocol: URLProtocol, @unchecked Sendable {
     struct State: Sendable {
@@ -9,9 +9,16 @@ private final class FeedURLProtocol: URLProtocol, @unchecked Sendable {
         var bodies: [Data] = []
         var tags: [String?] = []
     }
+
     static let state = Mutex(State())
-    override class func canInit(with request: URLRequest) -> Bool { true }
-    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override class func canInit(with _: URLRequest) -> Bool {
+        true
+    }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+        request
+    }
+
     override func startLoading() {
         let next = Self.state.withLock { value -> (Int, Data) in
             value.tags.append(request.value(forHTTPHeaderField: "If-None-Match"))
@@ -22,8 +29,10 @@ private final class FeedURLProtocol: URLProtocol, @unchecked Sendable {
         client?.urlProtocol(self, didLoad: next.1)
         client?.urlProtocolDidFinishLoading(self)
     }
+
     override func stopLoading() {}
 }
+
 @Suite(.serialized) struct FeedClientTests {
     @Test func conditionalRefreshAndLastGoodCache() async throws {
         let good = Data(#"{"schemaVersion":1,"announcements":[]}"#.utf8)
@@ -32,8 +41,10 @@ private final class FeedURLProtocol: URLProtocol, @unchecked Sendable {
         let session = URLSession(configuration: config)
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: folder); session.invalidateAndCancel() }
-        let client = FeedClient(url: URL(string: "https://example.invalid/feed.json")!, cacheURL: folder.appendingPathComponent("cache.json"), session: session)
-        for _ in 0..<4 { #expect(try await client.refresh().schemaVersion == 1) }
+        let client = try FeedClient(url: #require(URL(string: "https://example.invalid/feed.json")), cacheURL: folder.appendingPathComponent("cache.json"), session: session)
+        for _ in 0 ..< 4 {
+            #expect(try await client.refresh().schemaVersion == 1)
+        }
         let tags = FeedURLProtocol.state.withLock { $0.tags }
         #expect(tags == [nil, "fixture-v1", "fixture-v1", "fixture-v1"])
     }
@@ -58,15 +69,15 @@ extension FeedClientTests {
             defaults.removePersistentDomain(forName: suite)
             session.invalidateAndCancel()
         }
-        let client = FeedClient(url: URL(string: "https://example.invalid/feed.json")!,
-                                cacheURL: folder.appendingPathComponent("cache.json"), session: session)
+        let client = try FeedClient(url: #require(URL(string: "https://example.invalid/feed.json")),
+                                    cacheURL: folder.appendingPathComponent("cache.json"), session: session)
         let model = AppModel(defaults: defaults, cloud: nil, feedClient: client)
         model.select(.init(latitude: 24, longitude: 46, name: "Fixture coverage", countryCode: "SA", timeZoneID: "Asia/Riyadh"))
         model.update { $0.selectedSourceID = row.sourceID }
-        for _ in 0..<4 {
+        for _ in 0 ..< 4 {
             #expect(await model.refreshInBackground())
             #expect(model.confirmations == [row])
-            let day = model.engine.resolve(try #require(row.start.date(in: model.zone)))
+            let day = try model.engine.resolve(#require(row.start.date(in: model.zone)))
             #expect(day.month == row.month)
             #expect(day.day == 1)
             #expect(day.provenance == .confirmed)
@@ -80,4 +91,5 @@ extension FeedClientTests {
         #expect(model.confirmations.isEmpty)
     }
 }
+
 private final class FixtureBundle: NSObject {}

@@ -5,7 +5,7 @@ final class MuntathirUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "--ui-testing-background-refresh",
                                "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
-        for _ in 0..<2 {
+        for _ in 0 ..< 2 {
             app.launch()
             XCTAssertTrue(app.staticTexts["Prayer times"].waitForExistence(timeout: 10))
             XCTAssertEqual(app.state, .runningForeground)
@@ -52,6 +52,7 @@ final class MuntathirUITests: XCTestCase {
         app.buttons["Location, Not selected"].tap()
         XCTAssertTrue(app.searchFields["Search for a city"].waitForExistence(timeout: 5))
     }
+
     @MainActor func testArabicNavigation() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "-AppleLanguages", "(ar)", "-AppleLocale", "ar_SA"]

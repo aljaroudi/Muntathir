@@ -1,7 +1,7 @@
 import Foundation
-import Testing
-import SwiftUI
 @testable import Muntathir
+import SwiftUI
+import Testing
 
 struct WidgetPrayerTests {
     let location = SavedLocation(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh")
@@ -17,13 +17,29 @@ struct WidgetPrayerTests {
         let dates = settings.timelineDates(from: day)
         #expect(dates == dates.sorted())
         #expect(dates.contains(maghrib.date))
-        #expect(dates.contains(try #require(CivilDate(year: 2026, month: 10, day: 19).date(in: location.timeZone))))
+        #expect(try dates.contains(#require(CivilDate(year: 2026, month: 10, day: 19).date(in: location.timeZone))))
     }
+
+    @Test func countdownTimelineHasMinuteUpdatesAndNonemptyUpcomingPrayers() throws {
+        let settings = WidgetPrayerSettings(location: location, method: .tehran, asrRule: .standard, hiddenPrayers: [.asr, .isha])
+        let start = try #require(CivilDate(year: 2026, month: 10, day: 18).date(in: location.timeZone)).addingTimeInterval(20 * 3600 + 17)
+        let dates = settings.timelineDates(from: start)
+        let nextMinute = floor(start.timeIntervalSince1970 / 60) * 60 + 60
+        for minute in 0 ..< 360 {
+            #expect(dates.contains(Date(timeIntervalSince1970: nextMinute + Double(minute) * 60)))
+        }
+        for date in dates {
+            #expect(settings.nextPrayer(after: date) != nil)
+            #expect(!settings.upcomingTimes(after: date).isEmpty)
+        }
+    }
+
     @Test func missingLocationDoesNotInventTimes() {
         let settings = WidgetPrayerSettings(location: nil, method: .tehran, asrRule: .standard, hiddenPrayers: [])
         #expect(settings.prayers(on: .now).isEmpty)
         #expect(settings.nextPrayer(after: .now) == nil)
     }
+
     @Test func sharedSettingsRoundTripAndOnlyReloadOnChange() throws {
         let suite = "Widgets.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
@@ -36,6 +52,7 @@ struct WidgetPrayerTests {
         #expect(WidgetPrayerStore.write(settings, to: defaults))
         #expect(WidgetPrayerStore.read(from: defaults)?.location == nil)
     }
+
     @Test func countdownUsesHoursAndMinutes() {
         let now = Date(timeIntervalSince1970: 0)
         let style = PrayerCountdownFormat(target: now.addingTimeInterval(4380), locale: Locale(identifier: "en_US"))
@@ -63,7 +80,7 @@ struct AdditionalPrayerTimesTests {
         let expected = sunset.date.addingTimeInterval(fajr.date.timeIntervalSince(sunset.date) / 2)
         #expect(abs(midnight.date.timeIntervalSince(expected)) <= 30)
         if method == .tehran || method == .jafari {
-            #expect(sunset.date < (try #require(today.first { $0.name == .maghrib })).date)
+            #expect(try sunset.date < #require(today.first { $0.name == .maghrib }).date)
         }
         #expect(!PrayerName.notifiable.contains(.sunset))
         #expect(!PrayerName.notifiable.contains(.midnight))
@@ -83,7 +100,7 @@ struct CompactWidgetTests {
     @Test func upcomingTimesAreLimitedAndRollIntoTomorrow() throws {
         let location = SavedLocation(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh")
         let settings = WidgetPrayerSettings(location: location, method: .tehran, asrRule: .standard,
-                                           hiddenPrayers: [.sunrise, .asr, .sunset, .isha, .midnight])
+                                            hiddenPrayers: [.sunrise, .asr, .sunset, .isha, .midnight])
         let date = try #require(CivilDate(year: 2026, month: 10, day: 18).date(in: location.timeZone)).addingTimeInterval(20 * 3600)
         let upcoming = settings.upcomingTimes(after: date)
         #expect(upcoming.map(\.name) == [.fajr, .dhuhr, .maghrib])
