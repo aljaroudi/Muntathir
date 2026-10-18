@@ -1,0 +1,263 @@
+import SwiftUI
+import WidgetKit
+
+struct PrayerEntry: TimelineEntry {
+    let date: Date
+    let settings: WidgetPrayerSettings?
+    var prayers: [PrayerMoment] { settings?.prayers(on: date) ?? [] }
+    var next: PrayerMoment? { settings?.nextPrayer(after: date) }
+    var zone: TimeZone { settings?.location?.timeZone ?? .current }
+}
+
+struct PrayerProvider: TimelineProvider {
+    func placeholder(in context: Context) -> PrayerEntry {
+        PrayerEntry(
+            date: .now,
+            settings: WidgetPrayerSettings(
+                location: .init(
+                    latitude: 21.4225,
+                    longitude: 39.8262,
+                    name: "Mecca",
+                    countryCode: "SA",
+                    timeZoneID: "Asia/Riyadh"
+                ),
+                method: .tehran,
+                asrRule: .standard,
+                hiddenPrayers: []
+            )
+        )
+    }
+    func getSnapshot(
+        in context: Context,
+        completion: @escaping (PrayerEntry) -> Void
+    ) {
+        completion(
+            context.isPreview
+                ? placeholder(in: context)
+                : PrayerEntry(date: .now, settings: WidgetPrayerStore.read())
+        )
+    }
+    func getTimeline(
+        in context: Context,
+        completion: @escaping (Timeline<PrayerEntry>) -> Void
+    ) {
+        let now = Date()
+        let settings = WidgetPrayerStore.read()
+        let dates = settings?.timelineDates(from: now) ?? [now]
+        completion(
+            Timeline(
+                entries: dates.map {
+                    PrayerEntry(date: $0, settings: settings)
+                },
+                policy: .after(now.addingTimeInterval(6 * 60 * 60))
+            )
+        )
+    }
+}
+
+enum PrayerWidgetLayout { case countdown, times, combined }
+
+struct PrayerWidgetView: View {
+    let entry: PrayerEntry
+    let layout: PrayerWidgetLayout
+    @Environment(\.widgetFamily) private var family
+    @Environment(\.locale) private var locale
+
+    var body: some View {
+        Group {
+            if entry.settings?.location == nil {
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("Prayer times", systemImage: "moon")
+                    Text("Choose a location in Muntathir").font(.caption)
+                }
+            } else if entry.prayers.isEmpty {
+                Text("Prayer times unavailable for this location and date.")
+                    .font(.caption)
+            } else if family == .systemSmall {
+                compactContent
+            } else {
+                VStack(
+                    alignment: .leading,
+                    spacing: layout == .combined && family == .systemSmall
+                        ? 2 : 6
+                ) {
+                    if layout != .times { countdown }
+                    if layout == .combined { Divider() }
+                    if layout != .countdown {
+                            LazyVGrid(
+                                columns: Array(
+                                    repeating: GridItem(
+                                        .flexible(),
+                                        alignment: .leading
+                                    ),
+                                    count: 4
+                                ),
+                                alignment: .leading,
+                                spacing: 6
+                            ) {
+                                ForEach(entry.prayers) { prayer in
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(prayer.name.title).foregroundStyle(
+                                            .secondary
+                                        ).lineLimit(1).minimumScaleFactor(0.8)
+                                        time(prayer.date).fontWeight(.semibold)
+                                    }
+                                }
+                            }.font(.caption)
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .containerBackground(.background, for: .widget)
+    }
+
+    @ViewBuilder private var countdown: some View {
+        if let next = entry.next {
+            VStack(alignment: .leading, spacing: 3) {
+                HStack {
+                    Text(next.name.title).fontWeight(.semibold)
+                    Spacer(minLength: 4)
+                    time(next.date)
+                }.font(layout == .combined ? .caption : .headline)
+                Text(
+                    .currentDate,
+                    format: PrayerCountdownFormat(
+                        target: next.date,
+                        locale: locale
+                    )
+                )
+                .font(
+                    layout == .combined ? .headline : .title2.weight(.semibold)
+                )
+                .monospacedDigit().minimumScaleFactor(0.7)
+                .widgetAccentable()
+            }.accessibilityElement(children: .combine)
+        }
+    }
+
+    private var compactContent: some View {
+        let upcoming = entry.settings?.upcomingTimes(after: entry.date) ?? []
+        return VStack(alignment: .leading, spacing: 6) {
+            if layout == .countdown {
+                countdown
+            } else if let first = upcoming.first {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(first.name.title).font(.subheadline.weight(.semibold)).lineLimit(1)
+                    time(first.date).font(.title2.weight(.semibold)).widgetAccentable()
+                    if layout == .combined {
+                        Text(.currentDate, format: PrayerCountdownFormat(target: first.date, locale: locale))
+                            .font(.caption).monospacedDigit().lineLimit(1)
+                    }
+                }.accessibilityElement(children: .combine)
+                Spacer(minLength: 0)
+                ForEach(Array(upcoming.dropFirst().prefix(2))) { prayer in
+                    HStack(spacing: 4) {
+                        Text(prayer.name.title).lineLimit(1).minimumScaleFactor(0.8)
+                        Spacer(minLength: 0)
+                        time(prayer.date)
+                    }.font(.caption).accessibilityElement(children: .combine)
+                }
+            }
+        }
+    }
+
+    private func time(_ date: Date) -> some View {
+        Text(date.formatted(.dateTime.hour().minute().inZone(entry.zone)))
+            .monospacedDigit().lineLimit(1).minimumScaleFactor(0.8)
+    }
+}
+
+struct UpcomingPrayerWidget: Widget {
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: "UpcomingPrayer", provider: PrayerProvider())
+        {
+            PrayerWidgetView(entry: $0, layout: .countdown)
+        }
+        .configurationDisplayName("Upcoming prayer")
+        .description("Next prayer time and a live countdown.")
+        .supportedFamilies([.systemSmall, .systemMedium])
+    }
+}
+struct PrayerTimesWidget: Widget {
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: "PrayerTimes", provider: PrayerProvider()) {
+            PrayerWidgetView(entry: $0, layout: .times)
+        }
+        .configurationDisplayName("Prayer times")
+        .description("Prayer times for your saved location.")
+        .supportedFamilies([.systemSmall, .systemMedium])
+    }
+}
+struct CombinedPrayerWidget: Widget {
+    var body: some WidgetConfiguration {
+        StaticConfiguration(
+            kind: "PrayerCountdownAndTimes",
+            provider: PrayerProvider()
+        ) {
+            PrayerWidgetView(entry: $0, layout: .combined)
+        }
+        .configurationDisplayName("Countdown and prayer times")
+        .description(
+            "The next prayer countdown alongside your prayer schedule."
+        )
+        .supportedFamilies([.systemSmall, .systemMedium])
+    }
+}
+@main struct MuntathirWidgetBundle: WidgetBundle {
+    var body: some Widget {
+        UpcomingPrayerWidget()
+        PrayerTimesWidget()
+        CombinedPrayerWidget()
+    }
+}
+
+private enum WidgetPreviewData {
+    static var entry: PrayerEntry {
+        let zone = TimeZone(identifier: "Asia/Riyadh")!
+        let date = Date()
+        return PrayerEntry(
+            date: date,
+            settings: .init(
+                location: .init(
+                    latitude: 21.4225,
+                    longitude: 39.8262,
+                    name: "Mecca",
+                    countryCode: "SA",
+                    timeZoneID: zone.identifier
+                ),
+                method: .tehran,
+                asrRule: .standard,
+                hiddenPrayers: []
+            )
+        )
+    }
+}
+
+#Preview("Upcoming · Small", as: .systemSmall) {
+    UpcomingPrayerWidget()
+} timeline: { WidgetPreviewData.entry }
+
+#Preview("Upcoming · Medium", as: .systemMedium) {
+    UpcomingPrayerWidget()
+} timeline: { WidgetPreviewData.entry }
+
+#Preview("Times · Small", as: .systemSmall) {
+    PrayerTimesWidget()
+} timeline: { WidgetPreviewData.entry }
+
+#Preview("Times · Medium", as: .systemMedium) {
+    PrayerTimesWidget()
+} timeline: { WidgetPreviewData.entry }
+
+#Preview("Combined · Small", as: .systemSmall) {
+    CombinedPrayerWidget()
+} timeline: { WidgetPreviewData.entry }
+
+#Preview("Combined · Medium", as: .systemMedium) {
+    CombinedPrayerWidget()
+} timeline: { WidgetPreviewData.entry }
+
+#Preview("Location needed", as: .systemSmall) {
+    UpcomingPrayerWidget()
+} timeline: { PrayerEntry(date: .now, settings: nil) }

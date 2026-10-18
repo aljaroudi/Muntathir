@@ -8,6 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		A10000000000000000000001 /* Adhan in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000002 /* Adhan */; };
+		B2000000000000000000001E /* MuntathirWidgets/PrayerWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000A /* MuntathirWidgets/PrayerWidgets.swift */; };
+		B2000000000000000000001F /* Muntathir/Core/WidgetPrayerData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000B /* Muntathir/Core/WidgetPrayerData.swift */; };
+		B20000000000000000000020 /* Muntathir/Core/PrayerCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000C /* Muntathir/Core/PrayerCalculator.swift */; };
+		B20000000000000000000021 /* Muntathir/Core/CalendarEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000D /* Muntathir/Core/CalendarEngine.swift */; };
+		B20000000000000000000022 /* Muntathir/Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000E /* Muntathir/Localizable.xcstrings */; };
+		B20000000000000000000023 /* Adhan in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000002 /* Adhan */; };
+		B20000000000000000000024 /* MuntathirWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = B20000000000000000000014 /* MuntathirWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -25,12 +32,39 @@
 			remoteGlobalIDString = 04457E5C308394FD00A8887D;
 			remoteInfo = Muntathir;
 		};
+		B20000000000000000000007 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 04457E55308394FD00A8887D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B20000000000000000000001;
+			remoteInfo = MuntathirWidgets;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		B20000000000000000000006 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "";
+			dstSubfolder = PlugIns;
+			files = (
+				B20000000000000000000024 /* MuntathirWidgets.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		04457E5D308394FD00A8887D /* Muntathir.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Muntathir.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		04457E6A308394FE00A8887D /* MuntathirTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MuntathirTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		04457E74308394FE00A8887D /* MuntathirUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MuntathirUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2000000000000000000000A /* MuntathirWidgets/PrayerWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerWidgets.swift; sourceTree = "<group>"; };
+		B2000000000000000000000B /* Muntathir/Core/WidgetPrayerData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/WidgetPrayerData.swift; sourceTree = SOURCE_ROOT; };
+		B2000000000000000000000C /* Muntathir/Core/PrayerCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/PrayerCalculator.swift; sourceTree = SOURCE_ROOT; };
+		B2000000000000000000000D /* Muntathir/Core/CalendarEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/CalendarEngine.swift; sourceTree = SOURCE_ROOT; };
+		B2000000000000000000000E /* Muntathir/Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Muntathir/Localizable.xcstrings; sourceTree = SOURCE_ROOT; };
+		B20000000000000000000014 /* MuntathirWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = MuntathirWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+        B20000000000000000000034 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+        B20000000000000000000035 = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MuntathirWidgets.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -68,12 +102,19 @@
 			files = (
 			);
 		};
+		B20000000000000000000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				B20000000000000000000023 /* Adhan in Frameworks */,
+			);
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		04457E54308394FD00A8887D = {
 			isa = PBXGroup;
 			children = (
+				B20000000000000000000032 /* MuntathirWidgets */,
 				04457E5F308394FD00A8887D /* Muntathir */,
 				04457E6D308394FE00A8887D /* MuntathirTests */,
 				04457E77308394FE00A8887D /* MuntathirUITests */,
@@ -85,12 +126,35 @@
 			isa = PBXGroup;
 			children = (
 				04457E5D308394FD00A8887D /* Muntathir.app */,
+				B20000000000000000000014 /* MuntathirWidgets.appex */,
 				04457E6A308394FE00A8887D /* MuntathirTests.xctest */,
 				04457E74308394FE00A8887D /* MuntathirUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
+        B20000000000000000000032 /* MuntathirWidgets */ = {
+            isa = PBXGroup;
+            path = MuntathirWidgets;
+            sourceTree = "<group>";
+            children = (
+                B2000000000000000000000A,
+                B20000000000000000000034,
+                B20000000000000000000035,
+                B20000000000000000000033,
+            );
+        };
+        B20000000000000000000033 /* Shared app sources */ = {
+            isa = PBXGroup;
+            name = "Shared app sources";
+            sourceTree = "<group>";
+            children = (
+                B2000000000000000000000B,
+                B2000000000000000000000C,
+                B2000000000000000000000D,
+                B2000000000000000000000E,
+            );
+        };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -101,8 +165,12 @@
 				04457E59308394FD00A8887D /* Sources */,
 				04457E5A308394FD00A8887D /* Frameworks */,
 				04457E5B308394FD00A8887D /* Resources */,
+				B20000000000000000000006 /* Embed App Extensions */,
 			);
 			buildRules = (
+			);
+			dependencies = (
+				B20000000000000000000008 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				04457E5F308394FD00A8887D /* Muntathir */,
@@ -157,6 +225,24 @@
 			productReference = 04457E74308394FE00A8887D /* MuntathirUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		B20000000000000000000001 /* MuntathirWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B20000000000000000000002 /* Build configuration list for PBXNativeTarget "MuntathirWidgets" */;
+			buildPhases = (
+				B20000000000000000000003 /* Sources */,
+				B20000000000000000000004 /* Frameworks */,
+				B20000000000000000000005 /* Resources */,
+			);
+			buildRules = (
+			);
+			name = MuntathirWidgets;
+			packageProductDependencies = (
+				A10000000000000000000002 /* Adhan */,
+			);
+			productName = MuntathirWidgets;
+			productReference = B20000000000000000000014 /* MuntathirWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -198,6 +284,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				B20000000000000000000001 /* MuntathirWidgets */,
 				04457E5C308394FD00A8887D /* Muntathir */,
 				04457E69308394FE00A8887D /* MuntathirTests */,
 				04457E73308394FE00A8887D /* MuntathirUITests */,
@@ -221,6 +308,12 @@
 			files = (
 			);
 		};
+		B20000000000000000000005 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				B20000000000000000000022 /* Muntathir/Localizable.xcstrings in Resources */,
+			);
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -239,6 +332,15 @@
 			files = (
 			);
 		};
+		B20000000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				B2000000000000000000001E /* MuntathirWidgets/PrayerWidgets.swift in Sources */,
+				B2000000000000000000001F /* Muntathir/Core/WidgetPrayerData.swift in Sources */,
+				B20000000000000000000020 /* Muntathir/Core/PrayerCalculator.swift in Sources */,
+				B20000000000000000000021 /* Muntathir/Core/CalendarEngine.swift in Sources */,
+			);
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -251,6 +353,11 @@
 			isa = PBXTargetDependency;
 			target = 04457E5C308394FD00A8887D /* Muntathir */;
 			targetProxy = 04457E75308394FE00A8887D /* PBXContainerItemProxy */;
+		};
+		B20000000000000000000008 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B20000000000000000000001 /* MuntathirWidgets */;
+			targetProxy = B20000000000000000000007 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -524,6 +631,62 @@
 			};
 			name = Release;
 		};
+		B20000000000000000000028 /* Debug configuration for PBXNativeTarget "MuntathirWidgets" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = MuntathirWidgets/MuntathirWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5VGKP2QV6H;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MuntathirWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Muntathir;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aljaroudi.Muntathir.Widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B20000000000000000000029 /* Release configuration for PBXNativeTarget "MuntathirWidgets" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = MuntathirWidgets/MuntathirWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5VGKP2QV6H;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MuntathirWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Muntathir;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aljaroudi.Muntathir.Widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -556,6 +719,14 @@
 			buildConfigurations = (
 				04457E83308394FE00A8887D /* Debug configuration for PBXNativeTarget "MuntathirUITests" */,
 				04457E84308394FE00A8887D /* Release configuration for PBXNativeTarget "MuntathirUITests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		B20000000000000000000002 /* Build configuration list for PBXNativeTarget "MuntathirWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B20000000000000000000028 /* Debug configuration for PBXNativeTarget "MuntathirWidgets" */,
+				B20000000000000000000029 /* Release configuration for PBXNativeTarget "MuntathirWidgets" */,
 			);
 			defaultConfigurationName = Release;
 		};

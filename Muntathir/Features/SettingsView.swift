@@ -78,7 +78,7 @@ struct SettingsView: View {
                     )
                 }
                 Section {
-                    ForEach([PrayerName.asr, .isha]) { prayer in
+                    ForEach(PrayerName.optionalTimes) { prayer in
                         Toggle(
                             prayer.title,
                             isOn: Binding(

@@ -39,7 +39,7 @@ enum PrayerMethod: String, Codable, CaseIterable, Identifiable, Sendable {
     }
 }
 enum PrayerName: String, Codable, CaseIterable, Identifiable, Sendable {
-    case fajr, sunrise, dhuhr, asr, maghrib, isha
+    case fajr, sunrise, dhuhr, asr, sunset, maghrib, isha, midnight
     var id: String { rawValue }
     var title: String {
         switch self {
@@ -47,11 +47,17 @@ enum PrayerName: String, Codable, CaseIterable, Identifiable, Sendable {
         case .sunrise: String(localized: "Sunrise")
         case .dhuhr: String(localized: "Dhuhr")
         case .asr: String(localized: "Asr")
+        case .midnight: String(localized: "Islamic midnight")
+        case .sunset: String(localized: "Sunset")
         case .maghrib: String(localized: "Maghrib")
         case .isha: String(localized: "Isha")
         }
     }
-    static var notifiable: [Self] { allCases.filter { $0 != .sunrise } }
+    var isRequired: Bool { self == .fajr || self == .dhuhr || self == .maghrib }
+    var isPrayer: Bool { [.fajr, .dhuhr, .asr, .maghrib, .isha].contains(self) }
+    func isVisible(hidden: Set<Self>) -> Bool { isRequired || !hidden.contains(self) }
+    static var optionalTimes: [Self] { allCases.filter { !$0.isRequired } }
+    static var notifiable: [Self] { allCases.filter(\.isPrayer) }
 }
 struct PrayerMoment: Identifiable, Sendable {
     let name: PrayerName
@@ -79,14 +85,27 @@ enum PrayerCalculator {
             parameters.ishaInterval += 30
         }
         guard let times = PrayerTimes(coordinates: coordinates, date: components, calculationParameters: parameters) else { return [] }
+        // A neutral preset avoids method-specific Maghrib offsets when obtaining sunset.
+        var solarParameters = CalculationMethod.other.params
+        solarParameters.fajrAngle = parameters.fajrAngle
+        solarParameters.ishaAngle = 18
+        solarParameters.highLatitudeRule = parameters.highLatitudeRule
+        guard let solar = PrayerTimes(coordinates: coordinates, date: components, calculationParameters: solarParameters) else { return [] }
         if method == .tehran || method == .jafari {
             var sunsetParameters = parameters; sunsetParameters.maghribAngle = nil
             guard let sunset = PrayerTimes(coordinates: coordinates, date: components, calculationParameters: sunsetParameters),
                   times.maghrib > sunset.maghrib else { return [] }
         }
-        return [.init(name: .fajr, date: times.fajr), .init(name: .sunrise, date: times.sunrise),
+        var result: [PrayerMoment] = [.init(name: .fajr, date: times.fajr), .init(name: .sunrise, date: times.sunrise),
                 .init(name: .dhuhr, date: times.dhuhr), .init(name: .asr, date: times.asr),
-                .init(name: .maghrib, date: times.maghrib), .init(name: .isha, date: times.isha)]
+                .init(name: .sunset, date: solar.maghrib), .init(name: .maghrib, date: times.maghrib), .init(name: .isha, date: times.isha)]
+        let tomorrow = engine.addingDays(1, to: date)
+        let nextComponents = engine.gregorian.dateComponents([.year, .month, .day], from: tomorrow)
+        if let next = PrayerTimes(coordinates: coordinates, date: nextComponents, calculationParameters: parameters) {
+            let midpoint = solar.maghrib.addingTimeInterval(next.fajr.timeIntervalSince(solar.maghrib) / 2)
+            result.append(.init(name: .midnight, date: Date(timeIntervalSince1970: (midpoint.timeIntervalSince1970 / 60).rounded() * 60)))
+        }
+        return result
     }
     static func qibla(_ location: SavedLocation) -> Double {
         Qibla(coordinates: Coordinates(latitude: location.latitude, longitude: location.longitude)).direction

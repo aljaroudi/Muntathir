@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import WidgetKit
 
 struct Preferences: Codable, Equatable, Sendable {
     var savedLocation: SavedLocation?
@@ -10,7 +11,7 @@ struct Preferences: Codable, Equatable, Sendable {
     var selectedSourceID: String?
     var overrides: [MonthCorrection] = []
     var hiddenPrayers: Set<PrayerName> = []
-    func isVisible(_ prayer: PrayerName) -> Bool { !hiddenPrayers.contains(prayer) }
+    func isVisible(_ prayer: PrayerName) -> Bool { prayer.isVisible(hidden: hiddenPrayers) }
     enum CodingKeys: String, CodingKey {
         case savedLocation, prayerMethod, asrRule, enabledPrayers, announcementNotifications, selectedSourceID, overrides, hiddenPrayers
     }
@@ -133,6 +134,11 @@ struct Preferences: Codable, Equatable, Sendable {
         return succeeded && !Task.isCancelled
     }
     func reschedule() {
+        if !ProcessInfo.processInfo.arguments.contains("--ui-testing"),
+           WidgetPrayerStore.write(.init(location: location, method: preferences.prayerMethod,
+                                         asrRule: preferences.asrRule, hiddenPrayers: preferences.hiddenPrayers)) {
+            WidgetCenter.shared.reloadAllTimelines()
+        }
         BackgroundRefresh.schedule()
         let previous = notificationTask
         previous?.cancel()

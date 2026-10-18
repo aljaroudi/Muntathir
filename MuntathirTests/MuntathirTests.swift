@@ -78,8 +78,8 @@ struct PrayerTests {
         for row in fixture.times {
             let day = try #require(row["date"]), date = try #require(dateParser.date(from: day))
             let times = PrayerCalculator.times(on: date, location: location, method: method, asrRule: fixture.params.madhab == "Hanafi" ? .hanafi : .standard)
-            #expect(times.count == 6)
-            for prayer in times {
+            #expect(times.count == 8)
+            for prayer in times where prayer.name != .sunset && prayer.name != .midnight {
                 let expectedText = try #require(row[prayer.name.rawValue])
                 let expected = try #require(timeParser.date(from: day + " " + expectedText))
                 #expect(abs(prayer.date.timeIntervalSince(expected)) <= Double(max(1, fixture.variance ?? 1) * 60))
@@ -188,7 +188,7 @@ struct MeccaPrayerTests {
     @Test func gpsWithoutPlaceNameStillCalculates() throws {
         let location = SavedLocation(latitude: 21.4225, longitude: 39.8262, name: "", countryCode: "", timeZoneID: "Asia/Riyadh")
         let date = try #require(CivilDate(year: 2026, month: 10, day: 17).date(in: location.timeZone))
-        #expect(PrayerCalculator.times(on: date, location: location, method: .tehran).count == 6)
+        #expect(PrayerCalculator.times(on: date, location: location, method: .tehran).count == 8)
     }
 }
 
