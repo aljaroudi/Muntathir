@@ -129,7 +129,9 @@ struct PrayerWidgetView: View {
     }
 
     private var compactContent: some View {
-        let upcoming = entry.settings?.upcomingTimes(after: entry.date) ?? []
+        let upcoming = (layout == .combined
+            ? entry.settings?.upcomingPrayers(after: entry.date)
+            : entry.settings?.upcomingTimes(after: entry.date)) ?? []
         return VStack(alignment: .leading, spacing: 6) {
             if layout == .countdown {
                 countdown

@@ -162,11 +162,13 @@ struct Preferences: Codable, Equatable, Sendable {
 
     private func syncWidgets() {
         guard !ProcessInfo.processInfo.arguments.contains("--ui-testing") else { return }
-        let prayersChanged = WidgetPrayerStore.write(.init(location: location, method: preferences.prayerMethod,
-                                                           asrRule: preferences.asrRule, hiddenPrayers: preferences.hiddenPrayers))
-        let calendarChanged = WidgetCalendarSettings(timeZoneID: location?.timeZoneID,
-                                                     manual: preferences.overrides,
-                                                     confirmed: confirmations.map(\.correction)).write()
+        let prayers = WidgetPrayerSettings(location: location, method: preferences.prayerMethod,
+                                           asrRule: preferences.asrRule, hiddenPrayers: preferences.hiddenPrayers)
+        let calendar = WidgetCalendarSettings(timeZoneID: location?.timeZoneID,
+                                              manual: preferences.overrides, confirmed: confirmations.map(\.correction))
+        let prayersChanged = WidgetPrayerStore.write(prayers)
+        let calendarChanged = calendar.write()
+        WatchConnectivityService.shared.send(.init(prayers: prayers, calendar: calendar))
         if prayersChanged || calendarChanged {
             WidgetCenter.shared.reloadAllTimelines()
         }

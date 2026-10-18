@@ -8,13 +8,30 @@
 
 /* Begin PBXBuildFile section */
 		A10000000000000000000001 /* Adhan in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000002 /* Adhan */; };
-		B2000000000000000000001E /* MuntathirWidgets/PrayerWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000A /* MuntathirWidgets/PrayerWidgets.swift */; };
+		B2000000000000000000001E /* PrayerWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000A /* PrayerWidgets.swift */; };
 		B2000000000000000000001F /* Muntathir/Core/WidgetPrayerData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000B /* Muntathir/Core/WidgetPrayerData.swift */; };
 		B20000000000000000000020 /* Muntathir/Core/PrayerCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000C /* Muntathir/Core/PrayerCalculator.swift */; };
 		B20000000000000000000021 /* Muntathir/Core/CalendarEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000D /* Muntathir/Core/CalendarEngine.swift */; };
 		B20000000000000000000022 /* Muntathir/Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000E /* Muntathir/Localizable.xcstrings */; };
 		B20000000000000000000023 /* Adhan in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000002 /* Adhan */; };
 		B20000000000000000000024 /* MuntathirWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = B20000000000000000000014 /* MuntathirWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C3000000000000000000000C /* MuntathirWatchWidgets/WatchWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30000000000000000000007 /* MuntathirWatchWidgets/WatchWidgets.swift */; };
+		C3000000000000000000000D /* Muntathir/Core/PrayerCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30000000000000000000001 /* Muntathir/Core/PrayerCalculator.swift */; };
+		C3000000000000000000000E /* Muntathir/Core/CalendarEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30000000000000000000002 /* Muntathir/Core/CalendarEngine.swift */; };
+		C3000000000000000000000F /* Muntathir/Core/WidgetPrayerData.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30000000000000000000003 /* Muntathir/Core/WidgetPrayerData.swift */; };
+		C30000000000000000000010 /* Muntathir/Core/WatchSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30000000000000000000004 /* Muntathir/Core/WatchSettings.swift */; };
+		C30000000000000000000012 /* Adhan in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000002 /* Adhan */; };
+		C30000000000000000000014 /* Muntathir/Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000E /* Muntathir/Localizable.xcstrings */; };
+		C3000000000000000000001E /* MuntathirWatch/MuntathirWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3000000000000000000001A /* MuntathirWatch/MuntathirWatchApp.swift */; };
+		C3000000000000000000001F /* Muntathir/Core/PrayerCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30000000000000000000001 /* Muntathir/Core/PrayerCalculator.swift */; };
+		C30000000000000000000020 /* Muntathir/Core/CalendarEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30000000000000000000002 /* Muntathir/Core/CalendarEngine.swift */; };
+		C30000000000000000000021 /* Muntathir/Core/WidgetPrayerData.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30000000000000000000003 /* Muntathir/Core/WidgetPrayerData.swift */; };
+		C30000000000000000000022 /* Muntathir/Core/WatchSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30000000000000000000004 /* Muntathir/Core/WatchSettings.swift */; };
+		C30000000000000000000023 /* Muntathir/Services/WatchConnectivityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30000000000000000000005 /* Muntathir/Services/WatchConnectivityService.swift */; };
+		C30000000000000000000025 /* Adhan in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000002 /* Adhan */; };
+		C30000000000000000000027 /* Muntathir/Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000E /* Muntathir/Localizable.xcstrings */; };
+		C30000000000000000000029 /* MuntathirWatchWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = C3000000000000000000000B /* MuntathirWatchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C30000000000000000000031 /* MuntathirWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C3000000000000000000001D /* MuntathirWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,6 +56,20 @@
 			remoteGlobalIDString = B20000000000000000000001;
 			remoteInfo = MuntathirWidgets;
 		};
+		C3000000000000000000002B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 04457E55308394FD00A8887D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C30000000000000000000019;
+			remoteInfo = MuntathirWatchWidgets;
+		};
+		C30000000000000000000033 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 04457E55308394FD00A8887D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C30000000000000000000030;
+			remoteInfo = MuntathirWatch;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -51,20 +82,50 @@
 			);
 			name = "Embed App Extensions";
 		};
+		C3000000000000000000002A /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "";
+			dstSubfolder = PlugIns;
+			files = (
+				C30000000000000000000029 /* MuntathirWatchWidgets.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+		};
+		C30000000000000000000032 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolder = Product;
+			files = (
+				C30000000000000000000031 /* MuntathirWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		04457E5D308394FD00A8887D /* Muntathir.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Muntathir.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		04457E6A308394FE00A8887D /* MuntathirTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MuntathirTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		04457E74308394FE00A8887D /* MuntathirUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MuntathirUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		B2000000000000000000000A /* MuntathirWidgets/PrayerWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerWidgets.swift; sourceTree = "<group>"; };
+		B2000000000000000000000A /* PrayerWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerWidgets.swift; sourceTree = "<group>"; };
 		B2000000000000000000000B /* Muntathir/Core/WidgetPrayerData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/WidgetPrayerData.swift; sourceTree = SOURCE_ROOT; };
 		B2000000000000000000000C /* Muntathir/Core/PrayerCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/PrayerCalculator.swift; sourceTree = SOURCE_ROOT; };
 		B2000000000000000000000D /* Muntathir/Core/CalendarEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/CalendarEngine.swift; sourceTree = SOURCE_ROOT; };
 		B2000000000000000000000E /* Muntathir/Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Muntathir/Localizable.xcstrings; sourceTree = SOURCE_ROOT; };
 		B20000000000000000000014 /* MuntathirWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = MuntathirWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-        B20000000000000000000034 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-        B20000000000000000000035 = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MuntathirWidgets.entitlements; sourceTree = "<group>"; };
+		B20000000000000000000034 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B20000000000000000000035 /* MuntathirWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MuntathirWidgets.entitlements; sourceTree = "<group>"; };
+		C30000000000000000000001 /* Muntathir/Core/PrayerCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/PrayerCalculator.swift; sourceTree = SOURCE_ROOT; };
+		C30000000000000000000002 /* Muntathir/Core/CalendarEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/CalendarEngine.swift; sourceTree = SOURCE_ROOT; };
+		C30000000000000000000003 /* Muntathir/Core/WidgetPrayerData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/WidgetPrayerData.swift; sourceTree = SOURCE_ROOT; };
+		C30000000000000000000004 /* Muntathir/Core/WatchSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/WatchSettings.swift; sourceTree = SOURCE_ROOT; };
+		C30000000000000000000005 /* Muntathir/Services/WatchConnectivityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Services/WatchConnectivityService.swift; sourceTree = SOURCE_ROOT; };
+		C30000000000000000000007 /* MuntathirWatchWidgets/WatchWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuntathirWatchWidgets/WatchWidgets.swift; sourceTree = SOURCE_ROOT; };
+		C30000000000000000000008 /* MuntathirWatchWidgets/MuntathirWatchWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MuntathirWatchWidgets/MuntathirWatchWidgets.entitlements; sourceTree = SOURCE_ROOT; };
+		C30000000000000000000009 /* MuntathirWatchWidgets/Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = MuntathirWatchWidgets/Info.plist; sourceTree = SOURCE_ROOT; };
+		C3000000000000000000000B /* MuntathirWatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MuntathirWatchWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		C3000000000000000000001A /* MuntathirWatch/MuntathirWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuntathirWatch/MuntathirWatchApp.swift; sourceTree = SOURCE_ROOT; };
+		C3000000000000000000001B /* MuntathirWatch/MuntathirWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MuntathirWatch/MuntathirWatch.entitlements; sourceTree = SOURCE_ROOT; };
+		C3000000000000000000001D /* MuntathirWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MuntathirWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -108,12 +169,27 @@
 				B20000000000000000000023 /* Adhan in Frameworks */,
 			);
 		};
+		C30000000000000000000013 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				C30000000000000000000012 /* Adhan in Frameworks */,
+			);
+		};
+		C30000000000000000000026 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				C30000000000000000000025 /* Adhan in Frameworks */,
+			);
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		04457E54308394FD00A8887D = {
 			isa = PBXGroup;
 			children = (
+				C30000000000000000000006 /* Shared watch sources */,
+				C3000000000000000000000A /* MuntathirWatchWidgets */,
+				C3000000000000000000001C /* MuntathirWatch */,
 				B20000000000000000000032 /* MuntathirWidgets */,
 				04457E5F308394FD00A8887D /* Muntathir */,
 				04457E6D308394FE00A8887D /* MuntathirTests */,
@@ -125,6 +201,8 @@
 		04457E5E308394FD00A8887D /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				C3000000000000000000000B /* MuntathirWatchWidgets.appex */,
+				C3000000000000000000001D /* MuntathirWatch.app */,
 				04457E5D308394FD00A8887D /* Muntathir.app */,
 				B20000000000000000000014 /* MuntathirWidgets.appex */,
 				04457E6A308394FE00A8887D /* MuntathirTests.xctest */,
@@ -133,28 +211,59 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-        B20000000000000000000032 /* MuntathirWidgets */ = {
-            isa = PBXGroup;
-            path = MuntathirWidgets;
-            sourceTree = "<group>";
-            children = (
-                B2000000000000000000000A,
-                B20000000000000000000034,
-                B20000000000000000000035,
-                B20000000000000000000033,
-            );
-        };
-        B20000000000000000000033 /* Shared app sources */ = {
-            isa = PBXGroup;
-            name = "Shared app sources";
-            sourceTree = "<group>";
-            children = (
-                B2000000000000000000000B,
-                B2000000000000000000000C,
-                B2000000000000000000000D,
-                B2000000000000000000000E,
-            );
-        };
+		B20000000000000000000032 /* MuntathirWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				B2000000000000000000000A /* PrayerWidgets.swift */,
+				B20000000000000000000034 /* Info.plist */,
+				B20000000000000000000035 /* MuntathirWidgets.entitlements */,
+				B20000000000000000000033 /* Shared app sources */,
+			);
+			path = MuntathirWidgets;
+			sourceTree = "<group>";
+		};
+		B20000000000000000000033 /* Shared app sources */ = {
+			isa = PBXGroup;
+			children = (
+				B2000000000000000000000B /* Muntathir/Core/WidgetPrayerData.swift */,
+				B2000000000000000000000C /* Muntathir/Core/PrayerCalculator.swift */,
+				B2000000000000000000000D /* Muntathir/Core/CalendarEngine.swift */,
+				B2000000000000000000000E /* Muntathir/Localizable.xcstrings */,
+			);
+			name = "Shared app sources";
+			sourceTree = "<group>";
+		};
+		C30000000000000000000006 /* Shared watch sources */ = {
+			isa = PBXGroup;
+			children = (
+				C30000000000000000000001 /* Muntathir/Core/PrayerCalculator.swift */,
+				C30000000000000000000002 /* Muntathir/Core/CalendarEngine.swift */,
+				C30000000000000000000003 /* Muntathir/Core/WidgetPrayerData.swift */,
+				C30000000000000000000004 /* Muntathir/Core/WatchSettings.swift */,
+				C30000000000000000000005 /* Muntathir/Services/WatchConnectivityService.swift */,
+			);
+			name = "Shared watch sources";
+			sourceTree = "<group>";
+		};
+		C3000000000000000000000A /* MuntathirWatchWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				C30000000000000000000007 /* MuntathirWatchWidgets/WatchWidgets.swift */,
+				C30000000000000000000008 /* MuntathirWatchWidgets/MuntathirWatchWidgets.entitlements */,
+				C30000000000000000000009 /* MuntathirWatchWidgets/Info.plist */,
+			);
+			name = MuntathirWatchWidgets;
+			sourceTree = "<group>";
+		};
+		C3000000000000000000001C /* MuntathirWatch */ = {
+			isa = PBXGroup;
+			children = (
+				C3000000000000000000001A /* MuntathirWatch/MuntathirWatchApp.swift */,
+				C3000000000000000000001B /* MuntathirWatch/MuntathirWatch.entitlements */,
+			);
+			name = MuntathirWatch;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -162,6 +271,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 04457E7C308394FE00A8887D /* Build configuration list for PBXNativeTarget "Muntathir" */;
 			buildPhases = (
+				C30000000000000000000032 /* Embed Watch Content */,
 				04457E59308394FD00A8887D /* Sources */,
 				04457E5A308394FD00A8887D /* Frameworks */,
 				04457E5B308394FD00A8887D /* Resources */,
@@ -170,6 +280,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				C30000000000000000000034 /* PBXTargetDependency */,
 				B20000000000000000000008 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
@@ -243,6 +354,46 @@
 			productReference = B20000000000000000000014 /* MuntathirWidgets.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		C30000000000000000000019 /* MuntathirWatchWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C30000000000000000000018 /* Build configuration list for PBXNativeTarget "MuntathirWatchWidgets" */;
+			buildPhases = (
+				C30000000000000000000011 /* Sources */,
+				C30000000000000000000013 /* Frameworks */,
+				C30000000000000000000015 /* Resources */,
+			);
+			buildRules = (
+			);
+			name = MuntathirWatchWidgets;
+			packageProductDependencies = (
+				A10000000000000000000002 /* Adhan */,
+			);
+			productName = MuntathirWatchWidgets;
+			productReference = C3000000000000000000000B /* MuntathirWatchWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		C30000000000000000000030 /* MuntathirWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C3000000000000000000002F /* Build configuration list for PBXNativeTarget "MuntathirWatch" */;
+			buildPhases = (
+				C30000000000000000000024 /* Sources */,
+				C30000000000000000000026 /* Frameworks */,
+				C30000000000000000000028 /* Resources */,
+				C3000000000000000000002A /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C3000000000000000000002C /* PBXTargetDependency */,
+			);
+			name = MuntathirWatch;
+			packageProductDependencies = (
+				A10000000000000000000002 /* Adhan */,
+			);
+			productName = MuntathirWatch;
+			productReference = C3000000000000000000001D /* MuntathirWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -284,6 +435,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				C30000000000000000000019 /* MuntathirWatchWidgets */,
+				C30000000000000000000030 /* MuntathirWatch */,
 				B20000000000000000000001 /* MuntathirWidgets */,
 				04457E5C308394FD00A8887D /* Muntathir */,
 				04457E69308394FE00A8887D /* MuntathirTests */,
@@ -314,6 +467,18 @@
 				B20000000000000000000022 /* Muntathir/Localizable.xcstrings in Resources */,
 			);
 		};
+		C30000000000000000000015 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				C30000000000000000000014 /* Muntathir/Localizable.xcstrings in Resources */,
+			);
+		};
+		C30000000000000000000028 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				C30000000000000000000027 /* Muntathir/Localizable.xcstrings in Resources */,
+			);
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -335,10 +500,31 @@
 		B20000000000000000000003 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
-				B2000000000000000000001E /* MuntathirWidgets/PrayerWidgets.swift in Sources */,
+				B2000000000000000000001E /* PrayerWidgets.swift in Sources */,
 				B2000000000000000000001F /* Muntathir/Core/WidgetPrayerData.swift in Sources */,
 				B20000000000000000000020 /* Muntathir/Core/PrayerCalculator.swift in Sources */,
 				B20000000000000000000021 /* Muntathir/Core/CalendarEngine.swift in Sources */,
+			);
+		};
+		C30000000000000000000011 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				C3000000000000000000000C /* MuntathirWatchWidgets/WatchWidgets.swift in Sources */,
+				C3000000000000000000000D /* Muntathir/Core/PrayerCalculator.swift in Sources */,
+				C3000000000000000000000E /* Muntathir/Core/CalendarEngine.swift in Sources */,
+				C3000000000000000000000F /* Muntathir/Core/WidgetPrayerData.swift in Sources */,
+				C30000000000000000000010 /* Muntathir/Core/WatchSettings.swift in Sources */,
+			);
+		};
+		C30000000000000000000024 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				C3000000000000000000001E /* MuntathirWatch/MuntathirWatchApp.swift in Sources */,
+				C3000000000000000000001F /* Muntathir/Core/PrayerCalculator.swift in Sources */,
+				C30000000000000000000020 /* Muntathir/Core/CalendarEngine.swift in Sources */,
+				C30000000000000000000021 /* Muntathir/Core/WidgetPrayerData.swift in Sources */,
+				C30000000000000000000022 /* Muntathir/Core/WatchSettings.swift in Sources */,
+				C30000000000000000000023 /* Muntathir/Services/WatchConnectivityService.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */
@@ -358,6 +544,16 @@
 			isa = PBXTargetDependency;
 			target = B20000000000000000000001 /* MuntathirWidgets */;
 			targetProxy = B20000000000000000000007 /* PBXContainerItemProxy */;
+		};
+		C3000000000000000000002C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C30000000000000000000019 /* MuntathirWatchWidgets */;
+			targetProxy = C3000000000000000000002B /* PBXContainerItemProxy */;
+		};
+		C30000000000000000000034 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C30000000000000000000030 /* MuntathirWatch */;
+			targetProxy = C30000000000000000000033 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -687,6 +883,130 @@
 			};
 			name = Release;
 		};
+		C30000000000000000000016 /* Debug configuration for PBXNativeTarget "MuntathirWatchWidgets" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = MuntathirWatchWidgets/MuntathirWatchWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5VGKP2QV6H;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MuntathirWatchWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Muntathir;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aljaroudi.Muntathir.watchkitapp.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
+		C30000000000000000000017 /* Release configuration for PBXNativeTarget "MuntathirWatchWidgets" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = MuntathirWatchWidgets/MuntathirWatchWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5VGKP2QV6H;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MuntathirWatchWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Muntathir;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aljaroudi.Muntathir.watchkitapp.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
+		C3000000000000000000002D /* Debug configuration for PBXNativeTarget "MuntathirWatch" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = MuntathirWatch/MuntathirWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5VGKP2QV6H;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Muntathir;
+				INFOPLIST_KEY_WKApplication = YES;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.aljaroudi.Muntathir;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aljaroudi.Muntathir.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
+		C3000000000000000000002E /* Release configuration for PBXNativeTarget "MuntathirWatch" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = MuntathirWatch/MuntathirWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5VGKP2QV6H;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Muntathir;
+				INFOPLIST_KEY_WKApplication = YES;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.aljaroudi.Muntathir;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aljaroudi.Muntathir.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -727,6 +1047,22 @@
 			buildConfigurations = (
 				B20000000000000000000028 /* Debug configuration for PBXNativeTarget "MuntathirWidgets" */,
 				B20000000000000000000029 /* Release configuration for PBXNativeTarget "MuntathirWidgets" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		C30000000000000000000018 /* Build configuration list for PBXNativeTarget "MuntathirWatchWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C30000000000000000000016 /* Debug configuration for PBXNativeTarget "MuntathirWatchWidgets" */,
+				C30000000000000000000017 /* Release configuration for PBXNativeTarget "MuntathirWatchWidgets" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		C3000000000000000000002F /* Build configuration list for PBXNativeTarget "MuntathirWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C3000000000000000000002D /* Debug configuration for PBXNativeTarget "MuntathirWatch" */,
+				C3000000000000000000002E /* Release configuration for PBXNativeTarget "MuntathirWatch" */,
 			);
 			defaultConfigurationName = Release;
 		};

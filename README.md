@@ -31,7 +31,7 @@ Local prayer alerts cover ten days (at most 50 requests). Launch, foreground, pr
 
 Run the Muntathir scheme's tests on an iOS 26+ simulator. Swift Testing covers month boundaries, overrides, event movement, Quran integrity, reference prayer fixtures, high latitudes, notification planning, saved-vs-live location, feed caching and coverage. XCTest covers English/Arabic navigation and manual correction.
 
-Before distribution, complete real-device compass/calibration and notification checks, two-device signed iCloud verification, VoiceOver and accessibility-size review, and editorial review of event dates/Arabic titles. Live source publication, push delivery, widgets, Watch, Mac, Android and web are deferred.
+Before distribution, complete real-device compass/calibration and notification checks, two-device signed iCloud verification, VoiceOver and accessibility-size review, and editorial review of event dates/Arabic titles. Live source publication, push delivery, Mac, Android and web are deferred.
 
 ### Verification performed
 
@@ -58,7 +58,7 @@ The embedded MuntathirWidgets extension provides Upcoming prayer, Prayer times, 
 
 Open Muntathir once and choose a location. Widgets use the app's method, Asr convention, and hidden-prayer choices. The app shares only those settings and selected coordinates through the local App Group, group.com.aljaroudi.Muntathir. Both targets require that App Group in their signing profiles. GPS coordinates are not uploaded to iCloud.
 
-The extension uses the same Adhan source and pinned dependency as the app. Timelines include three local days of prayer boundaries and midnight changes, with a requested reload after six hours. A discrete date format updates the hours/minutes countdown without network polling. WidgetKit controls actual timeline delivery. Settings changes request a widget reload.
+The extension uses the same Adhan source and pinned dependency as the app. Timelines include three local days of prayer boundaries and midnight changes, with a requested reload after six hours. Minute-spaced timeline entries update the hours/minutes countdown without network polling. WidgetKit controls actual timeline delivery. Settings changes request a widget reload.
 
 Simulator validation covers compilation/embedding, settings serialization, hidden prayers, midnight entries, next-day Fajr, and the exact English 1h 13m countdown format. Physical CarPlay layout and signed-device App Group provisioning still need device validation.
 
@@ -73,3 +73,13 @@ git config core.hooksPath .githooks
 ```
 
 The pre-commit hook runs `swiftformat . --swift-version 6`. If Swift files differ from the index afterward, review and stage them before retrying. The hook never stages changes automatically.
+
+## Apple Watch
+
+The `MuntathirWatch` scheme builds the watchOS 26+ companion app and its WidgetKit extension. The iPhone target embeds both. The watch shows the visible prayer times; settings remain on the iPhone.
+
+WatchConnectivity transfers the latest location, method, visibility settings, and Hijri month corrections. The watch caches this snapshot and calculates times locally while disconnected. Open the iPhone app after installation or configuration changes. Delivery is opportunistic; changes can take time to reach a disconnected watch. Invalid snapshots preserve the last valid settings.
+
+Three complications are included: Hijri day/month, next prayer time, and countdown. All support inline, circular, rectangular (including Smart Stack), and corner families, with SwiftUI previews. Next-prayer and countdown displays on both platforms exclude hidden prayers and non-prayer times such as sunrise, sunset, and Islamic midnight. The schedule-only widget can still show those times if enabled.
+
+Enable the existing `group.com.aljaroudi.Muntathir` App Group for both watch targets when signing. App Groups share data between the watch app and its extension; WatchConnectivity transfers it between devices. Paired-device sync and watch-face rendering require device validation; the current development host has the watchOS SDK but no watchOS simulator runtime.

@@ -22,12 +22,18 @@ struct WidgetPrayerSettings: Codable, Equatable, Sendable {
         }.filter { $0.date > date }.sorted { $0.date < $1.date }.prefix(max(0, limit)).map(\.self)
     }
 
-    func nextPrayer(after date: Date) -> PrayerMoment? {
-        guard let location else { return nil }
+    func upcomingPrayers(after date: Date, limit: Int = 3) -> [PrayerMoment] {
+        guard let location else { return [] }
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = location.timeZone
         let tomorrow = calendar.date(byAdding: .day, value: 1, to: date)!
-        return (prayers(on: date) + prayers(on: tomorrow)).first { $0.name.isPrayer && $0.date > date }
+        return Array((prayers(on: date) + prayers(on: tomorrow))
+            .filter { $0.name.isPrayer && $0.date > date }
+            .sorted { $0.date < $1.date }.prefix(max(0, limit)))
+    }
+
+    func nextPrayer(after date: Date) -> PrayerMoment? {
+        upcomingPrayers(after: date, limit: 1).first
     }
 
     func timelineDates(from date: Date) -> [Date] {
