@@ -140,3 +140,37 @@ struct CalendarWidgetTests {
         #expect(WidgetCalendarSettings().timelineDates(from: date).count == 8)
     }
 }
+
+struct LockScreenPrayerTests {
+    @Test func exactPrayerBoundaryAdvancesToNextPrayer() throws {
+        let location = SavedLocation(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh")
+        let settings = WidgetPrayerSettings(location: location, method: .tehran, hiddenPrayers: [.asr, .isha])
+        let day = try #require(CivilDate(year: 2026, month: 10, day: 19).date(in: location.timeZone))
+        let fajr = try #require(settings.prayers(on: day).first { $0.name == .fajr })
+        #expect(settings.nextPrayer(after: fajr.date.addingTimeInterval(-1))?.name == .fajr)
+        #expect(settings.nextPrayer(after: fajr.date)?.name == .dhuhr)
+    }
+
+    @Test(arguments: ["en_US", "ar_SA"])
+    func countdownUsesNativeLocalizedUnits(localeID: String) {
+        let now = Date(timeIntervalSince1970: 0)
+        let locale = Locale(identifier: localeID)
+        let style = PrayerCountdownFormat(target: now.addingTimeInterval(12360), locale: locale)
+        let expected = Duration.seconds(12360).formatted(.units(allowed: [.hours, .minutes], width: .narrow, maximumUnitCount: 2).locale(locale))
+        #expect(String(style.format(now).characters) == expected)
+        #expect(style.format(now.addingTimeInterval(60)) != style.format(now))
+    }
+
+    @Test func widgetExtensionBundlesTheSameVerseAsApp() throws {
+        let plugins = try #require(Bundle.main.builtInPlugInsURL)
+        let bundle = try #require(Bundle(url: plugins.appendingPathComponent("MuntathirWidgets.appex")))
+        let library = ContentLibrary(bundle: bundle)
+        #expect(library.verses.isEmpty == false)
+        let date = Date()
+        let zone = try #require(TimeZone(identifier: "Asia/Riyadh"))
+        let widgetVerse = try #require(library.verse(on: date, timeZone: zone))
+        let appVerse = try #require(ContentLibrary().verse(on: date, timeZone: zone))
+        #expect(widgetVerse.id == appVerse.id)
+        #expect(widgetVerse.text == appVerse.text)
+    }
+}

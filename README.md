@@ -54,7 +54,7 @@ The background refresh path accepts an optional FeedClient. Production leaves it
 
 ## iOS and CarPlay widgets
 
-The embedded MuntathirWidgets extension provides Upcoming prayer and Prayer times (countdown plus schedule). Both support small and medium Home Screen widgets; iOS 26 exposes the small versions in CarPlay. Add them through the Home Screen widget gallery, or Settings → General → CarPlay → your car → Widgets.
+The embedded MuntathirWidgets extension provides Prayer times (countdown plus schedule). It supports small and medium Home Screen widgets; iOS 26 exposes the small versions in CarPlay. Add them through the Home Screen widget gallery, or Settings → General → CarPlay → your car → Widgets.
 
 Open Muntathir once and choose a location. Widgets use the app's method, Asr convention, and hidden-prayer choices. The app shares only those settings and selected coordinates through the local App Group, group.com.aljaroudi.Muntathir. Both targets require that App Group in their signing profiles. GPS coordinates are not uploaded to iCloud.
 
@@ -98,4 +98,9 @@ Prayer calculations now always use standard Asr. Legacy Hanafi preferences are i
 
 The counter selects the most recent visible prayer, checking the previous day before Fajr; without a location it starts with Fajr. Settings → Prayers contains Visibility and Notifications. Fajr, Dhuhr, and Maghrib remain visible; new notification preferences enable those three, while existing choices are preserved. Opening Notifications requests device permission. All listed times can have alerts independently of visibility; the nearest 50 fit the local notification budget.
 
-The combined countdown/schedule widget is now named **Prayer times**, retaining its existing widget kind. The redundant schedule-only widget has been removed; existing copies of that removed widget should be replaced from the widget gallery. The separate **Upcoming prayer** widget remains available.
+The combined countdown/schedule widget is now named **Prayer times**, retaining its existing widget kind. The redundant schedule-only widget has been removed; existing copies of that removed widget should be replaced from the widget gallery. The separate iOS **Upcoming prayer** widget has also been removed; watch complications are unchanged.
+
+
+The daily ayah uses a static emerald-to-ivory gradient with no continuous animation. Its share button opens the native share sheet with a 1080-pixel-wide image that expands vertically for the entire verse, including its reference and Tanzil attribution. Rendering uses a fixed readable type size and light appearance, independent of the current screen settings. The displayed verse stays fixed for the local day while Today remains loaded.
+
+`AppIcon.icon` is the shared Icon Composer source for the iPhone/iPad and Apple Watch app targets in Debug and Release. Edit it in Icon Composer; widget extensions use their containing app’s identity. The superseded standalone SVG and preview have been removed.

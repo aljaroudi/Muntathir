@@ -53,6 +53,6 @@ struct ContentLibrary: Sendable {
     }
 
     func verse(on date: Date, timeZone: TimeZone) -> Ayah? {
-        verses.randomElement()
+        verses.first!
     }
 }

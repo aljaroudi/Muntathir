@@ -4,6 +4,8 @@ struct TodayView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.locale) private var locale
 
+    @State private var dailyAyah: Ayah?
+
     var body: some View {
         TimelineView(.periodic(from: .now, by: 60)) { context in
             let now = context.date
@@ -95,21 +97,13 @@ struct TodayView: View {
                         }
                     }
                 }
-                if let verse = model.content.verse(on: now, timeZone: model.zone) {
-                    Card {
-                        Text("Daily ayah")
-                            .font(.headline)
-                        Text(verse.text)
-                            .font(.title2).lineSpacing(12)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .environment(\.layoutDirection, .rightToLeft)
-                            .textSelection(.enabled)
-                        Text(verse.id)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
+                if let dailyAyah {
+                    DailyAyahCard(ayah: dailyAyah)
                 }
             }.navigationTitle(title(now, engine: engine))
+                .task(id: engine.gregorian.startOfDay(for: now)) {
+                    dailyAyah = model.content.verse(on: now, timeZone: model.zone)
+                }
         }
     }
 

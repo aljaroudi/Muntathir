@@ -32,6 +32,13 @@
 		C30000000000000000000027 /* Muntathir/Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000E /* Muntathir/Localizable.xcstrings */; };
 		C30000000000000000000029 /* MuntathirWatchWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = C3000000000000000000000B /* MuntathirWatchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C30000000000000000000031 /* MuntathirWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C3000000000000000000001D /* MuntathirWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		D40000000000000000000002 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = D40000000000000000000001 /* AppIcon.icon */; };
+		D40000000000000000000003 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = D40000000000000000000001 /* AppIcon.icon */; };
+		E50000000000000000000011 /* MuntathirWidgets/LockScreenPrayerWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000001; };
+		E50000000000000000000012 /* MuntathirWidgets/DailyAyahWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000002; };
+		E50000000000000000000013 /* Muntathir/Features/AyahBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000003; };
+		E50000000000000000000014 /* Muntathir/Core/ContentLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000004; };
+		E50000000000000000000015 /* Muntathir/Resources/quran-daily.txt in Resources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000005; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -126,6 +133,12 @@
 		C3000000000000000000001A /* MuntathirWatch/MuntathirWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuntathirWatch/MuntathirWatchApp.swift; sourceTree = SOURCE_ROOT; };
 		C3000000000000000000001B /* MuntathirWatch/MuntathirWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MuntathirWatch/MuntathirWatch.entitlements; sourceTree = SOURCE_ROOT; };
 		C3000000000000000000001D /* MuntathirWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MuntathirWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D40000000000000000000001 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = SOURCE_ROOT; };
+		E50000000000000000000001 /* MuntathirWidgets/LockScreenPrayerWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuntathirWidgets/LockScreenPrayerWidgets.swift; sourceTree = SOURCE_ROOT; };
+		E50000000000000000000002 /* MuntathirWidgets/DailyAyahWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuntathirWidgets/DailyAyahWidget.swift; sourceTree = SOURCE_ROOT; };
+		E50000000000000000000003 /* Muntathir/Features/AyahBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Features/AyahBackground.swift; sourceTree = SOURCE_ROOT; };
+		E50000000000000000000004 /* Muntathir/Core/ContentLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/ContentLibrary.swift; sourceTree = SOURCE_ROOT; };
+		E50000000000000000000005 /* Muntathir/Resources/quran-daily.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Muntathir/Resources/quran-daily.txt; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -187,6 +200,7 @@
 		04457E54308394FD00A8887D = {
 			isa = PBXGroup;
 			children = (
+				D40000000000000000000001 /* AppIcon.icon */,
 				C30000000000000000000006 /* Shared watch sources */,
 				C3000000000000000000000A /* MuntathirWatchWidgets */,
 				C3000000000000000000001C /* MuntathirWatch */,
@@ -215,6 +229,11 @@
 			isa = PBXGroup;
 			children = (
 				B2000000000000000000000A /* PrayerWidgets.swift */,
+				E50000000000000000000005 /* Muntathir/Resources/quran-daily.txt */,
+				E50000000000000000000004 /* Muntathir/Core/ContentLibrary.swift */,
+				E50000000000000000000003 /* Muntathir/Features/AyahBackground.swift */,
+				E50000000000000000000002 /* MuntathirWidgets/DailyAyahWidget.swift */,
+				E50000000000000000000001 /* MuntathirWidgets/LockScreenPrayerWidgets.swift */,
 				B20000000000000000000034 /* Info.plist */,
 				B20000000000000000000035 /* MuntathirWidgets.entitlements */,
 				B20000000000000000000033 /* Shared app sources */,
@@ -449,6 +468,7 @@
 		04457E5B308394FD00A8887D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				D40000000000000000000002 /* AppIcon.icon in Resources */,
 			);
 		};
 		04457E68308394FE00A8887D /* Resources */ = {
@@ -465,6 +485,7 @@
 			isa = PBXResourcesBuildPhase;
 			files = (
 				B20000000000000000000022 /* Muntathir/Localizable.xcstrings in Resources */,
+				E50000000000000000000015 /* Muntathir/Resources/quran-daily.txt in Resources */,
 			);
 		};
 		C30000000000000000000015 /* Resources */ = {
@@ -476,6 +497,7 @@
 		C30000000000000000000028 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				D40000000000000000000003 /* AppIcon.icon in Resources */,
 				C30000000000000000000027 /* Muntathir/Localizable.xcstrings in Resources */,
 			);
 		};
@@ -501,6 +523,10 @@
 			isa = PBXSourcesBuildPhase;
 			files = (
 				B2000000000000000000001E /* PrayerWidgets.swift in Sources */,
+				E50000000000000000000014 /* Muntathir/Core/ContentLibrary.swift in Sources */,
+				E50000000000000000000013 /* Muntathir/Features/AyahBackground.swift in Sources */,
+				E50000000000000000000012 /* MuntathirWidgets/DailyAyahWidget.swift in Sources */,
+				E50000000000000000000011 /* MuntathirWidgets/LockScreenPrayerWidgets.swift in Sources */,
 				B2000000000000000000001F /* Muntathir/Core/WidgetPrayerData.swift in Sources */,
 				B20000000000000000000020 /* Muntathir/Core/PrayerCalculator.swift in Sources */,
 				B20000000000000000000021 /* Muntathir/Core/CalendarEngine.swift in Sources */,
@@ -689,17 +715,19 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Configuration/Info.plist;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Your location calculates prayer times and Qibla on this device.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aljaroudi.Muntathir;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -724,17 +752,19 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Configuration/Info.plist;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Your location calculates prayer times and Qibla on this device.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aljaroudi.Muntathir;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -844,7 +874,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aljaroudi.Muntathir.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -872,7 +902,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aljaroudi.Muntathir.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -900,7 +930,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aljaroudi.Muntathir.watchkitapp.widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -931,7 +961,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aljaroudi.Muntathir.watchkitapp.widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -948,6 +978,7 @@
 		C3000000000000000000002D /* Debug configuration for PBXNativeTarget "MuntathirWatch" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = MuntathirWatch/MuntathirWatch.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -962,7 +993,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aljaroudi.Muntathir.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -979,6 +1010,7 @@
 		C3000000000000000000002E /* Release configuration for PBXNativeTarget "MuntathirWatch" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = MuntathirWatch/MuntathirWatch.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -993,7 +1025,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aljaroudi.Muntathir.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;

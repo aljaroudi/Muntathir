@@ -51,11 +51,8 @@ struct PrayerProvider: TimelineProvider {
     }
 }
 
-enum PrayerWidgetLayout { case countdown, combined }
-
 struct PrayerWidgetView: View {
     let entry: PrayerEntry
-    let layout: PrayerWidgetLayout
     @Environment(\.widgetFamily) private var family
     @Environment(\.locale) private var locale
 
@@ -74,10 +71,8 @@ struct PrayerWidgetView: View {
             } else {
                 VStack(alignment: .leading, spacing: 6) {
                     countdown
-                    if layout == .combined {
-                        Divider()
-                    }
-                    if layout != .countdown {
+                    Divider()
+                    Group {
                         LazyVGrid(
                             columns: Array(
                                 repeating: GridItem(
@@ -108,22 +103,13 @@ struct PrayerWidgetView: View {
 
     @ViewBuilder private var countdown: some View {
         if let next = entry.next {
-            VStack(alignment: .leading, spacing: 3) {
-                HStack {
-                    Label(next.name.title, systemImage: next.name.symbol).fontWeight(.semibold)
-                    Spacer(minLength: 4)
-                    time(next.date)
-                    if layout == .combined {
-                        Text(PrayerCountdownFormat(target: next.date, locale: locale).format(entry.date))
-                            .monospacedDigit().lineLimit(1).minimumScaleFactor(0.7).widgetAccentable()
-                    }
-                }.font(layout == .combined ? .caption : .headline)
-                if layout == .countdown {
-                    Text(PrayerCountdownFormat(target: next.date, locale: locale).format(entry.date))
-                        .font(.title2.weight(.semibold))
-                        .monospacedDigit().minimumScaleFactor(0.7).widgetAccentable()
-                }
-            }.accessibilityElement(children: .combine)
+            HStack {
+                Label(next.name.title, systemImage: next.name.symbol).fontWeight(.semibold)
+                Spacer(minLength: 4)
+                time(next.date)
+                Text(PrayerCountdownFormat(target: next.date, locale: locale).format(entry.date))
+                    .monospacedDigit().lineLimit(1).minimumScaleFactor(0.7).widgetAccentable()
+            }.font(.caption).accessibilityElement(children: .combine)
         } else {
             Text("Prayer times unavailable for this location and date.").font(.caption)
         }
@@ -132,16 +118,12 @@ struct PrayerWidgetView: View {
     private var compactContent: some View {
         let upcoming = entry.settings?.upcomingPrayers(after: entry.date) ?? []
         return VStack(alignment: .leading, spacing: 6) {
-            if layout == .countdown {
-                countdown
-            } else if let first = upcoming.first {
+            if let first = upcoming.first {
                 VStack(alignment: .leading, spacing: 1) {
                     Label(first.name.title, systemImage: first.name.symbol).font(.subheadline.weight(.semibold)).lineLimit(1)
                     time(first.date).font(.title2.weight(.semibold)).widgetAccentable()
-                    if layout == .combined {
-                        Text(PrayerCountdownFormat(target: first.date, locale: locale).format(entry.date))
-                            .font(.caption).monospacedDigit().lineLimit(1)
-                    }
+                    Text(PrayerCountdownFormat(target: first.date, locale: locale).format(entry.date))
+                        .font(.caption).monospacedDigit().lineLimit(1)
                 }.accessibilityElement(children: .combine)
                 Spacer(minLength: 0)
                 ForEach(Array(upcoming.dropFirst().prefix(2))) { prayer in
@@ -161,24 +143,13 @@ struct PrayerWidgetView: View {
     }
 }
 
-struct UpcomingPrayerWidget: Widget {
-    var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "UpcomingPrayer", provider: PrayerProvider()) {
-            PrayerWidgetView(entry: $0, layout: .countdown)
-        }
-        .configurationDisplayName("Upcoming prayer")
-        .description("Next prayer time and a live countdown.")
-        .supportedFamilies([.systemSmall, .systemMedium])
-    }
-}
-
 struct CombinedPrayerWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(
             kind: "PrayerCountdownAndTimes",
             provider: PrayerProvider()
         ) {
-            PrayerWidgetView(entry: $0, layout: .combined)
+            PrayerWidgetView(entry: $0)
         }
         .configurationDisplayName("Prayer times")
         .description(
@@ -190,13 +161,15 @@ struct CombinedPrayerWidget: Widget {
 
 @main struct MuntathirWidgetBundle: WidgetBundle {
     var body: some Widget {
-        UpcomingPrayerWidget()
         CombinedPrayerWidget()
         IslamicCalendarWidget()
+        NextPrayerWidget()
+        PrayerCountdownWidget()
+        DailyAyahWidget()
     }
 }
 
-private enum WidgetPreviewData {
+enum WidgetPreviewData {
     static var entry: PrayerEntry {
         PrayerEntry(
             date: .now,
@@ -215,14 +188,6 @@ private enum WidgetPreviewData {
     }
 }
 
-#Preview("Upcoming · Small", as: .systemSmall) {
-    UpcomingPrayerWidget()
-} timeline: { WidgetPreviewData.entry }
-
-#Preview("Upcoming · Medium", as: .systemMedium) {
-    UpcomingPrayerWidget()
-} timeline: { WidgetPreviewData.entry }
-
 #Preview("Combined · Small", as: .systemSmall) {
     CombinedPrayerWidget()
 } timeline: { WidgetPreviewData.entry }
@@ -232,7 +197,7 @@ private enum WidgetPreviewData {
 } timeline: { WidgetPreviewData.entry }
 
 #Preview("Location needed", as: .systemSmall) {
-    UpcomingPrayerWidget()
+    CombinedPrayerWidget()
 } timeline: { PrayerEntry(date: .now, settings: nil) }
 
 struct IslamicDateEntry: TimelineEntry {

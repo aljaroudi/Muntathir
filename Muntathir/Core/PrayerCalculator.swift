@@ -21,15 +21,15 @@ struct SavedLocation: Codable, Hashable, Sendable {
 }
 
 enum PrayerMethod: String, Codable, CaseIterable, Identifiable, Sendable {
-    case jafari, tehran, muslimWorldLeague, egyptian, karachi, ummAlQura, dubai, moonsightingCommittee, northAmerica, kuwait, qatar, singapore, turkey
+    case tehran, jafari, muslimWorldLeague, egyptian, karachi, ummAlQura, dubai, moonsightingCommittee, northAmerica, kuwait, qatar, singapore, turkey
     var id: String {
         rawValue
     }
 
     var title: String {
         switch self {
-        case .jafari: String(localized: "Shia — Jafari (Qum)")
-        case .tehran: String(localized: "Shia — Tehran (recommended)")
+        case .tehran: String(localized: "Jafari - Tehran")
+        case .jafari: String(localized: "Jafari - Qum")
         case .muslimWorldLeague: String(localized: "Muslim World League")
         case .egyptian: String(localized: "Egyptian General Authority")
         case .karachi: String(localized: "University of Karachi")
