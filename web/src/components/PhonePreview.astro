@@ -7,9 +7,9 @@ const { locale } = Astro.props;
 const t = translations[locale];
 ---
 
-<figure class="min-w-0" aria-label={t.preview.label}>
+<figure data-phone-preview class="min-w-0" aria-label={t.preview.label}>
   <div class="flex justify-center px-5 pt-5 pb-9 [perspective:1200px]">
-    <div class="phone relative w-full max-w-[286px] rounded-[3.2rem] p-[7px]">
+    <div style={locale === "ar" ? "--phone-y: 13deg; --phone-z: -3deg; --edge-x: -1" : undefined} class="phone relative w-full max-w-[286px] rounded-[3.2rem] p-[7px]">
       <span aria-hidden="true" class="absolute -left-[3px] top-28 h-7 w-[3px] rounded-l bg-[#8c918c]"></span>
       <span aria-hidden="true" class="absolute -left-[3px] top-40 h-12 w-[3px] rounded-l bg-[#8c918c]"></span>
       <span aria-hidden="true" class="absolute -right-[3px] top-36 h-16 w-[3px] rounded-r bg-[#8c918c]"></span>
@@ -40,7 +40,6 @@ const t = translations[locale];
       </div>
     </div>
   </div>
-  <figcaption class="mx-auto max-w-xs text-center text-xs leading-relaxed text-muted">{t.preview.example}</figcaption>
 </figure>
 
 <style>
@@ -48,10 +47,59 @@ const t = translations[locale];
   .phone {
     direction: ltr;
     background: linear-gradient(110deg, #d4d7d1, #646c65 18%, #dce0d9 49%, #9ba198 80%, #eef0eb);
-    box-shadow: inset 0 0 0 1px #eef0e9, inset 0 0 0 3px #7b8279, 8px 5px 0 #656d64, 10px 6px 0 #afb5a9, 20px 28px 35px -15px #203f3540;
-    transform: rotateX(5deg) rotateY(-13deg) rotateZ(3deg);
+    box-shadow: inset 0 0 0 1px #eef0e9, inset 0 0 0 3px #7b8279, calc(8px * var(--edge-x, 1)) 5px 0 #656d64, calc(10px * var(--edge-x, 1)) 6px 0 #afb5a9, calc(20px * var(--edge-x, 1)) 28px 35px -15px #203f3540;
+    transform: rotateX(calc(5deg + var(--scroll-tilt, 0deg) + var(--pointer-x, 0deg))) rotateY(calc(var(--phone-y, -13deg) + var(--pointer-y, 0deg))) rotateZ(var(--phone-z, 3deg));
+    transition: transform 180ms ease-out;
   }
   @media (prefers-reduced-motion: reduce) {
-    .phone { transform: none; }
+    .phone { transform: none; transition: none; }
   }
 </style>
+
+<script>
+  import { phoneTilt } from "../phone-motion";
+
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const mouse = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+  for (const preview of document.querySelectorAll<HTMLElement>("[data-phone-preview]")) {
+    const phone = preview.querySelector<HTMLElement>(".phone");
+    if (!phone) continue;
+    let pointer: { x: number; y: number } | undefined;
+    let frame = 0;
+
+    function update() {
+      frame = 0;
+      if (!phone) return;
+      if (reducedMotion.matches) {
+        phone.style.removeProperty("--scroll-tilt");
+        phone.style.removeProperty("--pointer-x");
+        phone.style.removeProperty("--pointer-y");
+        return;
+      }
+      // Use the untransformed wrapper so tilt never changes its own measurements.
+      const rect = preview.getBoundingClientRect();
+      const tracking = pointer && mouse.matches && rect.bottom > 0 && rect.top < innerHeight;
+      const tilt = phoneTilt(rect, innerWidth, innerHeight, tracking ? pointer : undefined);
+      phone.style.setProperty("--scroll-tilt", `${tilt.scroll}deg`);
+      phone.style.setProperty("--pointer-x", `${tilt.x}deg`);
+      phone.style.setProperty("--pointer-y", `${tilt.y}deg`);
+    }
+    function schedule() {
+      if (!frame) frame = requestAnimationFrame(update);
+    }
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule, { passive: true });
+    window.addEventListener("pointermove", event => {
+      if (event.pointerType !== "mouse" || reducedMotion.matches || !mouse.matches) return;
+      pointer = { x: event.clientX, y: event.clientY };
+      schedule();
+    }, { passive: true });
+    function resetPointer() { pointer = undefined; schedule(); }
+    document.documentElement.addEventListener("pointerleave", resetPointer);
+    window.addEventListener("blur", resetPointer);
+    reducedMotion.addEventListener("change", schedule);
+    mouse.addEventListener("change", resetPointer);
+    schedule();
+  }
+</script>

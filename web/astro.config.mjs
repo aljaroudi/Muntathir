@@ -8,14 +8,6 @@ export default defineConfig({
   fonts: [
     {
       provider: fontProviders.google(),
-      name: "Inter",
-      cssVariable: "--font-inter",
-      weights: [400, 500, 600],
-      subsets: ["latin"],
-      styles: ["normal"],
-    },
-    {
-      provider: fontProviders.google(),
       name: "Noto Sans Arabic",
       cssVariable: "--font-arabic",
       weights: [400, 500, 600],
@@ -25,7 +17,7 @@ export default defineConfig({
     {
       provider: fontProviders.google(),
       name: "Amiri",
-      cssVariable: "--font-amiri",
+      cssVariable: "--font-quran",
       weights: [400],
       subsets: ["arabic"],
       styles: ["normal"],

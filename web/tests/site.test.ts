@@ -46,7 +46,6 @@ for (const locale of ["ar", "en"] satisfies Locale[]) {
       expect(schema.offers).toBeUndefined()
       expect(schema.aggregateRating).toBeUndefined()
       expect(html).toContain(`href="${appStore}"`)
-      expect(html).toContain(translations[locale].hero.note)
     })
     test("local links, anchors and assets exist", () => {
       for (const match of html.matchAll(/(?:href|src)="([^"]+)"/g)) {

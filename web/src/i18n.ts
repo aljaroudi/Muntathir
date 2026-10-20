@@ -12,18 +12,16 @@ const en = {
     second: "daily remembrance.",
     eyebrow: "Prayer · Quran · Hijri calendar",
     text: "Prayer times, a Quran verse each day, the Hijri calendar, and the direction of the Qibla. Together in a simple app.",
-    cta: "View on the App Store",
-    note: "Coming soon. The App Store listing is not available yet.",
+    cta: "Download Muntathir from the App Store",
   },
   preview: {
     label: "Example prayer times and a daily Quran verse",
     today: "Muntathir",
     verseLabel: "A verse from the Quran",
-    verse: "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا",
-    reference: "Ash-Sharh · 94:5",
+    verse: "Indeed, with hardship comes ease.",
+    reference: "94:5",
     prayers: ["Fajr", "Dhuhr", "Maghrib"],
-    times: ["04:42", "12:08", "17:36"],
-    example: "Example times, not a live prayer schedule.",
+    times: ["4:42am", "12:08pm", "5:36pm"],
   },
   features: {
     title: "In the app",
@@ -46,23 +44,21 @@ const en = {
     title: "A few useful details",
     items: [
       {
-        q: "Can I adjust prayer times and Hijri dates?",
-        a: "You can choose the prayer calculation method and adjust Hijri month starts to match the dates you follow.",
+        q: "Can I adjust prayer times?",
+        a: "You can choose the prayer calculation method in the app’s settings.",
       },
       {
-        q: "How do prayer reminders work?",
-        a: "Enable notifications on your device. Open the app regularly so iOS can keep upcoming reminders scheduled.",
+        q: "Which calendar verification methods are supported?",
+        a: "Choose Umm Al-Qura calculations, naked-eye moon sighting, aided moon sighting, or government announcements.",
       },
       {
-        q: "Where can I download Muntathir?",
-        a: "The App Store listing linked above will become available at launch. Android and a browser app are not available yet.",
+        q: "How does the Hijri calendar stay accurate?",
+        a: "Muntathir automatically corrects Hijri month starts based on your preferred verification method when matching confirmations are available. Until then, dates follow the calculated Umm Al-Qura calendar.",
       },
     ],
   },
   footer: {
     top: "Back to top",
-    trademark:
-      "Apple, iPhone, iPad, and Apple Watch are trademarks of Apple Inc. App Store is a service mark of Apple Inc.",
   },
 }
 
@@ -78,18 +74,16 @@ const ar: typeof en = {
     second: "وذكرُك اليومي.",
     eyebrow: "الصلاة · القرآن · التقويم الهجري",
     text: "مواقيت الصلاة، وآية قرآنية كل يوم، والتقويم الهجري، واتجاه القبلة. في تطبيق بسيط يرافق يومك.",
-    cta: "عرض في App Store",
-    note: "قريبًا. صفحة التطبيق على المتجر غير متاحة بعد.",
+    cta: "تحميل تطبيق مُنتظِر من متجر التطبيقات",
   },
   preview: {
     label: "أوقات صلاة توضيحية وآية من القرآن الكريم",
     today: "منتظِر",
-    verseLabel: "آية من القرآن الكريم",
-    verse: "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا",
-    reference: "الشرح · ٩٤:٥",
+    verseLabel: "آية اليوم",
+    verse: "إِنَّ مَعَ الْعُسْرِ يُسْرًا",
+    reference: "الشرح ٥",
     prayers: ["الفجر", "الظهر", "المغرب"],
-    times: ["٠٤:٤٢", "١٢:٠٨", "١٧:٣٦"],
-    example: "أوقات توضيحية، وليست مواقيت صلاة فعلية.",
+    times: ["٤:٤٢ ص", "١٢:٠٨ م", "٥:٣٦ م"],
   },
   features: {
     title: "في التطبيق",
@@ -109,23 +103,21 @@ const ar: typeof en = {
     title: "تفاصيل مفيدة",
     items: [
       {
-        q: "هل يمكنني ضبط مواقيت الصلاة والتاريخ الهجري؟",
-        a: "يمكنك اختيار طريقة حساب الصلاة وضبط بدايات الأشهر الهجرية بما يوافق التواريخ التي تتّبعها.",
+        q: "هل يمكنني ضبط مواقيت الصلاة؟",
+        a: "يمكنك اختيار طريقة حساب مواقيت الصلاة من إعدادات التطبيق.",
       },
       {
-        q: "كيف تعمل تنبيهات الصلاة؟",
-        a: "فعّل إذن الإشعارات على جهازك، وافتح التطبيق بانتظام ليتمكّن iOS من تحديث جدول التنبيهات القادمة.",
+        q: "ما طرق التحقق من بداية الشهر المدعومة؟",
+        a: "يمكنك اختيار حسابات أم القرى، أو رؤية الهلال بالعين المجردة، أو الرؤية بالأجهزة البصرية، أو الإعلانات الرسمية.",
       },
       {
-        q: "أين يمكنني تحميل منتظِر؟",
-        a: "ستتاح صفحة App Store المرتبطة أعلاه عند إطلاق التطبيق. لا يتوفّر حاليًا تطبيق لأندرويد أو للمتصفح.",
+        q: "كيف يحافظ التطبيق على دقة التقويم الهجري؟",
+        a: "يصحّح منتظِر بدايات الأشهر الهجرية تلقائيًا وفق طريقة التحقق التي تفضّلها عند توفّر تأكيدات مطابقة. وحتى ذلك الحين، تتبع التواريخ حسابات تقويم أم القرى.",
       },
     ],
   },
   footer: {
     top: "العودة إلى الأعلى",
-    trademark:
-      "Apple وiPhone وiPad وApple Watch علامات تجارية لشركة Apple Inc. وApp Store علامة خدمة لشركة Apple Inc.",
   },
 }
 

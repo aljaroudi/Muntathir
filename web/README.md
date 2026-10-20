@@ -32,9 +32,9 @@ vp create astro --package-manager bun --no-git --no-hooks --no-agent --no-editor
 - `src/site.ts`: canonical origin, localized paths, and App Store destination.
 - `src/components/Landing.astro`: shared layout, accessible content, and metadata.
 - `src/styles/global.css`: Tailwind theme tokens, language-level fonts, and shared accessibility defaults. Layout and component styles use Tailwind utilities.
-- `scripts/social.ts`: produces localized 1200×630 PNG social images with the bundled OFL-licensed Amiri font. Browser fonts use Astro’s stable `fonts` configuration with Google providers: Inter, Noto Sans Arabic, and Amiri. Astro downloads and self-hosts the fonts at build time; the initial build requires network access. The bundled TTF is used only by the social-image renderer.
+- `public/social/`: localized 1200×630 social images. Browser typography uses Noto Sans Arabic for both languages and Amiri for the Quran verse through Astro’s Google font provider. Astro downloads and self-hosts the font at build time; the first build requires network access.
 
-The prayer card is an illustration, not a live calculation or exact app screenshot. The App Store URL is intentionally retained before launch. Once the listing goes live, update the launch note and availability FAQ in **both** languages. Do not add pricing, ratings, or claims without evidence.
+The phone screen is an illustration, not a live calculation or exact app screenshot. The download link points to the published App Store listing. Do not add pricing, ratings, or claims without evidence.
 
 ## Git hooks
 

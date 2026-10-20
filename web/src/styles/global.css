@@ -11,14 +11,10 @@
 /* Language-level typography and shared accessibility defaults. */
 @layer base {
   body {
-    font-family: var(--font-inter);
+    font-family: var(--font-arabic), sans-serif;
   }
-  html[lang="ar"] body {
-    font-family: var(--font-arabic);
-  }
-  html[lang="ar"] h1,
   .quran {
-    font-family: var(--font-amiri);
+    font-family: var(--font-quran), serif;
   }
   a:focus-visible,
   summary:focus-visible {
