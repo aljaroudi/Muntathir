@@ -53,6 +53,9 @@ struct ContentLibrary: Sendable {
     }
 
     func verse(on date: Date, timeZone: TimeZone) -> Ayah? {
-        verses.first!
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        guard !verses.isEmpty, let day = calendar.ordinality(of: .day, in: .era, for: date) else { return nil }
+        return verses[(day - 1) % verses.count]
     }
 }

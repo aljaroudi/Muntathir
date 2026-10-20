@@ -23,6 +23,7 @@ struct PrayerPreferencesTests {
     func imsakOffsetReachesScheduleWidgetsWatchAndNotifications(minutes: Int) throws {
         let date = try #require(CivilDate(year: 2026, month: 10, day: 18).date(in: location.timeZone))
         var preferences = Preferences()
+        preferences.prayerMethod = .tehran
         preferences.imsakMinutes = minutes
         preferences.enabledPrayers = [.imsak]
         let settings = WidgetPrayerSettings(location: location, method: .tehran, hiddenPrayers: [], imsakMinutes: minutes)
