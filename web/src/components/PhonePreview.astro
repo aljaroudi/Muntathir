@@ -8,7 +8,7 @@ const t = translations[locale];
 ---
 
 <figure data-phone-preview class="min-w-0" aria-label={t.preview.label}>
-  <div class="flex justify-center px-5 pt-5 pb-9 [perspective:1200px]">
+  <div class="flex justify-center px-5 pt-5 pb-9 perspective-distant">
     <div style={locale === "ar" ? "--phone-y: 13deg; --phone-z: -3deg; --edge-x: -1" : undefined} class="phone relative w-full max-w-[286px] rounded-[3.2rem] p-[7px]">
       <span aria-hidden="true" class="absolute -left-[3px] top-28 h-7 w-[3px] rounded-l bg-[#8c918c]"></span>
       <span aria-hidden="true" class="absolute -left-[3px] top-40 h-12 w-[3px] rounded-l bg-[#8c918c]"></span>

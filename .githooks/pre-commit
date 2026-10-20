@@ -17,5 +17,5 @@ if [ -f web/package.json ]; then
         echo "Bun is required for web checks. Install Bun and run: cd web && bun install --frozen-lockfile" >&2
         exit 1
     fi
-    (cd web && bun run format:check && bun run lint)
+    (cd web && bun run check && bun run lint)
 fi
