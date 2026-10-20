@@ -5,6 +5,12 @@ import Testing
 import UIKit
 
 struct AyahImageTests {
+    @MainActor @Test func quranFontIsBundledAndRegistered() throws {
+        #expect(Bundle.main.url(forResource: "QPCHafs", withExtension: "woff2") != nil)
+        let font = try #require(UIFont(name: "KFGQPCHAFSUthmanicScript-Regula", size: 28))
+        #expect(font.fontName == "KFGQPCHAFSUthmanicScript-Regula")
+    }
+
     @MainActor @Test func shareImageExpandsForLongVerses() throws {
         let library = ContentLibrary()
         let short = try #require(library.verses.min { $0.text.count < $1.text.count })

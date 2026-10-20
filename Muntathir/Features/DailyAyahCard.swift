@@ -54,7 +54,8 @@ private struct AyahText: View {
     let ayah: Ayah
     var body: some View {
         Text(ayah.text)
-            .font(.title2).lineSpacing(12)
+            .font(.custom("KFGQPCHAFSUthmanicScript-Regula", size: 28, relativeTo: .title2))
+            .lineSpacing(12)
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
             .fixedSize(horizontal: false, vertical: true)
@@ -70,12 +71,11 @@ struct AyahShareArtwork: View {
             Label("Daily ayah", systemImage: "book.closed")
                 .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
             AyahText(ayah: ayah)
+                .padding()
             Text(ayah.id).font(.subheadline.monospacedDigit())
             Divider().overlay(Color.accentColor.opacity(0.2))
             HStack {
                 Text("Muntathir").font(.subheadline.weight(.medium))
-                Spacer()
-                Text("Quran text · Tanzil.net").font(.caption)
             }.foregroundStyle(.secondary)
         }
         .padding(40)
@@ -114,18 +114,26 @@ private struct AyahShareSheet: UIViewControllerRepresentable {
     func updateUIViewController(_: UIActivityViewController, context _: Context) {}
 }
 
+#if DEBUG
+    private let exampleAyah = Ayah(
+        surah: 28,
+        number: 24,
+        text: "رَبِّ إِنِّى لِمَآ أَنزَلْتَ إِلَىَّ مِنْ خَيْرٍ فَقِيرٌ"
+    )
+#endif
+
 #Preview("Daily ayah") {
-    DailyAyahCard(ayah: .init(surah: 20, number: 25, text: "قَالَ رَبِّ ٱشْرَحْ لِى صَدْرِى"))
+    DailyAyahCard(ayah: exampleAyah)
         .padding()
 }
 
 #Preview("Daily ayah — dark Arabic") {
-    DailyAyahCard(ayah: .init(surah: 20, number: 25, text: "قَالَ رَبِّ ٱشْرَحْ لِى صَدْرِى"))
+    DailyAyahCard(ayah: exampleAyah)
         .padding().preferredColorScheme(.dark)
         .environment(\.locale, Locale(identifier: "ar"))
         .environment(\.layoutDirection, .rightToLeft)
 }
 
 #Preview("Shared image") {
-    AyahShareArtwork(ayah: .init(surah: 20, number: 25, text: "قَالَ رَبِّ ٱشْرَحْ لِى صَدْرِى"))
+    AyahShareArtwork(ayah: exampleAyah)
 }

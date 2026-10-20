@@ -4,7 +4,7 @@ Native iPhone/iPad app, iOS 26+, Swift 6 and SwiftUI. Open `Muntathir.xcodeproj`
 
 ## What ships in this implementation
 
-Today focuses on the current date and prayer schedule. Calendar contains observances and the daily ayah. Qibla and Settings complete the navigation; Arabic/English localization; Adhan 1.5.0 prayer calculations; manual month-start corrections; bundled observances and all 6,236 Tanzil ayahs; saved-place iCloud preferences; local prayer notifications. A foreground GPS fix is remembered locally across launches and never uploaded to iCloud; reverse geocoding is not used.
+Today focuses on the current date and prayer schedule. Calendar contains observances and the daily ayah. Qibla and Settings complete the navigation; Arabic/English localization; Adhan 1.5.0 prayer calculations; manual month-start corrections; bundled observances and daily Quran verses; saved-place iCloud preferences; local prayer notifications. A foreground GPS fix is remembered locally across launches and never uploaded to iCloud; reverse geocoding is not used.
 
 Prayer method defaults to Tehran. Its Maghrib must be later than calculated sunset; if the library cannot produce that result, the app reports unavailable times. Ramadan Isha intervals for Umm al-Qura/Qatar use the independent Foundation baseline, not manual religious-date corrections. No prayer engine is implemented here.
 
@@ -22,7 +22,7 @@ Local prayer alerts cover ten days (at most 50 requests). Launch, foreground, pr
 
 ## Content provenance
 
-- Quran: verbatim Uthmani text downloaded from [Tanzil](https://tanzil.net), with its embedded notice preserved. Full notice is also in Sources and licenses. Never edit the Arabic text.
+- Quran: bundled Uthmani verses for the daily ayah. Never edit the Arabic text.
 - Prayer fixtures: copied from [Adhan Swift 1.5.0](https://github.com/batoulapps/adhan-swift/tree/1.5.0/Tests/Resources/Times); original source/tolerance remains in each JSON. Test-target copies mirror `Shared/Fixtures`.
 - Event date facts: [Islam: Faith, Practice & History, Lesson 17](https://al-islam.org/islam-faith-practice-history-sayyid-muhammad-rizvi/lesson-17-twelve-caliphs-or-imams), and [Fundamentals of Islam, Appendix 10](https://al-islam.org/fundamentals-islam-mirza-mahdi-pooya/appendix-10-historical-chart-14-masumeen). No prose from these books is bundled. References identify sections instead of invented page numbers.
 - The catalog chooses documented Twelver dates, including 28 Safar for Imam Hasan, 17 Safar for Imam Ridha, and 5 Rajab for Imam Hadi's birth. Alternatives exist. Imam Mahdi has a birth observance only. An event fixed to day 30 is not displayed in a 29-day month; no unreviewed substitution is inferred.
@@ -64,7 +64,7 @@ Simulator validation covers compilation/embedding, settings serialization, hidde
 
 Sunset uses Adhan's neutral calculation parameters without Maghrib adjustments. Islamic midnight is the midpoint from that sunset to the following day's Fajr under the selected method, rounded to the nearest minute. This is not civil or solar midnight. No WeatherKit or network request is needed. Fajr, Dhuhr, and Maghrib remain visible even if old stored preferences contain them in the hidden set; Sunrise, Asr, Sunset, Isha, and Islamic midnight can be hidden. Sunset and midnight are not prayer-notification or next-prayer countdown targets.
 
-### Commit formatting
+### Git hooks
 
 Install SwiftFormat (`brew install swiftformat`), then enable the tracked hook in each clone:
 
@@ -73,6 +73,16 @@ git config core.hooksPath .githooks
 ```
 
 The pre-commit hook runs `swiftformat . --swift-version 6`. If Swift files differ from the index afterward, review and stage them before retrying. The hook never stages changes automatically.
+
+The pre-push hook runs the `MuntathirTests` Swift Testing suite using Xcode on the first compatible iPhone simulator. It blocks pushes if tests fail or Xcode/a compatible simulator is unavailable. Install an iOS simulator runtime through Xcode first. Simulator tests run before pushes to keep commits fast; XCTest UI tests remain manual.
+
+Override the simulator when needed:
+
+```sh
+TEST_DESTINATION='platform=iOS Simulator,id=YOUR-SIMULATOR-UUID' git push
+```
+
+Daily ayah text uses the bundled QPC Hafs Uthmani font at 28 points with Dynamic Type scaling. The app registers `QPCHafs.woff2` through `UIAppFonts`; the card, shared artwork, and daily ayah widgets use its PostScript name, `KFGQPCHAFSUthmanicScript-Regula`.
 
 ## Apple Watch
 
@@ -101,6 +111,6 @@ The counter selects the most recent visible prayer, checking the previous day be
 The combined countdown/schedule widget is now named **Prayer times**, retaining its existing widget kind. The redundant schedule-only widget has been removed; existing copies of that removed widget should be replaced from the widget gallery. The separate iOS **Upcoming prayer** widget has also been removed; watch complications are unchanged.
 
 
-The daily ayah uses a static emerald-to-ivory gradient with no continuous animation. Its share button opens the native share sheet with a 1080-pixel-wide image that expands vertically for the entire verse, including its reference and Tanzil attribution. Rendering uses a fixed readable type size and light appearance, independent of the current screen settings. The displayed verse stays fixed for the local day while Today remains loaded.
+The daily ayah uses a fine-grained emerald-to-ivory background with soft lighting, shared by the app, widgets, and exported images. The background is static. Its share button opens the native share sheet with a 1080-pixel-wide image that expands vertically for the entire verse, including its verse reference. Rendering uses a fixed readable type size and light appearance, independent of the current screen settings. The displayed verse stays fixed for the local day while Today remains loaded.
 
 `AppIcon.icon` is the shared Icon Composer source for the iPhone/iPad and Apple Watch app targets in Debug and Release. Edit it in Icon Composer; widget extensions use their containing app’s identity. The superseded standalone SVG and preview have been removed.

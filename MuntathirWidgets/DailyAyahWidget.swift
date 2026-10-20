@@ -33,30 +33,35 @@ struct DailyAyahProvider: TimelineProvider {
 struct DailyAyahWidgetView: View {
     let entry: DailyAyahEntry
     @Environment(\.widgetFamily) private var family
-    private var isAccessory: Bool { family == .accessoryRectangular }
+    private var isAccessory: Bool {
+        family == .accessoryRectangular
+    }
 
     var body: some View {
         Group {
             if let ayah = entry.ayah {
-                VStack(spacing: isAccessory ? 2 : 8) {
+                VStack(alignment: .leading, spacing: isAccessory ? 2 : family == .systemMedium ? 8 : 12) {
                     if !isAccessory {
                         Label("Daily ayah", systemImage: "book.closed")
-                            .font(.caption).foregroundStyle(.secondary)
+                            .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
                     }
                     Text(ayah.text)
-                        .font(isAccessory ? .body : .title2)
+                        .font(.custom("KFGQPCHAFSUthmanicScript-Regula", size: isAccessory ? 17 : 28, relativeTo: isAccessory ? .body : .title2))
+                        .lineSpacing(isAccessory ? 0 : family == .systemMedium ? 2 : 12)
                         .multilineTextAlignment(.center)
                         .environment(\.layoutDirection, .rightToLeft)
-                        .lineLimit(isAccessory ? 2 : family == .systemLarge ? 12 : 4)
+                        .lineLimit(2)
                         .minimumScaleFactor(isAccessory ? 0.8 : 0.7)
                         .truncationMode(.tail)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .layoutPriority(1)
-                    Text(ayah.id)
-                        .font(.caption2.monospacedDigit())
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .fixedSize()
+                    if !isAccessory {
+                        Text(ayah.id)
+                            .font(.caption.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                    }
                 }
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text("\(ayah.text) \(ayah.id)"))
@@ -69,6 +74,10 @@ struct DailyAyahWidgetView: View {
                 Color.clear
             } else {
                 AyahBackground()
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 28)
+                            .strokeBorder(Color.accentColor.opacity(0.15), lineWidth: 1)
+                    }
             }
         }
     }
