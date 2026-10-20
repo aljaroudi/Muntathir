@@ -12,3 +12,10 @@ if ! git diff --quiet -- 'apple/**/*.swift'; then
     echo "Review and stage the formatted Swift files, then commit again." >&2
     exit 1
 fi
+if [ -f web/package.json ]; then
+    if ! command -v bun >/dev/null 2>&1; then
+        echo "Bun is required for web checks. Install Bun and run: cd web && bun install --frozen-lockfile" >&2
+        exit 1
+    fi
+    (cd web && bun run format:check && bun run lint)
+fi
