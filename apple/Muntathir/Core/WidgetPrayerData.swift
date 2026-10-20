@@ -113,7 +113,8 @@ struct PrayerCountdownFormat: DiscreteFormatStyle {
                 .units(
                     allowed: [.hours, .minutes],
                     width: .narrow,
-                    maximumUnitCount: 2).locale(locale)
+                    maximumUnitCount: 2
+                ).locale(locale)
             )
         )
     }

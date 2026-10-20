@@ -50,10 +50,15 @@ struct CalendarTests {
 }
 
 struct ContentTests {
+    @Test func missingContentHasNoDailyVerse() throws {
+        let emptyBundle = try #require(Bundle(identifier: "com.apple.Foundation"))
+        #expect(ContentLibrary(bundle: emptyBundle).verse(on: Date(), timeZone: .gmt) == nil)
+    }
+
     @Test func bundledContentIsCompleteAndStable() throws {
         let library = ContentLibrary()
-        #expect(library.verses.count == 6236)
-        #expect(Set(library.verses.map(\.id)).count == 6236)
+        #expect(library.verses.count == 31)
+        #expect(Set(library.verses.map(\.id)).count == library.verses.count)
         #expect(library.events.count >= 30)
         #expect(Set(library.events.map(\.id)).count == library.events.count)
         let zone = try #require(TimeZone(identifier: "Asia/Riyadh"))

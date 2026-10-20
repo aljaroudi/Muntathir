@@ -143,19 +143,40 @@
 		E50000000000000000000006 /* QPCHafs.woff2 */ = {isa = PBXFileReference; lastKnownFileType = file; path = Muntathir/Resources/QPCHafs.woff2; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		F60000000000000000000001 /* Documentation exclusions for Muntathir */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (README.md,);
+			target = 04457E5C308394FD00A8887D /* Muntathir */;
+		};
+		F60000000000000000000002 /* Documentation exclusions for MuntathirTests */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (README.md,);
+			target = 04457E69308394FE00A8887D /* MuntathirTests */;
+		};
+		F60000000000000000000003 /* Documentation exclusions for MuntathirUITests */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (README.md,);
+			target = 04457E73308394FE00A8887D /* MuntathirUITests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		04457E5F308394FD00A8887D /* Muntathir */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (F60000000000000000000001 /* Documentation exclusions for Muntathir */,);
 			path = Muntathir;
 			sourceTree = "<group>";
 		};
 		04457E6D308394FE00A8887D /* MuntathirTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (F60000000000000000000002 /* Documentation exclusions for MuntathirTests */,);
 			path = MuntathirTests;
 			sourceTree = "<group>";
 		};
 		04457E77308394FE00A8887D /* MuntathirUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (F60000000000000000000003 /* Documentation exclusions for MuntathirUITests */,);
 			path = MuntathirUITests;
 			sourceTree = "<group>";
 		};
