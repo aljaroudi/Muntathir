@@ -16,7 +16,7 @@ struct PrayerCounterView: View {
             }
         }
         .interactiveDismissDisabled()
-        .toolbar(sensor.counter == nil ? .visible : .hidden, for: .tabBar)
+        .toolbar(sensor.counter == nil ? .visible : .hidden, for: .tabBar, .navigationBar)
         .task(id: sessionID) {
             guard scenePhase == .active else { return }
             if sensor.counter?.stopped == true {
@@ -44,31 +44,74 @@ struct PrayerCounterView: View {
     }
 
     private var setup: some View {
-        NavigationStack {
-            Form {
-                Picker("Prayer", selection: $prayer) {
-                    ForEach(PrayerName.notifiable) { prayer in
-                        Text(prayer.title).tag(prayer)
+        Page {
+            Card {
+                Label("Cover the sensor during sujood", systemImage: "sensor.fill")
+                    .font(.title2.bold())
+                VStack(spacing: 8) {
+                    Image(systemName: "face.smiling")
+                    Image(systemName: "arrow.down")
+                        .font(.body)
+                    Image(systemName: "iphone.gen3")
+                    Text("Sensor at top of screen")
+                        .font(.caption)
+                }
+                .font(.largeTitle)
+                .foregroundStyle(Color.accentColor)
+                .frame(maxWidth: .infinity)
+                .accessibilityHidden(true)
+                Text("Place your iPhone face-up, with the sensor at the top of the screen directly beneath your face during sujood. Your face must cover the sensor.")
+            }
+            Card {
+                ViewThatFits(in: .horizontal) {
+                    HStack {
+                        Text("Test placement").font(.headline)
+                        Spacer()
+                        sensorStatus
+                    }
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Test placement").font(.headline)
+                        sensorStatus
                     }
                 }
-                Section("Placement test") {
-                    Text("Place your iPhone face-up on the prayer mat, with the top of the screen near where your face lowers. Test that the sensor changes when you lower and lift your face.")
-                    if sensor.available {
-                        Label(sensor.near ? "Near" : "Far", systemImage: sensor.near ? "sensor.fill" : "sensor")
-                        Text("The display may turn off while your face is near the sensor. The count appears again when you lift your face.")
-                    } else {
-                        Label("Proximity sensing is unavailable on this device.", systemImage: "exclamationmark.circle")
-                    }
-                }
-                Section {
-                    Button("Start counting") { sensor.start(prayer: prayer) }
-                        .disabled(!sensor.available || sensor.near)
-                } footer: {
-                    Text("Keep the app open during prayer. Each pair of sujoods advances one rakaa. Leaving the app interrupts counting.")
+                Text("Lower and lift your face. Check that the sensor changes between Covered and Uncovered.")
+                if !sensor.available {
+                    Label("Proximity sensing is unavailable on this device.", systemImage: "exclamationmark.circle")
+                        .foregroundStyle(.secondary)
                 }
             }
-            .navigationTitle("Prayer counter")
+            Menu {
+                ForEach(PrayerName.notifiable) { choice in
+                    Button {
+                        sensor.start(prayer: choice)
+                    } label: {
+                        if choice == prayer {
+                            Label(choice.title, systemImage: "checkmark")
+                        } else {
+                            Text(choice.title)
+                        }
+                    }
+                }
+            } label: {
+                Text("Start counting")
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(!sensor.available || sensor.near)
+            Text("The screen may turn off when covered. Keep the app open while praying.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
         }
+        .navigationTitle("Prayer counter")
+    }
+
+    private var sensorStatus: some View {
+        Label(sensor.near ? "Covered" : "Uncovered", systemImage: sensor.near ? "sensor.fill" : "sensor")
+            .font(.subheadline)
+            .foregroundStyle(sensor.available ? Color.accentColor : .secondary)
+            .opacity(sensor.available ? 1 : 0)
+            .accessibilityHidden(!sensor.available)
     }
 
     private func exit() {

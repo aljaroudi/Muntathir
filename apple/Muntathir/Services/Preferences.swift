@@ -7,6 +7,7 @@ struct Preferences: Codable, Equatable, Sendable {
     var prayerMethod: PrayerMethod = .jafari
     var imsakMinutes = 10
     var enabledPrayers: Set<PrayerName> = [.fajr, .dhuhr, .maghrib]
+    var showFeelsLikeTemperature = false
     var announcementNotifications = false
     var selectedSourceID: String?
     var overrides: [MonthCorrection] = []
@@ -16,12 +17,13 @@ struct Preferences: Codable, Equatable, Sendable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case savedLocation, prayerMethod, imsakMinutes, enabledPrayers, announcementNotifications, selectedSourceID, overrides, hiddenPrayers
+        case showFeelsLikeTemperature, savedLocation, prayerMethod, imsakMinutes, enabledPrayers, announcementNotifications, selectedSourceID, overrides, hiddenPrayers
     }
 
     init() {}
     init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
+        showFeelsLikeTemperature = try c.decodeIfPresent(Bool.self, forKey: .showFeelsLikeTemperature) ?? false
         savedLocation = try c.decodeIfPresent(SavedLocation.self, forKey: .savedLocation)
         prayerMethod = try c.decodeIfPresent(PrayerMethod.self, forKey: .prayerMethod) ?? .tehran
         imsakMinutes = try min(120, max(0, c.decodeIfPresent(Int.self, forKey: .imsakMinutes) ?? 10))
@@ -165,6 +167,7 @@ struct Preferences: Codable, Equatable, Sendable {
         let prayers = WidgetPrayerSettings(location: location, method: preferences.prayerMethod,
                                            hiddenPrayers: preferences.hiddenPrayers, imsakMinutes: preferences.imsakMinutes)
         let calendar = WidgetCalendarSettings(timeZoneID: location?.timeZoneID,
+                                              showFeelsLikeTemperature: preferences.showFeelsLikeTemperature,
                                               manual: preferences.overrides, confirmed: confirmations.map(\.correction))
         let prayersChanged = WidgetPrayerStore.write(prayers)
         let calendarChanged = calendar.write()

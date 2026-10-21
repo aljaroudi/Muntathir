@@ -66,7 +66,7 @@ struct CalendarScreen: View {
                                                 EventDetail(event: event)
                                             } label: {
                                                 HStack {
-                                                    Text(event.title(arabic: locale.language.languageCode?.identifier == "ar"))
+                                                    Text(event.title(locale: locale))
                                                         .frame(maxWidth: .infinity, alignment: .leading)
                                                     Image(systemName: "chevron.forward").font(.caption)
                                                         .foregroundStyle(.tertiary)

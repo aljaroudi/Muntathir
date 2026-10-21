@@ -72,6 +72,12 @@ struct SettingsView: View {
                         "Live sources are not connected yet. Use the Calendar tab to adjust a month manually."
                     )
                 }
+                Section("Weather") {
+                    Toggle("Show feels-like temperature", isOn: Binding(
+                        get: { model.preferences.showFeelsLikeTemperature },
+                        set: { value in model.update { $0.showFeelsLikeTemperature = value } }
+                    ))
+                }
                 Section("Prayers") {
                     NavigationLink("Visibility") { PrayerVisibilitySettings() }
                     NavigationLink("Notifications") { PrayerNotificationSettings() }

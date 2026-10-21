@@ -8,13 +8,24 @@
 
 /* Begin PBXBuildFile section */
 		A10000000000000000000001 /* Adhan in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000002 /* Adhan */; };
+		A72000000000000000000000 /* Muntathir/Core/SolarPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71000000000000000000000 /* Muntathir/Core/SolarPosition.swift */; };
+		A72000000000000000000001 /* Muntathir/Core/SolarArcLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71000000000000000000001 /* Muntathir/Core/SolarArcLayout.swift */; };
+		A82000000000000000000000 /* MuntathirWidgets/IslamicCalendarWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81000000000000000000000 /* MuntathirWidgets/IslamicCalendarWidget.swift */; };
+		A82000000000000000000001 /* Muntathir/Core/WeatherReading.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81000000000000000000001 /* Muntathir/Core/WeatherReading.swift */; };
+		A82000000000000000000002 /* Muntathir/Core/MoonPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81000000000000000000002 /* Muntathir/Core/MoonPosition.swift */; };
+		A82000000000000000000003 /* Muntathir/Features/WeatherCardScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81000000000000000000003 /* Muntathir/Features/WeatherCardScene.swift */; };
+		A82000000000000000000004 /* Muntathir/Features/WeatherSceneStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81000000000000000000004 /* Muntathir/Features/WeatherSceneStyle.swift */; };
+		A82000000000000000000005 /* Muntathir/Features/SunDisc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81000000000000000000005 /* Muntathir/Features/SunDisc.swift */; };
+		A82000000000000000000006 /* Muntathir/Features/MoonDisc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81000000000000000000006 /* Muntathir/Features/MoonDisc.swift */; };
+		A82000000000000000000007 /* Muntathir/Core/SharedWeatherStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81000000000000000000007 /* Muntathir/Core/SharedWeatherStore.swift */; };
+		A82000000000000000000008 /* Muntathir/Features/CalendarWeatherCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81000000000000000000008 /* Muntathir/Features/CalendarWeatherCard.swift */; };
 		B2000000000000000000001E /* PrayerWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000A /* PrayerWidgets.swift */; };
 		B2000000000000000000001F /* Muntathir/Core/WidgetPrayerData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000B /* Muntathir/Core/WidgetPrayerData.swift */; };
 		B20000000000000000000020 /* Muntathir/Core/PrayerCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000C /* Muntathir/Core/PrayerCalculator.swift */; };
 		B20000000000000000000021 /* Muntathir/Core/CalendarEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000D /* Muntathir/Core/CalendarEngine.swift */; };
 		B20000000000000000000022 /* Muntathir/Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000E /* Muntathir/Localizable.xcstrings */; };
 		B20000000000000000000023 /* Adhan in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000002 /* Adhan */; };
-		B20000000000000000000024 /* MuntathirWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = B20000000000000000000014 /* MuntathirWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B20000000000000000000024 /* MuntathirWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B20000000000000000000014 /* MuntathirWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C3000000000000000000000C /* MuntathirWatchWidgets/WatchWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30000000000000000000007 /* MuntathirWatchWidgets/WatchWidgets.swift */; };
 		C3000000000000000000000D /* Muntathir/Core/PrayerCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30000000000000000000001 /* Muntathir/Core/PrayerCalculator.swift */; };
 		C3000000000000000000000E /* Muntathir/Core/CalendarEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30000000000000000000002 /* Muntathir/Core/CalendarEngine.swift */; };
@@ -30,7 +41,7 @@
 		C30000000000000000000023 /* Muntathir/Services/WatchConnectivityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30000000000000000000005 /* Muntathir/Services/WatchConnectivityService.swift */; };
 		C30000000000000000000025 /* Adhan in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000002 /* Adhan */; };
 		C30000000000000000000027 /* Muntathir/Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000E /* Muntathir/Localizable.xcstrings */; };
-		C30000000000000000000029 /* MuntathirWatchWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = C3000000000000000000000B /* MuntathirWatchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C30000000000000000000029 /* MuntathirWatchWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C3000000000000000000000B /* MuntathirWatchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C30000000000000000000031 /* MuntathirWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C3000000000000000000001D /* MuntathirWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		D40000000000000000000002 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = D40000000000000000000001 /* AppIcon.icon */; };
 		D40000000000000000000003 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = D40000000000000000000001 /* AppIcon.icon */; };
@@ -39,7 +50,7 @@
 		E50000000000000000000013 /* Muntathir/Features/AyahBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000003 /* Muntathir/Features/AyahBackground.swift */; };
 		E50000000000000000000014 /* Muntathir/Core/ContentLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000004 /* Muntathir/Core/ContentLibrary.swift */; };
 		E50000000000000000000015 /* Muntathir/Resources/quran-daily.txt in Resources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000005 /* Muntathir/Resources/quran-daily.txt */; };
-		E50000000000000000000016 /* QPCHafs.woff2 in Resources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000006 /* QPCHafs.woff2 */; };
+		E50000000000000000000016 /* Muntathir/Resources/QPCHafs.woff2 in Resources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000006 /* Muntathir/Resources/QPCHafs.woff2 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -81,23 +92,23 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		B20000000000000000000006 /* Embed App Extensions */ = {
+		B20000000000000000000006 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			dstPath = "";
 			dstSubfolder = PlugIns;
 			files = (
-				B20000000000000000000024 /* MuntathirWidgets.appex in Embed App Extensions */,
+				B20000000000000000000024 /* MuntathirWidgets.appex in Embed Foundation Extensions */,
 			);
-			name = "Embed App Extensions";
+			name = "Embed Foundation Extensions";
 		};
-		C3000000000000000000002A /* Embed App Extensions */ = {
+		C3000000000000000000002A /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			dstPath = "";
 			dstSubfolder = PlugIns;
 			files = (
-				C30000000000000000000029 /* MuntathirWatchWidgets.appex in Embed App Extensions */,
+				C30000000000000000000029 /* MuntathirWatchWidgets.appex in Embed Foundation Extensions */,
 			);
-			name = "Embed App Extensions";
+			name = "Embed Foundation Extensions";
 		};
 		C30000000000000000000032 /* Embed Watch Content */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -114,6 +125,17 @@
 		04457E5D308394FD00A8887D /* Muntathir.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Muntathir.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		04457E6A308394FE00A8887D /* MuntathirTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MuntathirTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		04457E74308394FE00A8887D /* MuntathirUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MuntathirUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A71000000000000000000000 /* Muntathir/Core/SolarPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/SolarPosition.swift; sourceTree = SOURCE_ROOT; };
+		A71000000000000000000001 /* Muntathir/Core/SolarArcLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/SolarArcLayout.swift; sourceTree = SOURCE_ROOT; };
+		A81000000000000000000000 /* MuntathirWidgets/IslamicCalendarWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuntathirWidgets/IslamicCalendarWidget.swift; sourceTree = SOURCE_ROOT; };
+		A81000000000000000000001 /* Muntathir/Core/WeatherReading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/WeatherReading.swift; sourceTree = SOURCE_ROOT; };
+		A81000000000000000000002 /* Muntathir/Core/MoonPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/MoonPosition.swift; sourceTree = SOURCE_ROOT; };
+		A81000000000000000000003 /* Muntathir/Features/WeatherCardScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Features/WeatherCardScene.swift; sourceTree = SOURCE_ROOT; };
+		A81000000000000000000004 /* Muntathir/Features/WeatherSceneStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Features/WeatherSceneStyle.swift; sourceTree = SOURCE_ROOT; };
+		A81000000000000000000005 /* Muntathir/Features/SunDisc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Features/SunDisc.swift; sourceTree = SOURCE_ROOT; };
+		A81000000000000000000006 /* Muntathir/Features/MoonDisc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Features/MoonDisc.swift; sourceTree = SOURCE_ROOT; };
+		A81000000000000000000007 /* Muntathir/Core/SharedWeatherStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/SharedWeatherStore.swift; sourceTree = SOURCE_ROOT; };
+		A81000000000000000000008 /* Muntathir/Features/CalendarWeatherCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Features/CalendarWeatherCard.swift; sourceTree = SOURCE_ROOT; };
 		B2000000000000000000000A /* PrayerWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerWidgets.swift; sourceTree = "<group>"; };
 		B2000000000000000000000B /* Muntathir/Core/WidgetPrayerData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/WidgetPrayerData.swift; sourceTree = SOURCE_ROOT; };
 		B2000000000000000000000C /* Muntathir/Core/PrayerCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/PrayerCalculator.swift; sourceTree = SOURCE_ROOT; };
@@ -140,23 +162,29 @@
 		E50000000000000000000003 /* Muntathir/Features/AyahBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Features/AyahBackground.swift; sourceTree = SOURCE_ROOT; };
 		E50000000000000000000004 /* Muntathir/Core/ContentLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/ContentLibrary.swift; sourceTree = SOURCE_ROOT; };
 		E50000000000000000000005 /* Muntathir/Resources/quran-daily.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Muntathir/Resources/quran-daily.txt"; sourceTree = SOURCE_ROOT; };
-		E50000000000000000000006 /* QPCHafs.woff2 */ = {isa = PBXFileReference; lastKnownFileType = file; path = Muntathir/Resources/QPCHafs.woff2; sourceTree = SOURCE_ROOT; };
+		E50000000000000000000006 /* Muntathir/Resources/QPCHafs.woff2 */ = {isa = PBXFileReference; lastKnownFileType = file; path = Muntathir/Resources/QPCHafs.woff2; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		F60000000000000000000001 /* Documentation exclusions for Muntathir */ = {
+		F60000000000000000000001 /* Exceptions for "Muntathir" folder in "Muntathir" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (README.md,);
+			membershipExceptions = (
+				README.md,
+			);
 			target = 04457E5C308394FD00A8887D /* Muntathir */;
 		};
-		F60000000000000000000002 /* Documentation exclusions for MuntathirTests */ = {
+		F60000000000000000000002 /* Exceptions for "MuntathirTests" folder in "MuntathirTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (README.md,);
+			membershipExceptions = (
+				README.md,
+			);
 			target = 04457E69308394FE00A8887D /* MuntathirTests */;
 		};
-		F60000000000000000000003 /* Documentation exclusions for MuntathirUITests */ = {
+		F60000000000000000000003 /* Exceptions for "MuntathirUITests" folder in "MuntathirUITests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (README.md,);
+			membershipExceptions = (
+				README.md,
+			);
 			target = 04457E73308394FE00A8887D /* MuntathirUITests */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -164,19 +192,25 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		04457E5F308394FD00A8887D /* Muntathir */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (F60000000000000000000001 /* Documentation exclusions for Muntathir */,);
+			exceptions = (
+				F60000000000000000000001 /* Exceptions for "Muntathir" folder in "Muntathir" target */,
+			);
 			path = Muntathir;
 			sourceTree = "<group>";
 		};
 		04457E6D308394FE00A8887D /* MuntathirTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (F60000000000000000000002 /* Documentation exclusions for MuntathirTests */,);
+			exceptions = (
+				F60000000000000000000002 /* Exceptions for "MuntathirTests" folder in "MuntathirTests" target */,
+			);
 			path = MuntathirTests;
 			sourceTree = "<group>";
 		};
 		04457E77308394FE00A8887D /* MuntathirUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (F60000000000000000000003 /* Documentation exclusions for MuntathirUITests */,);
+			exceptions = (
+				F60000000000000000000003 /* Exceptions for "MuntathirUITests" folder in "MuntathirUITests" target */,
+			);
 			path = MuntathirUITests;
 			sourceTree = "<group>";
 		};
@@ -252,8 +286,17 @@
 			isa = PBXGroup;
 			children = (
 				B2000000000000000000000A /* PrayerWidgets.swift */,
+				A81000000000000000000008 /* Muntathir/Features/CalendarWeatherCard.swift */,
+				A81000000000000000000007 /* Muntathir/Core/SharedWeatherStore.swift */,
+				A81000000000000000000000 /* MuntathirWidgets/IslamicCalendarWidget.swift */,
+				A81000000000000000000001 /* Muntathir/Core/WeatherReading.swift */,
+				A81000000000000000000002 /* Muntathir/Core/MoonPosition.swift */,
+				A81000000000000000000003 /* Muntathir/Features/WeatherCardScene.swift */,
+				A81000000000000000000004 /* Muntathir/Features/WeatherSceneStyle.swift */,
+				A81000000000000000000005 /* Muntathir/Features/SunDisc.swift */,
+				A81000000000000000000006 /* Muntathir/Features/MoonDisc.swift */,
 				E50000000000000000000005 /* Muntathir/Resources/quran-daily.txt */,
-				E50000000000000000000006 /* QPCHafs.woff2 */,
+				E50000000000000000000006 /* Muntathir/Resources/QPCHafs.woff2 */,
 				E50000000000000000000004 /* Muntathir/Core/ContentLibrary.swift */,
 				E50000000000000000000003 /* Muntathir/Features/AyahBackground.swift */,
 				E50000000000000000000002 /* MuntathirWidgets/DailyAyahWidget.swift */,
@@ -268,6 +311,8 @@
 		B20000000000000000000033 /* Shared app sources */ = {
 			isa = PBXGroup;
 			children = (
+				A71000000000000000000000 /* Muntathir/Core/SolarPosition.swift */,
+				A71000000000000000000001 /* Muntathir/Core/SolarArcLayout.swift */,
 				B2000000000000000000000B /* Muntathir/Core/WidgetPrayerData.swift */,
 				B2000000000000000000000C /* Muntathir/Core/PrayerCalculator.swift */,
 				B2000000000000000000000D /* Muntathir/Core/CalendarEngine.swift */,
@@ -318,7 +363,7 @@
 				04457E59308394FD00A8887D /* Sources */,
 				04457E5A308394FD00A8887D /* Frameworks */,
 				04457E5B308394FD00A8887D /* Resources */,
-				B20000000000000000000006 /* Embed App Extensions */,
+				B20000000000000000000006 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
@@ -422,7 +467,7 @@
 				C30000000000000000000024 /* Sources */,
 				C30000000000000000000026 /* Frameworks */,
 				C30000000000000000000028 /* Resources */,
-				C3000000000000000000002A /* Embed App Extensions */,
+				C3000000000000000000002A /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
@@ -445,7 +490,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2700;
-				LastUpgradeCheck = 2700;
+				LastUpgradeCheck = 2710;
 				TargetAttributes = {
 					04457E5C308394FD00A8887D = {
 						CreatedOnToolsVersion = 27.0;
@@ -510,7 +555,7 @@
 			files = (
 				B20000000000000000000022 /* Muntathir/Localizable.xcstrings in Resources */,
 				E50000000000000000000015 /* Muntathir/Resources/quran-daily.txt in Resources */,
-				E50000000000000000000016 /* QPCHafs.woff2 in Resources */,
+				E50000000000000000000016 /* Muntathir/Resources/QPCHafs.woff2 in Resources */,
 			);
 		};
 		C30000000000000000000015 /* Resources */ = {
@@ -548,6 +593,17 @@
 			isa = PBXSourcesBuildPhase;
 			files = (
 				B2000000000000000000001E /* PrayerWidgets.swift in Sources */,
+				A82000000000000000000008 /* Muntathir/Features/CalendarWeatherCard.swift in Sources */,
+				A82000000000000000000007 /* Muntathir/Core/SharedWeatherStore.swift in Sources */,
+				A82000000000000000000000 /* MuntathirWidgets/IslamicCalendarWidget.swift in Sources */,
+				A82000000000000000000001 /* Muntathir/Core/WeatherReading.swift in Sources */,
+				A82000000000000000000002 /* Muntathir/Core/MoonPosition.swift in Sources */,
+				A82000000000000000000003 /* Muntathir/Features/WeatherCardScene.swift in Sources */,
+				A82000000000000000000004 /* Muntathir/Features/WeatherSceneStyle.swift in Sources */,
+				A82000000000000000000005 /* Muntathir/Features/SunDisc.swift in Sources */,
+				A82000000000000000000006 /* Muntathir/Features/MoonDisc.swift in Sources */,
+				A72000000000000000000001 /* Muntathir/Core/SolarArcLayout.swift in Sources */,
+				A72000000000000000000000 /* Muntathir/Core/SolarPosition.swift in Sources */,
 				E50000000000000000000014 /* Muntathir/Core/ContentLibrary.swift in Sources */,
 				E50000000000000000000013 /* Muntathir/Features/AyahBackground.swift in Sources */,
 				E50000000000000000000012 /* MuntathirWidgets/DailyAyahWidget.swift in Sources */,
@@ -614,6 +670,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -667,6 +724,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -677,6 +735,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -723,6 +782,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};

@@ -7,16 +7,29 @@ struct ContentView: View {
     var body: some View {
         TabView {
             Tab("Today", systemImage: "sun.max") {
-                shell { TodayView() }
-            }
-            if UIDevice.current.userInterfaceIdiom == .phone {
-                Tab("Prayer counter", systemImage: "hand.point.up") { PrayerCounterView() }
+                shell { TodayView(referenceDate: skyTestDate) }
             }
             Tab("Calendar", systemImage: "calendar") {
                 shell { CalendarScreen() }
             }
-            Tab("Qibla", systemImage: "location.north.circle") {
-                shell { QiblaView() }
+            Tab("Tools", systemImage: "square.grid.2x2") {
+                shell {
+                    List {
+                        NavigationLink {
+                            QiblaView().toolbar { settingsToolbar }
+                        } label: {
+                            Label("Qibla", systemImage: "location.north.circle")
+                        }
+                        if UIDevice.current.userInterfaceIdiom == .phone {
+                            NavigationLink {
+                                PrayerCounterView().toolbar { settingsToolbar }
+                            } label: {
+                                Label("Prayer counter", systemImage: "hand.point.up")
+                            }
+                        }
+                    }
+                    .navigationTitle("Tools")
+                }
             }
         }
         .tint(.accentColor)
@@ -51,38 +64,61 @@ struct ContentView: View {
         }
     }
 
+    private var skyTestDate: Date? {
+        #if DEBUG
+            let arguments = ProcessInfo.processInfo.arguments
+            if arguments.contains("--ui-testing"), let index = arguments.firstIndex(of: "--sky-date"),
+               arguments.indices.contains(index + 1)
+            {
+                return ISO8601DateFormatter().date(from: arguments[index + 1])
+            }
+        #endif
+        return nil
+    }
+
     private func shell(@ViewBuilder content: () -> some View) -> some View {
         NavigationStack {
             content()
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("Settings", systemImage: "gearshape") {
-                            settings = true
-                        }
-                    }
-                }
+                .toolbar { settingsToolbar }
+        }
+    }
+
+    private var settingsToolbar: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            Button("Settings", systemImage: "gearshape") {
+                settings = true
+            }
         }
     }
 }
 
 struct Card<Content: View>: View {
+    var skyBackground = false
     @ViewBuilder var content: Content
     var body: some View {
         VStack(alignment: .leading, spacing: 16) { content }
             .frame(maxWidth: .infinity, alignment: .leading).padding(20)
-            .background(.background, in: .rect(cornerRadius: 24))
+            .background {
+                if skyBackground {
+                    SkyCardSurface().clipShape(.rect(cornerRadius: 24))
+                } else {
+                    RoundedRectangle(cornerRadius: 24).fill(.background)
+                }
+            }
     }
 }
 
 struct Page<Content: View>: View {
+    var transparentBackground = false
     @ViewBuilder var content: Content
     var body: some View {
         ScrollView {
             VStack(spacing: 18) { content }
-                .frame(maxWidth: 760).padding()
+                .containerRelativeFrame(.horizontal) { width, _ in min(760, max(0, width - 32)) }
+                .padding()
                 .frame(maxWidth: .infinity)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(transparentBackground ? Color.clear : Color(.systemGroupedBackground))
     }
 }
 
@@ -132,7 +168,7 @@ struct EventRows: View {
             NavigationLink {
                 EventDetail(event: event)
             } label: {
-                Label(event.title(arabic: locale.language.languageCode?.identifier == "ar"), systemImage: "sparkle")
+                Label(event.title(locale: locale), systemImage: "sparkle")
             }
         }
     }
@@ -143,11 +179,7 @@ struct EventDetail: View {
     @Environment(\.locale) private var locale
     var body: some View {
         List {
-            Text(
-                event.title(
-                    arabic: locale.language.languageCode?.identifier == "ar"
-                )
-            ).font(.title2)
+            Text(event.title(locale: locale)).font(.title2)
             if event.convention != nil {
                 Text(
                     "Twelver Shia convention. Historical dates may differ between sources."

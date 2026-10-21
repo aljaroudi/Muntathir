@@ -38,16 +38,6 @@ struct WidgetPrayerSettings: Codable, Equatable, Sendable {
             .filter { $0.name.isVisible(hidden: hiddenPrayers) }
     }
 
-    func upcomingTimes(after date: Date, limit: Int = 3) -> [PrayerMoment] {
-        guard let location else { return [] }
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = location.timeZone
-        // Include yesterday because its Islamic midnight can fall after civil midnight.
-        return (-1 ... 2).flatMap { offset in
-            prayers(on: calendar.date(byAdding: .day, value: offset, to: date)!)
-        }.filter { $0.date > date }.sorted { $0.date < $1.date }.prefix(max(0, limit)).map(\.self)
-    }
-
     func upcomingPrayers(after date: Date, limit: Int = 3) -> [PrayerMoment] {
         guard let location else { return [] }
         var calendar = Calendar(identifier: .gregorian)
@@ -112,8 +102,8 @@ struct PrayerCountdownFormat: DiscreteFormatStyle {
             value.formatted(
                 .units(
                     allowed: [.hours, .minutes],
-                    width: .narrow,
-                    maximumUnitCount: 2
+                    width: .wide,
+                    maximumUnitCount: 1
                 ).locale(locale)
             )
         )
@@ -133,6 +123,7 @@ struct PrayerCountdownFormat: DiscreteFormatStyle {
 
 struct WidgetCalendarSettings: Codable, Equatable, Sendable {
     var timeZoneID: String?
+    var showFeelsLikeTemperature: Bool?
     var manual: [MonthCorrection] = []
     var confirmed: [MonthCorrection] = []
     var zone: TimeZone {

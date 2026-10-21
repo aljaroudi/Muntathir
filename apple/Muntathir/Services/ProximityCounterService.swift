@@ -10,8 +10,19 @@ final class ProximityCounterService {
     private(set) var counter: PrayerCounter?
     private var previousIdleSetting: Bool?
 
+    private var simulatesSensor: Bool {
+        #if DEBUG && targetEnvironment(simulator)
+            let arguments = ProcessInfo.processInfo.arguments
+            return arguments.contains("--ui-testing") && arguments.contains("--ui-testing-counter-sensor")
+        #else
+            return false
+        #endif
+    }
+
     func start(prayer: PrayerName) {
-        guard available, counter == nil else { return }
+        guard available, monitoring, counter == nil else { return }
+        near = UIDevice.current.proximityState
+        guard !near else { return }
         counter = PrayerCounter(prayer: prayer)
         previousIdleSetting = UIApplication.shared.isIdleTimerDisabled
         UIApplication.shared.isIdleTimerDisabled = true
@@ -23,9 +34,14 @@ final class ProximityCounterService {
         Self.owner = self
         monitoring = true
         UIDevice.current.isProximityMonitoringEnabled = true
-        available = UIDevice.current.isProximityMonitoringEnabled
+        available = UIDevice.current.isProximityMonitoringEnabled || simulatesSensor
         defer { releaseHardware() }
         guard available else { return }
+        if simulatesSensor {
+            // Keep UI tests idle; simulator availability does not simulate sensor samples.
+            try? await Task.sleep(for: .seconds(3600))
+            return
+        }
         while !Task.isCancelled, monitoring {
             sample()
             if counter?.complete == true || counter?.interrupted == true || counter?.stopped == true {

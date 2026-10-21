@@ -1,12 +1,12 @@
 # iPhone and iPad
 
-Today shows the current date, prayer schedule, and daily ayah. Calendar contains observances. Qibla and Settings complete the navigation; Arabic/English localization; Adhan 1.5.0 prayer calculations; manual month-start corrections; bundled observances and daily Quran verses; saved-place iCloud preferences; local prayer notifications. A foreground GPS fix is remembered locally across launches and never uploaded to iCloud; reverse geocoding is not used.
+Today shows the current date, prayer schedule, and daily ayah. Calendar contains observances. Tools groups Qibla and the iPhone prayer counter; Settings is available from the navigation toolbar; Arabic/English localization; Adhan 1.5.0 prayer calculations; manual month-start corrections; bundled observances and daily Quran verses; saved-place iCloud preferences; local prayer notifications. A foreground GPS fix is remembered locally across launches and never uploaded to iCloud; reverse geocoding is not used.
 
 New preferences default to Jafari/Qum; legacy preferences without a method retain Tehran. Tehran's Maghrib must be later than calculated sunset; if the library cannot produce that result, the app reports unavailable times. Ramadan Isha intervals for Umm al-Qura/Qatar use the independent Foundation baseline, not manual religious-date corrections. No prayer engine is implemented here.
 
 ## Prayer counter
 
-Open the **Prayer counter** tab, choose a prayer, and test placement with the phone face-up on the mat. Start with the sensor uncovered. The black screen shows the current rakaa, starting at 1; the first sujood turns it gray, and the second advances it. The final pair leaves the target number white until exit. No session history is saved.
+Open **Tools → Prayer counter**. Place the phone face-up with the sensor at the top of the screen directly beneath your face during sujood, so your face covers it. Lower and lift your face to check Covered/Uncovered status. With the sensor uncovered, tap **Start counting** and choose a prayer from the menu to start immediately. The suggested prayer has a checkmark. The black screen shows the current rakaa, starting at 1; the first sujood turns it gray, and the second advances it. The final pair leaves the target number white until exit. No session history is saved.
 
 Proximity monitoring is required; there is no camera, light-sensor, or manual fallback. A cycle requires at least 1 second near and 1 second continuously far. Leaving the app or locking the phone interrupts counting; an interrupted session cannot resume. Proximity-induced display blanking alone must not interrupt the session. Monitoring and idle-lock overrides are released when counting ends or the presentation closes.
 
@@ -25,3 +25,7 @@ Local alerts are plannedacross ten days, limited to the nearest 50 requests. Lau
 The daily ayah uses a fine-grained emerald-to-ivory background with soft lighting, shared by the app, widgets, and exported images. The background is static. Its share button opens the native share sheet with a 1080-pixel-wide image that expands vertically for the entire verse, including its verse reference. Rendering uses a fixed readable type size and light appearance, independent of the current screen settings. The displayed verse stays fixed for the local day while Today remains loaded.
 
 See [widgets](../MuntathirWidgets/), [calendar and content](../Shared/), and [Apple setup](../).
+
+## Qibla accuracy
+
+Open **Tools → Qibla**. The compass stays blurred with a warning unless a valid true heading has a reported error of 10° or less. Missing, invalid, and nonfinite readings never enable arrow guidance. The calculated bearing from true north remains available separately. Validate interference and recovery on a physical device.

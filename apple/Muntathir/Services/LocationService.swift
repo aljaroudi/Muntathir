@@ -11,7 +11,16 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     var message: String?
     var isBusy = false
     private let manager = CLLocationManager()
+    private(set) var headingOwners: Set<UUID> = []
     private var requestID = UUID()
+
+    var hasAccurateHeading: Bool {
+        guard let heading, heading.isFinite, (0 ..< 360).contains(heading),
+              let headingAccuracy, headingAccuracy.isFinite
+        else { return false }
+        return (0 ... 10).contains(headingAccuracy)
+    }
+
     override init() {
         super.init()
         manager.delegate = self
@@ -86,7 +95,8 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
         }
     }
 
-    func startHeading() {
+    func startHeading(owner: UUID) {
+        guard headingOwners.insert(owner).inserted, headingOwners.count == 1 else { return }
         guard CLLocationManager.headingAvailable() else {
             message = String(
                 localized:
@@ -97,8 +107,12 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
         manager.startUpdatingHeading()
     }
 
-    func stopHeading() {
+    func stopHeading(owner: UUID) {
+        headingOwners.remove(owner)
+        guard headingOwners.isEmpty else { return }
         manager.stopUpdatingHeading()
+        heading = nil
+        headingAccuracy = nil
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -142,6 +156,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
         _: CLLocationManager,
         didUpdateHeading newHeading: CLHeading
     ) {
+        guard !headingOwners.isEmpty else { return }
         headingAccuracy = newHeading.headingAccuracy
         heading =
             newHeading.trueHeading >= 0 && newHeading.headingAccuracy >= 0

@@ -30,7 +30,7 @@ struct WidgetPrayerTests {
         }
         for date in dates {
             #expect(settings.nextPrayer(after: date) != nil)
-            #expect(!settings.upcomingTimes(after: date).isEmpty)
+            #expect(!settings.upcomingPrayers(after: date).isEmpty)
         }
     }
 
@@ -53,16 +53,14 @@ struct WidgetPrayerTests {
         #expect(WidgetPrayerStore.read(from: defaults)?.location == nil)
     }
 
-    @Test func countdownUsesHoursAndMinutes() {
+    @Test func countdownUsesOneFullLengthUnit() {
         let now = Date(timeIntervalSince1970: 0)
         let style = PrayerCountdownFormat(target: now.addingTimeInterval(4380), locale: Locale(identifier: "en_US"))
         let text = String(style.format(now).characters)
-        #expect(text.contains("1"))
-        #expect(text.contains("13"))
-        #expect(text == "1h 13m")
+        #expect(text == "1 hour")
         #expect(style.discreteInput(after: now) == now.addingTimeInterval(60))
         #expect(style.discreteInput(after: style.target) == nil)
-        #expect(String(style.format(style.target.addingTimeInterval(60)).characters) == "0m")
+        #expect(String(style.format(style.target.addingTimeInterval(60)).characters) == "0 minutes")
     }
 }
 
@@ -97,20 +95,28 @@ struct AdditionalPrayerTimesTests {
 }
 
 struct CompactWidgetTests {
-    @Test func upcomingTimesAreLimitedAndRollIntoTomorrow() throws {
+    @Test func upcomingPrayersAreLimitedAndRollIntoTomorrow() throws {
         let location = SavedLocation(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh")
         let settings = WidgetPrayerSettings(location: location, method: .tehran,
                                             hiddenPrayers: [.sunrise, .asr, .sunset, .isha, .midnight])
         let date = try #require(CivilDate(year: 2026, month: 10, day: 18).date(in: location.timeZone)).addingTimeInterval(20 * 3600)
-        let upcoming = settings.upcomingTimes(after: date)
-        #expect(upcoming.map(\.name) == [.imsak, .fajr, .dhuhr])
+        let upcoming = settings.upcomingPrayers(after: date)
+        #expect(upcoming.map(\.name) == [.fajr, .dhuhr, .maghrib])
         #expect(upcoming.allSatisfy { $0.date > date })
-        #expect(settings.upcomingTimes(after: date, limit: 2).count == 2)
-        #expect(settings.upcomingTimes(after: date, limit: 0).isEmpty)
+        #expect(settings.upcomingPrayers(after: date, limit: 2).count == 2)
+        #expect(settings.upcomingPrayers(after: date, limit: 0).isEmpty)
     }
 }
 
 struct CalendarWidgetTests {
+    @Test func oldSettingsKeepTemperatureDefault() throws {
+        let settings = try JSONDecoder().decode(WidgetCalendarSettings.self, from: Data("{\"manual\":[],\"confirmed\":[]}".utf8))
+        #expect(settings.showFeelsLikeTemperature == nil)
+        var updated = settings
+        updated.showFeelsLikeTemperature = true
+        #expect(try JSONDecoder().decode(WidgetCalendarSettings.self, from: JSONEncoder().encode(updated)).showFeelsLikeTemperature == true)
+    }
+
     @Test func correctionsSurviveSharingAndReset() throws {
         let zone = try #require(TimeZone(identifier: "Asia/Riyadh"))
         let baseline = try CalendarEngine(timeZone: zone)
@@ -156,9 +162,11 @@ struct LockScreenPrayerTests {
         let now = Date(timeIntervalSince1970: 0)
         let locale = Locale(identifier: localeID)
         let style = PrayerCountdownFormat(target: now.addingTimeInterval(12360), locale: locale)
-        let expected = Duration.seconds(12360).formatted(.units(allowed: [.hours, .minutes], width: .narrow, maximumUnitCount: 2).locale(locale))
+        let expected = Duration.seconds(12360).formatted(.units(allowed: [.hours, .minutes], width: .wide, maximumUnitCount: 1).locale(locale))
         #expect(String(style.format(now).characters) == expected)
-        #expect(style.format(now.addingTimeInterval(60)) != style.format(now))
+        // A single hour unit remains unchanged until its rounding boundary.
+        #expect(style.format(now.addingTimeInterval(60)) == style.format(now))
+        #expect(style.format(now.addingTimeInterval(3600)) != style.format(now))
     }
 
     @Test func widgetExtensionBundlesTheSameVerseAsApp() throws {
