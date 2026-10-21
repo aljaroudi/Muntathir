@@ -99,7 +99,8 @@ struct Page<Content: View>: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 18) { content }
-                .frame(maxWidth: 760).padding()
+                .containerRelativeFrame(.horizontal) { width, _ in min(760, max(0, width - 32)) }
+                .padding()
                 .frame(maxWidth: .infinity)
         }
         .background(transparentBackground ? Color.clear : Color(.systemGroupedBackground))

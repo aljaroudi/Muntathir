@@ -54,6 +54,7 @@ struct PrayerProvider: TimelineProvider {
 struct PrayerWidgetView: View {
     let entry: PrayerEntry
     @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetRenderingMode) private var renderingMode
     @Environment(\.locale) private var locale
 
     var body: some View {
@@ -98,7 +99,15 @@ struct PrayerWidgetView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .containerBackground(.background, for: .widget)
+        .containerBackground(for: .widget) {
+            if let location = entry.settings?.location, renderingMode == .fullColor,
+               let sun = SolarPosition.calculate(at: entry.date, latitude: location.latitude, longitude: location.longitude)
+            {
+                PrayerSkyBackground(sun: sun)
+            } else {
+                Color(.systemBackground)
+            }
+        }
     }
 
     @ViewBuilder private var countdown: some View {
@@ -289,3 +298,42 @@ struct IslamicCalendarWidget: Widget {
 #Preview("Calendar · Rectangular", as: .accessoryRectangular) {
     IslamicCalendarWidget()
 } timeline: { IslamicDateEntry(date: .now) }
+
+private struct PrayerSkyBackground: View {
+    let sun: SolarPosition
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        GeometryReader { geometry in
+            let bounds = CGRect(x: 12, y: 8, width: max(0, geometry.size.width - 24), height: max(0, geometry.size.height * 0.55))
+            ZStack {
+                Color(.systemBackground)
+                LinearGradient(colors: colors, startPoint: .top, endPoint: .bottom)
+                if let progress = sun.daylightProgress {
+                    Path { path in
+                        for step in 0 ... 60 {
+                            let point = SolarArcLayout.point(progress: Double(step) / 60, in: bounds)
+                            if step == 0 {
+                                path.move(to: point)
+                            } else {
+                                path.addLine(to: point)
+                            }
+                        }
+                    }.stroke(.primary.opacity(0.18), style: StrokeStyle(lineWidth: 1, dash: [2, 4]))
+                    Circle().fill(.yellow.opacity(0.55))
+                        .frame(width: 22, height: 22)
+                        .blur(radius: 2)
+                        .position(SolarArcLayout.point(progress: progress, in: bounds))
+                }
+            }
+        }
+        .environment(\.layoutDirection, .leftToRight)
+        .accessibilityHidden(true)
+    }
+
+    private var colors: [Color] {
+        let tint: Color = sun.elevation < -6 ? .indigo : sun.elevation < 10 ? .orange : .cyan
+        let base = Color(.systemBackground)
+        return [tint.opacity(colorScheme == .dark ? 0.25 : 0.14), base]
+    }
+}

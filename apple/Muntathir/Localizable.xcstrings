@@ -1497,6 +1497,96 @@
           }
         }
       }
+    },
+    "Weather" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الطقس"
+          }
+        }
+      }
+    },
+    "Show feels-like temperature" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عرض درجة الحرارة المحسوسة"
+          }
+        }
+      }
+    },
+    "Feels like" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المحسوسة"
+          }
+        }
+      }
+    },
+    "Weather unavailable" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الطقس غير متاح"
+          }
+        }
+      }
+    },
+    "Apple Weather attribution" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مصادر بيانات طقس Apple"
+          }
+        }
+      }
+    },
+    "Apple Weather" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "طقس Apple"
+          }
+        }
+      }
+    },
+    "Updated %@" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "آخر تحديث %@"
+          }
+        }
+      }
+    },
+    "Retry" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إعادة المحاولة"
+          }
+        }
+      }
+    },
+    "Clear" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "صافٍ"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

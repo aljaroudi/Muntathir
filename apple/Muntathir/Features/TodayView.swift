@@ -6,6 +6,18 @@ struct TodayView: View {
     @Environment(\.locale) private var locale
     @Environment(\.verticalSizeClass) private var verticalSizeClass
 
+    @State private var weather: CurrentWeatherStore = {
+        #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("--ui-testing-weather") {
+                return CurrentWeatherStore { _ in
+                    WeatherReading(temperature: .init(value: 30, unit: .celsius), apparentTemperature: .init(value: 35, unit: .celsius),
+                                   condition: String(localized: "Clear"), symbol: "sun.max", date: .now, attribution: nil)
+                }
+            }
+        #endif
+        return CurrentWeatherStore()
+    }()
+
     @State private var dailyAyah: Ayah?
     @Environment(\.scenePhase) private var scenePhase
     @State private var skyTitleHeight: CGFloat = 52
@@ -24,17 +36,6 @@ struct TodayView: View {
                     .filter { model.preferences.isVisible($0.name) }
             } ?? []
             Page(transparentBackground: sun != nil) {
-                Text(now.formatted(.dateTime.weekday(.wide).day().month(.wide).inZone(model.zone)))
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, sun == nil ? 0 : 12)
-                    .background {
-                        if sun != nil {
-                            SkyCardSurface().clipShape(.rect(cornerRadius: 16))
-                        }
-                    }
-
                 if let location = model.location {
                     let tomorrow = engine.addingDays(1, to: now)
                     let next =
@@ -124,6 +125,7 @@ struct TodayView: View {
                 if let dailyAyah {
                     DailyAyahCard(ayah: dailyAyah, skyBackground: sun != nil)
                 }
+                TodayInfoCards(date: now, skyBackground: sun != nil, weather: weather)
             }
             .safeAreaInset(edge: .top, spacing: 0) {
                 if sun != nil {
@@ -159,9 +161,11 @@ struct TodayView: View {
                 dailyAyah = model.content.verse(on: now, timeZone: model.zone)
             }
         }
+        .task(id: model.location) { await weather.refresh(location: model.location) }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 refreshedAt = .now
+                Task { await weather.refresh(location: model.location) }
             }
         }
     }
