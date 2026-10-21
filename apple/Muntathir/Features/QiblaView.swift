@@ -2,6 +2,9 @@ import SwiftUI
 
 struct QiblaView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var headingOwner = UUID()
+    @State private var visible = false
     var body: some View {
         Page {
             if let location = model.location {
@@ -51,7 +54,16 @@ struct QiblaView: View {
             }
         }
         .navigationTitle("Qibla")
-        .onAppear { model.locationService.startHeading() }
-        .onDisappear { model.locationService.stopHeading() }
+        .onAppear { visible = true; updateHeading() }
+        .onDisappear { visible = false; updateHeading() }
+        .onChange(of: scenePhase) { updateHeading() }
+    }
+
+    private func updateHeading() {
+        if visible, scenePhase == .active {
+            model.locationService.startHeading(owner: headingOwner)
+        } else {
+            model.locationService.stopHeading(owner: headingOwner)
+        }
     }
 }

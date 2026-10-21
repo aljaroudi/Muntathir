@@ -7,7 +7,7 @@ struct ContentView: View {
     var body: some View {
         TabView {
             Tab("Today", systemImage: "sun.max") {
-                shell { TodayView() }
+                shell { TodayView(referenceDate: skyTestDate) }
             }
             if UIDevice.current.userInterfaceIdiom == .phone {
                 Tab("Prayer counter", systemImage: "hand.point.up") { PrayerCounterView() }
@@ -51,6 +51,18 @@ struct ContentView: View {
         }
     }
 
+    private var skyTestDate: Date? {
+        #if DEBUG
+            let arguments = ProcessInfo.processInfo.arguments
+            if arguments.contains("--ui-testing"), let index = arguments.firstIndex(of: "--sky-date"),
+               arguments.indices.contains(index + 1)
+            {
+                return ISO8601DateFormatter().date(from: arguments[index + 1])
+            }
+        #endif
+        return nil
+    }
+
     private func shell(@ViewBuilder content: () -> some View) -> some View {
         NavigationStack {
             content()
@@ -66,15 +78,23 @@ struct ContentView: View {
 }
 
 struct Card<Content: View>: View {
+    var skyBackground = false
     @ViewBuilder var content: Content
     var body: some View {
         VStack(alignment: .leading, spacing: 16) { content }
             .frame(maxWidth: .infinity, alignment: .leading).padding(20)
-            .background(.background, in: .rect(cornerRadius: 24))
+            .background {
+                if skyBackground {
+                    SkyCardSurface().clipShape(.rect(cornerRadius: 24))
+                } else {
+                    RoundedRectangle(cornerRadius: 24).fill(.background)
+                }
+            }
     }
 }
 
 struct Page<Content: View>: View {
+    var transparentBackground = false
     @ViewBuilder var content: Content
     var body: some View {
         ScrollView {
@@ -82,7 +102,7 @@ struct Page<Content: View>: View {
                 .frame(maxWidth: 760).padding()
                 .frame(maxWidth: .infinity)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(transparentBackground ? Color.clear : Color(.systemGroupedBackground))
     }
 }
 

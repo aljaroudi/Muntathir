@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DailyAyahCard: View {
     let ayah: Ayah
+    var skyBackground = false
     @Environment(\.locale) private var locale
     @State private var sharedImage: SharedAyah?
     @State private var shareFailed = false
@@ -32,7 +33,13 @@ struct DailyAyahCard: View {
                 .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(24)
-        .background { AyahBackground() }
+        .background {
+            if skyBackground {
+                SkyCardSurface()
+            } else {
+                AyahBackground()
+            }
+        }
         .clipShape(.rect(cornerRadius: 28))
         .overlay {
             RoundedRectangle(cornerRadius: 28)
