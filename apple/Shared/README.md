@@ -26,3 +26,9 @@ The background refresh path accepts an optional FeedClient. Production leaves it
 - The catalog chooses documented Twelver dates, including 28 Safar for Imam Hasan, 17 Safar for Imam Ridha, and 5 Rajab for Imam Hadi's birth. Alternatives exist. Imam Mahdi has a birth observance only. An event fixed to day 30 is not displayed in a 29-day month; no unreviewed substitution is inferred.
 
 Prayer fixtures remain duplicated in the test bundle because tests load bundled resources. Keep both copies identical. See [test coverage](../MuntathirTests/).
+
+## Event titles
+
+Bundled events store localized titles in a `titles` dictionary keyed by language tags, for example `"titles": {"en": "Islamic New Year", "ar": "رأس السنة الهجرية"}`. Add another language entry without changing the Swift model. Keep English as the default title for every bundled event.
+
+`IslamicEvent.title(locale:)` uses the view's locale. Lookup tries the exact locale, language with script, base language, then English; if none contains a nonblank title, it returns the event ID. Foundation normalizes tags (including case, underscores, and redundant scripts), and duplicate lookup candidates are skipped. Other locale settings, such as calendar and numbering system, do not select a different title.

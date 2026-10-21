@@ -50,6 +50,60 @@ struct CalendarTests {
 }
 
 struct ContentTests {
+    private func event(titles: [String: String]) -> IslamicEvent {
+        IslamicEvent(id: "example", month: 1, day: 1, titles: titles, convention: nil, references: [])
+    }
+
+    @Test(arguments: ["en", "en_US", "en_GB", "ar", "ar_SA", "ar_EG"])
+    func titlesUseLocaleLanguage(identifier: String) {
+        let titles = ["en": "English title", "ar": "عنوان عربي"]
+        let locale = Locale(identifier: identifier)
+        let expected = titles[locale.language.languageCode?.identifier ?? "en"]
+        #expect(event(titles: titles).title(locale: locale) == expected)
+    }
+
+    @Test func titlesPreferRegionThenScriptThenLanguage() {
+        let locale = Locale(identifier: "sr_Latn_RS")
+        #expect(event(titles: ["sr-Latn-RS": "Regional", "sr-Latn": "Script", "sr": "Base", "en": "English"])
+            .title(locale: locale) == "Regional")
+        #expect(event(titles: ["sr-Latn": "Script", "sr": "Base", "en": "English"])
+            .title(locale: locale) == "Script")
+        #expect(event(titles: ["sr": "Base", "en": "English"])
+            .title(locale: locale) == "Base")
+    }
+
+    @Test func titlesNormalizeTagsAndIgnoreLocaleFormattingSettings() {
+        #expect(event(titles: ["FR_ca": "Regional", "fr": "Base"])
+            .title(locale: Locale(identifier: "fr-CA")) == "Regional")
+        #expect(event(titles: ["zh-Hant-TW": "Regional", "zh": "Base"])
+            .title(locale: Locale(identifier: "zh_TW")) == "Regional")
+        #expect(event(titles: ["sr-Cyrl": "Script", "sr": "Base"])
+            .title(locale: Locale(identifier: "sr_RS")) == "Script")
+        #expect(event(titles: ["ar-SA": "Regional", "ar": "Base"])
+            .title(locale: Locale(identifier: "ar_SA@numbers=latn;calendar=gregorian")) == "Regional")
+    }
+
+    @Test func missingTitlesFallBackDeterministically() {
+        let locale = Locale(identifier: "fr_CA")
+        #expect(event(titles: ["ar": "عنوان عربي", "en": "English"])
+            .title(locale: locale) == "English")
+        #expect(event(titles: ["fr-CA": " ", "fr": "Base", "en": "English"])
+            .title(locale: locale) == "Base")
+        #expect(event(titles: ["fr": "\n", "en": "English"])
+            .title(locale: locale) == "English")
+        #expect(event(titles: ["ar": "عنوان عربي"]).title(locale: locale) == "example")
+        #expect(event(titles: ["en": " "]).title(locale: locale) == "example")
+        #expect(event(titles: [:]).title(locale: locale) == "example")
+    }
+
+    @Test func arbitraryTitleLanguagesSurviveCoding() throws {
+        let original = event(titles: ["en": "English", "fr": "Synthetic French", "sr-Latn": "Synthetic Serbian"])
+        let data = try JSONEncoder().encode(original)
+        let decoded = try JSONDecoder().decode(IslamicEvent.self, from: data)
+        #expect(decoded == original)
+        #expect(decoded.title(locale: Locale(identifier: "fr_FR")) == "Synthetic French")
+    }
+
     @Test func missingContentHasNoDailyVerse() throws {
         let emptyBundle = try #require(Bundle(identifier: "com.apple.Foundation"))
         #expect(ContentLibrary(bundle: emptyBundle).verse(on: Date(), timeZone: .gmt) == nil)
@@ -60,6 +114,12 @@ struct ContentTests {
         #expect(library.verses.count == 31)
         #expect(Set(library.verses.map(\.id)).count == library.verses.count)
         #expect(library.events.count >= 30)
+        for event in library.events {
+            for language in ["en", "ar"] {
+                let title = try #require(event.titles[language])
+                #expect(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false)
+            }
+        }
         #expect(Set(library.events.map(\.id)).count == library.events.count)
         let zone = try #require(TimeZone(identifier: "Asia/Riyadh"))
         let day = try #require(CivilDate(year: 2026, month: 10, day: 17).date(in: zone))

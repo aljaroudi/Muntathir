@@ -1,19 +1,12 @@
 [
   {
-    "id": "new-year",
-    "month": 1,
-    "day": 1,
-    "titleEN": "Islamic New Year",
-    "titleAR": "رأس السنة الهجرية",
-    "convention": null,
-    "references": []
-  },
-  {
     "id": "ramadan",
     "month": 9,
     "day": 1,
-    "titleEN": "Beginning of Ramadan",
-    "titleAR": "بداية شهر رمضان",
+    "titles": {
+      "en": "Beginning of Ramadan",
+      "ar": "بداية شهر رمضان"
+    },
     "convention": null,
     "references": []
   },
@@ -21,8 +14,10 @@
     "id": "fitr",
     "month": 10,
     "day": 1,
-    "titleEN": "Eid al-Fitr",
-    "titleAR": "عيد الفطر",
+    "titles": {
+      "en": "Eid al-Fitr",
+      "ar": "عيد الفطر"
+    },
     "convention": null,
     "references": []
   },
@@ -30,8 +25,10 @@
     "id": "arafah",
     "month": 12,
     "day": 9,
-    "titleEN": "Day of Arafah",
-    "titleAR": "يوم عرفة",
+    "titles": {
+      "en": "Day of Arafah",
+      "ar": "يوم عرفة"
+    },
     "convention": null,
     "references": []
   },
@@ -39,8 +36,10 @@
     "id": "adha",
     "month": 12,
     "day": 10,
-    "titleEN": "Eid al-Adha",
-    "titleAR": "عيد الأضحى",
+    "titles": {
+      "en": "Eid al-Adha",
+      "ar": "عيد الأضحى"
+    },
     "convention": null,
     "references": []
   },
@@ -48,26 +47,32 @@
     "id": "ghadir",
     "month": 12,
     "day": 18,
-    "titleEN": "Eid al-Ghadir",
-    "titleAR": "عيد الغدير",
-    "convention": null,
+    "titles": {
+      "en": "Eid al-Ghadir",
+      "ar": "عيد الغدير"
+    },
+    "convention": "twelver",
     "references": []
   },
   {
     "id": "arbaeen",
     "month": 2,
     "day": 20,
-    "titleEN": "Arbaeen",
-    "titleAR": "الأربعين",
-    "convention": null,
+    "titles": {
+      "en": "Arbaeen",
+      "ar": "الأربعين"
+    },
+    "convention": "twelver",
     "references": []
   },
   {
     "id": "ali-birth",
     "month": 7,
     "day": 13,
-    "titleEN": "Birth of Imam Ali",
-    "titleAR": "ولادة الإمام علي",
+    "titles": {
+      "en": "Birth of Imam Ali",
+      "ar": "ولادة الإمام علي"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -83,8 +88,10 @@
     "id": "ali-death",
     "month": 9,
     "day": 21,
-    "titleEN": "Martyrdom of Imam Ali",
-    "titleAR": "استشهاد الإمام علي",
+    "titles": {
+      "en": "Martyrdom of Imam Ali",
+      "ar": "استشهاد الإمام علي"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -100,8 +107,10 @@
     "id": "hasan-birth",
     "month": 9,
     "day": 15,
-    "titleEN": "Birth of Imam Hasan",
-    "titleAR": "ولادة الإمام الحسن",
+    "titles": {
+      "en": "Birth of Imam Hasan",
+      "ar": "ولادة الإمام الحسن"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -117,8 +126,10 @@
     "id": "hasan-death",
     "month": 2,
     "day": 28,
-    "titleEN": "Martyrdom of Imam Hasan",
-    "titleAR": "استشهاد الإمام الحسن",
+    "titles": {
+      "en": "Martyrdom of Imam Hasan",
+      "ar": "استشهاد الإمام الحسن"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -134,8 +145,10 @@
     "id": "husayn-birth",
     "month": 8,
     "day": 3,
-    "titleEN": "Birth of Imam Husayn",
-    "titleAR": "ولادة الإمام الحسين",
+    "titles": {
+      "en": "Birth of Imam Husayn",
+      "ar": "ولادة الإمام الحسين"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -151,8 +164,10 @@
     "id": "husayn-death",
     "month": 1,
     "day": 10,
-    "titleEN": "Ashura — Imam Husayn",
-    "titleAR": "عاشوراء — الإمام الحسين",
+    "titles": {
+      "en": "Martyrdom of Imam Husayn",
+      "ar": "استشهاد الإمام الحسين"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -168,8 +183,10 @@
     "id": "sajjad-birth",
     "month": 8,
     "day": 5,
-    "titleEN": "Birth of Imam Ali Zayn al-Abidin",
-    "titleAR": "ولادة الإمام علي زين العابدين",
+    "titles": {
+      "en": "Birth of Imam Ali Zayn al-Abidin",
+      "ar": "ولادة الإمام علي السجاد"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -185,8 +202,10 @@
     "id": "sajjad-death",
     "month": 1,
     "day": 25,
-    "titleEN": "Martyrdom of Imam Ali Zayn al-Abidin",
-    "titleAR": "استشهاد الإمام علي زين العابدين",
+    "titles": {
+      "en": "Martyrdom of Imam Ali Zayn al-Abidin",
+      "ar": "استشهاد الإمام علي السجاد"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -202,8 +221,10 @@
     "id": "baqir-birth",
     "month": 7,
     "day": 1,
-    "titleEN": "Birth of Imam Muhammad al-Baqir",
-    "titleAR": "ولادة الإمام محمد الباقر",
+    "titles": {
+      "en": "Birth of Imam Muhammad al-Baqir",
+      "ar": "ولادة الإمام محمد الباقر"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -219,8 +240,10 @@
     "id": "baqir-death",
     "month": 12,
     "day": 7,
-    "titleEN": "Martyrdom of Imam Muhammad al-Baqir",
-    "titleAR": "استشهاد الإمام محمد الباقر",
+    "titles": {
+      "en": "Martyrdom of Imam Muhammad al-Baqir",
+      "ar": "استشهاد الإمام محمد الباقر"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -236,8 +259,10 @@
     "id": "sadiq-birth",
     "month": 3,
     "day": 17,
-    "titleEN": "Birth of Imam Jafar al-Sadiq",
-    "titleAR": "ولادة الإمام جعفر الصادق",
+    "titles": {
+      "en": "Birth of Imam Jafar al-Sadiq",
+      "ar": "ولادة الإمام جعفر الصادق"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -253,8 +278,10 @@
     "id": "sadiq-death",
     "month": 10,
     "day": 25,
-    "titleEN": "Martyrdom of Imam Jafar al-Sadiq",
-    "titleAR": "استشهاد الإمام جعفر الصادق",
+    "titles": {
+      "en": "Martyrdom of Imam Jafar al-Sadiq",
+      "ar": "استشهاد الإمام جعفر الصادق"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -270,8 +297,10 @@
     "id": "kadhim-birth",
     "month": 2,
     "day": 7,
-    "titleEN": "Birth of Imam Musa al-Kadhim",
-    "titleAR": "ولادة الإمام موسى الكاظم",
+    "titles": {
+      "en": "Birth of Imam Musa al-Kadhim",
+      "ar": "ولادة الإمام موسى الكاظم"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -287,8 +316,10 @@
     "id": "kadhim-death",
     "month": 7,
     "day": 25,
-    "titleEN": "Martyrdom of Imam Musa al-Kadhim",
-    "titleAR": "استشهاد الإمام موسى الكاظم",
+    "titles": {
+      "en": "Martyrdom of Imam Musa al-Kadhim",
+      "ar": "استشهاد الإمام موسى الكاظم"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -304,8 +335,10 @@
     "id": "ridha-death",
     "month": 2,
     "day": 17,
-    "titleEN": "Martyrdom of Imam Ali al-Ridha",
-    "titleAR": "استشهاد الإمام علي الرضا",
+    "titles": {
+      "en": "Martyrdom of Imam Ali al-Ridha",
+      "ar": "استشهاد الإمام علي الرضا"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -321,8 +354,10 @@
     "id": "jawad-birth",
     "month": 7,
     "day": 10,
-    "titleEN": "Birth of Imam Muhammad al-Jawad",
-    "titleAR": "ولادة الإمام محمد الجواد",
+    "titles": {
+      "en": "Birth of Imam Muhammad al-Jawad",
+      "ar": "ولادة الإمام محمد الجواد"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -338,8 +373,10 @@
     "id": "jawad-death",
     "month": 11,
     "day": 30,
-    "titleEN": "Martyrdom of Imam Muhammad al-Jawad",
-    "titleAR": "استشهاد الإمام محمد الجواد",
+    "titles": {
+      "en": "Martyrdom of Imam Muhammad al-Jawad",
+      "ar": "استشهاد الإمام محمد الجواد"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -355,8 +392,10 @@
     "id": "hadi-birth",
     "month": 7,
     "day": 5,
-    "titleEN": "Birth of Imam Ali al-Hadi",
-    "titleAR": "ولادة الإمام علي الهادي",
+    "titles": {
+      "en": "Birth of Imam Ali al-Hadi",
+      "ar": "ولادة الإمام علي الهادي"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -372,8 +411,10 @@
     "id": "hadi-death",
     "month": 7,
     "day": 3,
-    "titleEN": "Martyrdom of Imam Ali al-Hadi",
-    "titleAR": "استشهاد الإمام علي الهادي",
+    "titles": {
+      "en": "Martyrdom of Imam Ali al-Hadi",
+      "ar": "استشهاد الإمام علي الهادي"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -389,8 +430,10 @@
     "id": "askari-birth",
     "month": 4,
     "day": 8,
-    "titleEN": "Birth of Imam Hasan al-Askari",
-    "titleAR": "ولادة الإمام الحسن العسكري",
+    "titles": {
+      "en": "Birth of Imam Hasan al-Askari",
+      "ar": "ولادة الإمام الحسن العسكري"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -406,8 +449,10 @@
     "id": "askari-death",
     "month": 3,
     "day": 8,
-    "titleEN": "Martyrdom of Imam Hasan al-Askari",
-    "titleAR": "استشهاد الإمام الحسن العسكري",
+    "titles": {
+      "en": "Martyrdom of Imam Hasan al-Askari",
+      "ar": "استشهاد الإمام الحسن العسكري"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -423,8 +468,10 @@
     "id": "mahdi-birth",
     "month": 8,
     "day": 15,
-    "titleEN": "Birth of Imam Muhammad al-Mahdi",
-    "titleAR": "ولادة الإمام محمد المهدي",
+    "titles": {
+      "en": "Birth of Imam Muhammad al-Mahdi",
+      "ar": "ولادة الإمام محمد المهدي"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -440,8 +487,10 @@
     "id": "ridha-birth",
     "month": 11,
     "day": 11,
-    "titleEN": "Birth of Imam Ali al-Ridha",
-    "titleAR": "ولادة الإمام علي الرضا",
+    "titles": {
+      "en": "Birth of Imam Ali al-Ridha",
+      "ar": "ولادة الإمام علي الرضا"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -457,8 +506,10 @@
     "id": "prophet-birth",
     "month": 3,
     "day": 17,
-    "titleEN": "Birth of Prophet Muhammad",
-    "titleAR": "ولادة النبي محمد",
+    "titles": {
+      "en": "Birth of Prophet Muhammad",
+      "ar": "ولادة النبي محمد"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -474,8 +525,10 @@
     "id": "prophet-death",
     "month": 2,
     "day": 28,
-    "titleEN": "Death of Prophet Muhammad",
-    "titleAR": "وفاة النبي محمد",
+    "titles": {
+      "en": "Death of Prophet Muhammad",
+      "ar": "وفاة النبي محمد"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -491,8 +544,10 @@
     "id": "fatima-birth",
     "month": 6,
     "day": 20,
-    "titleEN": "Birth of Fatimah al-Zahra",
-    "titleAR": "ولادة فاطمة الزهراء",
+    "titles": {
+      "en": "Birth of Fatimah al-Zahra",
+      "ar": "ولادة الصديقة الزهراء"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -508,8 +563,10 @@
     "id": "fatima-death",
     "month": 6,
     "day": 3,
-    "titleEN": "Martyrdom of Fatimah al-Zahra",
-    "titleAR": "استشهاد فاطمة الزهراء",
+    "titles": {
+      "en": "Martyrdom of Fatimah al-Zahra",
+      "ar": "استشهاد الصديقة الزهراء"
+    },
     "convention": "twelver",
     "references": [
       {
@@ -520,5 +577,60 @@
         "page": null
       }
     ]
+  },
+  {
+    "id": "isra-miraj",
+    "month": 7,
+    "day": 27,
+    "titles": {
+      "en": "Isra and Mi'raj",
+      "ar": "الإسراء والمعراج"
+    },
+    "convention": null,
+    "references": []
+  },
+  {
+    "id": "mabath",
+    "month": 7,
+    "day": 27,
+    "titles": {
+      "en": "Prophetic Mission",
+      "ar": "المبعث النبوي"
+    },
+    "convention": "twelver",
+    "references": []
+  },
+  {
+    "id": "qadr-19",
+    "month": 9,
+    "day": 19,
+    "titles": {
+      "en": "Night of Qadr",
+      "ar": "ليلة القدر"
+    },
+    "convention": "twelver",
+    "references": []
+  },
+  {
+    "id": "qadr-21",
+    "month": 9,
+    "day": 21,
+    "titles": {
+      "en": "Night of Qadr",
+      "ar": "ليلة القدر"
+    },
+    "convention": "twelver",
+    "references": []
+  },
+  {
+    "id": "qadr-23",
+    "month": 9,
+    "day": 23,
+    "titles": {
+      "en": "Night of Qadr",
+      "ar": "ليلة القدر"
+    },
+    "convention": "twelver",
+    "references": []
   }
 ]

@@ -168,7 +168,7 @@ struct EventRows: View {
             NavigationLink {
                 EventDetail(event: event)
             } label: {
-                Label(event.title(arabic: locale.language.languageCode?.identifier == "ar"), systemImage: "sparkle")
+                Label(event.title(locale: locale), systemImage: "sparkle")
             }
         }
     }
@@ -179,11 +179,7 @@ struct EventDetail: View {
     @Environment(\.locale) private var locale
     var body: some View {
         List {
-            Text(
-                event.title(
-                    arabic: locale.language.languageCode?.identifier == "ar"
-                )
-            ).font(.title2)
+            Text(event.title(locale: locale)).font(.title2)
             if event.convention != nil {
                 Text(
                     "Twelver Shia convention. Historical dates may differ between sources."
