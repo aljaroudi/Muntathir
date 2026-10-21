@@ -40,14 +40,14 @@ struct DailyAyahWidgetView: View {
     var body: some View {
         Group {
             if let ayah = entry.ayah {
-                VStack(alignment: .leading, spacing: isAccessory ? 2 : family == .systemMedium ? 8 : 12) {
+                VStack(alignment: .leading, spacing: isAccessory ? 2 : 8) {
                     if !isAccessory {
                         Label("Daily ayah", systemImage: "book.closed")
                             .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
                     }
                     Text(ayah.text)
                         .font(.custom("KFGQPCHAFSUthmanicScript-Regula", size: isAccessory ? 17 : 28, relativeTo: isAccessory ? .body : .title2))
-                        .lineSpacing(isAccessory ? 0 : family == .systemMedium ? 2 : 12)
+                        .lineSpacing(isAccessory ? 0 : 2)
                         .multilineTextAlignment(.center)
                         .environment(\.layoutDirection, .rightToLeft)
                         .lineLimit(2)
@@ -90,7 +90,7 @@ struct DailyAyahWidget: Widget {
         }
         .configurationDisplayName("Daily ayah")
         .description("Today's verse from the Quran.")
-        .supportedFamilies([.accessoryRectangular, .systemMedium, .systemLarge])
+        .supportedFamilies([.accessoryRectangular, .systemMedium])
     }
 }
 
@@ -104,9 +104,5 @@ private enum AyahWidgetPreview {
 } timeline: { AyahWidgetPreview.short; AyahWidgetPreview.long }
 
 #Preview("Ayah · Medium", as: .systemMedium) {
-    DailyAyahWidget()
-} timeline: { AyahWidgetPreview.short; AyahWidgetPreview.long }
-
-#Preview("Ayah · Large", as: .systemLarge) {
     DailyAyahWidget()
 } timeline: { AyahWidgetPreview.short; AyahWidgetPreview.long }

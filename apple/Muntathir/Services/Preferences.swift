@@ -167,6 +167,7 @@ struct Preferences: Codable, Equatable, Sendable {
         let prayers = WidgetPrayerSettings(location: location, method: preferences.prayerMethod,
                                            hiddenPrayers: preferences.hiddenPrayers, imsakMinutes: preferences.imsakMinutes)
         let calendar = WidgetCalendarSettings(timeZoneID: location?.timeZoneID,
+                                              showFeelsLikeTemperature: preferences.showFeelsLikeTemperature,
                                               manual: preferences.overrides, confirmed: confirmations.map(\.correction))
         let prayersChanged = WidgetPrayerStore.write(prayers)
         let calendarChanged = calendar.write()

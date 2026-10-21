@@ -14,7 +14,7 @@ struct TodayView: View {
                 let condition = arguments.firstIndex(of: "--weather-condition").flatMap { index in
                     arguments.indices.contains(index + 1) ? WeatherKit.WeatherCondition(rawValue: arguments[index + 1]) : nil
                 } ?? .clear
-                return CurrentWeatherStore { _ in
+                return CurrentWeatherStore(publish: { _, _ in }) { _ in
                     WeatherReading(temperature: .init(value: 30, unit: .celsius), apparentTemperature: .init(value: 35, unit: .celsius),
                                    condition: condition.description, weatherCondition: condition, date: .now, attribution: nil)
                 }

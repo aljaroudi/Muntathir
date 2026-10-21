@@ -5,6 +5,7 @@ struct WeatherCardScene: View {
     let condition: WeatherCondition?
     let sun: SolarPosition?
     let moon: MoonPosition?
+    var showsTint = true
     @Environment(\.layoutDirection) private var direction
     @Environment(\.colorScheme) private var colorScheme
 
@@ -14,10 +15,12 @@ struct WeatherCardScene: View {
         GeometryReader { geometry in
             let x = geometry.size.width * (direction == .rightToLeft ? 0.25 : 0.75)
             ZStack {
-                LinearGradient(colors: [
-                    (daylight ? Color.cyan : Color.indigo).opacity(colorScheme == .dark ? 0.23 : 0.12),
-                    .clear,
-                ], startPoint: .top, endPoint: .bottom)
+                if showsTint {
+                    LinearGradient(colors: [
+                        (daylight ? Color.cyan : Color.indigo).opacity(colorScheme == .dark ? 0.23 : 0.12),
+                        .clear,
+                    ], startPoint: .top, endPoint: .bottom)
+                }
                 Group {
                     if daylight {
                         SunDisc(warm: (sun?.elevation ?? 20) < 10)

@@ -12,6 +12,12 @@ import WeatherKit
                        condition: "Clear", weatherCondition: .clear, date: now, attribution: nil)
     }
 
+    @Test func widgetWeatherExpiresAfterAnHour() {
+        #expect(reading().isCurrent(at: now.addingTimeInterval(3599)))
+        #expect(!reading().isCurrent(at: now.addingTimeInterval(3600)))
+        #expect(!reading().isCurrent(at: now.addingTimeInterval(86400)))
+    }
+
     @Test func preferencesAndTemperatureSelection() throws {
         var prefs = try JSONDecoder().decode(Preferences.self, from: Data("{}".utf8))
         #expect(!prefs.showFeelsLikeTemperature)
@@ -27,7 +33,7 @@ import WeatherKit
 
     @Test func throttlesAndKeepsReadingOnFailure() async {
         var calls = 0
-        let store = CurrentWeatherStore { _ in
+        let store = CurrentWeatherStore(publish: { _, _ in }) { _ in
             calls += 1
             if calls > 1 {
                 throw URLError(.notConnectedToInternet)
@@ -49,7 +55,8 @@ import WeatherKit
 
     @Test func ignoresLateResponseFromPreviousLocation() async {
         var pending: CheckedContinuation<WeatherReading, any Error>?
-        let store = CurrentWeatherStore { requested in
+        var published: [Double] = []
+        let store = CurrentWeatherStore(publish: { reading, _ in published.append(reading.temperature.value) }) { requested in
             if requested == location {
                 return try await withCheckedThrowingContinuation { pending = $0 }
             }
@@ -64,12 +71,13 @@ import WeatherKit
         pending?.resume(returning: reading())
         await first.value
         #expect(store.reading?.temperature.value == 20)
+        #expect(published == [20])
         #expect(!store.failed)
     }
 
     @Test func failureCanRetry() async {
         var calls = 0
-        let store = CurrentWeatherStore { _ in
+        let store = CurrentWeatherStore(publish: { _, _ in }) { _ in
             calls += 1
             if calls == 1 {
                 throw URLError(.timedOut)

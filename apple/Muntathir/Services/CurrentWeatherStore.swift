@@ -1,20 +1,6 @@
-import CoreLocation
 import Foundation
 import Observation
-import WeatherKit
-
-struct WeatherReading: Sendable {
-    let temperature: Measurement<UnitTemperature>
-    let apparentTemperature: Measurement<UnitTemperature>
-    let condition: String
-    let weatherCondition: WeatherCondition?
-    let date: Date
-    let attribution: WeatherAttribution?
-
-    func temperature(feelsLike: Bool) -> Measurement<UnitTemperature> {
-        feelsLike ? apparentTemperature : temperature
-    }
-}
+import WidgetKit
 
 @MainActor @Observable final class CurrentWeatherStore {
     private(set) var reading: WeatherReading?
@@ -24,20 +10,15 @@ struct WeatherReading: Sendable {
     private var fetchedAt: Date?
     private var requestID = UUID()
     private var task: Task<Void, Never>?
+    private let publish: (WeatherReading, SavedLocation) -> Void
     private let fetch: (SavedLocation) async throws -> WeatherReading
 
-    init(fetch: @escaping (SavedLocation) async throws -> WeatherReading = CurrentWeatherStore.fetchWeather) {
+    init(publish: @escaping (WeatherReading, SavedLocation) -> Void = { reading, location in
+        SharedWeatherStore.write(reading, for: location)
+        WidgetCenter.shared.reloadTimelines(ofKind: "IslamicCalendar")
+    }, fetch: @escaping (SavedLocation) async throws -> WeatherReading = WeatherReading.fetch) {
         self.fetch = fetch
-    }
-
-    static func fetchWeather(_ location: SavedLocation) async throws -> WeatherReading {
-        let service = WeatherService.shared
-        async let current = service.weather(for: CLLocation(latitude: location.latitude, longitude: location.longitude), including: .current)
-        async let attribution = service.attribution
-        let weather = try await current
-        return try await WeatherReading(temperature: weather.temperature, apparentTemperature: weather.apparentTemperature,
-                                        condition: weather.condition.description, weatherCondition: weather.condition,
-                                        date: weather.date, attribution: attribution)
+        self.publish = publish
     }
 
     func refresh(location newLocation: SavedLocation?, now: Date = .now, force: Bool = false) async {
@@ -61,6 +42,7 @@ struct WeatherReading: Sendable {
                 let result = try await fetch(newLocation)
                 guard let self, requestID == id, !Task.isCancelled else { return }
                 reading = result
+                publish(result, newLocation)
                 fetchedAt = now
                 isLoading = false
             } catch {
