@@ -9,14 +9,27 @@ struct ContentView: View {
             Tab("Today", systemImage: "sun.max") {
                 shell { TodayView(referenceDate: skyTestDate) }
             }
-            if UIDevice.current.userInterfaceIdiom == .phone {
-                Tab("Prayer counter", systemImage: "hand.point.up") { PrayerCounterView() }
-            }
             Tab("Calendar", systemImage: "calendar") {
                 shell { CalendarScreen() }
             }
-            Tab("Qibla", systemImage: "location.north.circle") {
-                shell { QiblaView() }
+            Tab("Tools", systemImage: "square.grid.2x2") {
+                shell {
+                    List {
+                        NavigationLink {
+                            QiblaView().toolbar { settingsToolbar }
+                        } label: {
+                            Label("Qibla", systemImage: "location.north.circle")
+                        }
+                        if UIDevice.current.userInterfaceIdiom == .phone {
+                            NavigationLink {
+                                PrayerCounterView().toolbar { settingsToolbar }
+                            } label: {
+                                Label("Prayer counter", systemImage: "hand.point.up")
+                            }
+                        }
+                    }
+                    .navigationTitle("Tools")
+                }
             }
         }
         .tint(.accentColor)
@@ -66,13 +79,15 @@ struct ContentView: View {
     private func shell(@ViewBuilder content: () -> some View) -> some View {
         NavigationStack {
             content()
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("Settings", systemImage: "gearshape") {
-                            settings = true
-                        }
-                    }
-                }
+                .toolbar { settingsToolbar }
+        }
+    }
+
+    private var settingsToolbar: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            Button("Settings", systemImage: "gearshape") {
+                settings = true
+            }
         }
     }
 }

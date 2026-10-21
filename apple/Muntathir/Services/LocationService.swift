@@ -13,6 +13,14 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
     private(set) var headingOwners: Set<UUID> = []
     private var requestID = UUID()
+
+    var hasAccurateHeading: Bool {
+        guard let heading, heading.isFinite, (0 ..< 360).contains(heading),
+              let headingAccuracy, headingAccuracy.isFinite
+        else { return false }
+        return (0 ... 10).contains(headingAccuracy)
+    }
+
     override init() {
         super.init()
         manager.delegate = self
