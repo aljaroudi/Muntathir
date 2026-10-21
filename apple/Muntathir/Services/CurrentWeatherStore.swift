@@ -7,7 +7,7 @@ struct WeatherReading: Sendable {
     let temperature: Measurement<UnitTemperature>
     let apparentTemperature: Measurement<UnitTemperature>
     let condition: String
-    let symbol: String
+    let weatherCondition: WeatherCondition?
     let date: Date
     let attribution: WeatherAttribution?
 
@@ -36,7 +36,7 @@ struct WeatherReading: Sendable {
         async let attribution = service.attribution
         let weather = try await current
         return try await WeatherReading(temperature: weather.temperature, apparentTemperature: weather.apparentTemperature,
-                                        condition: weather.condition.description, symbol: weather.symbolName,
+                                        condition: weather.condition.description, weatherCondition: weather.condition,
                                         date: weather.date, attribution: attribution)
     }
 

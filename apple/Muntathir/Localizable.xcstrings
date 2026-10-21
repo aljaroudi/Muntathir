@@ -266,16 +266,6 @@
         }
       }
     },
-    "Clear" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "صافٍ"
-          }
-        }
-      }
-    },
     "Compass accuracy is low" : {
       "localizations" : {
         "ar" : {
@@ -512,16 +502,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "صلاة الفجر"
-          }
-        }
-      }
-    },
-    "Feels like" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "المحسوسة"
           }
         }
       }

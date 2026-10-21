@@ -5,6 +5,8 @@ struct TodayInfoCards: View {
     let date: Date
     let skyBackground: Bool
     let weather: CurrentWeatherStore
+    let sun: SolarPosition?
+    let moon: MoonPosition?
     @Environment(AppModel.self) private var model
     @Environment(\.locale) private var locale
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -24,7 +26,13 @@ struct TodayInfoCards: View {
                 .accessibilityIdentifier("gregorian-date-card")
             }
             if !weather.failed {
-                tile { weatherContent }
+                tile {
+                    weatherContent
+                } decoration: {
+                    if !weather.isLoading, let reading = weather.reading, model.location != nil {
+                        WeatherCardScene(condition: reading.weatherCondition, sun: sun, moon: moon)
+                    }
+                }
             }
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { availableWidth = $0 }
@@ -34,12 +42,13 @@ struct TodayInfoCards: View {
         Date.FormatStyle(locale: locale, calendar: Calendar(identifier: .gregorian), timeZone: model.zone)
     }
 
-    private func tile(@ViewBuilder content: () -> some View) -> some View {
+    private func tile(@ViewBuilder content: () -> some View, @ViewBuilder decoration: () -> some View = { EmptyView() }) -> some View {
         InfoCardLayout(square: !typeSize.isAccessibilitySize) {
             content()
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(20)
         }
+        .background { decoration() }
         .background {
             if skyBackground {
                 SkyCardSurface().clipShape(.rect(cornerRadius: 24))
@@ -47,6 +56,7 @@ struct TodayInfoCards: View {
                 RoundedRectangle(cornerRadius: 24).fill(.background)
             }
         }
+        .clipShape(.rect(cornerRadius: 24))
     }
 
     private var weatherContent: some View {
@@ -55,16 +65,13 @@ struct TodayInfoCards: View {
                 if weather.isLoading || weather.reading == nil {
                     weatherSkeleton
                 } else if let reading = weather.reading {
-                    Image(systemName: reading.symbol)
-                        .font(.title2)
-                        .accessibilityLabel(reading.condition)
+                    Color.clear.frame(height: 58).accessibilityHidden(true)
                     Text(reading.temperature(feelsLike: model.preferences.showFeelsLikeTemperature),
                          format: .measurement(width: .abbreviated, usage: .weather, numberFormatStyle: .number.precision(.fractionLength(0))))
                         .font(.largeTitle.weight(.semibold))
                         .lineLimit(1).minimumScaleFactor(0.6)
-                    if model.preferences.showFeelsLikeTemperature {
-                        Text("Feels like").font(.caption)
-                    }
+                        .accessibilityIdentifier("weather-temperature")
+                        .accessibilityValue(reading.condition)
                     if let attribution = reading.attribution {
                         Link(destination: attribution.legalPageURL) {
                             AsyncImage(url: colorScheme == .dark ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL) { image in

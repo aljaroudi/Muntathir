@@ -1,6 +1,7 @@
 import Foundation
 @testable import Muntathir
 import Testing
+import WeatherKit
 
 @MainActor struct CurrentWeatherTests {
     private let location = SavedLocation(latitude: 21.42, longitude: 39.82, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh")
@@ -8,7 +9,7 @@ import Testing
 
     private func reading(_ value: Double = 30) -> WeatherReading {
         WeatherReading(temperature: .init(value: value, unit: .celsius), apparentTemperature: .init(value: 35, unit: .celsius),
-                       condition: "Clear", symbol: "sun.max", date: now, attribution: nil)
+                       condition: "Clear", weatherCondition: .clear, date: now, attribution: nil)
     }
 
     @Test func preferencesAndTemperatureSelection() throws {

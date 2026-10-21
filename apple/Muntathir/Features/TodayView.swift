@@ -1,4 +1,5 @@
 import SwiftUI
+import WeatherKit
 
 struct TodayView: View {
     var referenceDate: Date?
@@ -9,9 +10,13 @@ struct TodayView: View {
     @State private var weather: CurrentWeatherStore = {
         #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("--ui-testing-weather") {
+                let arguments = ProcessInfo.processInfo.arguments
+                let condition = arguments.firstIndex(of: "--weather-condition").flatMap { index in
+                    arguments.indices.contains(index + 1) ? WeatherKit.WeatherCondition(rawValue: arguments[index + 1]) : nil
+                } ?? .clear
                 return CurrentWeatherStore { _ in
                     WeatherReading(temperature: .init(value: 30, unit: .celsius), apparentTemperature: .init(value: 35, unit: .celsius),
-                                   condition: String(localized: "Clear"), symbol: "sun.max", date: .now, attribution: nil)
+                                   condition: condition.description, weatherCondition: condition, date: .now, attribution: nil)
                 }
             }
         #endif
@@ -125,7 +130,7 @@ struct TodayView: View {
                 if let dailyAyah {
                     DailyAyahCard(ayah: dailyAyah, skyBackground: sun != nil)
                 }
-                TodayInfoCards(date: now, skyBackground: sun != nil, weather: weather)
+                TodayInfoCards(date: now, skyBackground: sun != nil, weather: weather, sun: sun, moon: moon)
             }
             .safeAreaInset(edge: .top, spacing: 0) {
                 if sun != nil {

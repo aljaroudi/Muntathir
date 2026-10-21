@@ -17,6 +17,8 @@ final class TodayInfoCardsUITests: XCTestCase {
         capture.name = "Today date and weather squares"
         capture.lifetime = .keepAlways
         add(capture)
+        let temperature = app.staticTexts["weather-temperature"]
+        let originalTemperature = temperature.label
         app.buttons["Settings"].tap()
         let toggle = app.switches["Show feels-like temperature"]
         for _ in 0 ..< 6 where !toggle.isHittable || toggle.frame.maxY > app.frame.maxY - 100 {
@@ -26,10 +28,36 @@ final class TodayInfoCardsUITests: XCTestCase {
         toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
         XCTAssertEqual(toggle.value as? String, "1")
         app.buttons["Done"].tap()
-        for _ in 0 ..< 8 where !app.staticTexts["Feels like"].isHittable {
+        for _ in 0 ..< 8 where !temperature.isHittable {
             app.swipeUp()
         }
-        XCTAssertTrue(app.staticTexts["Feels like"].exists)
+        XCTAssertTrue(temperature.isHittable)
+        XCTAssertNotEqual(temperature.label, originalTemperature)
+        XCTAssertFalse(app.staticTexts["Feels like"].exists)
+    }
+
+    @MainActor func testWeatherScenes() {
+        let app = XCUIApplication()
+        for (condition, date) in [("clear", "2026-10-21T09:00:00Z"), ("clear", "2026-10-21T21:30:00Z"),
+                                  ("cloudy", "2026-10-21T09:00:00Z"), ("rain", "2026-10-21T09:00:00Z"),
+                                  ("snow", "2026-10-21T21:30:00Z"), ("foggy", "2026-10-21T09:00:00Z")]
+        {
+            app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "--ui-testing-weather", "--weather-condition", condition,
+                                   "--sky-date", date, "-AppleLanguages", "(en)", "-AppleLocale", "en_GB"]
+            app.launch()
+            let card = app.otherElements["weather-card"]
+            for _ in 0 ..< 8 where !card.isHittable {
+                app.swipeUp()
+            }
+            XCTAssertTrue(card.isHittable)
+            XCTAssertTrue(app.staticTexts["weather-temperature"].exists)
+            XCTAssertFalse(app.staticTexts["Feels like"].exists)
+            let capture = XCTAttachment(screenshot: app.screenshot())
+            capture.name = "Weather \(condition) \(date)"
+            capture.lifetime = .keepAlways
+            add(capture)
+            app.terminate()
+        }
     }
 
     @MainActor func testAccessibilityCardsFitScreen() {

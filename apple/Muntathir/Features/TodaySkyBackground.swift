@@ -61,14 +61,8 @@ private struct SolarArc: View {
                 }
                 if let progress {
                     let center = SolarArcLayout.point(progress: progress, in: bounds)
-                    Circle()
-                        .fill(RadialGradient(colors: [Color.orange.opacity(0.4), .clear], center: .center, startRadius: 12, endRadius: 52))
-                        .frame(width: 104, height: 104)
-                        .position(center)
-                    Circle()
-                        .fill(RadialGradient(colors: [.white, warm ? Color(red: 1, green: 0.72, blue: 0.34) : Color(red: 1, green: 0.94, blue: 0.68)], center: .topLeading, startRadius: 0, endRadius: 30))
+                    SunDisc(warm: warm)
                         .frame(width: 30, height: 30)
-                        .shadow(color: .orange.opacity(0.35), radius: 12)
                         .position(center)
 
                     ForEach(markers) { marker in
@@ -91,33 +85,6 @@ private struct SolarPrayerIndicator: View {
             .opacity(marker.state == .past ? 0.45 : 1)
             .shadow(color: .black.opacity(0.6), radius: 2)
             .frame(width: 24, height: 24)
-    }
-}
-
-/// Upright schematic phase: waxing light on the right, waning on the left.
-private struct MoonDisc: View {
-    let fraction: Double
-    let waxing: Bool
-
-    var body: some View {
-        Canvas { context, size in
-            let radius = min(size.width, size.height) / 2
-            let center = CGPoint(x: size.width / 2, y: size.height / 2)
-            var light = Path()
-            for step in 0 ... 120 {
-                let limb = step <= 60
-                let y = limb ? Double(step) / 30 - 1 : 3 - Double(step) / 30
-                let x = sqrt(max(0, 1 - y * y)) * (limb ? 1 : 1 - 2 * fraction)
-                let point = CGPoint(x: center.x + (waxing ? x : -x) * radius, y: center.y + y * radius)
-                if step == 0 {
-                    light.move(to: point)
-                } else {
-                    light.addLine(to: point)
-                }
-            }
-            light.closeSubpath()
-            context.fill(light, with: .linearGradient(Gradient(colors: [.white, Color(red: 0.7, green: 0.78, blue: 0.88)]), startPoint: .zero, endPoint: CGPoint(x: size.width, y: size.height)))
-        }
     }
 }
 
