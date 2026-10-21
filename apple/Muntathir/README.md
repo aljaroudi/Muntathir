@@ -29,3 +29,9 @@ See [widgets](../MuntathirWidgets/), [calendar and content](../Shared/), and [Ap
 ## Qibla accuracy
 
 Open **Tools → Qibla**. The compass stays blurred with a warning unless a valid true heading has a reported error of 10° or less. Missing, invalid, and nonfinite readings never enable arrow guidance. The calculated bearing from true north remains available separately. Validate interference and recovery on a physical device.
+
+## First-run setup
+
+Onboarding introduces the app, requires a city or device location, lets users choose a prayer calculation method (Jafari/Qum by default), and offers optional notification permission. Denying notifications does not block setup. Location denial or GPS failure leaves city search available; city search requires a network connection.
+
+Completion is stored on this device and does not sync through iCloud. Existing saved locations do not bypass setup. Interrupted setup restarts at Welcome and retains saved choices. After completion, launch opens Today.

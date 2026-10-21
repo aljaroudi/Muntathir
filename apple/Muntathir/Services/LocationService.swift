@@ -116,9 +116,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        if manager.authorizationStatus == .authorizedWhenInUse
-            || manager.authorizationStatus == .authorizedAlways
-        {
+        if manager.authorizationStatus != .notDetermined {
             locate()
         }
     }
