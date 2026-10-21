@@ -6,10 +6,20 @@ struct CalendarScreen: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
-    @State private var now = Date()
-    @State private var selection = Date()
+    @State private var now: Date
+    @State private var selection: Date
     @State private var monthOffset = 0
     @State private var correcting = false
+    init() {
+        #if DEBUG
+            let date = CaptureClock()?.start ?? .now
+        #else
+            let date = Date.now
+        #endif
+        _now = State(initialValue: date)
+        _selection = State(initialValue: date)
+    }
+
     var body: some View {
         let engine = model.engine
         let month = engine.resolve(now).month.advanced(monthOffset)

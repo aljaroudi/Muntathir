@@ -3,3 +3,16 @@ DerivedData/
 .build/
 *.xcuserstate
 xcuserdata/
+
+# Local release credentials, runner state, and generated assets
+.local-ci/
+apple/.bundle/
+apple/build/
+apple/vendor/
+apple/fastlane/.env*
+!apple/fastlane/.env.local.example
+apple/fastlane/report.xml
+apple/fastlane/Preview.html
+*.p8
+*.ipa
+*.dSYM.zip

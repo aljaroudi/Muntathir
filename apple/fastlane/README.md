@@ -1,0 +1,112 @@
+fastlane documentation
+----
+
+# Installation
+
+Make sure you have the latest version of the Xcode command line tools installed:
+
+```sh
+xcode-select --install
+```
+
+For _fastlane_ installation instructions, see [Installing _fastlane_](https://docs.fastlane.tools/#installing-fastlane)
+
+# Available Actions
+
+## iOS
+
+### ios check
+
+```sh
+[bundle exec] fastlane ios check
+```
+
+Validate local metadata and automation checks without Apple access
+
+### ios tests
+
+```sh
+[bundle exec] fastlane ios tests
+```
+
+Run unit and UI regression tests, excluding marketing captures
+
+### ios screenshots
+
+```sh
+[bundle exec] fastlane ios screenshots
+```
+
+Capture raw Arabic and English iPhone, iPad and Duo screenshots
+
+### ios style
+
+```sh
+[bundle exec] fastlane ios style
+```
+
+Style raw screenshots with frames, backgrounds and localized headlines
+
+### ios previews
+
+```sh
+[bundle exec] fastlane ios previews
+```
+
+Record continuous sunrise-to-sunset simulator previews in both languages
+
+### ios marketing
+
+```sh
+[bundle exec] fastlane ios marketing
+```
+
+Generate all screenshots and App Preview videos locally
+
+### ios readiness
+
+```sh
+[bundle exec] fastlane ios readiness
+```
+
+Read App Store readiness without changing remote settings
+
+### ios build
+
+```sh
+[bundle exec] fastlane ios build
+```
+
+Validate signing and export an IPA without uploading
+
+### ios beta
+
+```sh
+[bundle exec] fastlane ios beta
+```
+
+Test, archive, upload and submit Public external Beta App Review
+
+### ios assets
+
+```sh
+[bundle exec] fastlane ios assets
+```
+
+Upload current metadata and media without submitting App Review
+
+### ios release
+
+```sh
+[bundle exec] fastlane ios release
+```
+
+Test, generate media, archive and submit App Review with manual release
+
+----
+
+This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
+
+More information about _fastlane_ can be found on [fastlane.tools](https://fastlane.tools).
+
+The documentation of _fastlane_ can be found on [docs.fastlane.tools](https://docs.fastlane.tools).

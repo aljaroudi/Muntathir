@@ -23,6 +23,10 @@ struct TodayView: View {
         return CurrentWeatherStore()
     }()
 
+    #if DEBUG
+        @State private var captureClock = CaptureClock()
+    #endif
+
     @State private var dailyAyah: Ayah?
     @Environment(\.scenePhase) private var scenePhase
     @State private var skyTitleHeight: CGFloat = 52
@@ -30,8 +34,8 @@ struct TodayView: View {
     @ScaledMetric(relativeTo: .body) private var prayerSymbolWidth: CGFloat = 28
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 60)) { context in
-            let now = referenceDate ?? max(context.date, refreshedAt)
+        TimelineView(.periodic(from: .now, by: timelineInterval)) { context in
+            let now = displayDate(context.date)
             let engine = model.engine
             let sun = model.location.flatMap { SolarPosition.calculate(at: now, latitude: $0.latitude, longitude: $0.longitude) }
             let moon = model.location.flatMap { MoonPosition.calculate(at: now, latitude: $0.latitude, longitude: $0.longitude) }
@@ -173,6 +177,24 @@ struct TodayView: View {
                 Task { await weather.refresh(location: model.location) }
             }
         }
+    }
+
+    private var timelineInterval: TimeInterval {
+        #if DEBUG
+            if captureClock?.isAnimated == true {
+                return 1.0 / 30
+            }
+        #endif
+        return 60
+    }
+
+    private func displayDate(_ date: Date) -> Date {
+        #if DEBUG
+            if let captureClock {
+                return captureClock.date(at: date)
+            }
+        #endif
+        return referenceDate ?? max(date, refreshedAt)
     }
 
     private var skyHeight: CGFloat {

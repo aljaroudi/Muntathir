@@ -127,20 +127,20 @@ private struct AyahShareSheet: UIViewControllerRepresentable {
         number: 24,
         text: "رَبِّ إِنِّى لِمَآ أَنزَلْتَ إِلَىَّ مِنْ خَيْرٍ فَقِيرٌ"
     )
+
+    #Preview("Daily ayah") {
+        DailyAyahCard(ayah: exampleAyah)
+            .padding()
+    }
+
+    #Preview("Daily ayah — dark Arabic") {
+        DailyAyahCard(ayah: exampleAyah)
+            .padding().preferredColorScheme(.dark)
+            .environment(\.locale, Locale(identifier: "ar"))
+            .environment(\.layoutDirection, .rightToLeft)
+    }
+
+    #Preview("Shared image") {
+        AyahShareArtwork(ayah: exampleAyah)
+    }
 #endif
-
-#Preview("Daily ayah") {
-    DailyAyahCard(ayah: exampleAyah)
-        .padding()
-}
-
-#Preview("Daily ayah — dark Arabic") {
-    DailyAyahCard(ayah: exampleAyah)
-        .padding().preferredColorScheme(.dark)
-        .environment(\.locale, Locale(identifier: "ar"))
-        .environment(\.layoutDirection, .rightToLeft)
-}
-
-#Preview("Shared image") {
-    AyahShareArtwork(ayah: exampleAyah)
-}

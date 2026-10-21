@@ -1,0 +1,79 @@
+name: Local Apple deployment
+
+on:
+  pull_request:
+    branches: [main]
+    paths: ['apple/**', '.github/workflows/apple-deploy.yml']
+    types: [opened, synchronize, reopened, ready_for_review, closed]
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: Fastlane operation
+        required: true
+        default: beta
+        type: choice
+        options: [check, readiness, tests, marketing, build, beta, assets, release]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: muntathir-apple-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      github.actor == github.repository_owner &&
+      ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+       (github.event.pull_request.head.repo.full_name == github.repository &&
+        ((github.event.action != 'closed' && !github.event.pull_request.draft) ||
+         (github.event.action == 'closed' && github.event.pull_request.merged))))
+    runs-on: [self-hosted, macOS, ARM64, muntathir-deploy]
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: bash
+        working-directory: apple
+    env:
+      FASTLANE_SKIP_UPDATE_CHECK: 'true'
+      FASTLANE_HIDE_CHANGELOG: 'true'
+      FASTLANE_OPT_OUT_USAGE: 'true'
+      BUNDLE_FROZEN: 'true'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || (github.event.pull_request.merged && github.event.pull_request.merge_commit_sha || github.event.pull_request.head.sha) }}
+          persist-credentials: false
+      - name: Install locked dependencies and validate automation
+        run: |
+          export PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/bin:$PATH"
+          export BUNDLE_PATH="$RUNNER_TOOL_CACHE/muntathir-bundle"
+          bundle install
+          bundle exec fastlane check
+      - name: Run Fastlane
+        env:
+          DEPLOY_LANE: ${{ github.event_name == 'workflow_dispatch' && inputs.lane || (github.event.pull_request.merged && 'release' || 'beta') }}
+        run: |
+          export PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/bin:$PATH"
+          export BUNDLE_PATH="$RUNNER_TOOL_CACHE/muntathir-bundle"
+          case "$DEPLOY_LANE" in
+            check|readiness|tests|marketing|build|beta|assets|release) ;;
+            *) echo "Unsupported lane" >&2; exit 1 ;;
+          esac
+          bundle exec fastlane "$DEPLOY_LANE"
+      - name: Preserve media, tests and deployment logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: apple-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            apple/build/marketing/raw
+            apple/build/marketing/store
+            apple/build/marketing/previews
+            apple/build/marketing/duo-previews
+            apple/build/tests
+            apple/build/logs
+            apple/fastlane/report.xml
+          if-no-files-found: ignore
+          retention-days: 14

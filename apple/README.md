@@ -25,3 +25,7 @@ Core Swift sources live in `Muntathir/Core` and are reused directly by Apple tar
 Validate real-device compass/calibration, notifications/background delivery, paired Watch synchronization and complications, CarPlay layouts, signed App Group provisioning, two-device iCloud sync, VoiceOver, and accessibility sizes. Validate proximity counting on notch and Dynamic Island iPhones, including placement, display recovery, timing, interruptions, and a four-rakaa session. Review event dates and Arabic titles editorially.
 
 Production corrections endpoint/source catalog and push delivery remain unconfigured. Simulator tests cannot prove hardware behavior or deployed feed delivery.
+
+## Fastlane
+
+See [release automation](fastlane/SETUP.md) for local commands, bilingual store metadata, styled screenshots, sunrise-to-sunset previews, and the dedicated GitHub Actions runner.
