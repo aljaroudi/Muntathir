@@ -10,6 +10,7 @@ struct TodayView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var skyTitleHeight: CGFloat = 52
     @State private var refreshedAt = Date.now
+    @ScaledMetric(relativeTo: .body) private var prayerSymbolWidth: CGFloat = 28
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 60)) { context in
@@ -60,31 +61,42 @@ struct TodayView: View {
                                 }
                             }
                         }
-                        ForEach(prayers) { prayer in
-                            HStack {
-                                Label(prayer.name.title, systemImage: prayer.name.symbol)
-                                Spacer(minLength: 8)
-                                if prayer.name == next?.name, let next {
-                                    Text(PrayerCountdownFormat(target: next.date, locale: locale).format(now))
-                                        .font(.caption).monospacedDigit()
-                                        .padding(.horizontal, 8).padding(.vertical, 4)
-                                        .background(Color.accentColor.opacity(0.1), in: .capsule)
+                        Grid(horizontalSpacing: 8, verticalSpacing: 16) {
+                            ForEach(prayers) { prayer in
+                                GridRow {
+                                    HStack {
+                                        Label {
+                                            Text(prayer.name.title)
+                                        } icon: {
+                                            Image(systemName: prayer.name.symbol)
+                                                .frame(width: prayerSymbolWidth)
+                                        }
+                                        Spacer(minLength: 8)
+                                        if prayer.name == next?.name, let next {
+                                            Text(PrayerCountdownFormat(target: next.date, locale: locale).format(now))
+                                                .font(.caption).monospacedDigit()
+                                                .padding(.horizontal, 8).padding(.vertical, 4)
+                                                .background(Color.accentColor.opacity(0.1), in: .capsule)
+                                        }
+                                    }
+                                    Text(
+                                        prayer.date.formatted(.dateTime.hour().minute().inZone(model.zone))
+                                    )
+                                    .font(.system(.title3, design: .monospaced, weight: .medium))
+                                    .fixedSize(horizontal: true, vertical: false)
+                                    .gridColumnAlignment(.trailing)
                                 }
-                                Text(
-                                    prayer.date.formatted(.dateTime.hour().minute().inZone(model.zone))
+                                .foregroundStyle(
+                                    prayer.name == next?.name
+                                        ? Color.accentColor : Color.primary
                                 )
-                                .font(.title3.weight(.medium))
-                                .monospacedDigit()
-                            }
-                            .foregroundStyle(
-                                prayer.name == next?.name
-                                    ? Color.accentColor : Color.primary
-                            )
-                            .padding(.vertical, 5)
-                            .accessibilityElement(children: .combine)
-                            .accessibilityIdentifier("prayer-\(prayer.name.rawValue)")
-                            if prayer.id != prayers.last?.id {
-                                Divider()
+                                .padding(.vertical, 5)
+                                .accessibilityElement(children: .combine)
+                                .accessibilityIdentifier("prayer-\(prayer.name.rawValue)")
+                                if prayer.id != prayers.last?.id {
+                                    Divider()
+                                        .gridCellUnsizedAxes(.horizontal)
+                                }
                             }
                         }
                     }
