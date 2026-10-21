@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title description">
+  <title id="title">Muntathir — the waiting dome</title>
+  <desc id="description">An ivory hourglass with a narrow glass neck and gold sand forming a mosque dome in its lower chamber, on deep emerald.</desc>
+  <defs>
+    <linearGradient id="background" x1="128" y1="0" x2="896" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#174F45"/>
+      <stop offset="1" stop-color="#082F2B"/>
+    </linearGradient>
+  </defs>
+  <!-- Full bleed square. The destination platform supplies the icon mask. -->
+  <path fill="url(#background)" d="M0 0h1024v1024H0z"/>
+  <!-- Mirrored glass walls remain separated at the neck; they never cross. -->
+  <path d="M344 272
+           C344 390 422 440 480 494
+           C490 503 490 521 480 530
+           C422 584 344 634 344 752
+           M680 272
+           C680 390 602 440 544 494
+           C534 503 534 521 544 530
+           C602 584 680 634 680 752"
+        fill="none" stroke="#F5F0DF" stroke-width="32"/>
+  <!-- Sand follows the upper bowl, leaving clear space around the glass. -->
+  <path fill="#DCC18A" d="M391 330H633
+           C615 386 561 425 512 470
+           C463 425 409 386 391 330Z"/>
+  <circle cx="512" cy="553" r="8" fill="#DCC18A"/>
+  <!-- The lower sand mound is a pointed dome, with a broad, level base. -->
+  <path fill="#DCC18A" d="M394 744
+           C394 675 463 648 512 600
+           C561 648 630 675 630 744Z"/>
+  <!-- Equal end plates close the chambers and give the silhouette its weight. -->
+  <rect x="296" y="232" width="432" height="48" rx="24" fill="#F5F0DF"/>
+  <rect x="296" y="744" width="432" height="48" rx="24" fill="#F5F0DF"/>
+</svg>

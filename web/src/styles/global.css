@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@theme {
+  --color-emerald: #203f35;
+  --color-ivory: #f7f5ee;
+  --color-moss: #4d6d50;
+  --color-muted: #5c685f;
+  --color-gold: #897345;
+}
+
+/* Language-level typography and shared accessibility defaults. */
+@layer base {
+  body {
+    font-family: var(--font-arabic), sans-serif;
+  }
+  .quran {
+    font-family: var(--font-quran), serif;
+  }
+  a:focus-visible,
+  summary:focus-visible {
+    outline: 3px solid var(--color-gold);
+    outline-offset: 5px;
+  }
+  ::selection {
+    background: #d4dfc7;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+}

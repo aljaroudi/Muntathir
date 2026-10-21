@@ -1,3 +1,12 @@
 #!/bin/sh
 set -eu
-exec make -C "$(git rev-parse --show-toplevel)" apple-test
+cd "$(git rev-parse --show-toplevel)"
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+make apple-test
+if [ -f web/package.json ]; then
+    if ! command -v bun >/dev/null 2>&1; then
+        echo "Bun is required for web checks. Install Bun and run: cd web && bun install --frozen-lockfile" >&2
+        exit 1
+    fi
+    (cd web && bun run check && bun run build && bun test)
+fi

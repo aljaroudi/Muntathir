@@ -1,0 +1,11 @@
+---
+import { appStore } from '../site';
+import badge from '../assets/app-store-badge.svg?url';
+type Props = {
+  label: string;
+}
+const { label } = Astro.props;
+---
+<a class="download" href={appStore} aria-label={label}>
+  <img src={badge} width="144" height="48" alt={label} />
+</a>
