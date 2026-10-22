@@ -24,5 +24,17 @@ final class MarketingScreenshotTests: XCTestCase {
         snapshot("03-Calendar", timeWaitingForIdle: 2)
         app.buttons[arabic ? "الأدوات" : "Tools"].firstMatch.tap()
         snapshot("04-Tools", timeWaitingForIdle: 2)
+        app.buttons["holy-quran"].tap()
+        XCTAssertTrue(app.buttons["quran-translation-picker"].waitForExistence(timeout: 10))
+        // Capture the offline Arabic reader consistently, independent of downloaded packs.
+        app.buttons["quran-translation-picker"].tap()
+        app.buttons[arabic ? "بدون ترجمة" : "None"].tap()
+        let search = app.searchFields.firstMatch
+        search.tap()
+        search.typeText("112")
+        XCTAssertTrue(app.buttons["quran-surah-112"].waitForExistence(timeout: 10))
+        app.buttons["quran-surah-112"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["quran-verse-112:1"].waitForExistence(timeout: 10))
+        snapshot("02-Quran", timeWaitingForIdle: 2)
     }
 }

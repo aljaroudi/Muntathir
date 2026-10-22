@@ -37,10 +37,12 @@ module MuntathirRelease
   end
 
   def self.validate_media!(root = ROOT)
+    headlines = JSON.parse(File.read(File.join(__dir__, "marketing/headlines.json")))
     LOCALES.each do |locale|
       DEVICES.each do |device|
         images = Dir.glob(File.join(root, "build/marketing/store", locale, "#{device}-*.png"))
-        raise "Missing styled screenshots for #{locale}/#{device}; run marketing" unless images.size == 3
+        required = headlines.fetch(locale).keys
+        raise "Missing styled screenshots for #{locale}/#{device}; run marketing" unless images.size == required.size && required.all? { |key| images.any? { |path| File.basename(path) == "#{device}-#{key}.png" } }
       end
       watch = File.join(root, "build/marketing/store", locale, "Apple Watch Series 12 (46mm)-01-PrayerTimes.png")
       raise "Missing required Apple Watch screenshot for #{locale}; run watch_screenshots" unless File.file?(watch)

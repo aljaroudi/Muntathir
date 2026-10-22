@@ -1,11 +1,13 @@
 {
   "en-US": {
     "01-Today": "Prayer times and a verse for your day.",
+    "02-Quran": "Read the Quran, wherever you are.",
     "03-Calendar": "Your Hijri calendar, close at hand.",
     "04-Tools": "Simple tools for your prayer."
   },
   "ar-SA": {
     "01-Today": "مواقيت صلاتك وآية ليومك",
+    "02-Quran": "القرآن الكريم بين يديك",
     "03-Calendar": "تقويمك الهجري بين يديك",
     "04-Tools": "أدوات بسيطة لصلاتك"
   }

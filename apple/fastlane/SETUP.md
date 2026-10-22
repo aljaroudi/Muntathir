@@ -12,7 +12,7 @@ bundle exec fastlane marketing
 
 ## Lanes
 
-- `screenshots`: capture three screens in English and Arabic on iPhone 17 Pro Max, iPad Pro 13-inch (M5), and iPhone Duo.
+- `screenshots`: capture Today, Quran, Calendar, and Tools in English and Arabic on iPhone 17 Pro Max, iPad Pro 13-inch (M5), and iPhone Duo.
 - `watch_screenshots`: capture the real Watch prayer list in both languages at 416 × 496, using a temporary Mecca connectivity cache that is restored afterward.
 - `style`: add device bezels, gradient backgrounds and native text rendering for Arabic shaping.
 - `previews`: record 15-second sunrise-to-sunset videos on all three devices.
@@ -41,7 +41,7 @@ Generated files live under ignored `build/marketing/`:
 - `watch/`: native Watch captures required for the embedded companion.
 - `raw/`: original screenshots and snapshot HTML summary.
 - `frames/`: intermediate bezel images.
-- `store/`: styled store screenshots, 20 files across iPhone, iPad, Duo and Apple Watch in two locales.
+- `store/`: styled store screenshots, 26 files across iPhone, iPad, Duo and Apple Watch in two locales.
 - `previews/`: 15-second standard iPhone/iPad videos and start/middle/end QA frames.
 - `duo-previews/`: 15-second Duo videos at 886 × 1920, with QA frames.
 
@@ -68,3 +68,7 @@ Commit/push the workflow to activate it in GitHub. Binary upload, Apple processi
 References: [Fastlane 2.241.1](https://github.com/fastlane/fastlane/releases/tag/2.241.1), [snapshot](https://docs.fastlane.tools/actions/snapshot/), [frameit](https://docs.fastlane.tools/actions/frameit/), [App Asset Library release notes](https://developer.apple.com/documentation/appstoreconnectapi/app-store-connect-api-4-5-1-release-notes).
 
 Apple requires 15–30 seconds for App Store previews. The capture clock advances the full Sun movement over 15 seconds. Today and daily ayah share one screenshot and headline. Duo screenshots clip to rounded corners inside a dark bezel.
+
+The Quran capture opens Al-Ikhlas with translation set to None, so both localized interfaces can be captured offline without depending on asset-pack downloads. Screenshot validation reads the required screen names from `marketing/headlines.json`.
+
+Snapshot builds use `build/marketing/DerivedData` so they do not share a build cache with regression tests.

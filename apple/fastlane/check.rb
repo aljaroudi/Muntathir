@@ -44,6 +44,35 @@ wrong_platform = Marshal.load(Marshal.dump(page))
 wrong_platform["included"][0]["attributes"]["platforms"] = ["MAC_OS"]
 rejects("Non-iOS pack accepted") { MuntathirRelease.validate_asset_packs!(get: ->(_) { wrong_platform }) }
 
+# Every supported device/locale must include Quran, not merely four arbitrary images.
+original_video_check = MuntathirRelease.method(:validate_video!)
+begin
+  MuntathirRelease.define_singleton_method(:validate_video!) { |*_, **_| }
+  Dir.mktmpdir do |root|
+    headlines = JSON.parse(File.read(File.join(__dir__, "marketing/headlines.json")))
+    MuntathirRelease::LOCALES.each do |locale|
+      directory = File.join(root, "build/marketing/store", locale)
+      FileUtils.mkdir_p(directory)
+      MuntathirRelease::DEVICES.each do |device|
+        headlines.fetch(locale).each_key { |key| File.write(File.join(directory, "#{device}-#{key}.png"), "") }
+      end
+      File.write(File.join(directory, "Apple Watch Series 12 (46mm)-01-PrayerTimes.png"), "")
+      %w[IPHONE_67 IPAD_PRO_3GEN_129 IPHONE_DUO].each do |type|
+        folder = type == "IPHONE_DUO" ? "duo-previews" : "previews"
+        output = File.join(root, "build/marketing", folder, locale)
+        FileUtils.mkdir_p(output)
+        File.write(File.join(output, "01-#{type}-SunriseToSunset.mp4"), "")
+      end
+    end
+    MuntathirRelease.validate_media!(root)
+    quran = File.join(root, "build/marketing/store/en-US/iPhone 17 Pro Max-02-Quran.png")
+    FileUtils.mv(quran, quran.sub("02-Quran", "99-Extra"))
+    rejects("Missing Quran screenshot accepted") { MuntathirRelease.validate_media!(root) }
+  end
+ensure
+  MuntathirRelease.define_singleton_method(:validate_video!, &original_video_check)
+end
+
 # Exercise lane wiring without network access, builds, uploads, or credentials.
 module UI
   def self.user_error!(message) = raise(message)
