@@ -4,6 +4,8 @@ final class OnboardingUITests: XCTestCase {
     @MainActor func testLocationRequiredAndPickerAvailable() {
         let app = launch()
         app.buttons["onboarding-continue"].tap()
+        XCTAssertTrue(app.buttons["app-language-settings"].exists)
+        app.buttons["onboarding-continue"].tap()
         XCTAssertFalse(app.buttons["onboarding-continue"].isEnabled)
         app.buttons["Choose a location"].tap()
         XCTAssertTrue(app.searchFields["Search for a city"].waitForExistence(timeout: 5))
@@ -14,18 +16,18 @@ final class OnboardingUITests: XCTestCase {
         let app = launch(extra: ["--ui-testing-mecca"])
         capture("Welcome", in: app)
         app.buttons["onboarding-continue"].tap()
+        XCTAssertTrue(app.staticTexts["Choose your app language"].exists)
+        app.terminate()
+        app.launchArguments.removeAll { $0 == "--ui-testing-mecca" }
+        app.launchArguments.append("--ui-testing-preserve-state")
+        app.launch()
+        XCTAssertTrue(app.staticTexts["Choose your app language"].waitForExistence(timeout: 5))
+        app.buttons["onboarding-continue"].tap()
         XCTAssertTrue(app.staticTexts["Mecca"].exists)
         app.buttons["onboarding-continue"].tap()
         XCTAssertTrue(app.staticTexts["Prayer calculations"].exists)
         app.buttons["onboarding-back"].tap()
         XCTAssertTrue(app.staticTexts["Choose your location"].exists)
-        app.terminate()
-        app.launchArguments.removeAll { $0 == "--ui-testing-mecca" }
-        app.launchArguments.append("--ui-testing-preserve-state")
-        app.launch()
-        XCTAssertTrue(app.staticTexts["Welcome to Muntathir"].waitForExistence(timeout: 5))
-        app.buttons["onboarding-continue"].tap()
-        XCTAssertTrue(app.staticTexts["Mecca"].exists)
         app.buttons["onboarding-continue"].tap()
         app.buttons["onboarding-continue"].tap()
         XCTAssertTrue(app.buttons["Enable notifications"].exists)
@@ -37,11 +39,23 @@ final class OnboardingUITests: XCTestCase {
         XCTAssertFalse(app.staticTexts["Welcome to Muntathir"].exists)
     }
 
+    @MainActor func testLanguageSettingsOpensAndResumesSetup() {
+        let app = launch(extra: ["--ui-testing-mecca"])
+        app.buttons["onboarding-continue"].tap()
+        app.buttons["app-language-settings"].tap()
+        let settings = XCUIApplication(bundleIdentifier: "com.apple.Preferences")
+        XCTAssertTrue(settings.wait(for: .runningForeground, timeout: 10))
+        app.activate()
+        XCTAssertTrue(app.staticTexts["Choose your app language"].waitForExistence(timeout: 5))
+        app.buttons["onboarding-continue"].tap()
+        XCTAssertTrue(app.staticTexts["Choose your location"].exists)
+    }
+
     @MainActor func testArabicAtAccessibilitySize() {
         let app = launch(extra: ["--ui-testing-mecca", "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"], arabic: true)
         XCTAssertTrue(app.staticTexts["مرحبًا بك في منتظر"].waitForExistence(timeout: 5))
         capture("Arabic welcome accessibility", in: app)
-        for _ in 0 ..< 3 {
+        for _ in 0 ..< 4 {
             tapScrolling(app.buttons["onboarding-continue"], in: app)
         }
         tapScrolling(app.buttons["onboarding-finish"], in: app)
@@ -50,6 +64,7 @@ final class OnboardingUITests: XCTestCase {
 
     @MainActor func testLocationDenialKeepsCitySearchAvailable() {
         let app = launch()
+        app.buttons["onboarding-continue"].tap()
         app.buttons["onboarding-continue"].tap()
         app.buttons["Choose a location"].tap()
         let monitor = addUIInterruptionMonitor(withDescription: "Location permission") { alert in
@@ -70,7 +85,7 @@ final class OnboardingUITests: XCTestCase {
 
     @MainActor func testNotificationDenialAllowsCompletion() {
         let app = launch(extra: ["--ui-testing-mecca"])
-        for _ in 0 ..< 3 {
+        for _ in 0 ..< 4 {
             app.buttons["onboarding-continue"].tap()
         }
         let monitor = addUIInterruptionMonitor(withDescription: "Notification permission") { alert in

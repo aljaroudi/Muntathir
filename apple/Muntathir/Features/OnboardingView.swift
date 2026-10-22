@@ -2,7 +2,10 @@ import SwiftUI
 
 struct OnboardingView: View {
     @Environment(AppModel.self) private var model
-    @State private var step = 0
+    private var step: Int {
+        model.onboardingStep
+    }
+
     @State private var requestingNotifications = false
     @State private var notificationsDenied = false
 
@@ -10,16 +13,16 @@ struct OnboardingView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    Text("Step \(step + 1) of 4")
+                    Text("Step \(step + 1) of 5")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
-                    ProgressView(value: Double(step + 1), total: 4)
+                    ProgressView(value: Double(step + 1), total: 5)
                         .accessibilityHidden(true)
                     stepContent
-                    if step < 3 {
-                        Button(step == 0 ? "Get started" : "Continue") { step += 1 }
+                    if step < 4 {
+                        Button(step == 0 ? "Get started" : "Continue") { model.moveOnboarding(by: 1) }
                             .buttonStyle(.borderedProminent)
-                            .disabled(step == 1 && model.location?.isValid != true)
+                            .disabled(step == 2 && model.location?.isValid != true)
                             .accessibilityIdentifier("onboarding-continue")
                     }
                 }
@@ -33,7 +36,7 @@ struct OnboardingView: View {
             .toolbar {
                 if step > 0 {
                     ToolbarItem(placement: .topBarLeading) {
-                        Button("Back", systemImage: "chevron.backward") { step -= 1 }
+                        Button("Back", systemImage: "chevron.backward") { model.moveOnboarding(by: -1) }
                             .disabled(requestingNotifications)
                             .accessibilityIdentifier("onboarding-back")
                     }
@@ -58,6 +61,15 @@ struct OnboardingView: View {
             Label("Hijri calendar and observances", systemImage: "calendar")
             Label("Find the direction of Qibla", systemImage: "location.north.circle")
         case 1:
+            Text("Choose your app language")
+                .font(.title.bold())
+                .accessibilityAddTraits(.isHeader)
+            Text(verbatim: "English · العربية")
+                .font(.title2)
+            Text("Choose English or Arabic in iOS Settings. Return here to continue setup.")
+            AppLanguageLink()
+                .buttonStyle(.bordered)
+        case 2:
             Text("Choose your location")
                 .font(.title.bold())
                 .accessibilityAddTraits(.isHeader)
@@ -74,7 +86,7 @@ struct OnboardingView: View {
             Text("Device location stays on this device.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
-        case 2:
+        case 3:
             Text("Prayer calculations")
                 .font(.title.bold())
                 .accessibilityAddTraits(.isHeader)

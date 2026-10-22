@@ -42,6 +42,7 @@ struct Preferences: Codable, Equatable, Sendable {
 
 @MainActor @Observable final class AppModel {
     private(set) var onboardingCompleted: Bool
+    private(set) var onboardingStep: Int
     private(set) var preferences: Preferences
     private(set) var confirmations: [Announcement] = []
     var liveLocation: SavedLocation?
@@ -70,6 +71,7 @@ struct Preferences: Codable, Equatable, Sendable {
     init(defaults: UserDefaults = .standard, cloud: NSUbiquitousKeyValueStore? = .default, feedClient: FeedClient? = nil) {
         self.defaults = defaults; self.cloud = cloud
         onboardingCompleted = defaults.bool(forKey: "onboardingCompleted")
+        onboardingStep = min(4, max(0, defaults.integer(forKey: "onboardingStep")))
         self.feedClient = feedClient
         let decoded = defaults.data(forKey: key).flatMap { try? JSONDecoder().decode(Preferences.self, from: $0) }
         preferences = decoded?.isValid == true ? decoded! : Preferences()
@@ -85,11 +87,18 @@ struct Preferences: Codable, Equatable, Sendable {
         }
     }
 
+    func moveOnboarding(by offset: Int) {
+        onboardingStep = min(4, max(0, onboardingStep + offset))
+        defaults.set(onboardingStep, forKey: "onboardingStep")
+    }
+
     @discardableResult
     func completeOnboarding() -> Bool {
         guard location?.isValid == true else { return false }
         defaults.set(true, forKey: "onboardingCompleted")
         onboardingCompleted = true
+        onboardingStep = 0
+        defaults.removeObject(forKey: "onboardingStep")
         reschedule()
         return true
     }

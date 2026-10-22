@@ -1,6 +1,50 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "App language" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لغة التطبيق"
+          }
+        }
+      }
+    },
+    "Choose your app language" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اختر لغة التطبيق"
+          }
+        }
+      }
+    },
+    "Choose English or Arabic in iOS Settings. Return here to continue setup." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اختر العربية أو الإنجليزية من إعدادات iOS، ثم عد لإكمال الإعداد."
+          }
+        }
+      }
+    },
+    "Step %lld of 5" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الخطوة %lld من ٥"
+          }
+        }
+      }
+    },
     "Adhan license" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1743,16 +1787,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "المصادر والتراخيص"
-          }
-        }
-      }
-    },
-    "Step %lld of 4" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "الخطوة %lld من ٤"
           }
         }
       }

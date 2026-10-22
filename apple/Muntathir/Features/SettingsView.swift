@@ -7,6 +7,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section { AppLanguageLink() }
                 Section {
                     NavigationLink {
                         LocationPicker()

@@ -14,7 +14,7 @@ Local alerts are plannedacross ten days, limited to the nearest 50 requests. Lau
 
 ## Daily ayah
 
-The daily ayah uses a fine-grained emerald-to-ivory background with soft lighting, shared by the app, widgets, and exported images. The background is static. Its share button opens the native share sheet with a 1080-pixel-wide image that expands vertically for the entire verse, including its verse reference. Rendering uses a fixed readable type size and light appearance, independent of the current screen settings. The displayed verse stays fixed until midnight in the selected location’s time zone. The card reads Arabic and English directly from the bundled `quran.db` and `en.qarai.db` and displays Ali Quli Qara’i’s translation below Arabic. Sources and licenses credits the translator. The share image retains its Arabic-only layout. See [dated schedule preparation](../content/daily-verses/) for the pending migration to a complete corrected Hijri month/day schedule.
+The daily ayah uses a fine-grained emerald-to-ivory background with soft lighting, shared by the app, widgets, and exported images. The background is static. Its share button opens the native share sheet with a 1080-pixel-wide image that expands vertically for the entire verse, including its verse reference. Rendering uses a fixed readable type size and light appearance, independent of the current screen settings. The displayed verse stays fixed until midnight in the selected location’s time zone. The card reads bundled Arabic and the selected installed translation from read-only SQLite databases. Sources and licenses credits each translator. Sharing includes the translation currently shown. See [dated schedule preparation](../content/daily-verses/) for the pending migration to a complete corrected Hijri month/day schedule.
 
 See [widgets](../MuntathirWidgets/), [calendar and content](../Shared/), and [Apple setup](../).
 
@@ -24,8 +24,8 @@ Open **Tools → Qibla**. The compass stays blurred with a warning unless a vali
 
 ## First-run setup
 
-Onboarding introduces the app, requires a city or device location, lets users choose a prayer calculation method (Jafari/Qum by default), and offers optional notification permission. Denying notifications does not block setup. Location denial or GPS failure leaves city search available; city search requires a network connection.
+Onboarding introduces the app, offers an app-language step that opens iOS Settings, requires a city or device location, lets users choose a prayer calculation method (Jafari/Qum by default), and offers optional notification permission. Denying notifications does not block setup. Location denial or GPS failure leaves city search available; city search requires a network connection.
 
-Completion is stored on this device and does not sync through iCloud. Existing saved locations do not bypass setup. Interrupted setup restarts at Welcome and retains saved choices. After completion, launch opens Today.
+Completion is stored on this device and does not sync through iCloud. Existing saved locations do not bypass setup. Interrupted setup resumes at the current step and retains saved choices, including when changing the app language restarts the app. The app-language link is also available in Settings. After completion, launch opens Today.
 
 Quran translations use [Apple-hosted on-demand packs](../AssetPacks/). Only Arabic is bundled. Auto matches preferred languages; explicit selection and None persist and also control daily ayah and widgets. Downloads never block Arabic reading.

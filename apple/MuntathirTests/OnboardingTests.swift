@@ -26,6 +26,25 @@ struct OnboardingTests {
         #expect(String(decoding: encoded, as: UTF8.self).contains("onboardingCompleted") == false)
     }
 
+    @MainActor @Test func languageStepPersistsAcrossRelaunchAndCompletionClearsIt() throws {
+        let suite = "OnboardingLanguageTests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let model = AppModel(defaults: defaults, cloud: nil)
+        model.moveOnboarding(by: 1)
+        #expect(AppModel(defaults: defaults, cloud: nil).onboardingStep == 1)
+        model.moveOnboarding(by: -10)
+        #expect(model.onboardingStep == 0)
+        model.moveOnboarding(by: 100)
+        #expect(model.onboardingStep == 4)
+        #expect(!model.completeOnboarding())
+        #expect(model.onboardingStep == 4)
+        model.select(SavedLocation(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh"))
+        #expect(model.completeOnboarding())
+        #expect(defaults.object(forKey: "onboardingStep") == nil)
+        #expect(AppModel(defaults: defaults, cloud: nil).onboardingStep == 0)
+    }
+
     @MainActor @Test func rememberedDeviceLocationDoesNotBypassOnboarding() throws {
         let suite = "OnboardingTests.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
