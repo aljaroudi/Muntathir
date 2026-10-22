@@ -206,18 +206,25 @@ struct LicensesView: View {
 
     var body: some View {
         List {
-            Section("Calculations") {
-                Link(
-                    "Adhan Swift 1.5.0",
-                    destination: URL(
-                        string: "https://github.com/batoulapps/adhan-swift"
-                    )!
-                )
-                Text(
-                    "Hijri baseline: Apple Foundation, Umm al-Qura. Calculated dates are not sighting confirmations."
-                )
+            Section {
+                Link("Adhan Swift 1.5.0", destination: URL(string: "https://github.com/batoulapps/adhan-swift")!)
+                NavigationLink("Adhan license") {
+                    ScrollView {
+                        Text(license("Adhan-LICENSE"))
+                            .environment(\.layoutDirection, .leftToRight)
+                            .font(.footnote)
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding()
+                    }
+                    .navigationTitle("Adhan license")
+                }
+                Text("Hijri baseline: [Apple Foundation](https://developer.apple.com/documentation/foundation/calendar/identifier-swift.enum/islamicummalqura), Umm al-Qura.")
+            } header: {
+                Text("Calculations")
+            } footer: {
+                Text("Calculated dates are not sighting confirmations.")
             }
-            Section("Library license") { Text(license("Adhan-LICENSE")) }
             Section("Quran Translations") {
                 ForEach(sortedQuranTranslations, id: \.id) { item in
                     quranTranslationCredit(item)
@@ -225,16 +232,7 @@ struct LicensesView: View {
                 }
             }
             Section("Events") {
-                Text(
-                    "Twelver Shia convention. Historical dates may differ between sources."
-                )
-                Link(
-                    "Event references",
-                    destination: URL(
-                        string:
-                        "https://al-islam.org/islam-faith-practice-history-sayyid-muhammad-rizvi/lesson-17-twelve-caliphs-or-imams"
-                    )!
-                )
+                Text("Twelver Shia convention. Historical dates may differ between sources. [Event references](https://al-islam.org/islam-faith-practice-history-sayyid-muhammad-rizvi/lesson-17-twelve-caliphs-or-imams).")
             }
         }.navigationTitle("Sources and licenses")
     }

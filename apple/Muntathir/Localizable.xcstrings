@@ -1,6 +1,50 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Adhan license" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "رخصة Adhan"
+          }
+        }
+      }
+    },
+    "Hijri baseline: [Apple Foundation](https://developer.apple.com/documentation/foundation/calendar/identifier-swift.enum/islamicummalqura), Umm al-Qura." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أساس التقويم الهجري: [Apple Foundation](https://developer.apple.com/documentation/foundation/calendar/identifier-swift.enum/islamicummalqura)، أم القرى."
+          }
+        }
+      }
+    },
+    "Calculated dates are not sighting confirmations." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التواريخ المحسوبة ليست تأكيدًا للرؤية."
+          }
+        }
+      }
+    },
+    "Twelver Shia convention. Historical dates may differ between sources. [Event references](https://al-islam.org/islam-faith-practice-history-sayyid-muhammad-rizvi/lesson-17-twelve-caliphs-or-imams)." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "وفق المذهب الشيعي الاثني عشري. قد تختلف التواريخ التاريخية بين المصادر. [مراجع المناسبات](https://al-islam.org/islam-faith-practice-history-sayyid-muhammad-rizvi/lesson-17-twelve-caliphs-or-imams)."
+          }
+        }
+      }
+    },
     "Auto" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -661,16 +705,6 @@
         }
       }
     },
-    "Event references" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "مراجع المناسبات"
-          }
-        }
-      }
-    },
     "Events" : {
       "localizations" : {
         "ar" : {
@@ -823,16 +857,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "إخفاء الوقت لا يغيّر إعداد الإشعار الخاص به."
-          }
-        }
-      }
-    },
-    "Hijri baseline: Apple Foundation, Umm al-Qura. Calculated dates are not sighting confirmations." : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "التقويم الأساسي: أم القرى من Apple Foundation. التواريخ المحسوبة ليست تأكيدًا للرؤية."
           }
         }
       }
@@ -1022,16 +1046,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "الكويت"
-          }
-        }
-      }
-    },
-    "Library license" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ترخيص المكتبة"
           }
         }
       }
@@ -1895,16 +1909,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "تركيا"
-          }
-        }
-      }
-    },
-    "Twelver Shia convention. Historical dates may differ between sources." : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "وفق التقويم الشيعي الاثني عشري. قد تختلف التواريخ التاريخية بين المصادر."
           }
         }
       }
