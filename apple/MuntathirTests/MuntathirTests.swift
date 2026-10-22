@@ -106,7 +106,7 @@ struct ContentTests {
 
     @Test func missingContentHasNoDailyVerse() throws {
         let emptyBundle = try #require(Bundle(identifier: "com.apple.Foundation"))
-        #expect(ContentLibrary(bundle: emptyBundle).verse(on: Date(), timeZone: .gmt) == nil)
+        #expect(try ContentLibrary(bundle: emptyBundle).verse(on: Date(), engine: CalendarEngine(timeZone: .gmt)) == nil)
     }
 
     @Test func bundledContentIsCompleteAndStable() throws {
@@ -123,8 +123,8 @@ struct ContentTests {
         #expect(Set(library.events.map(\.id)).count == library.events.count)
         let zone = try #require(TimeZone(identifier: "Asia/Riyadh"))
         let day = try #require(CivilDate(year: 2026, month: 10, day: 17).date(in: zone))
-        #expect(library.verse(on: day, timeZone: zone)?.id == library.verse(on: day.addingTimeInterval(300), timeZone: zone)?.id)
-        #expect(library.verse(on: day, timeZone: zone)?.id != library.verse(on: day.addingTimeInterval(86400), timeZone: zone)?.id)
+        #expect(try library.verse(on: day, engine: CalendarEngine(timeZone: zone))?.id == library.verse(on: day.addingTimeInterval(300), engine: CalendarEngine(timeZone: zone))?.id)
+        #expect(try library.verse(on: day, engine: CalendarEngine(timeZone: zone))?.id != library.verse(on: day.addingTimeInterval(86400), engine: CalendarEngine(timeZone: zone))?.id)
     }
 }
 

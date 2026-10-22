@@ -49,8 +49,8 @@
 		E50000000000000000000012 /* MuntathirWidgets/DailyAyahWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000002 /* MuntathirWidgets/DailyAyahWidget.swift */; };
 		E50000000000000000000013 /* Muntathir/Features/AyahBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000003 /* Muntathir/Features/AyahBackground.swift */; };
 		E50000000000000000000014 /* Muntathir/Core/ContentLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000004 /* Muntathir/Core/ContentLibrary.swift */; };
-		E50000000000000000000015 /* Muntathir/Resources/quran-daily.txt in Resources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000005 /* Muntathir/Resources/quran-daily.txt */; };
-		E50000000000000000000016 /* Muntathir/Resources/QPCHafs.woff2 in Resources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000006 /* Muntathir/Resources/QPCHafs.woff2 */; };
+		F70000000000000000000002 /* ../db.db in Resources */ = {isa = PBXBuildFile; fileRef = F70000000000000000000001 /* ../db.db */; };
+		F70000000000000000000003 /* ../db.db in Resources */ = {isa = PBXBuildFile; fileRef = F70000000000000000000001 /* ../db.db */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -161,8 +161,8 @@
 		E50000000000000000000002 /* MuntathirWidgets/DailyAyahWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuntathirWidgets/DailyAyahWidget.swift; sourceTree = SOURCE_ROOT; };
 		E50000000000000000000003 /* Muntathir/Features/AyahBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Features/AyahBackground.swift; sourceTree = SOURCE_ROOT; };
 		E50000000000000000000004 /* Muntathir/Core/ContentLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/ContentLibrary.swift; sourceTree = SOURCE_ROOT; };
-		E50000000000000000000005 /* Muntathir/Resources/quran-daily.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Muntathir/Resources/quran-daily.txt"; sourceTree = SOURCE_ROOT; };
 		E50000000000000000000006 /* Muntathir/Resources/QPCHafs.woff2 */ = {isa = PBXFileReference; lastKnownFileType = file; path = Muntathir/Resources/QPCHafs.woff2; sourceTree = SOURCE_ROOT; };
+		F70000000000000000000001 /* ../db.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = ../db.db; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -214,6 +214,11 @@
 			path = MuntathirUITests;
 			sourceTree = "<group>";
 		};
+		F60000000000000000000004 /* Muntathir/Resources */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Muntathir/Resources;
+			sourceTree = SOURCE_ROOT;
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -257,6 +262,8 @@
 		04457E54308394FD00A8887D = {
 			isa = PBXGroup;
 			children = (
+				F70000000000000000000001 /* ../db.db */,
+				F60000000000000000000004 /* Muntathir/Resources */,
 				D40000000000000000000001 /* AppIcon.icon */,
 				C30000000000000000000006 /* Shared watch sources */,
 				C3000000000000000000000A /* MuntathirWatchWidgets */,
@@ -295,7 +302,6 @@
 				A81000000000000000000004 /* Muntathir/Features/WeatherSceneStyle.swift */,
 				A81000000000000000000005 /* Muntathir/Features/SunDisc.swift */,
 				A81000000000000000000006 /* Muntathir/Features/MoonDisc.swift */,
-				E50000000000000000000005 /* Muntathir/Resources/quran-daily.txt */,
 				E50000000000000000000006 /* Muntathir/Resources/QPCHafs.woff2 */,
 				E50000000000000000000004 /* Muntathir/Core/ContentLibrary.swift */,
 				E50000000000000000000003 /* Muntathir/Features/AyahBackground.swift */,
@@ -434,6 +440,9 @@
 			);
 			buildRules = (
 			);
+			fileSystemSynchronizedGroups = (
+				F60000000000000000000004 /* Muntathir/Resources */,
+			);
 			name = MuntathirWidgets;
 			packageProductDependencies = (
 				A10000000000000000000002 /* Adhan */,
@@ -537,6 +546,7 @@
 		04457E5B308394FD00A8887D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				F70000000000000000000002 /* ../db.db in Resources */,
 				D40000000000000000000002 /* AppIcon.icon in Resources */,
 			);
 		};
@@ -553,9 +563,8 @@
 		B20000000000000000000005 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				F70000000000000000000003 /* ../db.db in Resources */,
 				B20000000000000000000022 /* Muntathir/Localizable.xcstrings in Resources */,
-				E50000000000000000000015 /* Muntathir/Resources/quran-daily.txt in Resources */,
-				E50000000000000000000016 /* Muntathir/Resources/QPCHafs.woff2 in Resources */,
 			);
 		};
 		C30000000000000000000015 /* Resources */ = {

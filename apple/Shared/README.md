@@ -20,7 +20,7 @@ The background refresh path accepts an optional FeedClient. Production leaves it
 
 ## Content provenance
 
-- Quran: 31 bundled Uthmani verses for the daily ayah, rotating by local Gregorian day. Never edit the Arabic text.
+- Quran: The bundled root `db.db` contains all 6,236 Arabic verses and Ali Quli Qara’i’s English translation. The daily ayah temporarily cycles through 31 numeric database IDs, changing at midnight in the selected location’s time zone. A complete dated dataset will select by corrected Hijri month/day; see [daily verse schedule](../content/daily-verses/). Never edit the Arabic text.
 - Prayer fixtures: copied from [Adhan Swift 1.5.0](https://github.com/batoulapps/adhan-swift/tree/1.5.0/Tests/Resources/Times); original source/tolerance remains in each JSON. Test-target copies mirror `Shared/Fixtures`.
 - Event date facts: [Islam: Faith, Practice & History, Lesson 17](https://al-islam.org/islam-faith-practice-history-sayyid-muhammad-rizvi/lesson-17-twelve-caliphs-or-imams), and [Fundamentals of Islam, Appendix 10](https://al-islam.org/fundamentals-islam-mirza-mahdi-pooya/appendix-10-historical-chart-14-masumeen). No prose from these books is bundled. References identify sections instead of invented page numbers.
 - The catalog chooses documented Twelver dates, including 28 Safar for Imam Hasan, 17 Safar for Imam Ridha, and 5 Rajab for Imam Hadi's birth. Alternatives exist. Imam Mahdi has a birth observance only. An event fixed to day 30 is not displayed in a 29-day month; no unreviewed substitution is inferred.

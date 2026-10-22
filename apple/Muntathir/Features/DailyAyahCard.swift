@@ -27,6 +27,13 @@ struct DailyAyahCard: View {
             }
             AyahText(ayah: ayah)
                 .textSelection(.enabled)
+            if let english = ayah.english {
+                Text(english)
+                    .font(.body)
+                    .environment(\.layoutDirection, .leftToRight)
+                    .textSelection(.enabled)
+                    .accessibilityIdentifier("daily-ayah-translation")
+            }
             Text(ayah.id)
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)

@@ -176,8 +176,8 @@ struct LockScreenPrayerTests {
         #expect(library.verses.isEmpty == false)
         let date = Date()
         let zone = try #require(TimeZone(identifier: "Asia/Riyadh"))
-        let widgetVerse = try #require(library.verse(on: date, timeZone: zone))
-        let appVerse = try #require(ContentLibrary().verse(on: date, timeZone: zone))
+        let widgetVerse = try #require(try library.verse(on: date, engine: CalendarEngine(timeZone: zone)))
+        let appVerse = try #require(try ContentLibrary().verse(on: date, engine: CalendarEngine(timeZone: zone)))
         #expect(widgetVerse.id == appVerse.id)
         #expect(widgetVerse.text == appVerse.text)
     }

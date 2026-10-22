@@ -25,8 +25,7 @@ struct DailyAyahProvider: TimelineProvider {
     }
 
     private func entry(at date: Date, library: ContentLibrary, settings: WidgetCalendarSettings) -> DailyAyahEntry {
-        // The temporary selector assumes bundled verses exist.
-        DailyAyahEntry(date: date, ayah: library.verses.isEmpty ? nil : library.verse(on: date, timeZone: settings.zone))
+        DailyAyahEntry(date: date, ayah: library.verse(on: date, engine: settings.engine))
     }
 }
 
@@ -55,6 +54,13 @@ struct DailyAyahWidgetView: View {
                         .truncationMode(.tail)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .layoutPriority(1)
+                    if !isAccessory, let english = ayah.english {
+                        Text(english)
+                            .font(.caption)
+                            .multilineTextAlignment(.leading)
+                            .environment(\.layoutDirection, .leftToRight)
+                            .lineLimit(3)
+                    }
                     if !isAccessory {
                         Text(ayah.id)
                             .font(.caption.monospacedDigit())
@@ -64,7 +70,7 @@ struct DailyAyahWidgetView: View {
                     }
                 }
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(Text("\(ayah.text) \(ayah.id)"))
+                .accessibilityLabel(Text([ayah.text, isAccessory ? nil : ayah.english, ayah.id].compactMap(\.self).joined(separator: " ")))
             } else {
                 Text("Verse unavailable").font(.caption)
             }

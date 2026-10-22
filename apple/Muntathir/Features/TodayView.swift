@@ -166,12 +166,12 @@ struct TodayView: View {
             .toolbarColorScheme(sun == nil ? nil : .dark, for: .navigationBar)
             .navigationTitle(sun == nil ? title(now, engine: engine) : "")
             .navigationBarTitleDisplayMode(sun == nil ? .large : .inline)
-            .task(id: engine.gregorian.startOfDay(for: now)) {
+            .task(id: "\(engine.timeZone.identifier)-\(engine.resolve(now).month.index)-\(engine.resolve(now).day)") {
                 #if DEBUG
                     dailyAyah = ProcessInfo.processInfo.arguments.contains("--marketing-capture")
-                        ? exampleAyah : model.content.verse(on: now, timeZone: model.zone)
+                        ? exampleAyah : model.content.verse(on: now, engine: engine)
                 #else
-                    dailyAyah = model.content.verse(on: now, timeZone: model.zone)
+                    dailyAyah = model.content.verse(on: now, engine: engine)
                 #endif
             }
         }

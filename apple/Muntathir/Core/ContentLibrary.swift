@@ -1,4 +1,5 @@
 import Foundation
+import SQLite3
 
 struct EventReference: Codable, Hashable, Sendable {
     let book: String
@@ -55,6 +56,7 @@ struct Ayah: Identifiable, Sendable {
     let surah: Int
     let number: Int
     let text: String
+    var english: String?
     var id: String {
         "\(surah):\(number)"
     }
@@ -63,15 +65,26 @@ struct Ayah: Identifiable, Sendable {
 struct ContentLibrary: Sendable {
     let events: [IslamicEvent]
     let verses: [Ayah]
+    private let datedSchedule: DailyVerseSchedule?
+    private let hasDatedSchedule: Bool
+    private let versesByID: [Int: Ayah]
+
     init(bundle: Bundle = .main) {
         events = bundle.url(forResource: "events", withExtension: "json")
             .flatMap { try? Data(contentsOf: $0) }.flatMap { try? JSONDecoder().decode([IslamicEvent].self, from: $0) } ?? []
-        let text = bundle.url(forResource: "quran-daily", withExtension: "txt")
-            .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? ""
-        verses = text.split(separator: "\n").compactMap { line in
-            let fields = line.split(separator: "|", maxSplits: 2, omittingEmptySubsequences: false)
-            guard fields.count == 3, let surah = Int(fields[0]), let number = Int(fields[1]) else { return nil }
-            return Ayah(surah: surah, number: number, text: String(fields[2]))
+        let scheduleURL = bundle.url(forResource: "quran-daily", withExtension: "json")
+        hasDatedSchedule = scheduleURL != nil
+        let schedule = scheduleURL.flatMap { try? Data(contentsOf: $0) }
+            .flatMap { try? JSONDecoder().decode(DailyVerseSchedule.self, from: $0) }
+        let dailyIDs = bundle.url(forResource: "quran-daily-ids", withExtension: "json")
+            .flatMap { try? Data(contentsOf: $0) }
+            .flatMap { try? JSONDecoder().decode([Int].self, from: $0) } ?? []
+        let ids = Set(dailyIDs + (schedule?.entries.map(\.verseID) ?? []))
+        let records = QuranDatabase(url: bundle.url(forResource: "db", withExtension: "db")).verses(ids: ids)
+        versesByID = records
+        verses = dailyIDs.compactMap { records[$0] }
+        datedSchedule = schedule.flatMap { candidate in
+            candidate.entries.allSatisfy { records[$0.verseID] != nil } ? candidate : nil
         }
     }
 
@@ -79,10 +92,85 @@ struct ContentLibrary: Sendable {
         events.filter { $0.month == day.month.month && $0.day == day.day }
     }
 
-    func verse(on date: Date, timeZone: TimeZone) -> Ayah? {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = timeZone
-        guard !verses.isEmpty, let day = calendar.ordinality(of: .day, in: .era, for: date) else { return nil }
+    func verse(on date: Date, engine: CalendarEngine) -> Ayah? {
+        if hasDatedSchedule {
+            return datedSchedule?.verseID(on: engine.resolve(date)).flatMap { versesByID[$0] }
+        }
+        // Keep the existing rotation until a complete dated schedule is bundled.
+        let calendar = engine.gregorian
+        // Era ordinals need a normalized date to stay fixed until local midnight.
+        guard !verses.isEmpty, let day = calendar.ordinality(of: .day, in: .era, for: calendar.startOfDay(for: date)) else { return nil }
         return verses[(day - 1) % verses.count]
     }
+}
+
+/// Each lookup opens the bundled database read-only; no SQLite connection crosses threads.
+struct QuranDatabase: Sendable {
+    let url: URL?
+
+    func verses(ids: Set<Int>) -> [Int: Ayah] {
+        guard !ids.isEmpty, let url else { return [:] }
+        var database: OpaquePointer?
+        guard sqlite3_open_v2(url.path, &database, SQLITE_OPEN_READONLY, nil) == SQLITE_OK else {
+            if let database {
+                sqlite3_close(database)
+            }
+            return [:]
+        }
+        defer { sqlite3_close(database) }
+        var statement: OpaquePointer?
+        guard sqlite3_prepare_v2(database, "SELECT sura, aya, text, en_qarai FROM quran WHERE \"index\" = ?", -1, &statement, nil) == SQLITE_OK else { return [:] }
+        defer { sqlite3_finalize(statement) }
+        var result: [Int: Ayah] = [:]
+        for id in ids where id > 0 {
+            guard sqlite3_reset(statement) == SQLITE_OK,
+                  sqlite3_bind_int64(statement, 1, sqlite3_int64(id)) == SQLITE_OK else { return [:] }
+            let status = sqlite3_step(statement)
+            guard status == SQLITE_ROW || status == SQLITE_DONE else { return [:] }
+            guard status == SQLITE_ROW,
+                  let arabic = sqlite3_column_text(statement, 2),
+                  let english = sqlite3_column_text(statement, 3) else { continue }
+            let text = String(cString: arabic)
+            let translation = String(cString: english)
+            guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                  !translation.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { continue }
+            result[id] = Ayah(surah: Int(sqlite3_column_int(statement, 0)), number: Int(sqlite3_column_int(statement, 1)),
+                              text: text, english: translation)
+        }
+        return result
+    }
+}
+
+/// A dated schedule is accepted as a whole; every reference must resolve in the Quran database.
+struct DailyVerseSchedule: Decodable, Sendable {
+    struct Entry: Codable, Sendable {
+        let hijriMonth: Int
+        let hijriDay: Int
+        let verseID: Int
+    }
+
+    let entries: [Entry]
+
+    init(entries: [Entry]) throws {
+        var dates = Set<Int>()
+        guard entries.count == 360 else { throw ValidationError.invalidSchedule }
+        for entry in entries {
+            guard (1 ... 12).contains(entry.hijriMonth), (1 ... 30).contains(entry.hijriDay), entry.verseID > 0,
+                  dates.insert((entry.hijriMonth - 1) * 30 + entry.hijriDay).inserted
+            else { throw ValidationError.invalidSchedule }
+        }
+        self.entries = entries
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        try self.init(entries: container.decode([Entry].self, forKey: .entries))
+    }
+
+    func verseID(on day: ResolvedDay) -> Int? {
+        entries.first { $0.hijriMonth == day.month.month && $0.hijriDay == day.day }?.verseID
+    }
+
+    private enum CodingKeys: String, CodingKey { case entries }
+    enum ValidationError: Error { case invalidSchedule }
 }
