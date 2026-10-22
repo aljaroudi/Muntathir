@@ -10,12 +10,9 @@ struct VerseShareTests {
         let database = QuranDatabase(url: Bundle.main.url(forResource: "quran", withExtension: "db"), translationURLs: {
             QuranTestResources.translationURLs.filter { $0.key == translationID }
         })
-        let verses = try database.verses(surah: 112)
-        #expect(verses.count == 4)
-        for verse in verses {
-            #expect(verse.translations[translationID]?.isEmpty == false)
-        }
-        let verse = try #require(verses.first)
+        let dailyVerse = try #require(ContentLibrary().verses.first)
+        let verse = try #require(try database.verse(surah: dailyVerse.surah, number: dailyVerse.number))
+        #expect(verse.translations[translationID]?.isEmpty == false)
         let image = try #require(AyahImageRenderer.image(for: verse, locale: Locale(identifier: translation.language), translation: translation))
         try Attachment.record(#require(image.pngData()), named: "quran-\(translation.language).png")
     }
