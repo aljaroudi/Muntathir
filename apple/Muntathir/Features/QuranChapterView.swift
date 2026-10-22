@@ -7,6 +7,7 @@ struct QuranChapterView: View {
     let translations: [QuranTranslation]
     @Binding var translationID: String
     @Environment(\.locale) private var locale
+    @State private var translationStore = QuranTranslationStore.shared
     @State private var verses: [Ayah] = []
     @State private var loading = true
     @State private var failed = false
@@ -80,7 +81,7 @@ struct QuranChapterView: View {
         } message: {
             Text("Enter a verse from 1 to \(verses.count).")
         }
-        .task(id: retry) {
+        .task(id: "\(retry)-\(translationStore.revision)") {
             loading = true
             failed = false
             do {

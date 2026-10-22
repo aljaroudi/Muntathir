@@ -1,0 +1,16 @@
+{
+  "assetPackID": "quran-fa-fooladvand",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/fa.fooladvand.db",
+      "fileDestination": "Quran/fa.fooladvand.db"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ],
+  "sourceRoot": "../../.."
+}

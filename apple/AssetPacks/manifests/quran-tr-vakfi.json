@@ -1,0 +1,16 @@
+{
+  "assetPackID": "quran-tr-vakfi",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/tr.vakfi.db",
+      "fileDestination": "Quran/tr.vakfi.db"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ],
+  "sourceRoot": "../../.."
+}

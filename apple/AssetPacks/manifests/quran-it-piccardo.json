@@ -1,0 +1,16 @@
+{
+  "assetPackID": "quran-it-piccardo",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/it.piccardo.db",
+      "fileDestination": "Quran/it.piccardo.db"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ],
+  "sourceRoot": "../../.."
+}

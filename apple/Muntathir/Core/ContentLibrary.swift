@@ -57,10 +57,9 @@ struct Ayah: Identifiable, Sendable {
     let text: String
     var translations: [String: String] = [:]
 
-    func dailyTranslation(locale: Locale) -> String? {
-        guard locale.language.languageCode?.identifier == "en",
-              let translation = QuranTranslation.preferred(in: QuranTranslation.catalog, locale: locale) else { return nil }
-        return translations[translation.id]
+    var selectedTranslationText: String? {
+        // Database reads include only the shared selected translation.
+        translations.values.first
     }
 
     var id: String {

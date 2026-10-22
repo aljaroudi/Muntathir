@@ -8,6 +8,7 @@ struct QuranSavedVersesView: View {
     let translations: [QuranTranslation]
     @Binding var translationID: String
     @Environment(\.quranUserStore) private var store
+    @State private var translationStore = QuranTranslationStore.shared
     @State private var verses: [Ayah] = []
     @State private var loading = true
     @State private var failed = false
@@ -16,6 +17,7 @@ struct QuranSavedVersesView: View {
     private struct Request: Equatable {
         let ids: [String]
         let retry: Int
+        let translationRevision: Int
     }
 
     private var savedIDs: [String] {
@@ -59,7 +61,7 @@ struct QuranSavedVersesView: View {
             }
         }
         .navigationTitle(kind == .favorites ? Text("Favorites") : Text("Notes"))
-        .task(id: Request(ids: savedIDs, retry: retry)) { await load() }
+        .task(id: Request(ids: savedIDs, retry: retry, translationRevision: translationStore.revision)) { await load() }
     }
 
     private func load() async {

@@ -1,0 +1,16 @@
+{
+  "assetPackID": "quran-de-bubenheim",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/de.bubenheim.db",
+      "fileDestination": "Quran/de.bubenheim.db"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ],
+  "sourceRoot": "../../.."
+}

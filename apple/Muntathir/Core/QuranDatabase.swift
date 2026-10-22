@@ -1,17 +1,21 @@
 import Foundation
 import SQLite3
 
-/// Each lookup opens the bundled databases read-only; no SQLite connection crosses isolation boundaries.
+/// Each lookup opens the databases read-only; no SQLite connection crosses isolation boundaries.
 struct QuranDatabase: Sendable {
-    /// Arabic `quran.db`; translations are the `<id>.db` files beside it.
+    /// Arabic is always bundled. An optional resolver supplies installed translations.
     let url: URL?
 
-    init(url: URL?) {
+    private let translationURLs: (@Sendable () -> [String: URL])?
+
+    init(url: URL?, translationURLs: @escaping @Sendable () -> [String: URL] = { [:] }) {
         self.url = url
+        self.translationURLs = translationURLs
     }
 
     init(bundle: Bundle = .main) {
         url = bundle.url(forResource: "quran", withExtension: "db")
+        translationURLs = nil
     }
 
     func connection() throws -> QuranConnection {
@@ -19,18 +23,34 @@ struct QuranDatabase: Sendable {
         return try QuranConnection(path: url.path, flags: SQLITE_OPEN_READONLY)
     }
 
-    func connection(to translation: QuranTranslation) throws -> QuranConnection {
-        guard let url = url?.deletingLastPathComponent().appendingPathComponent("\(translation.id).db") else {
-            throw QuranDatabaseError.unavailable
+    private var installedURLs: [String: URL] {
+        if let translationURLs {
+            return translationURLs()
         }
+        guard let translation = QuranTranslationPreferences.selected,
+              let url = try? QuranTranslationPreferences.url(for: translation) else { return [:] }
+        return [translation.id: url]
+    }
+
+    func connection(to translation: QuranTranslation) throws -> QuranConnection {
+        guard let url = installedURLs[translation.id] else { throw QuranDatabaseError.unavailable }
         return try QuranConnection(path: url.path, flags: SQLITE_OPEN_READONLY)
     }
 
     func availableTranslations() throws -> [QuranTranslation] {
-        guard let folder = url?.deletingLastPathComponent() else { throw QuranDatabaseError.unavailable }
-        return QuranTranslation.catalog.filter {
-            FileManager.default.fileExists(atPath: folder.appendingPathComponent("\($0.id).db").path)
+        let urls = installedURLs
+        return QuranTranslation.catalog.filter { translation in
+            guard let url = urls[translation.id] else { return false }
+            return FileManager.default.fileExists(atPath: url.path)
         }
+    }
+
+    static func validateTranslation(at url: URL) throws {
+        let connection = try QuranConnection(path: url.path, flags: SQLITE_OPEN_READONLY)
+        let count = try connection.query("SELECT count(*), min(\"index\"), max(\"index\") FROM quran WHERE trim(text) != ''") {
+            (sqlite3_column_int($0, 0), sqlite3_column_int($0, 1), sqlite3_column_int($0, 2))
+        }.first
+        guard let count, count == (6236, 1, 6236) else { throw QuranDatabaseError.unavailable }
     }
 
     func chapterCounts() throws -> [Int: Int] {
@@ -71,9 +91,10 @@ struct QuranDatabase: Sendable {
         let ids = rows.map { String($0.0) }
         let placeholders = ids.map { _ in "?" }.joined(separator: ",")
         for translation in try availableTranslations() {
-            let values = try Dictionary(uniqueKeysWithValues: connection(to: translation).query("SELECT \"index\", text FROM quran WHERE \"index\" IN (\(placeholders))", parameters: ids) {
+            let values = (try? Dictionary(uniqueKeysWithValues: connection(to: translation).query("SELECT \"index\", text FROM quran WHERE \"index\" IN (\(placeholders))", parameters: ids) {
                 (Int(sqlite3_column_int($0, 0)), QuranConnection.text($0, 1))
-            })
+            })) ?? [:]
+            try Task.checkCancellation()
             for offset in rows.indices {
                 if let value = values[rows[offset].0], !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     rows[offset].1.translations[translation.id] = value

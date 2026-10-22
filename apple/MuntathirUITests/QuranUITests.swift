@@ -17,7 +17,8 @@ final class QuranUITests: XCTestCase {
     @MainActor func testBrowseJumpAndTranslationSelection() {
         let app = openQuran()
         app.buttons["quran-surah-2"].tap()
-        XCTAssertTrue(app.staticTexts["quran-translation-2:1"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.descendants(matching: .any)["quran-verse-2:1"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.staticTexts["quran-translation-2:1"].exists)
         app.buttons["quran-jump"].tap()
         app.alerts.textFields.firstMatch.tap()
         app.alerts.textFields.firstMatch.typeText("255")
@@ -42,22 +43,17 @@ final class QuranUITests: XCTestCase {
         add(screenshot)
     }
 
-    @MainActor func testVerseTextDirectionsAcrossTranslations() {
+    @MainActor func testUnavailableTranslationKeepsArabicReadable() {
         let app = openQuran()
         app.buttons["quran-surah-1"].tap()
-        XCTAssertTrue(app.staticTexts["quran-translation-1:1"].waitForExistence(timeout: 10))
-        let english = XCTAttachment(screenshot: app.screenshot())
-        english.name = "Arabic right aligned and English left aligned"
-        english.lifetime = .keepAlways
-        add(english)
-
+        XCTAssertTrue(app.descendants(matching: .any)["quran-verse-1:1"].waitForExistence(timeout: 10))
         app.buttons["quran-translation-picker"].tap()
         app.buttons["Persian"].tap()
-        XCTAssertTrue(app.staticTexts["quran-translation-1:1"].waitForExistence(timeout: 5))
-        let persian = XCTAttachment(screenshot: app.screenshot())
-        persian.name = "Arabic and Persian right aligned"
-        persian.lifetime = .keepAlways
-        add(persian)
+        XCTAssertTrue(app.descendants(matching: .any)["quran-verse-1:1"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.staticTexts["quran-translation-1:1"].exists)
+        app.buttons["quran-translation-picker"].tap()
+        app.buttons["None"].tap()
+        XCTAssertFalse(app.staticTexts["quran-translation-1:1"].exists)
     }
 
     @MainActor func testSearchReferenceAndNavigateToVerse() {

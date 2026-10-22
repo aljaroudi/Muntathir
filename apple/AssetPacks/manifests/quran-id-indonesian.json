@@ -1,0 +1,16 @@
+{
+  "assetPackID": "quran-id-indonesian",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/id.indonesian.db",
+      "fileDestination": "Quran/id.indonesian.db"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ],
+  "sourceRoot": "../../.."
+}

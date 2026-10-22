@@ -2,6 +2,7 @@ import SwiftUI
 
 struct QuranView: View {
     @Environment(\.locale) private var locale
+    @State private var translationStore = QuranTranslationStore.shared
     @State private var reader = QuranReader()
     @State private var surahs: [QuranSurah] = []
     @State private var counts: [Int: Int] = [:]
@@ -23,10 +24,11 @@ struct QuranView: View {
         let translationID: String
         let limit: Int
         let retry: Int
+        let translationRevision: Int
     }
 
     private var request: Request {
-        Request(query: query.trimmingCharacters(in: .whitespacesAndNewlines), translationID: translationID, limit: limit, retry: retry)
+        Request(query: query.trimmingCharacters(in: .whitespacesAndNewlines), translationID: translationID, limit: limit, retry: retry, translationRevision: translationStore.revision)
     }
 
     private var matchingSurahs: [QuranSurah] {
@@ -109,6 +111,7 @@ struct QuranView: View {
                 QuranTranslationPicker(translations: translations, selection: $translationID)
             }
         }
+        .onChange(of: translationStore.activeID, initial: true) { _, value in translationID = value }
         .onChange(of: query) { limit = 50 }
         .onChange(of: translationID) { limit = 50 }
         .task(id: request) { await load() }
@@ -129,7 +132,7 @@ struct QuranView: View {
                 counts = catalog.counts
                 translations = catalog.translations
                 surahs = catalog.surahs
-                translationID = QuranTranslation.preferred(in: catalog.translations, locale: locale)?.id ?? ""
+                translationID = translationStore.activeID
             }
             let current = request
             if !current.query.isEmpty {
@@ -166,21 +169,68 @@ struct QuranTranslationPicker: View {
     let translations: [QuranTranslation]
     @Binding var selection: String
     @Environment(\.locale) private var locale
+    @State private var store = QuranTranslationStore.shared
 
     var body: some View {
         Menu {
-            Picker("Translation", selection: $selection) {
-                Text("None").tag("")
-                ForEach(translations) { translation in
-                    Text(locale.localizedString(forIdentifier: translation.language) ?? translation.language)
-                        .tag(translation.id)
+            Button { store.select("auto") } label: {
+                Label("Auto", systemImage: store.selection == "auto" ? "checkmark" : "globe")
+            }
+            Button { store.select("") } label: {
+                Label("None", systemImage: store.selection.isEmpty ? "checkmark" : "minus")
+            }
+            ForEach(translations) { translation in
+                Button { store.select(translation.id) } label: {
+                    Label(locale.localizedString(forIdentifier: translation.language) ?? translation.language,
+                          systemImage: symbol(for: translation.id))
+                }
+            }
+            if let status = store.statuses[store.activeID] {
+                switch status {
+                case let .downloading(fraction):
+                    if let fraction {
+                        Text("Downloading \(Int(fraction * 100))%")
+                    } else {
+                        Text("Downloading…")
+                    }
+                case .failed:
+                    Text("Translation unavailable")
+                    Button("Try again") { store.retryDownload() }
+                case .installed: EmptyView()
+                }
+            }
+            let installed = QuranTranslation.catalog.filter { store.statuses[$0.id] == .installed }
+            if !installed.isEmpty {
+                Menu("Remove download") {
+                    ForEach(installed) { translation in
+                        Button(locale.localizedString(forIdentifier: translation.language) ?? translation.language, role: .destructive) {
+                            Task { await store.remove(translation) }
+                        }
+                    }
                 }
             }
         } label: {
-            Label("Translation", systemImage: "character.bubble")
+            if case .downloading = store.statuses[store.activeID] {
+                Label("Downloading translation", systemImage: "arrow.down.circle")
+            } else {
+                Label("Translation", systemImage: "character.bubble")
+            }
         }
         .accessibilityIdentifier("quran-translation-picker")
-        .accessibilityValue(translations.first { $0.id == selection }?.translator ?? String(localized: "None"))
+        .accessibilityValue(translations.first { $0.id == store.activeID }?.translator ?? String(localized: "None"))
+        .onChange(of: store.activeID, initial: true) { _, value in selection = value }
+    }
+
+    private func symbol(for id: String) -> String {
+        if store.selection == id {
+            return "checkmark"
+        }
+        switch store.statuses[id] {
+        case .installed: return "checkmark.circle"
+        case .downloading: return "arrow.down.circle"
+        case .failed: return "exclamationmark.circle"
+        case nil: return "icloud.and.arrow.down"
+        }
     }
 }
 

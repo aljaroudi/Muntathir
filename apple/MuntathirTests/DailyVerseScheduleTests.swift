@@ -76,14 +76,14 @@ struct DailyVerseScheduleTests {
         #expect(try #require(renewed.last) > #require(dates.last))
     }
 
-    @Test func databaseContainsTheCompleteBilingualQuranAndIsReadOnly() throws {
+    @Test func databaseContainsTheCompleteArabicQuranAndIsReadOnly() throws {
         let url = try #require(Bundle.main.url(forResource: "quran", withExtension: "db"))
         let before = try Data(contentsOf: url)
         let verses = QuranDatabase(url: url).verses(ids: Set(1 ... 6236))
         #expect(verses.count == 6236)
         #expect(verses[1]?.id == "1:1")
         #expect(verses[6236]?.id == "114:6")
-        #expect(verses.values.allSatisfy { !$0.text.isEmpty && $0.translations["en.qarai"]?.isEmpty == false })
+        #expect(verses.values.allSatisfy { !$0.text.isEmpty && $0.translations.isEmpty })
         #expect(try Data(contentsOf: url) == before)
         #expect(QuranDatabase(url: url).verses(ids: [0, -1, 6237]).isEmpty)
     }
@@ -106,15 +106,13 @@ struct DailyVerseScheduleTests {
         #expect(appVerses.count == 31)
         #expect(appVerses.map(\.id) == widgetVerses.map(\.id))
         #expect(appVerses.map(\.text) == widgetVerses.map(\.text))
-        #expect(appVerses.map { $0.translations["en.qarai"] } == widgetVerses.map { $0.translations["en.qarai"] })
-        #expect(widgetVerses.allSatisfy { $0.translations.keys.sorted() == ["en.qarai"] })
-        #expect(appVerses.allSatisfy { $0.translations["en.qarai"]?.isEmpty == false })
-        for name in ["quran", "en.qarai"] {
-            let appDB = try #require(Bundle.main.url(forResource: name, withExtension: "db"))
-            let widgetDB = try #require(widget.url(forResource: name, withExtension: "db"))
-            #expect(try Data(contentsOf: appDB) == Data(contentsOf: widgetDB))
+        let appDB = try #require(Bundle.main.url(forResource: "quran", withExtension: "db"))
+        let widgetDB = try #require(widget.url(forResource: "quran", withExtension: "db"))
+        #expect(try Data(contentsOf: appDB) == Data(contentsOf: widgetDB))
+        for translation in QuranTranslation.catalog {
+            #expect(Bundle.main.url(forResource: translation.id, withExtension: "db") == nil)
+            #expect(widget.url(forResource: translation.id, withExtension: "db") == nil)
         }
-        #expect(widget.url(forResource: "fr.hamidullah", withExtension: "db") == nil)
     }
 
     @Test func completeDatasetActivatesAndInvalidReferenceNeverFallsBack() throws {
@@ -123,7 +121,7 @@ struct DailyVerseScheduleTests {
         defer { try? FileManager.default.removeItem(at: folder) }
         let info = try PropertyListSerialization.data(fromPropertyList: ["CFBundleIdentifier": "test.daily-verses"], format: .xml, options: 0)
         try info.write(to: folder.appendingPathComponent("Info.plist"))
-        for name in ["quran", "en.qarai"] {
+        for name in ["quran"] {
             let source = try #require(Bundle.main.url(forResource: name, withExtension: "db"))
             try FileManager.default.copyItem(at: source, to: folder.appendingPathComponent("\(name).db"))
         }

@@ -27,6 +27,7 @@ struct TodayView: View {
         @State private var captureClock = CaptureClock()
     #endif
 
+    @State private var translationStore = QuranTranslationStore.shared
     @State private var dailyAyah: Ayah?
     @Environment(\.scenePhase) private var scenePhase
     @State private var skyTitleHeight: CGFloat = 52
@@ -166,12 +167,12 @@ struct TodayView: View {
             .toolbarColorScheme(sun == nil ? nil : .dark, for: .navigationBar)
             .navigationTitle(sun == nil ? title(now, engine: engine) : "")
             .navigationBarTitleDisplayMode(sun == nil ? .large : .inline)
-            .task(id: "\(engine.timeZone.identifier)-\(engine.resolve(now).month.index)-\(engine.resolve(now).day)") {
+            .task(id: "\(engine.timeZone.identifier)-\(engine.resolve(now).month.index)-\(engine.resolve(now).day)-\(translationStore.revision)") {
                 #if DEBUG
                     dailyAyah = ProcessInfo.processInfo.arguments.contains("--marketing-capture")
-                        ? exampleAyah : model.content.verse(on: now, engine: engine)
+                        ? exampleAyah : ContentLibrary().verse(on: now, engine: engine)
                 #else
-                    dailyAyah = model.content.verse(on: now, engine: engine)
+                    dailyAyah = ContentLibrary().verse(on: now, engine: engine)
                 #endif
             }
         }

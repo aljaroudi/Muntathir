@@ -5,7 +5,9 @@ import Testing
 
 struct QuranReaderTests {
     private var database: QuranDatabase {
-        QuranDatabase()
+        QuranDatabase(url: Bundle.main.url(forResource: "quran", withExtension: "db"), translationURLs: {
+            QuranTestResources.translationURLs
+        })
     }
 
     @Test func chaptersAndReferencesMatchTheBundledQuran() async throws {
@@ -95,16 +97,17 @@ struct QuranReaderTests {
         #expect(QuranSearchText.distance("الرحمم", "الرحمن") == 1)
     }
 
-    @Test func languageDefaultsAndDailyTranslationStayIndependent() throws {
+    @Test func languageDefaultsAndSelectedDailyTranslation() throws {
         let available = try database.availableTranslations()
         #expect(QuranTranslation.preferred(in: available, locale: Locale(identifier: "en_GB"))?.id == "en.qarai")
         #expect(QuranTranslation.preferred(in: available, locale: Locale(identifier: "ar")) == nil)
         #expect(QuranTranslation.preferred(in: available, locale: Locale(identifier: "fr"))?.id == "fr.hamidullah")
         #expect(QuranTranslation.preferred(in: QuranTranslation.catalog, locale: Locale(identifier: "zh_Hant_TW"))?.id == "zh.majian")
-        let ayah = try #require(try database.verse(surah: 1, number: 1))
-        #expect(ayah.dailyTranslation(locale: Locale(identifier: "en_US")) != nil)
-        #expect(ayah.dailyTranslation(locale: Locale(identifier: "ar")) == nil)
-        #expect(ayah.dailyTranslation(locale: Locale(identifier: "fr")) == nil)
+        let url = try #require(Bundle.main.url(forResource: "quran", withExtension: "db"))
+        let selected = QuranDatabase(url: url, translationURLs: { ["fr.hamidullah": QuranTestResources.translationURLs["fr.hamidullah"]!] })
+        let ayah = try #require(selected.verses(ids: [1])[1])
+        #expect(ayah.translations.keys.sorted() == ["fr.hamidullah"])
+        #expect(ayah.selectedTranslationText != nil)
     }
 
     @Test func arabicOnlyAndMissingTranslationValuesRemainReadable() throws {
@@ -117,14 +120,16 @@ struct QuranReaderTests {
             try connection.execute("INSERT INTO quran VALUES (1, 1, 1, ?)", parameters: [text])
         }
         try create("quran.db", text: "نص")
-        let database = QuranDatabase(url: folder.appendingPathComponent("quran.db"))
+        let database = QuranDatabase(url: folder.appendingPathComponent("quran.db"), translationURLs: {
+            Dictionary(uniqueKeysWithValues: QuranTranslation.catalog.map { ($0.id, folder.appendingPathComponent("\($0.id).db")) })
+        })
         #expect(try database.availableTranslations().isEmpty)
         #expect(database.verses(ids: [1])[1]?.text == "نص")
         try create("fr.hamidullah.db", text: "texte")
         try create("en.qarai.db", text: " ")
         let ayah = try #require(database.verses(ids: [1])[1])
         #expect(ayah.translations == ["fr.hamidullah": "texte"])
-        #expect(ayah.dailyTranslation(locale: Locale(identifier: "en")) == nil)
+        #expect(ayah.selectedTranslationText == "texte")
         #expect(try database.availableTranslations().map(\.id) == ["en.qarai", "fr.hamidullah"])
     }
 

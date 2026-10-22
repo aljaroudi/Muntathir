@@ -27,3 +27,5 @@ Open **Tools → Qibla**. The compass stays blurred with a warning unless a vali
 Onboarding introduces the app, requires a city or device location, lets users choose a prayer calculation method (Jafari/Qum by default), and offers optional notification permission. Denying notifications does not block setup. Location denial or GPS failure leaves city search available; city search requires a network connection.
 
 Completion is stored on this device and does not sync through iCloud. Existing saved locations do not bypass setup. Interrupted setup restarts at Welcome and retains saved choices. After completion, launch opens Today.
+
+Quran translations use [Apple-hosted on-demand packs](../AssetPacks/). Only Arabic is bundled. Auto matches preferred languages; explicit selection and None persist and also control daily ayah and widgets. Downloads never block Arabic reading.

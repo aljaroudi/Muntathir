@@ -1,0 +1,16 @@
+{
+  "assetPackID": "quran-ru-kuliev",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/ru.kuliev.db",
+      "fileDestination": "Quran/ru.kuliev.db"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ],
+  "sourceRoot": "../../.."
+}

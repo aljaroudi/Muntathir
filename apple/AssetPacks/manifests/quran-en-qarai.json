@@ -1,0 +1,16 @@
+{
+  "assetPackID": "quran-en-qarai",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/en.qarai.db",
+      "fileDestination": "Quran/en.qarai.db"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ],
+  "sourceRoot": "../../.."
+}

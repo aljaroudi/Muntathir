@@ -6,8 +6,8 @@ struct DailyAyahCard: View {
     @Environment(\.locale) private var locale
 
     private var dailyTranslation: QuranTranslation? {
-        guard ayah.dailyTranslation(locale: locale) != nil else { return nil }
-        return QuranTranslation.preferred(in: QuranTranslation.catalog, locale: locale)
+        guard ayah.selectedTranslationText != nil else { return nil }
+        return QuranTranslation.catalog.first { ayah.translations[$0.id] != nil }
     }
 
     var body: some View {
@@ -22,12 +22,12 @@ struct DailyAyahCard: View {
             AyahText(ayah: ayah, alignment: .center)
                 .accessibilityIdentifier("daily-ayah-text")
                 .textSelection(.enabled)
-            if let translation = ayah.dailyTranslation(locale: locale) {
+            if let translation = ayah.selectedTranslationText {
                 Text(translation)
                     .font(.body)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
-                    .environment(\.layoutDirection, .leftToRight)
+                    .environment(\.layoutDirection, dailyTranslation.map { Locale(identifier: $0.language).language.characterDirection == .rightToLeft } == true ? .rightToLeft : .leftToRight)
                     .textSelection(.enabled)
                     .accessibilityIdentifier("daily-ayah-translation")
             }

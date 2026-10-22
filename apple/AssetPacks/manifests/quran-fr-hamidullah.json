@@ -1,0 +1,16 @@
+{
+  "assetPackID": "quran-fr-hamidullah",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/fr.hamidullah.db",
+      "fileDestination": "Quran/fr.hamidullah.db"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ],
+  "sourceRoot": "../../.."
+}

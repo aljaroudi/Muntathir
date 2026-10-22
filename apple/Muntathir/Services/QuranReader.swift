@@ -13,7 +13,7 @@ actor QuranReader {
         let surahs = try QuranSurah.load()
         let counts = try database.chapterCounts()
         guard surahs.allSatisfy({ (counts[$0.id] ?? 0) > 0 }) else { throw QuranDatabaseError.unavailable }
-        return try (surahs, counts, database.availableTranslations())
+        return (surahs, counts, QuranTranslation.catalog)
     }
 
     func verses(surah: Int) throws -> [Ayah] {
@@ -40,10 +40,17 @@ actor QuranReader {
         guard !terms.isEmpty else { return [] }
         var ids = try matches(terms, in: database.connection(), roots: true)
         if let translation = try database.availableTranslations().first(where: { $0.id == translationID }) {
-            let connection = try database.connection(to: translation)
-            let seen = Set(ids)
-            let found = try translation.id.hasPrefix("zh.") ? substrings(terms, in: connection) : matches(terms, in: connection, roots: false)
-            ids += found.filter { !seen.contains($0) }
+            // Optional assets can disappear or be invalid; Arabic search must still work.
+            do {
+                let connection = try database.connection(to: translation)
+                let seen = Set(ids)
+                let found = try translation.id.hasPrefix("zh.") ? substrings(terms, in: connection) : matches(terms, in: connection, roots: false)
+                ids += found.filter { !seen.contains($0) }
+            } catch is CancellationError {
+                throw CancellationError()
+            } catch {
+                // Keep Arabic results when a translation cannot be read.
+            }
         }
         let page = ids.prefix(max(0, limit)).map(String.init)
         guard !page.isEmpty else { return [] }

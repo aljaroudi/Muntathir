@@ -4,6 +4,7 @@ import WidgetKit
 struct DailyAyahEntry: TimelineEntry {
     let date: Date
     let ayah: Ayah?
+    var translation: QuranTranslation?
 }
 
 struct DailyAyahProvider: TimelineProvider {
@@ -25,7 +26,7 @@ struct DailyAyahProvider: TimelineProvider {
     }
 
     private func entry(at date: Date, library: ContentLibrary, settings: WidgetCalendarSettings) -> DailyAyahEntry {
-        DailyAyahEntry(date: date, ayah: library.verse(on: date, engine: settings.engine))
+        DailyAyahEntry(date: date, ayah: library.verse(on: date, engine: settings.engine), translation: QuranTranslationPreferences.selected)
     }
 }
 
@@ -54,11 +55,11 @@ struct DailyAyahWidgetView: View {
                         .truncationMode(.tail)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .layoutPriority(1)
-                    if !isAccessory, let english = ayah.translations["en.qarai"] {
-                        Text(english)
+                    if !isAccessory, let translation = entry.translation, let text = ayah.translations[translation.id] {
+                        Text(text)
                             .font(.caption)
                             .multilineTextAlignment(.leading)
-                            .environment(\.layoutDirection, .leftToRight)
+                            .environment(\.layoutDirection, Locale(identifier: translation.language).language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight)
                             .lineLimit(3)
                     }
                     if !isAccessory {
@@ -70,7 +71,7 @@ struct DailyAyahWidgetView: View {
                     }
                 }
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(Text([ayah.text, isAccessory ? nil : ayah.translations["en.qarai"], ayah.id].compactMap(\.self).joined(separator: " ")))
+                .accessibilityLabel(Text([ayah.text, isAccessory ? nil : entry.translation.flatMap { ayah.translations[$0.id] }, ayah.id].compactMap(\.self).joined(separator: " ")))
             } else {
                 Text("Verse unavailable").font(.caption)
             }

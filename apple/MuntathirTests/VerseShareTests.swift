@@ -16,7 +16,9 @@ struct VerseShareTests {
     }
 
     @MainActor @Test func longestVerseImageIncludesTranslationWithoutClipping() throws {
-        let database = QuranDatabase()
+        let database = QuranDatabase(url: Bundle.main.url(forResource: "quran", withExtension: "db"), translationURLs: {
+            QuranTestResources.translationURLs.filter { $0.key == "en.qarai" }
+        })
         let ayah = try #require(try database.verse(surah: 2, number: 282))
         let translation = try #require(QuranTranslation.catalog.first { $0.id == "en.qarai" })
         let arabic = try #require(AyahImageRenderer.image(for: ayah, locale: Locale(identifier: "ar")))

@@ -1,0 +1,16 @@
+{
+  "assetPackID": "quran-ms-basmeih",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/ms.basmeih.db",
+      "fileDestination": "Quran/ms.basmeih.db"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ],
+  "sourceRoot": "../../.."
+}

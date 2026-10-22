@@ -1,0 +1,16 @@
+{
+  "assetPackID": "quran-es-bornez",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/es.bornez.db",
+      "fileDestination": "Quran/es.bornez.db"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ],
+  "sourceRoot": "../../.."
+}
