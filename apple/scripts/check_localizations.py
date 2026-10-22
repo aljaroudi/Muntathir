@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 
 APPLE = Path(__file__).resolve().parents[1]
-LOCALES = {"ar", "en", "fr", "de", "id", "it", "ms", "fa", "ru", "es", "tr", "ur", "zh-Hans", "zh-Hant"}
+LOCALES = {"ar", "en", "fr", "de", "id", "it", "ja", "ms", "fa", "ru", "es", "tr", "ur", "zh-Hans", "zh-Hant"}
 
 
 def strings(value):

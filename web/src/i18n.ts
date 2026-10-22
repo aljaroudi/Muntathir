@@ -4,7 +4,7 @@ const en = {
   name: "Muntathir",
   title: "Muntathir: Prayer times, Quran, and Hijri calendar",
   description:
-    "Prayer times, daily Quran verses, the Hijri calendar, and Qibla. An app in 14 languages for iPhone, iPad, and Apple Watch.",
+    "Prayer times, daily Quran verses, the Hijri calendar, and Qibla. An app in 15 languages for iPhone, iPad, and Apple Watch.",
   skip: "Skip to content",
   nav: { language: "Choose language" },
   hero: {
@@ -39,7 +39,7 @@ const en = {
     ],
   },
   companions:
-    "Available in 14 languages, including Arabic and English. Made for iPhone and iPad, with an Apple Watch companion and Home Screen widgets.",
+    "Available in 15 languages, including Arabic and English. Made for iPhone and iPad, with an Apple Watch companion and Home Screen widgets.",
   faq: {
     title: "A few useful details",
     items: [
@@ -66,7 +66,7 @@ const ar: typeof en = {
   name: "منتظِر",
   title: "منتظِر — مواقيت الصلاة والقرآن والتقويم الهجري",
   description:
-    "مواقيت الصلاة وآيات قرآنية يومية والتقويم الهجري واتجاه القبلة. تطبيق بـ١٤ لغة لأجهزة iPhone وiPad وApple Watch.",
+    "مواقيت الصلاة وآيات قرآنية يومية والتقويم الهجري واتجاه القبلة. تطبيق بـ١٥ لغة لأجهزة iPhone وiPad وApple Watch.",
   skip: "انتقل إلى المحتوى",
   nav: { language: "اختر اللغة" },
   hero: {
@@ -98,7 +98,7 @@ const ar: typeof en = {
     ],
   },
   companions:
-    "متوفر بـ١٤ لغة، منها العربية والإنجليزية. لأجهزة \u2066iPhone\u2069 و\u2066iPad\u2069، مع تطبيق مرافق لساعة \u2066Apple Watch\u2069 وأدوات للشاشة الرئيسية.",
+    "متوفر بـ١٥ لغة، منها العربية والإنجليزية. لأجهزة \u2066iPhone\u2069 و\u2066iPad\u2069، مع تطبيق مرافق لساعة \u2066Apple Watch\u2069 وأدوات للشاشة الرئيسية.",
   faq: {
     title: "تفاصيل مفيدة",
     items: [

@@ -56,6 +56,7 @@ extension CalendarUITests {
             ("de", "Kalender", "Diesen Monat anpassen", "Monat anpassen"),
             ("id", "Kalender", "Sesuaikan bulan ini", "Sesuaikan bulan"),
             ("it", "Calendario", "Regola questo mese", "Regola mese"),
+            ("ja", "カレンダー", "この月を調整", "月を調整"),
             ("ms", "Kalendar", "Laraskan bulan ini", "Laraskan bulan"),
             ("fa", "تقویم", "تنظیم این ماه", "تنظیم ماه"),
             ("ru", "Календарь", "Скорректировать этот месяц", "Скорректировать месяц"),

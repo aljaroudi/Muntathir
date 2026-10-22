@@ -88,6 +88,12 @@
             "state" : "translated",
             "value" : "—"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—"
+          }
         }
       }
     },
@@ -174,6 +180,12 @@
           }
         },
         "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ %@"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ %@"
@@ -269,6 +281,12 @@
             "state" : "translated",
             "value" : "與真北方向夾角 %@"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "真北から%@"
+          }
         }
       }
     },
@@ -359,6 +377,12 @@
             "state" : "translated",
             "value" : "%@. %@"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@. %@"
+          }
         }
       }
     },
@@ -445,6 +469,12 @@
           }
         },
         "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld %@"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld %@"
@@ -622,6 +652,12 @@
             "state" : "translated",
             "value" : "%lld 節經文"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld節"
+          }
         }
       }
     },
@@ -709,6 +745,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "陪伴您每日的功修。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "毎日の礼拝に寄り添います。"
           }
         }
       }
@@ -798,6 +840,12 @@
             "state" : "translated",
             "value" : "關於"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このAppについて"
+          }
         }
       }
     },
@@ -886,6 +934,12 @@
             "state" : "translated",
             "value" : "經文 %@ 的操作"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第%@節の操作"
+          }
         }
       }
     },
@@ -973,6 +1027,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "加入筆記"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メモを追加"
           }
         }
       }
@@ -1063,6 +1123,12 @@
             "state" : "translated",
             "value" : "Adhan 授權"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adhanのライセンス"
+          }
         }
       }
     },
@@ -1149,6 +1215,12 @@
           }
         },
         "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adhan Swift 1.5.0"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Adhan Swift 1.5.0"
@@ -1242,6 +1314,12 @@
             "state" : "translated",
             "value" : "調整月份"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月を調整"
+          }
         }
       }
     },
@@ -1329,6 +1407,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "調整本月"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この月を調整"
           }
         }
       }
@@ -1418,6 +1502,12 @@
             "state" : "translated",
             "value" : "提醒最多排定未來 10 天。請定期打開 App 以更新提醒。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知は最大10日先まで設定されます。定期的にAppを開いて更新してください。"
+          }
         }
       }
     },
@@ -1506,6 +1596,12 @@
             "state" : "translated",
             "value" : "成功重新整理後，提醒將依據已發佈的月份公告傳送；不會即時送達。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新が成功すると、公開された月の発表に従って通知されます。配信は即時ではありません。"
+          }
         }
       }
     },
@@ -1593,6 +1689,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "公告通知"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "発表の通知"
           }
         }
       }
@@ -1683,6 +1785,12 @@
             "state" : "translated",
             "value" : "App 語言"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appの言語"
+          }
         }
       }
     },
@@ -1767,6 +1875,12 @@
           }
         },
         "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Weather"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple Weather"
@@ -1859,6 +1973,12 @@
             "state" : "translated",
             "value" : "Apple Weather 來源資訊"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Weatherの出典"
+          }
         }
       }
     },
@@ -1946,6 +2066,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "晡禮"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アスル"
           }
         }
       }
@@ -2035,6 +2161,12 @@
             "state" : "translated",
             "value" : "晡禮拜功"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アスルの礼拝"
+          }
         }
       }
     },
@@ -2120,6 +2252,12 @@
           }
         },
         "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "自動"
@@ -2212,6 +2350,12 @@
             "state" : "translated",
             "value" : "返回"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "戻る"
+          }
         }
       }
     },
@@ -2300,6 +2444,12 @@
             "state" : "translated",
             "value" : "返回今天"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日に戻る"
+          }
         }
       }
     },
@@ -2384,6 +2534,12 @@
           }
         },
         "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "基準"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "基準"
@@ -2476,6 +2632,12 @@
             "state" : "translated",
             "value" : "計算所得 — 烏姆古拉曆"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "計算値 — ウンム・アルクラー暦"
+          }
         }
       }
     },
@@ -2565,6 +2727,12 @@
             "state" : "translated",
             "value" : "計算日期並不代表已確認觀測到新月。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "計算された日付は新月の目視確認を意味しません。"
+          }
         }
       }
     },
@@ -2649,6 +2817,12 @@
           }
         },
         "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "計算"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "計算"
@@ -2741,6 +2915,12 @@
             "state" : "translated",
             "value" : "行事曆"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カレンダー"
+          }
         }
       }
     },
@@ -2828,6 +3008,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "行事曆修正"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カレンダーの補正"
           }
         }
       }
@@ -2917,6 +3103,12 @@
             "state" : "translated",
             "value" : "取消"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キャンセル"
+          }
         }
       }
     },
@@ -3004,6 +3196,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選擇城市或使用裝置位置，以計算禮拜時間和朝向。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "都市を選択するか、デバイスの位置情報を使って礼拝時刻とキブラを計算します。"
           }
         }
       }
@@ -3093,6 +3291,12 @@
             "state" : "translated",
             "value" : "選擇位置"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "場所を選択"
+          }
         }
       }
     },
@@ -3181,6 +3385,12 @@
             "state" : "translated",
             "value" : "在 Muntathir 中選擇位置"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muntathirで場所を選択"
+          }
         }
       }
     },
@@ -3268,6 +3478,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選擇您遵循的計算方法。稍後可在設定中更改。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "従う計算方式を選択してください。後で設定から変更できます。"
           }
         }
       }
@@ -3358,6 +3574,12 @@
             "state" : "translated",
             "value" : "選擇 App 語言"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appの言語を選択"
+          }
         }
       }
     },
@@ -3445,6 +3667,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選擇您的位置"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在地を選択"
           }
         }
       }
@@ -3534,6 +3762,12 @@
             "state" : "translated",
             "value" : "在 iOS 設定中選擇您的偏好語言。然後返回這裡繼續設定。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOSの設定で希望する言語を選び、ここに戻って設定を続けてください。"
+          }
         }
       }
     },
@@ -3621,6 +3855,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "指南針精確度較低"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コンパスの精度が低下しています"
           }
         }
       }
@@ -3710,6 +3950,12 @@
             "state" : "translated",
             "value" : "指南針精確度較低。請遠離磁鐵和金屬。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コンパスの精度が低下しています。磁石や金属から離れてください。"
+          }
         }
       }
     },
@@ -3797,6 +4043,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "指南針無法使用"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コンパスを利用できません"
           }
         }
       }
@@ -3886,6 +4138,12 @@
             "state" : "translated",
             "value" : "指南針無法使用。請使用相對於真北的方位角。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コンパスを利用できません。真北からの方位角を使ってください。"
+          }
         }
       }
     },
@@ -3973,6 +4231,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已確認月份"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認済みの月"
           }
         }
       }
@@ -4062,6 +4326,12 @@
             "state" : "translated",
             "value" : "繼續"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "続ける"
+          }
         }
       }
     },
@@ -4149,6 +4419,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "拷貝文字"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テキストをコピー"
           }
         }
       }
@@ -4238,6 +4514,12 @@
             "state" : "translated",
             "value" : "找不到您的位置。請改為搜尋城市。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在地が見つかりませんでした。代わりに都市を検索してください。"
+          }
         }
       }
     },
@@ -4325,6 +4607,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "國家"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "国"
           }
         }
       }
@@ -4414,6 +4702,12 @@
             "state" : "translated",
             "value" : "每日經文"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日の聖句"
+          }
         }
       }
     },
@@ -4501,6 +4795,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "天數調整"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日数の調整"
           }
         }
       }
@@ -4590,6 +4890,12 @@
             "state" : "translated",
             "value" : "刪除筆記"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メモを削除"
+          }
         }
       }
     },
@@ -4677,6 +4983,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "刪除此筆記？"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このメモを削除しますか？"
           }
         }
       }
@@ -4766,6 +5078,12 @@
             "state" : "translated",
             "value" : "裝置位置"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバイスの位置情報"
+          }
         }
       }
     },
@@ -4853,6 +5171,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "裝置位置僅保留在此裝置上。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバイスの位置情報はこのデバイス内にのみ保存されます。"
           }
         }
       }
@@ -4942,6 +5266,12 @@
             "state" : "translated",
             "value" : "晌禮"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ズフル"
+          }
         }
       }
     },
@@ -5029,6 +5359,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "晌禮拜功"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ズフルの礼拝"
           }
         }
       }
@@ -5118,6 +5454,12 @@
             "state" : "translated",
             "value" : "放棄更改"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "変更を破棄"
+          }
         }
       }
     },
@@ -5205,6 +5547,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "完成"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完了"
           }
         }
       }
@@ -5296,6 +5644,12 @@
             "state" : "translated",
             "value" : "正在下載 %@"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダウンロード中 %@"
+          }
         }
       }
     },
@@ -5384,6 +5738,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在下載譯文"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻訳をダウンロード中"
           }
         }
       }
@@ -5474,6 +5834,12 @@
             "state" : "translated",
             "value" : "正在下載…"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダウンロード中…"
+          }
         }
       }
     },
@@ -5561,6 +5927,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "杜拜"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドバイ"
           }
         }
       }
@@ -5651,6 +6023,12 @@
             "state" : "translated",
             "value" : "編輯筆記"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メモを編集"
+          }
         }
       }
     },
@@ -5738,6 +6116,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "埃及總局"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "エジプト総局"
           }
         }
       }
@@ -5827,6 +6211,12 @@
             "state" : "translated",
             "value" : "啟用通知"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知を有効にする"
+          }
         }
       }
     },
@@ -5914,6 +6304,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "為所選禮拜啟用通知。您可以在設定中調整提醒。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択した礼拝の通知を有効にします。リマインダーは設定から変更できます。"
           }
         }
       }
@@ -6004,6 +6400,12 @@
             "state" : "translated",
             "value" : "請輸入章號和節號，例如 2:255。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2:255のように章番号と節番号を入力してください。"
+          }
         }
       }
     },
@@ -6093,6 +6495,12 @@
             "state" : "translated",
             "value" : "請輸入 1 至 %lld 之間的節號。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1から%lldまでの節番号を入力してください。"
+          }
         }
       }
     },
@@ -6180,6 +6588,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "事件"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "行事"
           }
         }
       }
@@ -6269,6 +6683,12 @@
             "state" : "translated",
             "value" : "晨禮"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ファジュル"
+          }
         }
       }
     },
@@ -6356,6 +6776,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "晨禮拜功"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ファジュルの礼拝"
           }
         }
       }
@@ -6446,6 +6872,12 @@
             "state" : "translated",
             "value" : "收藏"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "お気に入り"
+          }
         }
       }
     },
@@ -6534,6 +6966,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "收藏項目"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "お気に入り"
           }
         }
       }
@@ -6624,6 +7062,12 @@
             "state" : "translated",
             "value" : "收藏與筆記無法使用"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "お気に入りとメモを利用できません"
+          }
         }
       }
     },
@@ -6711,6 +7155,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "尋找禮拜朝向"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キブラの方向を確認"
           }
         }
       }
@@ -6800,6 +7250,12 @@
             "state" : "translated",
             "value" : "完成設定"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定を完了"
+          }
         }
       }
     },
@@ -6887,6 +7343,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "開始使用"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "始める"
           }
         }
       }
@@ -6977,6 +7439,12 @@
             "state" : "translated",
             "value" : "前往"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移動"
+          }
         }
       }
     },
@@ -7066,6 +7534,12 @@
             "state" : "translated",
             "value" : "跳至經文"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聖句に移動"
+          }
         }
       }
     },
@@ -7153,6 +7627,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "政府公告"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "政府の発表"
           }
         }
       }
@@ -7243,6 +7723,12 @@
             "state" : "translated",
             "value" : "有筆記"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メモあり"
+          }
         }
       }
     },
@@ -7330,6 +7816,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "隱藏某個時間不會更改其通知設定。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時刻を非表示にしても、その通知設定は変わりません。"
           }
         }
       }
@@ -7420,6 +7912,12 @@
             "state" : "translated",
             "value" : "伊斯蘭曆基準：[Apple Foundation](https://developer.apple.com/documentation/foundation/calendar/identifier-swift.enum/islamicummalqura)，烏姆古拉曆。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ヒジュラ暦の基準：[Apple Foundation](https://developer.apple.com/documentation/foundation/calendar/identifier-swift.enum/islamicummalqura)のウンム・アルクラー暦。"
+          }
         }
       }
     },
@@ -7508,6 +8006,12 @@
             "state" : "translated",
             "value" : "伊斯蘭曆與紀念日"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ヒジュラ暦と記念日"
+          }
         }
       }
     },
@@ -7595,6 +8099,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "伊斯蘭曆月份：%@ / %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ヒジュラ暦の月：%@／%@"
           }
         }
       }
@@ -7685,6 +8195,12 @@
             "state" : "translated",
             "value" : "距離下次禮拜的小時和分鐘數。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次の礼拝までの時間と分。"
+          }
         }
       }
     },
@@ -7773,6 +8289,12 @@
             "state" : "translated",
             "value" : "封齋"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "イムサーク"
+          }
         }
       }
     },
@@ -7860,6 +8382,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "晨禮前封齋"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ファジュル前のイムサーク"
           }
         }
       }
@@ -7951,6 +8479,12 @@
             "state" : "translated",
             "value" : "封齋時間是在計算所得晨禮時間前的預防性安排。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "イムサークは、計算上のファジュル前に設ける予防的な時間です。"
+          }
         }
       }
     },
@@ -8039,6 +8573,12 @@
             "state" : "translated",
             "value" : "行事曆日期無效。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カレンダーの日付が無効です。"
+          }
         }
       }
     },
@@ -8126,6 +8666,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "偏好設定無效。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定が無効です。"
           }
         }
       }
@@ -8216,6 +8762,12 @@
             "state" : "translated",
             "value" : "經文參照無效"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聖句の指定が無効です"
+          }
         }
       }
     },
@@ -8303,6 +8855,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "宵禮"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "イシャー"
           }
         }
       }
@@ -8392,6 +8950,12 @@
             "state" : "translated",
             "value" : "宵禮拜功"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "イシャーの礼拝"
+          }
         }
       }
     },
@@ -8480,6 +9044,12 @@
             "state" : "translated",
             "value" : "伊斯蘭教法午夜"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "イスラム法上の真夜中"
+          }
         }
       }
     },
@@ -8567,6 +9137,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ISNA — 北美"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ISNA — 北米"
           }
         }
       }
@@ -8658,6 +9234,12 @@
             "state" : "translated",
             "value" : "賈法里派 - 庫姆"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ジャアファル派 - コム"
+          }
         }
       }
     },
@@ -8748,6 +9330,12 @@
             "state" : "translated",
             "value" : "賈法里派 - 德黑蘭"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ジャアファル派 - テヘラン"
+          }
         }
       }
     },
@@ -8837,6 +9425,12 @@
             "state" : "translated",
             "value" : "繼續編輯"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編集を続ける"
+          }
         }
       }
     },
@@ -8925,6 +9519,12 @@
             "state" : "translated",
             "value" : "請將裝置放平並跟隨箭頭。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバイスを水平に保ち、矢印に従ってください。"
+          }
         }
       }
     },
@@ -9012,6 +9612,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "科威特"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クウェート"
           }
         }
       }
@@ -9102,6 +9708,12 @@
             "state" : "translated",
             "value" : "載入更多"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "さらに読み込む"
+          }
         }
       }
     },
@@ -9191,6 +9803,12 @@
             "state" : "translated",
             "value" : "正在載入《古蘭經》…"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クルアーンを読み込み中…"
+          }
         }
       }
     },
@@ -9278,6 +9896,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "本地肉眼觀月"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地域の肉眼観測"
           }
         }
       }
@@ -9367,6 +9991,12 @@
             "state" : "translated",
             "value" : "位置"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "場所"
+          }
         }
       }
     },
@@ -9454,6 +10084,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "位置取用已停用。請改為搜尋城市。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置情報へのアクセスが無効です。代わりに都市を検索してください。"
           }
         }
       }
@@ -9543,6 +10179,12 @@
             "state" : "translated",
             "value" : "昏禮"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マグリブ"
+          }
         }
       }
     },
@@ -9630,6 +10272,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "昏禮拜功"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マグリブの礼拝"
           }
         }
       }
@@ -9719,6 +10367,12 @@
             "state" : "translated",
             "value" : "手動月份修正"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月の手動補正"
+          }
         }
       }
     },
@@ -9807,6 +10461,12 @@
             "state" : "translated",
             "value" : "方法"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "方式"
+          }
         }
       }
     },
@@ -9891,6 +10551,12 @@
           }
         },
         "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中東"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "中東"
@@ -9983,6 +10649,12 @@
             "state" : "translated",
             "value" : "月份確認通知"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月の確認通知"
+          }
         }
       }
     },
@@ -10070,6 +10742,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "月份已確認"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月が確認されました"
           }
         }
       }
@@ -10159,6 +10837,12 @@
             "state" : "translated",
             "value" : "月份開始日期"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月の開始日"
+          }
         }
       }
     },
@@ -10246,6 +10930,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "月份起始日期必須確保每月為 29 或 30 天。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "各月が29日または30日になるように月初を設定してください。"
           }
         }
       }
@@ -10335,6 +11025,12 @@
             "state" : "translated",
             "value" : "觀月委員會"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新月観測委員会"
+          }
         }
       }
     },
@@ -10419,6 +11115,12 @@
           }
         },
         "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muntathir"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Muntathir"
@@ -10511,6 +11213,12 @@
             "state" : "translated",
             "value" : "伊斯蘭世界聯盟"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "イスラム世界連盟"
+          }
         }
       }
     },
@@ -10598,6 +11306,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "下個月"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次の月"
           }
         }
       }
@@ -10688,6 +11402,12 @@
             "state" : "translated",
             "value" : "下次禮拜"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次の礼拝"
+          }
         }
       }
     },
@@ -10776,6 +11496,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "尚無收藏"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "お気に入りはまだありません"
           }
         }
       }
@@ -10866,6 +11592,12 @@
             "state" : "translated",
             "value" : "尚無筆記"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メモはまだありません"
+          }
         }
       }
     },
@@ -10954,6 +11686,12 @@
             "state" : "translated",
             "value" : "今天沒有紀念日"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日の記念日はありません"
+          }
         }
       }
     },
@@ -11041,6 +11779,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "找不到地點。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "場所が見つかりません。"
           }
         }
       }
@@ -11131,6 +11875,12 @@
             "state" : "translated",
             "value" : "無"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "なし"
+          }
         }
       }
     },
@@ -11219,6 +11969,12 @@
             "state" : "translated",
             "value" : "稍後再說"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今はしない"
+          }
         }
       }
     },
@@ -11306,6 +12062,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "未選擇"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未選択"
           }
         }
       }
@@ -11396,6 +12158,12 @@
             "state" : "translated",
             "value" : "筆記"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メモ"
+          }
         }
       }
     },
@@ -11480,6 +12248,12 @@
           }
         },
         "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "通知"
@@ -11572,6 +12346,12 @@
             "state" : "translated",
             "value" : "通知已停用。請在系統設定中啟用。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知が無効です。システム設定で有効にしてください。"
+          }
         }
       }
     },
@@ -11659,6 +12439,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "紀念日"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "記念日"
           }
         }
       }
@@ -11748,6 +12534,12 @@
             "state" : "translated",
             "value" : "好"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
         }
       }
     },
@@ -11835,6 +12627,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在 iPhone 上打開 Muntathir"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iPhoneでMuntathirを開く"
           }
         }
       }
@@ -11924,6 +12722,12 @@
             "state" : "translated",
             "value" : "請在 iPhone 上打開 Muntathir，以同步位置與設定。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iPhoneでMuntathirを開いて、場所と設定を同期してください。"
+          }
         }
       }
     },
@@ -12011,6 +12815,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "地點搜尋無法使用。請連線後再試。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "場所の検索を利用できません。インターネットに接続してから再試行してください。"
           }
         }
       }
@@ -12101,6 +12911,12 @@
             "state" : "translated",
             "value" : "請再試一次。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "もう一度お試しください。"
+          }
         }
       }
     },
@@ -12188,6 +13004,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "請再次嘗試分享經文。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聖句の共有をもう一度お試しください。"
           }
         }
       }
@@ -12277,6 +13099,12 @@
             "state" : "translated",
             "value" : "正值使伊斯蘭曆日期提前。每月仍為 29 或 30 天。禮拜時間不變。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正の値はヒジュラ暦の日付を進めます。各月は29日または30日を維持します。礼拝時刻は変わりません。"
+          }
         }
       }
     },
@@ -12364,6 +13192,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "禮拜計算"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "礼拝時刻の計算"
           }
         }
       }
@@ -12454,6 +13288,12 @@
             "state" : "translated",
             "value" : "禮拜倒數計時"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "礼拝までのカウントダウン"
+          }
         }
       }
     },
@@ -12541,6 +13381,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "禮拜提醒"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "礼拝のリマインダー"
           }
         }
       }
@@ -12630,6 +13476,12 @@
             "state" : "translated",
             "value" : "您所在位置的禮拜時間"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在地の礼拝時刻"
+          }
         }
       }
     },
@@ -12718,6 +13570,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "禮拜時間無法使用"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "礼拝時刻を利用できません"
           }
         }
       }
@@ -12809,6 +13667,12 @@
             "state" : "translated",
             "value" : "禮拜時間無法使用"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "礼拝時刻を利用できません"
+          }
         }
       }
     },
@@ -12899,6 +13763,12 @@
             "state" : "translated",
             "value" : "此位置和日期的禮拜時間無法使用。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この場所と日付の礼拝時刻を利用できません。"
+          }
         }
       }
     },
@@ -12986,6 +13856,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "禮拜"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "礼拝"
           }
         }
       }
@@ -13075,6 +13951,12 @@
             "state" : "translated",
             "value" : "上個月"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前の月"
+          }
         }
       }
     },
@@ -13162,6 +14044,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "卡達"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カタール"
           }
         }
       }
@@ -13251,6 +14139,12 @@
             "state" : "translated",
             "value" : "禮拜朝向"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キブラ"
+          }
         }
       }
     },
@@ -13339,6 +14233,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "《古蘭經》中繼資料"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クルアーンのメタデータ"
           }
         }
       }
@@ -13430,6 +14330,12 @@
             "state" : "translated",
             "value" : "《古蘭經》譯文"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クルアーンの翻訳"
+          }
         }
       }
     },
@@ -13519,6 +14425,12 @@
             "state" : "translated",
             "value" : "閱讀經文"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聖句を読む"
+          }
         }
       }
     },
@@ -13607,6 +14519,12 @@
             "state" : "translated",
             "value" : "參考資料"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "参考資料"
+          }
         }
       }
     },
@@ -13694,6 +14612,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "地區"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地域"
           }
         }
       }
@@ -13784,6 +14708,12 @@
             "state" : "translated",
             "value" : "移除下載"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダウンロードを削除"
+          }
         }
       }
     },
@@ -13873,6 +14803,12 @@
             "state" : "translated",
             "value" : "取消收藏"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "お気に入りから削除"
+          }
         }
       }
     },
@@ -13960,6 +14896,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "重置調整"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "調整をリセット"
           }
         }
       }
@@ -14049,6 +14991,12 @@
             "state" : "translated",
             "value" : "儲存"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存"
+          }
         }
       }
     },
@@ -14137,6 +15085,12 @@
             "state" : "translated",
             "value" : "搜尋城市"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "都市を検索"
+          }
         }
       }
     },
@@ -14224,6 +15178,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "所選位置"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択した場所"
           }
         }
       }
@@ -14315,6 +15275,12 @@
             "state" : "translated",
             "value" : "請設定位置以查看禮拜時間。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "礼拝時刻を表示する場所を設定してください。"
+          }
         }
       }
     },
@@ -14402,6 +15368,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在 App 中設定位置"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appで場所を設定"
           }
         }
       }
@@ -14491,6 +15463,12 @@
             "state" : "translated",
             "value" : "設定 Muntathir"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muntathirを設定"
+          }
         }
       }
     },
@@ -14579,6 +15557,12 @@
             "state" : "translated",
             "value" : "請在設定中設定位置，以尋找禮拜朝向。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キブラを確認するには、設定で場所を指定してください。"
+          }
         }
       }
     },
@@ -14663,6 +15647,12 @@
           }
         },
         "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "設定"
@@ -14755,6 +15745,12 @@
             "state" : "translated",
             "value" : "設定會在 iCloud 可用時同步。GPS 位置和通知權限僅保留在此裝置上。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "利用可能な場合、設定はiCloudで同期されます。GPSの位置情報と通知の許可はこのデバイス内にのみ保存されます。"
+          }
         }
       }
     },
@@ -14842,6 +15838,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "分享為影像"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像として共有"
           }
         }
       }
@@ -14931,6 +15933,12 @@
             "state" : "translated",
             "value" : "顯示體感溫度"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "体感温度を表示"
+          }
         }
       }
     },
@@ -15019,6 +16027,12 @@
             "state" : "translated",
             "value" : "新加坡"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "シンガポール"
+          }
         }
       }
     },
@@ -15106,6 +16120,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "來源與授權"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "出典とライセンス"
           }
         }
       }
@@ -15197,6 +16217,12 @@
             "state" : "translated",
             "value" : "第 %1$@ 步，共 %2$@ 步"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ステップ%1$@／%2$@"
+          }
         }
       }
     },
@@ -15285,6 +16311,12 @@
             "state" : "translated",
             "value" : "日出"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日の出"
+          }
         }
       }
     },
@@ -15372,6 +16404,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "日落"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日の入り"
           }
         }
       }
@@ -15463,6 +16501,12 @@
             "state" : "translated",
             "value" : "章節、2:255 或《古蘭經》文字"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "章名、2:255、またはクルアーン本文"
+          }
         }
       }
     },
@@ -15553,6 +16597,12 @@
             "state" : "translated",
             "value" : "章節"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "章"
+          }
         }
       }
     },
@@ -15641,6 +16691,12 @@
             "state" : "translated",
             "value" : "系統行事曆"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システムのカレンダー"
+          }
         }
       }
     },
@@ -15728,6 +16784,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "文字已拷貝"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テキストをコピーしました"
           }
         }
       }
@@ -15819,6 +16881,12 @@
             "state" : "translated",
             "value" : "尊貴的《古蘭經》"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聖クルアーン"
+          }
         }
       }
     },
@@ -15906,6 +16974,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "需要更新此位置才能計算禮拜時間。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "礼拝時刻を計算するには、この場所を更新する必要があります。"
           }
         }
       }
@@ -15995,6 +17069,12 @@
             "state" : "translated",
             "value" : "此地點沒有時區。請選擇附近的城市。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この場所にはタイムゾーンがありません。近くの都市を選択してください。"
+          }
         }
       }
     },
@@ -16082,6 +17162,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "禮拜時間到了"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "礼拝の時間です"
           }
         }
       }
@@ -16171,6 +17257,12 @@
             "state" : "translated",
             "value" : "今天"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日"
+          }
         }
       }
     },
@@ -16259,6 +17351,12 @@
             "state" : "translated",
             "value" : "工具"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ツール"
+          }
         }
       }
     },
@@ -16346,6 +17444,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "譯文"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻訳"
           }
         }
       }
@@ -16436,6 +17540,12 @@
             "state" : "translated",
             "value" : "譯文無法使用"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻訳を利用できません"
+          }
         }
       }
     },
@@ -16523,6 +17633,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "再試一次"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再試行"
           }
         }
       }
@@ -16612,6 +17728,12 @@
             "state" : "translated",
             "value" : "土耳其"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トルコ"
+          }
         }
       }
     },
@@ -16699,6 +17821,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "遵循十二伊瑪目什葉派傳統。歷史日期可能因來源而異。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "十二イマーム派の慣習に基づきます。歴史的な日付は資料によって異なる場合があります。"
           }
         }
       },
@@ -16790,6 +17918,12 @@
             "state" : "translated",
             "value" : "遵循十二伊瑪目什葉派傳統。歷史日期可能因來源而異。[事件參考資料](https://al-islam.org/islam-faith-practice-history-sayyid-muhammad-rizvi/lesson-17-twelve-caliphs-or-imams)。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "十二イマーム派の慣習に基づきます。歴史的な日付は資料によって異なる場合があります。[行事の参考資料](https://al-islam.org/islam-faith-practice-history-sayyid-muhammad-rizvi/lesson-17-twelve-caliphs-or-imams)。"
+          }
         }
       }
     },
@@ -16880,6 +18014,12 @@
             "state" : "translated",
             "value" : "烏姆古拉曆"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ウンム・アルクラー暦"
+          }
         }
       }
     },
@@ -16967,6 +18107,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "烏姆古拉曆 — 麥加"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ウンム・アルクラー — メッカ"
           }
         }
       }
@@ -17056,6 +18202,12 @@
             "state" : "translated",
             "value" : "無法建立影像"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像を作成できません"
+          }
         }
       }
     },
@@ -17143,6 +18295,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無法載入《古蘭經》"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クルアーンを読み込めません"
           }
         }
       }
@@ -17232,6 +18390,12 @@
             "state" : "translated",
             "value" : "無法儲存"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存できません"
+          }
         }
       }
     },
@@ -17319,6 +18483,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無法更新"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新できません"
           }
         }
       }
@@ -17408,6 +18578,12 @@
             "state" : "translated",
             "value" : "喀拉蚩大學"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カラチ大学"
+          }
         }
       }
     },
@@ -17495,6 +18671,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "未儲存的筆記"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未保存のメモ"
           }
         }
       }
@@ -17584,6 +18766,12 @@
             "state" : "translated",
             "value" : "使用經文操作來加入筆記。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聖句の操作メニューからメモを追加できます。"
+          }
         }
       }
     },
@@ -17671,6 +18859,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用經文操作將其儲存到這裡。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聖句の操作メニューからここに保存できます。"
           }
         }
       }
@@ -17760,6 +18954,12 @@
             "state" : "translated",
             "value" : "使用裝置位置"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバイスの位置情報を使用"
+          }
         }
       }
     },
@@ -17847,6 +19047,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "經文 %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第%@節"
           }
         }
       }
@@ -17936,6 +19142,12 @@
             "state" : "translated",
             "value" : "經文操作"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聖句の操作"
+          }
         }
       }
     },
@@ -18023,6 +19235,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "經文筆記"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聖句のメモ"
           }
         }
       }
@@ -18112,6 +19330,12 @@
             "state" : "translated",
             "value" : "經文節號"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節番号"
+          }
         }
       }
     },
@@ -18199,6 +19423,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "經文無法使用"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聖句を利用できません"
           }
         }
       }
@@ -18288,6 +19518,12 @@
             "state" : "translated",
             "value" : "經文"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聖句"
+          }
         }
       }
     },
@@ -18376,6 +19612,12 @@
             "state" : "translated",
             "value" : "顯示設定"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "表示設定"
+          }
         }
       }
     },
@@ -18463,6 +19705,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "天氣"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "天気"
           }
         }
       }
@@ -18554,6 +19802,12 @@
             "state" : "translated",
             "value" : "天氣無法使用"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "天気を利用できません"
+          }
         }
       }
     },
@@ -18641,6 +19895,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "歡迎使用 Muntathir"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muntathirへようこそ"
           }
         }
       }
@@ -18730,6 +19990,12 @@
             "state" : "translated",
             "value" : "沒有已發佈的公告時，日期使用系統行事曆。可在行事曆中調整各個月份。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "発表がない場合は、システムのカレンダーに従います。カレンダーで各月を調整できます。"
+          }
         }
       }
     },
@@ -18817,6 +20083,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "您的更改未儲存。請再試一次。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "変更は保存されませんでした。もう一度お試しください。"
           }
         }
       }
@@ -18906,6 +20178,12 @@
             "state" : "translated",
             "value" : "您的筆記仍在這裡。請再次嘗試儲存。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メモは残っています。もう一度保存をお試しください。"
+          }
         }
       }
     },
@@ -18994,6 +20272,12 @@
             "state" : "translated",
             "value" : "無法打開已儲存的資料。請再試一次。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存したデータを開けませんでした。もう一度お試しください。"
+          }
         }
       }
     },
@@ -19081,6 +20365,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無法同步設定。請在 iPhone 上打開 Muntathir。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定を同期できません。iPhoneでMuntathirを開いてください。"
           }
         }
       },
@@ -19171,6 +20461,12 @@
             "state" : "translated",
             "value" : "今天的《古蘭經》經文。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日のクルアーンの聖句。"
+          }
         }
       },
       "extractionState" : "manual"
@@ -19259,6 +20555,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "伊斯蘭曆"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "イスラム暦"
           }
         }
       },
@@ -19349,6 +20651,12 @@
             "state" : "translated",
             "value" : "伊斯蘭曆與西曆日期及目前天氣。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ヒジュラ暦とグレゴリオ暦の日付、および現在の天気。"
+          }
         }
       },
       "extractionState" : "manual"
@@ -19437,6 +20745,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "您下次禮拜的時間。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次の礼拝の時刻。"
           }
         }
       },
@@ -19527,6 +20841,12 @@
             "state" : "translated",
             "value" : "下次禮拜倒數計時與禮拜時間表。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "礼拝予定と次の礼拝までのカウントダウン。"
+          }
         }
       },
       "extractionState" : "manual"
@@ -19615,6 +20935,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "伊斯蘭曆日期和月份。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ヒジュラ暦の日と月。"
           }
         }
       },
@@ -19705,6 +21031,12 @@
             "state" : "translated",
             "value" : "即將到來的禮拜"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "まもなく始まる礼拝"
+          }
         }
       },
       "extractionState" : "manual"
@@ -19793,6 +21125,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "您已儲存位置的禮拜時間。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存した場所の礼拝時刻。"
           }
         }
       },
@@ -19883,9 +21221,110 @@
             "state" : "translated",
             "value" : "下次禮拜時間及即時倒數計時。"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次の礼拝時刻とリアルタイムのカウントダウン。"
+          }
         }
       },
       "extractionState" : "manual"
+    },
+    "Prayer times" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prayer times"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أوقات الصلاة"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Horaires de prière"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebetszeiten"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waktu salat"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orari di preghiera"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waktu solat"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اوقات نماز"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Время намаза"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Horarios de oración"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namaz vakitleri"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نماز کے اوقات"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "礼拜时间"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "禮拜時間"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "礼拝時刻"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

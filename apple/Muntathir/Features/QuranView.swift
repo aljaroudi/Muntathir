@@ -54,8 +54,13 @@ struct QuranView: View {
                             QuranChapterView(surah: surah, reader: reader)
                         } label: {
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("\(surah.id, format: .number). \(surah.title(locale: locale))")
-                                    .font(.headline)
+                                HStack(alignment: .firstTextBaseline, spacing: 0) {
+                                    Text(surah.id, format: .number).fixedSize()
+                                    Text(verbatim: ".")
+                                    Text(surah.title(locale: locale)).padding(.leading, 6)
+                                }
+                                .font(.headline)
+                                .accessibilityElement(children: .combine)
                                 if locale.language.languageCode?.identifier != "ar" {
                                     Text(surah.arabic).environment(\.layoutDirection, .rightToLeft)
                                 }

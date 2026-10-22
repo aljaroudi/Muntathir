@@ -1,6 +1,6 @@
 # Muntathir · منتظِر
 
-Prayer times, Hijri calendar, daily Quran verses, and Qibla with localization in Arabic, English, French, German, Indonesian, Italian, Malay, Persian, Russian, Spanish, Turkish, Urdu, and Simplified/Traditional Chinese.
+Prayer times, Hijri calendar, daily Quran verses, and Qibla with localization in Arabic, English, French, German, Indonesian, Italian, Japanese, Malay, Persian, Russian, Spanish, Turkish, Urdu, and Simplified/Traditional Chinese.
 
 ## Repository
 

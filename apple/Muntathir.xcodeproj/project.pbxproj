@@ -610,6 +610,7 @@
 				fr,
 				id,
 				it,
+				ja,
 				ms,
 				ru,
 				tr,

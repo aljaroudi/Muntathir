@@ -8,4 +8,4 @@ Swift Testing covers calendar boundaries, overrides, content integrity, prayer f
 
 `Fixtures/` is copied into the test bundle; maintain parity with [Shared fixtures](../Shared/Fixtures/). Feed tests inject simulated HTTP responses, not a deployed server. Hardware behavior requires [device checks](../README.md#release-checks).
 
-`make apple-localizations` checks all interface strings, placeholder parity, observance translations, and location-purpose strings in the 14 supported locales. `make apple-test` runs this check before simulator tests.
+`make apple-localizations` checks all interface strings, placeholder parity, observance translations, and location-purpose strings in the 15 supported locales. `make apple-test` runs this check before simulator tests.

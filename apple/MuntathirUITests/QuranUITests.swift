@@ -83,3 +83,34 @@ final class QuranUITests: XCTestCase {
         add(screenshot)
     }
 }
+
+extension QuranUITests {
+    @MainActor func testSurahHeadingsInBothDirectionsAndJapanese() {
+        for (language, tools, largeText) in [
+            ("en", "Tools", false),
+            ("ar", "الأدوات", false),
+            ("fa", "ابزارها", false),
+            ("ja", "ツール", false),
+            ("ar", "الأدوات", true),
+        ] {
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-testing", "-AppleLanguages", "(\(language))", "-AppleLocale", language]
+            if largeText {
+                app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+            }
+            app.launch()
+            app.buttons[tools].firstMatch.tap()
+            app.buttons["holy-quran"].tap()
+            let first = app.buttons["quran-surah-1"]
+            XCTAssertTrue(first.waitForExistence(timeout: 10), language)
+            XCTAssertTrue(first.label.contains(language == "ar" ? "الفاتحة" : "Al-Faatiha"), language)
+            let screenshot = XCTAttachment(screenshot: app.screenshot())
+            screenshot.name = "Quran headings \(language)\(largeText ? " large text" : "")"
+            screenshot.lifetime = .keepAlways
+            add(screenshot)
+            first.tap()
+            XCTAssertTrue(app.descendants(matching: .any)["quran-verse-1:1"].waitForExistence(timeout: 5), language)
+            app.terminate()
+        }
+    }
+}

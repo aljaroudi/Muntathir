@@ -358,7 +358,7 @@ extension CalendarTests {
 }
 
 extension CalendarTests {
-    @Test(arguments: ["en", "ar", "fr", "de", "id", "it", "ms", "fa", "ru", "es", "tr", "ur", "zh-Hans", "zh-Hant"])
+    @Test(arguments: ["en", "ar", "fr", "de", "id", "it", "ja", "ms", "fa", "ru", "es", "tr", "ur", "zh-Hans", "zh-Hant"])
     func supportedLanguagesAreBundled(language: String) throws {
         let app = Bundle.main
         let relativeBundles = ["", "PlugIns/MuntathirWidgets.appex", "Watch/MuntathirWatch.app",
