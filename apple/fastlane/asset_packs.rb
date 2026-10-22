@@ -25,7 +25,10 @@ module MuntathirRelease
       version = versions[version_id]
       version && version.dig("attributes", "platforms")&.include?("IOS")
     end
-    raise "Publish all Quran packs to #{release ? 'App Store' : 'external TestFlight'} before shipping: #{missing.join(', ')}" unless missing.empty?
+    unless missing.empty?
+      raise "Quran packs unavailable for #{release ? 'App Store' : 'external TestFlight'}: #{missing.join(', ')}. " \
+            "Upload missing packs or submit their processed versions for review in App Store Connect."
+    end
     true
   end
 

@@ -104,6 +104,11 @@ config = { "submission_information" => { "export_compliance_uses_encryption" => 
 beta_app = Object.new
 beta_app.define_singleton_method(:get_edit_app_store_version) { |**_| nil }
 beta_app.define_singleton_method(:get_beta_app_localizations) { [Struct.new(:feedback_email).new("review@example.com")] }
+check.tests
+regressions = check.calls.find { |name, _| name == :run_tests }.last
+assert(regressions[:skip_testing] == ["MuntathirUITests/MarketingScreenshotTests"], "Regression lane must exclude only marketing captures")
+assert(regressions[:parallel_testing] == false, "Regression lane must serialize UI tests")
+assert(regressions[:derived_data_path] == "./build/DerivedData", "Regression and marketing build caches must stay separate")
 check.screenshots
 captures = check.calls.select { |name, _| name == :capture_screenshots }.map(&:last)
 assert(captures.size == 2, "Expected separate runtime passes")

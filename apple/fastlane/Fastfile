@@ -8,12 +8,13 @@ default_platform(:ios)
 platform :ios do
   desc "Validate local metadata and automation checks without Apple access"
   lane :check do
-    MuntathirRelease.validate_metadata!
+    sh("python3", File.join(__dir__, "../scripts/check_localizations.py"))
     sh("bundle", "exec", "ruby", File.join(__dir__, "check.rb"))
   end
 
   desc "Run unit and UI regression tests, excluding marketing captures"
   lane :tests do
+    sh("python3", File.join(__dir__, "../scripts/check_localizations.py"))
     run_tests(project: "./Muntathir.xcodeproj", scheme: "Muntathir",
               destination: "platform=iOS Simulator,name=iPhone 17 Pro Max,OS=#{ENV.fetch('SCREENSHOT_IOS_VERSION', '27.0')}",
               skip_testing: ["MuntathirUITests/MarketingScreenshotTests"], parallel_testing: false,

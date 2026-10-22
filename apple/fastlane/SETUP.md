@@ -51,7 +51,9 @@ Inspect all locales before upload: readable headlines, Arabic direction and join
 
 ## Store metadata and private configuration
 
-Manage names, subtitles, descriptions, keywords, promotional text, release notes, support/privacy URLs and the copyright notice under `metadata/`. `check` enforces localized text limits. Preserve existing pricing, territories, categories, age rating, content-rights and privacy declarations.
+Manage names, subtitles, descriptions, keywords, promotional text, release notes, support/privacy URLs and the copyright notice under `metadata/`. `check` validates all 15 interface locales, interpolation placeholders, observance titles, permission strings, store text limits, and offline lane checks. `tests` also checks interface localization before invoking Xcode.
+
+The app supports 15 interface locales, including Japanese. Store metadata and marketing captures remain English and Arabic; their locale list is independent of the app’s supported languages. Preserve existing pricing, territories, categories, age rating, content-rights and privacy declarations.
 
 Store API credentials at `~/.config/muntathir/fastlane.env`; field names are in `.env.local.example`. Protect the environment file, `.p8` key and private review JSON with `chmod 600`. `MUNTATHIR_FASTLANE_ENV_FILE` can select a different environment file. `MUNTATHIR_REVIEW_CONFIG` points to private review/contact/compliance values; `review.example.json` documents the shape. Never commit private keys or personal review details.
 
@@ -64,6 +66,8 @@ Readiness uses existing store fields plus explicitly managed local values. Missi
 Owner-created, same-repository non-draft PRs to `main` upload to TestFlight Public. Merging submits App Review; release remains manual. Fork PRs are excluded. Manual dispatch on `main` supports individual lanes. Jobs serialize and never cancel active uploads. Artifacts retain captures, supported/manual preview exports, tests and deployment logs for 14 days. Never grant untrusted contributors execution access on this persistent signing machine.
 
 Commit/push the workflow to activate it in GitHub. Binary upload, Apple processing and review submission are separate stages; an upload does not imply approval. TestFlight processing times out after 30 minutes. Check App Store Connect before retrying, and use `assets` to retry metadata/media without rebuilding. Existing remote assets are not cleared automatically; remove superseded sets manually where necessary to stay within Apple limits.
+
+Processed asset packs available for internal testing do not satisfy the external TestFlight gate. Apple requires submitting a build before submitting its associated packs for external review. Use `build` to export an IPA, upload it for internal testing through Transporter, then submit the processed pack versions in App Store Connect. Rerun `readiness` after approval. See [Apple’s asset-pack testing instructions](https://developer.apple.com/help/app-store-connect/test-a-beta-version/test-apple-hosted-asset-packs).
 
 References: [Fastlane 2.241.1](https://github.com/fastlane/fastlane/releases/tag/2.241.1), [snapshot](https://docs.fastlane.tools/actions/snapshot/), [frameit](https://docs.fastlane.tools/actions/frameit/), [App Asset Library release notes](https://developer.apple.com/documentation/appstoreconnectapi/app-store-connect-api-4-5-1-release-notes).
 

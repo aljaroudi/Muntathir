@@ -6,6 +6,7 @@ require_relative "asset_packs"
 
 module MuntathirRelease
   ROOT = File.expand_path("..", __dir__)
+  # Store locales are independent of the interface languages bundled in the app.
   LOCALES = %w[en-US ar-SA].freeze
   DEVICES = ["iPhone 17 Pro Max", "iPad Pro 13-inch (M5)", "iPhone Duo"].freeze
   LIMITS = { "name" => 30, "subtitle" => 30, "keywords" => 100, "description" => 4000,
