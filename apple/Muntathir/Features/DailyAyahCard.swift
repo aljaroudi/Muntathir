@@ -4,8 +4,11 @@ struct DailyAyahCard: View {
     let ayah: Ayah
     var skyBackground = false
     @Environment(\.locale) private var locale
-    @State private var sharedImage: SharedAyah?
-    @State private var shareFailed = false
+
+    private var dailyTranslation: QuranTranslation? {
+        guard ayah.dailyTranslation(locale: locale) != nil else { return nil }
+        return QuranTranslation.preferred(in: QuranTranslation.catalog, locale: locale)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -14,16 +17,7 @@ struct DailyAyahCard: View {
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
                 Spacer()
-                Button("Share verse", systemImage: "square.and.arrow.up") {
-                    if let image = AyahImageRenderer.image(for: ayah, locale: locale) {
-                        sharedImage = SharedAyah(image: image)
-                    } else {
-                        shareFailed = true
-                    }
-                }
-                .labelStyle(.iconOnly)
-                .frame(minWidth: 44, minHeight: 44)
-                .accessibilityIdentifier("share-daily-ayah")
+                VerseActions(ayah: ayah, translation: dailyTranslation, identifier: "share-daily-ayah")
             }
             AyahText(ayah: ayah)
                 .accessibilityIdentifier("daily-ayah-text")
@@ -54,14 +48,6 @@ struct DailyAyahCard: View {
                 .strokeBorder(Color.accentColor.opacity(0.15), lineWidth: 1)
                 .allowsHitTesting(false)
         }
-        .sheet(item: $sharedImage) { item in
-            AyahShareSheet(image: item.image)
-        }
-        .alert("Unable to create image", isPresented: $shareFailed) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("Please try sharing the verse again.")
-        }
     }
 }
 
@@ -80,13 +66,21 @@ struct AyahText: View {
 
 struct AyahShareArtwork: View {
     let ayah: Ayah
+    var translation: QuranTranslation?
+    @Environment(\.locale) private var locale
     var body: some View {
         VStack(spacing: 28) {
-            Label("Daily ayah", systemImage: "book.closed")
+            Label("The Holy Quran", systemImage: "book.closed")
                 .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
             AyahText(ayah: ayah)
                 .padding()
-            Text(ayah.id).font(.subheadline.monospacedDigit())
+            if let translation, let text = ayah.translations[translation.id] {
+                Text(text)
+                    .environment(\.layoutDirection, Locale(identifier: translation.language).language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight)
+                Text(translation.translator).font(.caption).foregroundStyle(.secondary)
+            }
+            Text(VerseShareContent(ayah: ayah, translation: translation, locale: locale).reference)
+                .font(.subheadline.monospacedDigit())
             Divider().overlay(Color.accentColor.opacity(0.2))
             HStack {
                 Text("Muntathir").font(.subheadline.weight(.medium))
@@ -100,8 +94,8 @@ struct AyahShareArtwork: View {
 }
 
 @MainActor enum AyahImageRenderer {
-    static func image(for ayah: Ayah, locale: Locale) -> UIImage? {
-        let content = AyahShareArtwork(ayah: ayah)
+    static func image(for ayah: Ayah, locale: Locale, translation: QuranTranslation? = nil) -> UIImage? {
+        let content = AyahShareArtwork(ayah: ayah, translation: translation)
             .environment(\.locale, locale)
             .environment(\.layoutDirection, locale.language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight)
             .environment(\.colorScheme, .light)
@@ -114,12 +108,12 @@ struct AyahShareArtwork: View {
     }
 }
 
-private struct SharedAyah: Identifiable {
+struct SharedAyah: Identifiable {
     let id = UUID()
     let image: UIImage
 }
 
-private struct AyahShareSheet: UIViewControllerRepresentable {
+struct AyahShareSheet: UIViewControllerRepresentable {
     let image: UIImage
     func makeUIViewController(context _: Context) -> UIActivityViewController {
         UIActivityViewController(activityItems: [image], applicationActivities: nil)

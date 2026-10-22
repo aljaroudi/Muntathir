@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct MuntathirApp: App {
     @State private var model: AppModel
+    @State private var quranStore: QuranUserStore
     init() {
         let model: AppModel
         #if DEBUG
@@ -28,12 +29,13 @@ struct MuntathirApp: App {
             model = AppModel()
         #endif
         _model = State(initialValue: model)
+        _quranStore = State(initialValue: QuranUserStore.application())
         BackgroundRefresh.register { await model.refreshInBackground() }
     }
 
     var body: some Scene {
         WindowGroup {
-            Group {
+            QuranUserDataView(store: quranStore) {
                 if model.onboardingCompleted {
                     ContentView()
                 } else {

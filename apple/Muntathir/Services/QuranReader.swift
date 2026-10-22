@@ -21,6 +21,13 @@ actor QuranReader {
         try database.verses(surah: surah)
     }
 
+    func verses(references: [String]) throws -> [Ayah] {
+        try references.compactMap { reference in
+            guard let parsed = try QuranSearchText.reference(reference) else { return nil }
+            return try database.verse(surah: parsed.surah, number: parsed.verse)
+        }.sorted { ($0.surah, $0.number) < ($1.surah, $1.number) }
+    }
+
     func search(_ query: String, translationID: String?, limit: Int = 50) throws -> [Ayah] {
         try Task.checkCancellation()
         if let reference = try QuranSearchText.reference(query) {

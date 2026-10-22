@@ -35,6 +35,18 @@ struct QuranView: View {
 
     var body: some View {
         List {
+            if request.query.isEmpty {
+                Section {
+                    NavigationLink {
+                        QuranSavedVersesView(kind: .favorites, reader: reader, surahs: surahs, translations: translations, translationID: $translationID)
+                    } label: { Label("Favorites", systemImage: "star") }
+                        .accessibilityIdentifier("quran-favorites")
+                    NavigationLink {
+                        QuranSavedVersesView(kind: .notes, reader: reader, surahs: surahs, translations: translations, translationID: $translationID)
+                    } label: { Label("Notes", systemImage: "note.text") }
+                        .accessibilityIdentifier("quran-notes")
+                }
+            }
             if !matchingSurahs.isEmpty {
                 Section("Surahs") {
                     ForEach(matchingSurahs) { surah in
@@ -58,12 +70,13 @@ struct QuranView: View {
                 Section("Verses") {
                     ForEach(results) { ayah in
                         if let surah = surahs.first(where: { $0.id == ayah.surah }) {
-                            NavigationLink {
-                                QuranChapterView(surah: surah, initialVerse: ayah.number, reader: reader, translations: translations, translationID: $translationID)
-                            } label: {
+                            VStack(alignment: .leading, spacing: 8) {
                                 QuranVerseRow(ayah: ayah, translation: translations.first { $0.id == translationID }, preview: true)
+                                NavigationLink {
+                                    QuranChapterView(surah: surah, initialVerse: ayah.number, reader: reader, translations: translations, translationID: $translationID)
+                                } label: { Label("Read verse", systemImage: "book") }
+                                    .accessibilityIdentifier("quran-result-\(ayah.id)")
                             }
-                            .accessibilityIdentifier("quran-result-\(ayah.id)")
                         }
                     }
                     if hasMore {
@@ -178,8 +191,12 @@ struct QuranVerseRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(ayah.id).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
-                .accessibilityLabel(Text("Verse \(ayah.id)"))
+            HStack {
+                Text(ayah.id).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
+                    .accessibilityLabel(Text("Verse \(ayah.id)"))
+                Spacer()
+                VerseActions(ayah: ayah, translation: translation)
+            }
             AyahText(ayah: ayah)
                 .lineLimit(preview ? 3 : nil)
             if let translation, let text = ayah.translations[translation.id] {

@@ -16,6 +16,7 @@ final class DailyAyahUITests: XCTestCase {
         card.lifetime = .keepAlways
         add(card)
         share.tap()
+        app.buttons["Share as image"].tap()
         XCTAssertTrue(app.cells["Copy"].waitForExistence(timeout: 5))
         let sheet = XCTAttachment(screenshot: app.screenshot())
         sheet.name = "Verse image share sheet"
