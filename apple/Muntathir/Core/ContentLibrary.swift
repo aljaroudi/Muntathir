@@ -86,7 +86,7 @@ struct ContentLibrary: Sendable {
             .flatMap { try? Data(contentsOf: $0) }
             .flatMap { try? JSONDecoder().decode([Int].self, from: $0) } ?? []
         let ids = Set(dailyIDs + (schedule?.entries.map(\.verseID) ?? []))
-        let records = QuranDatabase(url: bundle.url(forResource: "db", withExtension: "db")).verses(ids: ids)
+        let records = QuranDatabase(bundle: bundle).verses(ids: ids)
         versesByID = records
         verses = dailyIDs.compactMap { records[$0] }
         datedSchedule = schedule.flatMap { candidate in

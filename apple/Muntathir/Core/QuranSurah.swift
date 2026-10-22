@@ -36,12 +36,15 @@ struct QuranSurah: Decodable, Identifiable, Hashable, Sendable {
 
 enum QuranSearchText {
     /// Search keys only. Never apply this to displayed or shared Quran text.
+    /// Must match the normalization the bundled search indexes were built with.
     static func normalize(_ text: String) -> String {
         String(text.unicodeScalars.compactMap { scalar -> String? in
             switch scalar.value {
             case 0x0610 ... 0x061A, 0x0640, 0x064B ... 0x065F, 0x0670, 0x06D6 ... 0x06ED:
                 nil
             case 0x0622, 0x0623, 0x0625, 0x0671: "ا"
+            case 0x0649: "ي"
+            case 0x0629: "ه"
             default: String(scalar)
             }
         }.joined())
@@ -61,11 +64,23 @@ enum QuranSearchText {
         return (surah, verse)
     }
 
-    static func expression(_ text: String) -> String? {
-        let terms = text.split { character in
+    /// Normalized, lowercased words of a query; never contains FTS syntax characters.
+    static func terms(_ text: String) -> [String] {
+        normalize(text).lowercased().split { character in
             !character.unicodeScalars.contains { CharacterSet.alphanumerics.contains($0) || CharacterSet.nonBaseCharacters.contains($0) }
+        }.map(String.init)
+    }
+
+    static func distance(_ a: String, _ b: String) -> Int {
+        let a = Array(a), b = Array(b)
+        var previous = Array(0 ... b.count)
+        for (i, x) in a.enumerated() {
+            var current = [i + 1]
+            for (j, y) in b.enumerated() {
+                current.append(min(previous[j + 1] + 1, current[j] + 1, previous[j] + (x == y ? 0 : 1)))
+            }
+            previous = current
         }
-        guard !terms.isEmpty else { return nil }
-        return terms.map { "\"\($0)\"" }.joined(separator: " AND ")
+        return previous[b.count]
     }
 }

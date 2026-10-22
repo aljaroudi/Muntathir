@@ -1,25 +1,36 @@
 import Foundation
 import SQLite3
 
-/// Each lookup opens the bundled database read-only; no SQLite connection crosses isolation boundaries.
+/// Each lookup opens the bundled databases read-only; no SQLite connection crosses isolation boundaries.
 struct QuranDatabase: Sendable {
+    /// Arabic `quran.db`; translations are the `<id>.db` files beside it.
     let url: URL?
+
+    init(url: URL?) {
+        self.url = url
+    }
+
+    init(bundle: Bundle = .main) {
+        url = bundle.url(forResource: "quran", withExtension: "db")
+    }
 
     func connection() throws -> QuranConnection {
         guard let url else { throw QuranDatabaseError.unavailable }
         return try QuranConnection(path: url.path, flags: SQLITE_OPEN_READONLY)
     }
 
-    func availableTranslations() throws -> [QuranTranslation] {
-        try availableTranslations(in: connection())
-    }
-
-    private func availableTranslations(in database: QuranConnection) throws -> [QuranTranslation] {
-        let columns = try database.query("PRAGMA table_info(quran)") { QuranConnection.text($0, 1) }
-        guard columns.contains("text"), columns.contains("sura"), columns.contains("aya") else {
+    func connection(to translation: QuranTranslation) throws -> QuranConnection {
+        guard let url = url?.deletingLastPathComponent().appendingPathComponent("\(translation.id).db") else {
             throw QuranDatabaseError.unavailable
         }
-        return QuranTranslation.catalog.filter { columns.contains($0.column) }
+        return try QuranConnection(path: url.path, flags: SQLITE_OPEN_READONLY)
+    }
+
+    func availableTranslations() throws -> [QuranTranslation] {
+        guard let folder = url?.deletingLastPathComponent() else { throw QuranDatabaseError.unavailable }
+        return QuranTranslation.catalog.filter {
+            FileManager.default.fileExists(atPath: folder.appendingPathComponent("\($0.id).db").path)
+        }
     }
 
     func chapterCounts() throws -> [Int: Int] {
@@ -50,22 +61,26 @@ struct QuranDatabase: Sendable {
     }
 
     func readVerses(where condition: String, parameters: [String], limit: Int? = nil) throws -> [(Int, Ayah)] {
-        let database = try connection()
-        let translations = try availableTranslations(in: database)
-        let columns = (["\"index\"", "sura", "aya", "text"] + translations.map { "\"\($0.column)\"" }).joined(separator: ", ")
         let suffix = limit.map { " LIMIT \(max(0, $0))" } ?? ""
-        return try database.query("SELECT \(columns) FROM quran WHERE \(condition) ORDER BY sura, aya\(suffix)", parameters: parameters) { row in
+        var rows = try connection().query("SELECT \"index\", sura, aya, text FROM quran WHERE \(condition) ORDER BY sura, aya\(suffix)", parameters: parameters) { row in
             let text = QuranConnection.text(row, 3)
             guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw QuranDatabaseError.unavailable }
-            var values: [String: String] = [:]
-            for (offset, translation) in translations.enumerated() {
-                let value = QuranConnection.text(row, Int32(offset + 4))
-                if !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    values[translation.id] = value
+            return (Int(sqlite3_column_int(row, 0)), Ayah(surah: Int(sqlite3_column_int(row, 1)), number: Int(sqlite3_column_int(row, 2)), text: text))
+        }
+        guard !rows.isEmpty else { return rows }
+        let ids = rows.map { String($0.0) }
+        let placeholders = ids.map { _ in "?" }.joined(separator: ",")
+        for translation in try availableTranslations() {
+            let values = try Dictionary(uniqueKeysWithValues: connection(to: translation).query("SELECT \"index\", text FROM quran WHERE \"index\" IN (\(placeholders))", parameters: ids) {
+                (Int(sqlite3_column_int($0, 0)), QuranConnection.text($0, 1))
+            })
+            for offset in rows.indices {
+                if let value = values[rows[offset].0], !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    rows[offset].1.translations[translation.id] = value
                 }
             }
-            return (Int(sqlite3_column_int(row, 0)), Ayah(surah: Int(sqlite3_column_int(row, 1)), number: Int(sqlite3_column_int(row, 2)), text: text, translations: values))
         }
+        return rows
     }
 }
 

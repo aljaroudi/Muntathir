@@ -202,6 +202,8 @@ struct QuranVerseRow: View {
             if let translation, let text = ayah.translations[translation.id] {
                 Text(text)
                     .lineLimit(preview ? 3 : nil)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .environment(\.layoutDirection, Locale(identifier: translation.language).language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight)
                     .accessibilityIdentifier("quran-translation-\(ayah.id)")
             }

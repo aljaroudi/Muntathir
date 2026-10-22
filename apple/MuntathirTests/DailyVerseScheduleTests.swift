@@ -77,7 +77,7 @@ struct DailyVerseScheduleTests {
     }
 
     @Test func databaseContainsTheCompleteBilingualQuranAndIsReadOnly() throws {
-        let url = try #require(Bundle.main.url(forResource: "db", withExtension: "db"))
+        let url = try #require(Bundle.main.url(forResource: "quran", withExtension: "db"))
         let before = try Data(contentsOf: url)
         let verses = QuranDatabase(url: url).verses(ids: Set(1 ... 6236))
         #expect(verses.count == 6236)
@@ -106,11 +106,15 @@ struct DailyVerseScheduleTests {
         #expect(appVerses.count == 31)
         #expect(appVerses.map(\.id) == widgetVerses.map(\.id))
         #expect(appVerses.map(\.text) == widgetVerses.map(\.text))
-        #expect(appVerses.map(\.translations) == widgetVerses.map(\.translations))
+        #expect(appVerses.map { $0.translations["en.qarai"] } == widgetVerses.map { $0.translations["en.qarai"] })
+        #expect(widgetVerses.allSatisfy { $0.translations.keys.sorted() == ["en.qarai"] })
         #expect(appVerses.allSatisfy { $0.translations["en.qarai"]?.isEmpty == false })
-        let appDB = try #require(Bundle.main.url(forResource: "db", withExtension: "db"))
-        let widgetDB = try #require(widget.url(forResource: "db", withExtension: "db"))
-        #expect(try Data(contentsOf: appDB) == Data(contentsOf: widgetDB))
+        for name in ["quran", "en.qarai"] {
+            let appDB = try #require(Bundle.main.url(forResource: name, withExtension: "db"))
+            let widgetDB = try #require(widget.url(forResource: name, withExtension: "db"))
+            #expect(try Data(contentsOf: appDB) == Data(contentsOf: widgetDB))
+        }
+        #expect(widget.url(forResource: "fr.hamidullah", withExtension: "db") == nil)
     }
 
     @Test func completeDatasetActivatesAndInvalidReferenceNeverFallsBack() throws {
@@ -119,8 +123,10 @@ struct DailyVerseScheduleTests {
         defer { try? FileManager.default.removeItem(at: folder) }
         let info = try PropertyListSerialization.data(fromPropertyList: ["CFBundleIdentifier": "test.daily-verses"], format: .xml, options: 0)
         try info.write(to: folder.appendingPathComponent("Info.plist"))
-        let source = try #require(Bundle.main.url(forResource: "db", withExtension: "db"))
-        try FileManager.default.copyItem(at: source, to: folder.appendingPathComponent("db.db"))
+        for name in ["quran", "en.qarai"] {
+            let source = try #require(Bundle.main.url(forResource: name, withExtension: "db"))
+            try FileManager.default.copyItem(at: source, to: folder.appendingPathComponent("\(name).db"))
+        }
         try Data("[2373]".utf8).write(to: folder.appendingPathComponent("quran-daily-ids.json"))
         let resource = folder.appendingPathComponent("quran-daily.json")
         func write(_ entries: [DailyVerseSchedule.Entry]) throws {

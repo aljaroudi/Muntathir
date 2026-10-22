@@ -19,12 +19,14 @@ struct DailyAyahCard: View {
                 Spacer()
                 VerseActions(ayah: ayah, translation: dailyTranslation, identifier: "share-daily-ayah")
             }
-            AyahText(ayah: ayah)
+            AyahText(ayah: ayah, alignment: .center)
                 .accessibilityIdentifier("daily-ayah-text")
                 .textSelection(.enabled)
             if let translation = ayah.dailyTranslation(locale: locale) {
                 Text(translation)
                     .font(.body)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
                     .environment(\.layoutDirection, .leftToRight)
                     .textSelection(.enabled)
                     .accessibilityIdentifier("daily-ayah-translation")
@@ -53,12 +55,13 @@ struct DailyAyahCard: View {
 
 struct AyahText: View {
     let ayah: Ayah
+    var alignment: TextAlignment = .leading
     var body: some View {
         Text(ayah.text)
             .font(.custom("KFGQPCHAFSUthmanicScript-Regula", size: 28, relativeTo: .title2))
             .lineSpacing(12)
-            .multilineTextAlignment(.center)
-            .frame(maxWidth: .infinity)
+            .multilineTextAlignment(alignment)
+            .frame(maxWidth: .infinity, alignment: alignment == .center ? .center : .leading)
             .fixedSize(horizontal: false, vertical: true)
             .environment(\.layoutDirection, .rightToLeft)
     }
@@ -76,6 +79,8 @@ struct AyahShareArtwork: View {
                 .padding()
             if let translation, let text = ayah.translations[translation.id] {
                 Text(text)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .environment(\.layoutDirection, Locale(identifier: translation.language).language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight)
                 Text(translation.translator).font(.caption).foregroundStyle(.secondary)
             }

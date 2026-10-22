@@ -15,10 +15,12 @@ class ImportDailyVersesTests(unittest.TestCase):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
         self.path = Path(self.directory.name) / "schedule.csv"
-        self.database = Path(self.directory.name) / "db.db"
-        with closing(sqlite3.connect(self.database)) as connection, connection:
-            connection.execute('CREATE TABLE quran ("index" INTEGER PRIMARY KEY, text TEXT, en_qarai TEXT)')
-            connection.execute('INSERT INTO quran VALUES (2373, ?, ?)', ("Arabic fixture", "English fixture"))
+        self.database = Path(self.directory.name) / "quran.db"
+        self.english = Path(self.directory.name) / "en.qarai.db"
+        for path, text in [(self.database, "Arabic fixture"), (self.english, "English fixture")]:
+            with closing(sqlite3.connect(path)) as connection, connection:
+                connection.execute('CREATE TABLE quran ("index" INTEGER PRIMARY KEY, text TEXT)')
+                connection.execute('INSERT INTO quran VALUES (2373, ?)', (text,))
         self.rows = [[month, day, 2373] for month in range(1, 13) for day in range(1, 31)]
 
     def compile(self, rows=None):
@@ -47,8 +49,8 @@ class ImportDailyVersesTests(unittest.TestCase):
         before = self.database.read_bytes()
         self.compile()
         self.assertEqual(self.database.read_bytes(), before)
-        with closing(sqlite3.connect(self.database)) as connection, connection:
-            connection.execute('UPDATE quran SET en_qarai = " "')
+        with closing(sqlite3.connect(self.english)) as connection, connection:
+            connection.execute('UPDATE quran SET text = " "')
         with self.assertRaises(ValueError):
             self.compile()
 

@@ -1,12 +1,11 @@
 import Foundation
 import SQLite3
 
-/// Keeps the disposable Arabic search index off the main actor and inside one isolation boundary.
+/// Keeps search off the main actor.
 actor QuranReader {
     let database: QuranDatabase
-    private var arabicIndex: QuranConnection?
 
-    init(database: QuranDatabase = QuranDatabase(url: Bundle.main.url(forResource: "db", withExtension: "db"))) {
+    init(database: QuranDatabase = QuranDatabase()) {
         self.database = database
     }
 
@@ -28,6 +27,7 @@ actor QuranReader {
         }.sorted { ($0.surah, $0.number) < ($1.surah, $1.number) }
     }
 
+    /// Arabic matches first, then matches found only in the selected translation.
     func search(_ query: String, translationID: String?, limit: Int = 50) throws -> [Ayah] {
         try Task.checkCancellation()
         if let reference = try QuranSearchText.reference(query) {
@@ -36,35 +36,67 @@ actor QuranReader {
             }
             return [verse]
         }
-        guard let expression = QuranSearchText.expression(QuranSearchText.normalize(query)) else { return [] }
-        let index = try normalizedIndex()
-        var ids = try Set(index.query("SELECT rowid FROM arabic WHERE arabic MATCH ?", parameters: [expression]) { Int(sqlite3_column_int($0, 0)) })
-        if let translation = try database.availableTranslations().first(where: { $0.id == translationID }),
-           let expression = QuranSearchText.expression(query)
-        {
-            let matches = try database.connection().query("SELECT rowid FROM quran_fts WHERE quran_fts MATCH ?", parameters: ["\(translation.column) : (\(expression))"]) { Int(sqlite3_column_int($0, 0)) }
-            ids.formUnion(matches)
+        let terms = QuranSearchText.terms(query)
+        guard !terms.isEmpty else { return [] }
+        var ids = try matches(terms, in: database.connection(), roots: true)
+        if let translation = try database.availableTranslations().first(where: { $0.id == translationID }) {
+            let connection = try database.connection(to: translation)
+            let seen = Set(ids)
+            let found = try translation.id.hasPrefix("zh.") ? substrings(terms, in: connection) : matches(terms, in: connection, roots: false)
+            ids += found.filter { !seen.contains($0) }
         }
-        guard !ids.isEmpty else { return [] }
-        let ordered = ids.sorted()
-        return try database.readVerses(where: "\"index\" IN (\(ordered.map { _ in "?" }.joined(separator: ",")))", parameters: ordered.map(String.init), limit: limit).map(\.1)
+        let page = ids.prefix(max(0, limit)).map(String.init)
+        guard !page.isEmpty else { return [] }
+        let verses = try Dictionary(uniqueKeysWithValues: database.readVerses(where: "\"index\" IN (\(page.map { _ in "?" }.joined(separator: ",")))", parameters: page))
+        return page.compactMap { Int($0).flatMap { verses[$0] } }
     }
 
-    private func normalizedIndex() throws -> QuranConnection {
-        if let arabicIndex {
-            return arabicIndex
+    /// Ranked whole-word, prefix, and root hits; then verses where every term only appears inside longer words.
+    private func matches(_ terms: [String], in database: QuranConnection, roots: Bool) throws -> [Int] {
+        var groups: [String] = []
+        for term in terms {
+            var options = ["text : \"\(term)\"*"]
+            if roots {
+                options += try database.query("SELECT root FROM quran_roots WHERE word = ?", parameters: [term]) { "root : \"\(QuranConnection.text($0, 0))\"" }
+                options.append("root : \"\(term)\"")
+            }
+            if try database.query("SELECT count(*) FROM quran_words WHERE quran_words MATCH ?", parameters: [options.joined(separator: " OR ")], row: { sqlite3_column_int($0, 0) }).first == 0 {
+                options += try similar(term, in: database).map { "text : \"\($0)\"" }
+            }
+            groups.append("(\(options.joined(separator: " OR ")))")
         }
-        let index = try QuranConnection(path: ":memory:", flags: SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)
-        try index.execute("CREATE VIRTUAL TABLE arabic USING fts5(text, tokenize = 'unicode61 remove_diacritics 2')")
-        try index.execute("BEGIN")
-        let verses = try database.connection().query("SELECT \"index\", text FROM quran") {
-            (Int(sqlite3_column_int($0, 0)), QuranConnection.text($0, 1))
+        let rank = roots ? "bm25(quran_words, 4.0, 1.0)" : "bm25(quran_words)"
+        var ids = try database.query("SELECT rowid FROM quran_words WHERE quran_words MATCH ? ORDER BY \(rank), rowid", parameters: [groups.joined(separator: " AND ")]) { Int(sqlite3_column_int($0, 0)) }
+        // Trigrams need 3+ characters per term.
+        if terms.allSatisfy({ $0.count >= 3 }) {
+            let seen = Set(ids)
+            ids += try database.query("SELECT rowid FROM quran_fts WHERE quran_fts MATCH ? ORDER BY rowid", parameters: [terms.map { "\"\($0)\"" }.joined(separator: " AND ")]) {
+                Int(sqlite3_column_int($0, 0))
+            }.filter { !seen.contains($0) }
         }
-        for (id, text) in verses {
-            try index.execute("INSERT INTO arabic(rowid, text) VALUES (?, ?)", parameters: [String(id), QuranSearchText.normalize(text)])
+        return ids
+    }
+
+    /// Up to three indexed words within one (short terms) or two edits, most frequent first.
+    private func similar(_ term: String, in database: QuranConnection) throws -> [String] {
+        guard term.count >= 3 else { return [] }
+        let allowed = term.count <= 4 ? 1 : 2
+        let candidates = try database.query("SELECT term, doc FROM quran_words_vocab WHERE col = 'text' AND length(term) BETWEEN CAST(? AS INTEGER) AND CAST(? AS INTEGER)", parameters: [String(term.count - allowed), String(term.count + allowed)]) {
+            (QuranConnection.text($0, 0), Int(sqlite3_column_int($0, 1)))
         }
-        try index.execute("COMMIT")
-        arabicIndex = index
-        return index
+        return candidates.compactMap { word, count in
+            let distance = QuranSearchText.distance(term, word)
+            return distance <= allowed ? (word, distance, count) : nil
+        }
+        .sorted { ($0.1, -$0.2) < ($1.1, -$1.2) }
+        .prefix(3)
+        .map(\.0)
+    }
+
+    /// For scripts without word boundaries (Chinese), every term must appear in the verse.
+    private func substrings(_ terms: [String], in database: QuranConnection) throws -> [Int] {
+        try database.query("SELECT \"index\" FROM quran WHERE \(terms.map { _ in "text LIKE ?" }.joined(separator: " AND ")) ORDER BY \"index\"", parameters: terms.map { "%\($0)%" }) {
+            Int(sqlite3_column_int($0, 0))
+        }
     }
 }

@@ -14,6 +14,8 @@ def compile_schedule(path, database):
     entries = []
     seen = set()
     with closing(sqlite3.connect(database.resolve().as_uri() + "?mode=ro", uri=True)) as connection:
+        english = database.resolve().with_name("en.qarai.db").as_uri() + "?mode=ro"
+        connection.execute("ATTACH ? AS en", (english,))
         with path.open(encoding="utf-8-sig", newline="") as stream:
             rows = csv.DictReader(stream)
             if rows.fieldnames != ["hijriMonth", "hijriDay", "verseID"]:
@@ -27,9 +29,9 @@ def compile_schedule(path, database):
                     raise ValueError(f"Row {row_number}: invalid date or extra columns")
                 if (month, day) in seen:
                     raise ValueError(f"Row {row_number}: duplicate Hijri date {month}/{day}")
-                verse = connection.execute('SELECT text, en_qarai FROM quran WHERE "index" = ?', (verse_id,)).fetchone()
+                verse = connection.execute('SELECT q.text, e.text FROM main.quran q JOIN en.quran e USING ("index") WHERE "index" = ?', (verse_id,)).fetchone()
                 if verse_id <= 0 or verse is None or not all(text and text.strip() for text in verse):
-                    raise ValueError(f"Row {row_number}: verse ID {verse_id} needs Arabic and English in db.db")
+                    raise ValueError(f"Row {row_number}: verse ID {verse_id} needs Arabic in quran.db and English in en.qarai.db")
                 seen.add((month, day))
                 entries.append(dict(hijriMonth=month, hijriDay=day, verseID=verse_id))
     if len(seen) != 360:

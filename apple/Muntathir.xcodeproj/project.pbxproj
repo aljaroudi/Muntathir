@@ -49,8 +49,6 @@
 		E50000000000000000000012 /* MuntathirWidgets/DailyAyahWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000002 /* MuntathirWidgets/DailyAyahWidget.swift */; };
 		E50000000000000000000013 /* Muntathir/Features/AyahBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000003 /* Muntathir/Features/AyahBackground.swift */; };
 		E50000000000000000000014 /* Muntathir/Core/ContentLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000004 /* Muntathir/Core/ContentLibrary.swift */; };
-		F70000000000000000000002 /* ../db.db in Resources */ = {isa = PBXBuildFile; fileRef = F70000000000000000000001 /* ../db.db */; };
-		F70000000000000000000003 /* ../db.db in Resources */ = {isa = PBXBuildFile; fileRef = F70000000000000000000001 /* ../db.db */; };
 		F70000000000000000000006 /* Muntathir/Core/QuranTranslation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F70000000000000000000004 /* Muntathir/Core/QuranTranslation.swift */; };
 		F70000000000000000000007 /* Muntathir/Core/QuranDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F70000000000000000000005 /* Muntathir/Core/QuranDatabase.swift */; };
 /* End PBXBuildFile section */
@@ -164,7 +162,6 @@
 		E50000000000000000000003 /* Muntathir/Features/AyahBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Features/AyahBackground.swift; sourceTree = SOURCE_ROOT; };
 		E50000000000000000000004 /* Muntathir/Core/ContentLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/ContentLibrary.swift; sourceTree = SOURCE_ROOT; };
 		E50000000000000000000006 /* Muntathir/Resources/QPCHafs.woff2 */ = {isa = PBXFileReference; lastKnownFileType = file; path = Muntathir/Resources/QPCHafs.woff2; sourceTree = SOURCE_ROOT; };
-		F70000000000000000000001 /* ../db.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = ../db.db; sourceTree = SOURCE_ROOT; };
 		F70000000000000000000004 /* Muntathir/Core/QuranTranslation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/QuranTranslation.swift; sourceTree = SOURCE_ROOT; };
 		F70000000000000000000005 /* Muntathir/Core/QuranDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/QuranDatabase.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -190,6 +187,24 @@
 				README.md,
 			);
 			target = 04457E73308394FE00A8887D /* MuntathirUITests */;
+		};
+		F60000000000000000000005 /* Exceptions for "Muntathir/Resources" folder in "MuntathirWidgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Quran/de.bubenheim.db,
+				Quran/es.bornez.db,
+				Quran/fa.fooladvand.db,
+				Quran/fr.hamidullah.db,
+				Quran/id.indonesian.db,
+				Quran/it.piccardo.db,
+				Quran/ms.basmeih.db,
+				Quran/ru.kuliev.db,
+				Quran/tr.vakfi.db,
+				Quran/ur.jawadi.db,
+				Quran/zh.jian.db,
+				Quran/zh.majian.db,
+			);
+			target = B20000000000000000000001 /* MuntathirWidgets */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -220,6 +235,9 @@
 		};
 		F60000000000000000000004 /* Muntathir/Resources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F60000000000000000000005 /* Exceptions for "Muntathir/Resources" folder in "MuntathirWidgets" target */,
+			);
 			path = Muntathir/Resources;
 			sourceTree = SOURCE_ROOT;
 		};
@@ -268,7 +286,6 @@
 			children = (
 				F70000000000000000000004 /* Muntathir/Core/QuranTranslation.swift */,
 				F70000000000000000000005 /* Muntathir/Core/QuranDatabase.swift */,
-				F70000000000000000000001 /* ../db.db */,
 				F60000000000000000000004 /* Muntathir/Resources */,
 				D40000000000000000000001 /* AppIcon.icon */,
 				C30000000000000000000006 /* Shared watch sources */,
@@ -552,7 +569,6 @@
 		04457E5B308394FD00A8887D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
-				F70000000000000000000002 /* ../db.db in Resources */,
 				D40000000000000000000002 /* AppIcon.icon in Resources */,
 			);
 		};
@@ -569,7 +585,6 @@
 		B20000000000000000000005 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
-				F70000000000000000000003 /* ../db.db in Resources */,
 				B20000000000000000000022 /* Muntathir/Localizable.xcstrings in Resources */,
 			);
 		};

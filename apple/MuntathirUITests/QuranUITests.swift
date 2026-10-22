@@ -42,6 +42,24 @@ final class QuranUITests: XCTestCase {
         add(screenshot)
     }
 
+    @MainActor func testVerseTextDirectionsAcrossTranslations() {
+        let app = openQuran()
+        app.buttons["quran-surah-1"].tap()
+        XCTAssertTrue(app.staticTexts["quran-translation-1:1"].waitForExistence(timeout: 10))
+        let english = XCTAttachment(screenshot: app.screenshot())
+        english.name = "Arabic right aligned and English left aligned"
+        english.lifetime = .keepAlways
+        add(english)
+
+        app.buttons["quran-translation-picker"].tap()
+        app.buttons["Persian"].tap()
+        XCTAssertTrue(app.staticTexts["quran-translation-1:1"].waitForExistence(timeout: 5))
+        let persian = XCTAttachment(screenshot: app.screenshot())
+        persian.name = "Arabic and Persian right aligned"
+        persian.lifetime = .keepAlways
+        add(persian)
+    }
+
     @MainActor func testSearchReferenceAndNavigateToVerse() {
         let app = openQuran()
         let search = app.searchFields.firstMatch
@@ -61,7 +79,8 @@ final class QuranUITests: XCTestCase {
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.searchFields.firstMatch.tap()
         app.searchFields.firstMatch.typeText("الله")
-        XCTAssertTrue(app.buttons["quran-result-1:1"].waitForExistence(timeout: 10))
+        let result = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "quran-result-")).firstMatch
+        XCTAssertTrue(result.waitForExistence(timeout: 10))
         let screenshot = XCTAttachment(screenshot: app.screenshot())
         screenshot.name = "Arabic Quran search"
         screenshot.lifetime = .keepAlways

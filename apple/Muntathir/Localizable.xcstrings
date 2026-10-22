@@ -56,7 +56,6 @@
       "shouldTranslate" : false
     },
     "%lld verses" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -87,7 +86,6 @@
       }
     },
     "Actions for verse %@" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -110,7 +108,6 @@
       }
     },
     "Add note" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -416,7 +413,6 @@
       }
     },
     "Copy text" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -447,7 +443,6 @@
       }
     },
     "Delete note" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -458,7 +453,6 @@
       }
     },
     "Delete this note?" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -509,7 +503,6 @@
       }
     },
     "Discard changes" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1585,7 +1578,6 @@
       }
     },
     "Set location in app" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1636,23 +1628,11 @@
       }
     },
     "Share as image" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "مشاركة كصورة"
-          }
-        }
-      }
-    },
-    "Share verse" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "مشاركة الآية"
           }
         }
       }
@@ -1742,7 +1722,6 @@
       }
     },
     "Text copied" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1760,17 +1739,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "القرآن الكريم"
-          }
-        }
-      }
-    },
-    "The time of your next prayer." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "وقت الصلاة القادمة."
           }
         }
       }
@@ -1825,17 +1793,6 @@
         }
       }
     },
-    "Today's verse from the Quran." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "آية اليوم من القرآن الكريم."
-          }
-        }
-      }
-    },
     "Tools" : {
       "localizations" : {
         "ar" : {
@@ -1847,7 +1804,6 @@
       }
     },
     "Translation" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1858,7 +1814,6 @@
       }
     },
     "Try again" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1921,7 +1876,6 @@
       }
     },
     "Unable to load Quran" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1932,7 +1886,6 @@
       }
     },
     "Unable to save" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1963,7 +1916,6 @@
       }
     },
     "Unsaved note" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1974,7 +1926,6 @@
       }
     },
     "Use a verse’s actions to add a note." : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1985,7 +1936,6 @@
       }
     },
     "Use a verse’s actions to save it here." : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -2006,7 +1956,6 @@
       }
     },
     "Verse %@" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -2017,7 +1966,6 @@
       }
     },
     "Verse actions" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -2028,7 +1976,6 @@
       }
     },
     "Verse note" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -2039,7 +1986,6 @@
       }
     },
     "Verse number" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -2050,7 +1996,6 @@
       }
     },
     "Verse unavailable" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -2061,7 +2006,6 @@
       }
     },
     "Verses" : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -2106,7 +2050,6 @@
       }
     },
     "Your change was not saved. Please try again." : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -2117,7 +2060,6 @@
       }
     },
     "Your note is still here. Please try saving again." : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -2128,7 +2070,6 @@
       }
     },
     "Your saved data could not be opened. Please try again." : {
-      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
