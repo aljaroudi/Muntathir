@@ -72,6 +72,8 @@ platform :ios do
     UI.user_error!("Muntathir not found in App Store Connect") unless app
     UI.user_error!("Unexpected App Store app ID") unless app.id == "6824304362"
     live = app.get_live_app_store_version(platform: "IOS")
+    # A first app's packs must be reviewed alongside the app; require beta readiness until then.
+    MuntathirRelease.validate_asset_packs!(release: MuntathirRelease.app_store_asset_gate?(options[:release], live)) unless options[:build_only]
     edit = app.get_edit_app_store_version(platform: "IOS")
     config = MuntathirRelease.review_config
     # Resolve store requirements against existing fields and explicitly managed local values.
@@ -118,12 +120,13 @@ platform :ios do
                     export_options: { signingStyle: "automatic", manageAppVersionAndBuildNumber: false },
                     xcargs: "MARKETING_VERSION=#{options.fetch(:version)} CURRENT_PROJECT_VERSION=#{number} #{provisioning}",
                     output_directory: "./build", buildlog_path: "./build/logs/archive")
+    sh("python3", File.join(__dir__, "../AssetPacks/assets.py"), "check-bundle", ipa)
     { ipa: ipa, build: number }
   end
 
   desc "Validate signing and export an IPA without uploading"
   lane :build do
-    context = store
+    context = store(build_only: true)
     archive(version: context.fetch(:version))
   end
 

@@ -2,6 +2,7 @@ require "json"
 require "addressable/uri"
 require "fileutils"
 require "open3"
+require_relative "asset_packs"
 
 module MuntathirRelease
   ROOT = File.expand_path("..", __dir__)

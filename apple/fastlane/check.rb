@@ -30,6 +30,20 @@ Dir.mktmpdir do |dir|
   rejects("Oversize subtitle accepted") { MuntathirRelease.validate_metadata!(dir) }
 end
 
+assert(!MuntathirRelease.app_store_asset_gate?(true, nil), "First submission cannot require packs already live on App Store")
+assert(MuntathirRelease.app_store_asset_gate?(true, Object.new), "Existing App Store release must require live packs")
+assert(!MuntathirRelease.app_store_asset_gate?(false, Object.new), "Beta must use beta pack availability")
+# The release gate must reject missing packs and accept only active iOS versions.
+pack_ids = Dir[File.join(__dir__, "../AssetPacks/manifests/*.json")].map { |file| JSON.parse(File.read(file)).fetch("assetPackID") }
+page = { "data" => pack_ids.map { |id| { "attributes" => { "assetPackIdentifier" => id }, "relationships" => { "externalBetaVersion" => { "data" => { "id" => id } }, "appStoreVersion" => { "data" => { "id" => id } } } } },
+         "included" => pack_ids.map { |id| { "id" => id, "attributes" => { "platforms" => ["IOS"] } } } }
+assert(MuntathirRelease.validate_asset_packs!(get: ->(_) { page }), "Ready beta packs rejected")
+assert(MuntathirRelease.validate_asset_packs!(release: true, get: ->(_) { page }), "Ready App Store packs rejected")
+rejects("Missing asset packs accepted") { MuntathirRelease.validate_asset_packs!(get: ->(_) { { "data" => [] } }) }
+wrong_platform = Marshal.load(Marshal.dump(page))
+wrong_platform["included"][0]["attributes"]["platforms"] = ["MAC_OS"]
+rejects("Non-iOS pack accepted") { MuntathirRelease.validate_asset_packs!(get: ->(_) { wrong_platform }) }
+
 # Exercise lane wiring without network access, builds, uploads, or credentials.
 module UI
   def self.user_error!(message) = raise(message)
