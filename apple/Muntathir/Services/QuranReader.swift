@@ -9,11 +9,11 @@ actor QuranReader {
         self.database = database
     }
 
-    func catalog() throws -> (surahs: [QuranSurah], counts: [Int: Int], translations: [QuranTranslation]) {
+    func catalog() throws -> (surahs: [QuranSurah], counts: [Int: Int]) {
         let surahs = try QuranSurah.load()
         let counts = try database.chapterCounts()
         guard surahs.allSatisfy({ (counts[$0.id] ?? 0) > 0 }) else { throw QuranDatabaseError.unavailable }
-        return (surahs, counts, QuranTranslation.catalog)
+        return (surahs, counts)
     }
 
     func verses(surah: Int) throws -> [Ayah] {

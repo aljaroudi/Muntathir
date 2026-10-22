@@ -2,7 +2,7 @@
 
 Edit `schedule.csv`: `hijriMonth,hijriDay,verseID`.
 
-`verseID` is the integer primary key named `index` in the `quran` table of `apple/Muntathir/Resources/Quran/quran.db`. It is not the surah number or the verse number within a surah. Every file in that folder has the same 6,236 `index` values: `quran.db` holds Arabic, and each `<translation id>.db` (for example `en.qarai.db`, Ali Quli Qara’i’s English) holds one translation. The app bundles all of them; widgets bundle only `quran.db` and `en.qarai.db`. Neither writes to them or fetches verse text over the network.
+`verseID` is the integer primary key named `index` in the `quran` table of `apple/Muntathir/Resources/Quran/quran.db`. It is not the surah number or the verse number within a surah. Every file in that folder has the same 6,236 `index` values: `quran.db` holds Arabic, and each `<translation id>.db` (for example `en.qarai.db`, Ali Quli Qara’i’s English) holds one translation. Only Arabic is bundled in the app and widget. Translations are downloaded as [Apple-hosted asset packs](../../AssetPacks/) and opened read-only.
 
 The first three assignments are **examples, not an approved schedule**. Replace them as needed, then fill every remaining ID. All 360 slots are required: months 1–12, days 1–30. Day 30 is skipped naturally when a corrected month has 29 days. IDs may repeat. Assignments repeat each Hijri year and honor manual and confirmed month corrections.
 
@@ -29,9 +29,9 @@ English translation credit: **Ali Quli Qara’i**, also shown in Settings → So
 
 Run importer checks with `python3 -m unittest discover -s apple/scripts -p 'test_*.py'`.
 
-The Quran reader loads the `QuranTranslation.catalog` entries whose `<id>.db` is bundled.
+The Quran reader loads the selected installed translation from `QuranTranslation.catalog`.
 Each file carries its own search indexes, built from normalized text: `quran_words` (ranked
 whole words and prefixes, plus Arabic roots in `quran.db` and English stemming in `en.*`),
 `quran_words_vocab` (typo suggestions), and `quran_fts` (trigram, for text inside words).
 Chinese files have no index and are searched with `LIKE`. Displayed text always comes from
-the unchanged `quran` table. Reader translation selection does not affect widgets.
+the unchanged `quran` table. The reader, daily ayah, sharing, and medium widget use the same translation selection.

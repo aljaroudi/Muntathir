@@ -4,8 +4,6 @@ struct QuranChapterView: View {
     let surah: QuranSurah
     var initialVerse = 1
     let reader: QuranReader
-    let translations: [QuranTranslation]
-    @Binding var translationID: String
     @Environment(\.locale) private var locale
     @State private var translationStore = QuranTranslationStore.shared
     @State private var verses: [Ayah] = []
@@ -32,7 +30,7 @@ struct QuranChapterView: View {
                     }
                 } else {
                     ForEach(verses) { ayah in
-                        QuranVerseRow(ayah: ayah, translation: translations.first { $0.id == translationID })
+                        QuranVerseRow(ayah: ayah, translation: QuranTranslation.catalog.first { $0.id == translationStore.activeID })
                             .id(ayah.number)
                             .accessibilityIdentifier("quran-verse-\(ayah.id)")
                     }
@@ -60,7 +58,7 @@ struct QuranChapterView: View {
                     .accessibilityIdentifier("quran-jump")
             }
             ToolbarItem(placement: .topBarTrailing) {
-                QuranTranslationPicker(translations: translations, selection: $translationID)
+                QuranTranslationPicker()
             }
         }
         .alert("Go to verse", isPresented: $jumpPresented) {

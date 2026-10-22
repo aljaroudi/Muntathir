@@ -5,8 +5,6 @@ struct QuranSavedVersesView: View {
     let kind: Kind
     let reader: QuranReader
     let surahs: [QuranSurah]
-    let translations: [QuranTranslation]
-    @Binding var translationID: String
     @Environment(\.quranUserStore) private var store
     @State private var translationStore = QuranTranslationStore.shared
     @State private var verses: [Ayah] = []
@@ -46,13 +44,13 @@ struct QuranSavedVersesView: View {
             } else {
                 ForEach(verses) { ayah in
                     VStack(alignment: .leading, spacing: 12) {
-                        QuranVerseRow(ayah: ayah, translation: translations.first { $0.id == translationID }, preview: true)
+                        QuranVerseRow(ayah: ayah, translation: QuranTranslation.catalog.first { $0.id == translationStore.activeID }, preview: true)
                         if kind == .notes, let note = store?.state(for: ayah.id).note {
                             Text(note).lineLimit(3).foregroundStyle(.secondary)
                         }
                         if let surah = surahs.first(where: { $0.id == ayah.surah }) {
                             NavigationLink {
-                                QuranChapterView(surah: surah, initialVerse: ayah.number, reader: reader, translations: translations, translationID: $translationID)
+                                QuranChapterView(surah: surah, initialVerse: ayah.number, reader: reader)
                             } label: { Label("Read verse", systemImage: "book") }
                                 .accessibilityIdentifier("saved-verse-\(ayah.id)")
                         }

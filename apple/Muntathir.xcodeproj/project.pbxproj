@@ -46,7 +46,7 @@
 		D40000000000000000000002 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = D40000000000000000000001 /* AppIcon.icon */; };
 		D40000000000000000000003 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = D40000000000000000000001 /* AppIcon.icon */; };
 		D80000000000000000000001 /* MuntathirAssetDownloader/DownloaderExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = D80000000000000000000002 /* MuntathirAssetDownloader/DownloaderExtension.swift */; };
-		D80000000000000000000003 /* MuntathirAssetDownloader.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D80000000000000000000004 /* MuntathirAssetDownloader.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		D80000000000000000000003 /* MuntathirAssetDownloader.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = D80000000000000000000004 /* MuntathirAssetDownloader.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		D80000000000000000000005 /* Quran test fixtures in Resources */ = {isa = PBXBuildFile; fileRef = D80000000000000000000006 /* Quran test fixtures */; };
 		E50000000000000000000011 /* MuntathirWidgets/LockScreenPrayerWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000001 /* MuntathirWidgets/LockScreenPrayerWidgets.swift */; };
 		E50000000000000000000012 /* MuntathirWidgets/DailyAyahWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000002 /* MuntathirWidgets/DailyAyahWidget.swift */; };
@@ -130,12 +130,14 @@
 			name = "Embed Watch Content";
 		};
 		D80000000000000000000010 /* Embed ExtensionKit Extensions */ = {
-            isa = PBXCopyFilesBuildPhase;
-            dstPath = "$(EXTENSIONS_FOLDER_PATH)";
-            dstSubfolderSpec = 16;
-            files = (D80000000000000000000003 /* MuntathirAssetDownloader.appex in Embed ExtensionKit Extensions */, );
-            name = "Embed ExtensionKit Extensions";
-        };
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "$(EXTENSIONS_FOLDER_PATH)";
+			dstSubfolder = Product;
+			files = (
+				D80000000000000000000003 /* MuntathirAssetDownloader.appex in Embed ExtensionKit Extensions */,
+			);
+			name = "Embed ExtensionKit Extensions";
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */

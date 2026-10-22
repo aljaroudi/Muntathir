@@ -54,7 +54,8 @@ private actor QuranDownloadAttempt {
         let database = QuranDatabase(url: Bundle.main.url(forResource: "quran", withExtension: "db"), translationURLs: { ["en.qarai": folder] })
         let verses = try database.verses(surah: 1)
         #expect(verses.count == 7)
-        #expect(verses.allSatisfy(\.translations.isEmpty))
+        let arabicOnly = verses.allSatisfy(\.translations.isEmpty)
+        #expect(arabicOnly)
         #expect(throws: QuranDatabaseError.self) { try QuranDatabase.validateTranslation(at: folder) }
     }
 

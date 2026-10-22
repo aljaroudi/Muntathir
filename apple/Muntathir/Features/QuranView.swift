@@ -6,8 +6,6 @@ struct QuranView: View {
     @State private var reader = QuranReader()
     @State private var surahs: [QuranSurah] = []
     @State private var counts: [Int: Int] = [:]
-    @State private var translations: [QuranTranslation] = []
-    @State private var translationID = ""
     @State private var query = ""
     @State private var results: [Ayah] = []
     @State private var limit = 50
@@ -28,7 +26,7 @@ struct QuranView: View {
     }
 
     private var request: Request {
-        Request(query: query.trimmingCharacters(in: .whitespacesAndNewlines), translationID: translationID, limit: limit, retry: retry, translationRevision: translationStore.revision)
+        Request(query: query.trimmingCharacters(in: .whitespacesAndNewlines), translationID: translationStore.activeID, limit: limit, retry: retry, translationRevision: translationStore.revision)
     }
 
     private var matchingSurahs: [QuranSurah] {
@@ -40,11 +38,11 @@ struct QuranView: View {
             if request.query.isEmpty {
                 Section {
                     NavigationLink {
-                        QuranSavedVersesView(kind: .favorites, reader: reader, surahs: surahs, translations: translations, translationID: $translationID)
+                        QuranSavedVersesView(kind: .favorites, reader: reader, surahs: surahs)
                     } label: { Label("Favorites", systemImage: "star") }
                         .accessibilityIdentifier("quran-favorites")
                     NavigationLink {
-                        QuranSavedVersesView(kind: .notes, reader: reader, surahs: surahs, translations: translations, translationID: $translationID)
+                        QuranSavedVersesView(kind: .notes, reader: reader, surahs: surahs)
                     } label: { Label("Notes", systemImage: "note.text") }
                         .accessibilityIdentifier("quran-notes")
                 }
@@ -53,7 +51,7 @@ struct QuranView: View {
                 Section("Surahs") {
                     ForEach(matchingSurahs) { surah in
                         NavigationLink {
-                            QuranChapterView(surah: surah, reader: reader, translations: translations, translationID: $translationID)
+                            QuranChapterView(surah: surah, reader: reader)
                         } label: {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("\(surah.id.formatted(.number.locale(locale))). \(surah.title(locale: locale))")
@@ -73,9 +71,9 @@ struct QuranView: View {
                     ForEach(results) { ayah in
                         if let surah = surahs.first(where: { $0.id == ayah.surah }) {
                             VStack(alignment: .leading, spacing: 8) {
-                                QuranVerseRow(ayah: ayah, translation: translations.first { $0.id == translationID }, preview: true)
+                                QuranVerseRow(ayah: ayah, translation: QuranTranslation.catalog.first { $0.id == translationStore.activeID }, preview: true)
                                 NavigationLink {
-                                    QuranChapterView(surah: surah, initialVerse: ayah.number, reader: reader, translations: translations, translationID: $translationID)
+                                    QuranChapterView(surah: surah, initialVerse: ayah.number, reader: reader)
                                 } label: { Label("Read verse", systemImage: "book") }
                                     .accessibilityIdentifier("quran-result-\(ayah.id)")
                             }
@@ -108,12 +106,11 @@ struct QuranView: View {
         .autocorrectionDisabled()
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                QuranTranslationPicker(translations: translations, selection: $translationID)
+                QuranTranslationPicker()
             }
         }
-        .onChange(of: translationStore.activeID, initial: true) { _, value in translationID = value }
         .onChange(of: query) { limit = 50 }
-        .onChange(of: translationID) { limit = 50 }
+        .onChange(of: translationStore.activeID) { limit = 50 }
         .task(id: request) { await load() }
     }
 
@@ -130,9 +127,7 @@ struct QuranView: View {
                 let catalog = try await reader.catalog()
                 try Task.checkCancellation()
                 counts = catalog.counts
-                translations = catalog.translations
                 surahs = catalog.surahs
-                translationID = translationStore.activeID
             }
             let current = request
             if !current.query.isEmpty {
@@ -166,8 +161,6 @@ struct QuranView: View {
 }
 
 struct QuranTranslationPicker: View {
-    let translations: [QuranTranslation]
-    @Binding var selection: String
     @Environment(\.locale) private var locale
     @State private var store = QuranTranslationStore.shared
 
@@ -179,7 +172,7 @@ struct QuranTranslationPicker: View {
             Button { store.select("") } label: {
                 Label("None", systemImage: store.selection.isEmpty ? "checkmark" : "minus")
             }
-            ForEach(translations) { translation in
+            ForEach(QuranTranslation.catalog) { translation in
                 Button { store.select(translation.id) } label: {
                     Label(locale.localizedString(forIdentifier: translation.language) ?? translation.language,
                           systemImage: symbol(for: translation.id))
@@ -217,8 +210,7 @@ struct QuranTranslationPicker: View {
             }
         }
         .accessibilityIdentifier("quran-translation-picker")
-        .accessibilityValue(translations.first { $0.id == store.activeID }?.translator ?? String(localized: "None"))
-        .onChange(of: store.activeID, initial: true) { _, value in selection = value }
+        .accessibilityValue(QuranTranslation.catalog.first { $0.id == store.activeID }?.translator ?? String(localized: "None"))
     }
 
     private func symbol(for id: String) -> String {
