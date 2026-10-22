@@ -7,7 +7,6 @@ struct CalendarScreen: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
     @State private var now: Date
-    @State private var selection: Date
     @State private var monthOffset = 0
     @State private var correcting = false
     init() {
@@ -17,50 +16,59 @@ struct CalendarScreen: View {
             let date = Date.now
         #endif
         _now = State(initialValue: date)
-        _selection = State(initialValue: date)
     }
 
     var body: some View {
         let engine = model.engine
         let month = engine.resolve(now).month.advanced(monthOffset)
         let days = engine.days(in: month)
-        VStack(spacing: 12) {
-            Card {
-                HStack {
-                    Button("Previous month", systemImage: "chevron.backward") { monthOffset -= 1; selection = engine.start(of: month.advanced(-1)) }.labelStyle(.iconOnly).disabled(month.year <= 1300 && month.month == 1)
-                    Spacer()
-                    Text(monthTitle(month, engine: engine)).font(.headline)
-                    Spacer()
-                    Button("Next month", systemImage: "chevron.forward") { monthOffset += 1; selection = engine.start(of: month.advanced(1)) }.labelStyle(.iconOnly).disabled(month.year >= 1600 && month.month == 12)
-                }
-                if typeSize.isAccessibilitySize {
-                    ScrollView {
-                        LazyVStack {
-                            ForEach(days, id: \.self) { date in dayButton(date, engine: engine) }
+        ScrollViewReader { proxy in
+            VStack(spacing: 12) {
+                Card {
+                    HStack {
+                        Button("Previous month", systemImage: "chevron.backward") { monthOffset -= 1 }.labelStyle(.iconOnly).disabled(month.year <= 1300 && month.month == 1)
+                        Spacer()
+                        Button {
+                            if monthOffset == 0 {
+                                scrollToDay(now, engine: engine, proxy: proxy)
+                            } else {
+                                monthOffset = 0
+                            }
+                        } label: {
+                            Text(monthTitle(month, engine: engine)).font(.headline)
                         }
-                    }.frame(maxHeight: 240)
-                } else {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 7), spacing: 8) {
-                        ForEach(0 ..< 7, id: \.self) { index in Text(weekday(index, engine: engine)).font(.caption2).foregroundStyle(.secondary) }
-                        let blanks = (engine.gregorian.component(.weekday, from: days[0]) - engine.gregorian.firstWeekday + 7) % 7
-                        ForEach(0 ..< blanks, id: \.self) { _ in Color.clear.frame(height: 48).accessibilityHidden(true) }
-                        ForEach(days, id: \.self) { date in dayButton(date, engine: engine) }
+                        .buttonStyle(.plain)
+                        .accessibilityHint("Back to today")
+                        .accessibilityIdentifier("calendar-month-title")
+                        Spacer()
+                        Button("Next month", systemImage: "chevron.forward") { monthOffset += 1 }.labelStyle(.iconOnly).disabled(month.year >= 1600 && month.month == 12)
+                    }
+                    if typeSize.isAccessibilitySize {
+                        ScrollView {
+                            LazyVStack {
+                                ForEach(days, id: \.self) { date in dayButton(date, engine: engine, proxy: proxy) }
+                            }
+                        }.frame(maxHeight: 240)
+                    } else {
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 7), spacing: 8) {
+                            ForEach(0 ..< 7, id: \.self) { index in Text(weekday(index, engine: engine)).font(.caption2).foregroundStyle(.secondary) }
+                            let blanks = (engine.gregorian.component(.weekday, from: days[0]) - engine.gregorian.firstWeekday + 7) % 7
+                            ForEach(0 ..< blanks, id: \.self) { _ in Color.clear.frame(height: 48).accessibilityHidden(true) }
+                            ForEach(days, id: \.self) { date in dayButton(date, engine: engine, proxy: proxy) }
+                        }
+                    }
+                    HStack {
+                        Spacer()
+                        Button("Adjust this month", systemImage: "calendar.badge.clock") { correcting = true }.labelStyle(.iconOnly)
                     }
                 }
-                HStack {
-                    Button("Back to today") { monthOffset = 0; selection = Date() }
-                    Spacer()
-                    Button("Adjust this month", systemImage: "calendar.badge.clock") { correcting = true }.labelStyle(.iconOnly)
-                }
-            }
-            ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(spacing: 10) {
                         ForEach(days, id: \.self) { date in
                             let day = engine.resolve(date)
                             let events = model.content.events(on: day)
-                            let selected = engine.gregorian.isDate(date, inSameDayAs: selection)
-                            if !events.isEmpty || selected {
+                            let isToday = engine.gregorian.isDate(date, inSameDayAs: now)
+                            if !events.isEmpty {
                                 HStack(alignment: .top, spacing: 14) {
                                     VStack(spacing: 3) {
                                         Text(day.day, format: .number).font(.title2.weight(.semibold))
@@ -68,9 +76,6 @@ struct CalendarScreen: View {
                                             .font(.caption2).foregroundStyle(.secondary)
                                     }.frame(minWidth: 52)
                                     VStack(alignment: .leading, spacing: 12) {
-                                        if events.isEmpty {
-                                            Text("No observances today").foregroundStyle(.secondary)
-                                        }
                                         ForEach(events) { event in
                                             NavigationLink {
                                                 EventDetail(event: event)
@@ -86,23 +91,22 @@ struct CalendarScreen: View {
                                     }.frame(maxWidth: .infinity, alignment: .leading)
                                 }
                                 .padding(16)
-                                .background(selected ? Color.accentColor.opacity(0.08) : Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 16))
+                                .background(isToday ? Color.accentColor.opacity(0.08) : Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 16))
                                 .overlay {
                                     RoundedRectangle(cornerRadius: 16)
-                                        .strokeBorder(selected ? Color.accentColor : .clear, lineWidth: 1.5)
+                                        .strokeBorder(isToday ? Color.accentColor : .clear, lineWidth: 1.5)
                                 }
-                                .accessibilityAddTraits(selected ? .isSelected : [])
-                                .id(day.day)
+                                .accessibilityAddTraits(isToday ? .isSelected : [])
+                                .id(CivilDate(date, in: model.zone))
+                                .accessibilityIdentifier("calendar-events-\(day.day)")
                             }
                         }
                     }.padding(.bottom)
                 }
-                .onAppear {
-                    proxy.scrollTo(engine.resolve(selection).day, anchor: .top)
-                }
-                .onChange(of: selection) { _, date in
-                    withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
-                        proxy.scrollTo(engine.resolve(date).day, anchor: .top)
+                .onAppear { scrollToDay(now, engine: engine, proxy: proxy) }
+                .onChange(of: month) { _, _ in
+                    if monthOffset == 0 {
+                        scrollToDay(now, engine: engine, proxy: proxy)
                     }
                 }
             }
@@ -112,13 +116,21 @@ struct CalendarScreen: View {
         .frame(maxWidth: .infinity)
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Calendar")
-        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in now = Date() }
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in now = currentDate }
         .onChange(of: scenePhase) {
             _, phase in if phase == .active {
-                now = Date()
+                now = currentDate
             }
         }
         .sheet(isPresented: $correcting) { CorrectionView(month: month, start: engine.start(of: month)) }
+    }
+
+    private var currentDate: Date {
+        #if DEBUG
+            CaptureClock()?.start ?? .now
+        #else
+            .now
+        #endif
     }
 
     private func monthTitle(_ month: HijriMonth, engine: CalendarEngine) -> String {
@@ -131,19 +143,28 @@ struct CalendarScreen: View {
         return f.shortWeekdaySymbols[(index + engine.gregorian.firstWeekday - 1) % 7]
     }
 
-    private func dayButton(_ date: Date, engine: CalendarEngine) -> some View {
+    private func scrollToDay(_ date: Date, engine: CalendarEngine, proxy: ScrollViewProxy) {
+        guard !model.content.events(on: engine.resolve(date)).isEmpty else { return }
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
+            proxy.scrollTo(CivilDate(date, in: model.zone), anchor: .top)
+        }
+    }
+
+    private func dayButton(_ date: Date, engine: CalendarEngine, proxy: ScrollViewProxy) -> some View {
         let day = engine.resolve(date)
-        let selected = engine.gregorian.isDate(date, inSameDayAs: selection)
-        return Button { selection = date } label: {
+        let isToday = engine.gregorian.isDate(date, inSameDayAs: now)
+        return Button { scrollToDay(date, engine: engine, proxy: proxy) } label: {
             VStack(spacing: 3) {
                 Text(day.day, format: .number).font(.body.weight(.medium))
                 Text(date.formatted(.dateTime.day().inZone(model.zone))).font(.caption2)
                 Image(systemName: "circle.fill").font(.system(size: 4)).opacity(model.content.events(on: day).isEmpty ? 0 : 1)
             }.frame(maxWidth: .infinity, minHeight: 48).padding(.vertical, 3)
-                .foregroundStyle(selected ? Color.white : Color.primary)
-                .background(selected ? Color.accentColor : Color.clear, in: .rect(cornerRadius: 10))
+                .foregroundStyle(isToday ? Color.white : Color.primary)
+                .background(isToday ? Color.accentColor : Color.clear, in: .rect(cornerRadius: 10))
         }.buttonStyle(.plain).accessibilityLabel("\(day.day) \(monthTitle(day.month, engine: engine))")
-            .accessibilityValue(selected ? String(localized: "Selected") : "")
+            .accessibilityValue(isToday ? String(localized: "Today") : "")
+            .accessibilityAddTraits(isToday ? .isSelected : [])
+            .accessibilityIdentifier("calendar-day-\(day.day)")
     }
 }
 
