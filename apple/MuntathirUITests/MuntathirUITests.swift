@@ -1,32 +1,10 @@
 import XCTest
 
 final class MuntathirUITests: XCTestCase {
-    @MainActor func testToolsPrayerCounterExplainsUnavailableSensor() {
+    @MainActor func testPrayerVisibilitySettings() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.buttons["Tools"].firstMatch.tap()
-        guard UIDevice.current.userInterfaceIdiom == .phone else { return }
-        let entry = app.buttons["Prayer counter"]
-        XCTAssertTrue(entry.waitForExistence(timeout: 10))
-        if !entry.isHittable {
-            app.swipeUp()
-        }
-        entry.tap()
-        XCTAssertTrue(app.navigationBars["Prayer counter"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["Cover the sensor during sujood"].exists)
-        XCTAssertTrue(app.staticTexts.matching(NSPredicate(
-            format: "label == %@",
-            "Place your iPhone face-up, with the sensor at the top of the screen directly beneath your face during sujood. Your face must cover the sensor."
-        )).firstMatch.exists)
-        let unavailable = app.staticTexts["Proximity sensing is unavailable on this device."]
-        for _ in 0 ..< 4 where !unavailable.isHittable {
-            app.swipeUp()
-        }
-        XCTAssertTrue(unavailable.exists)
-        XCTAssertFalse(app.buttons["Start counting"].isEnabled)
-        app.buttons["Today"].firstMatch.tap()
-        XCTAssertTrue(app.buttons["Settings"].waitForExistence(timeout: 5))
         verifyPrayerVisibility(in: app)
     }
 
@@ -36,63 +14,9 @@ final class MuntathirUITests: XCTestCase {
         app.launch()
         app.buttons["Tools"].firstMatch.tap()
         XCTAssertTrue(app.buttons["Qibla"].waitForExistence(timeout: 5))
-        XCTAssertEqual(app.buttons["Prayer counter"].exists, UIDevice.current.userInterfaceIdiom == .phone)
+        XCTAssertFalse(app.buttons["Prayer counter"].exists)
         XCTAssertFalse(app.tabBars.buttons["Qibla"].exists)
         XCTAssertFalse(app.tabBars.buttons["Prayer counter"].exists)
-    }
-
-    @MainActor func testStartMenuSelectionAndExitRestoreNavigation() {
-        guard UIDevice.current.userInterfaceIdiom == .phone else { return }
-        let app = XCUIApplication()
-        app.launchArguments = ["--ui-testing", "--ui-testing-counter-sensor", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
-        app.launch()
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["Prayer counter"].tap()
-        XCTAssertTrue(app.staticTexts["Uncovered"].waitForExistence(timeout: 5))
-        capture("Counter placement", in: app)
-        let start = app.buttons["Start counting"]
-        for _ in 0 ..< 4 where !start.isHittable {
-            app.swipeUp()
-        }
-        XCTAssertTrue(start.isEnabled)
-        start.tap()
-        for prayer in ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"] {
-            XCTAssertTrue(app.buttons[prayer].waitForExistence(timeout: 3))
-        }
-        capture("Prayer menu", in: app)
-        app.navigationBars["Prayer counter"].tap()
-        XCTAssertFalse(app.buttons["Exit counter"].exists)
-        XCTAssertTrue(start.isHittable)
-        start.tap()
-        app.buttons["Maghrib"].tap()
-        XCTAssertTrue(app.staticTexts["Rakaa 1 of 3"].waitForExistence(timeout: 5))
-        capture("Counting Maghrib", in: app)
-        XCTAssertFalse(app.tabBars.firstMatch.isHittable)
-        XCTAssertFalse(app.navigationBars["Prayer counter"].isHittable)
-        app.buttons["Exit counter"].tap()
-        XCTAssertTrue(app.navigationBars["Prayer counter"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["Tools"].firstMatch.isHittable)
-        XCTAssertTrue(start.isEnabled)
-        app.navigationBars.buttons["Tools"].tap()
-        XCTAssertTrue(app.buttons["Qibla"].waitForExistence(timeout: 5))
-    }
-
-    @MainActor func testCounterAtAccessibilityTextSize() {
-        guard UIDevice.current.userInterfaceIdiom == .phone else { return }
-        let app = XCUIApplication()
-        app.launchArguments = ["--ui-testing", "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL",
-                               "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
-        app.launch()
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["Prayer counter"].tap()
-        XCTAssertTrue(app.staticTexts["Cover the sensor during sujood"].waitForExistence(timeout: 5))
-        let start = app.buttons["Start counting"]
-        for _ in 0 ..< 10 where !start.isHittable {
-            app.swipeUp()
-        }
-        XCTAssertTrue(start.isHittable)
-        XCTAssertFalse(start.isEnabled)
-        capture("Counter accessibility size", in: app)
     }
 
     @MainActor func testQiblaWithoutHeadingBlocksArrowGuidance() {
@@ -189,11 +113,6 @@ final class MuntathirUITests: XCTestCase {
         app.buttons["القبلة"].tap()
         XCTAssertTrue(app.staticTexts["اختر موقعًا"].waitForExistence(timeout: 5))
         app.navigationBars.buttons["الأدوات"].tap()
-        if UIDevice.current.userInterfaceIdiom == .phone {
-            app.buttons["عداد الركعات"].tap()
-            XCTAssertTrue(app.staticTexts["غطِّ المستشعر أثناء السجود"].waitForExistence(timeout: 5))
-            capture("Counter placement Arabic", in: app)
-        }
     }
 
     @MainActor private func capture(_ name: String, in app: XCUIApplication) {

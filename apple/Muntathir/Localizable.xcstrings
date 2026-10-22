@@ -340,16 +340,6 @@
         }
       }
     },
-    "Awaiting first sujood" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "بانتظار السجدة الأولى"
-          }
-        }
-      }
-    },
     "Back to today" : {
       "localizations" : {
         "ar" : {
@@ -510,56 +500,6 @@
         }
       }
     },
-    "Counting complete" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "اكتمل العد"
-          }
-        }
-      }
-    },
-    "Counting interrupted" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "توقف العد"
-          }
-        }
-      }
-    },
-    "Counting interrupted. Exit to start a new session." : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "توقف العد. اخرج لبدء جلسة جديدة."
-          }
-        }
-      }
-    },
-    "Cover the sensor during sujood" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "غطِّ المستشعر أثناء السجود"
-          }
-        }
-      }
-    },
-    "Covered" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "مغطى"
-          }
-        }
-      }
-    },
     "Daily ayah" : {
       "localizations" : {
         "ar" : {
@@ -660,16 +600,6 @@
         }
       }
     },
-    "Exit counter" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "الخروج من العداد"
-          }
-        }
-      }
-    },
     "Fajr" : {
       "localizations" : {
         "ar" : {
@@ -696,16 +626,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "اليوم الميلادي الأول"
-          }
-        }
-      }
-    },
-    "First sujood counted" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "تم احتساب السجدة الأولى"
           }
         }
       }
@@ -933,16 +853,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "الوصول إلى الموقع معطّل. ابحث عن مدينة بدلًا من ذلك."
-          }
-        }
-      }
-    },
-    "Lower and lift your face. Check that the sensor changes between Covered and Uncovered." : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "اخفض وجهك ثم ارفعه. تأكد من تغيّر حالة المستشعر بين مغطى وغير مغطى."
           }
         }
       }
@@ -1188,16 +1098,6 @@
         }
       }
     },
-    "Place your iPhone face-up, with the sensor at the top of the screen directly beneath your face during sujood. Your face must cover the sensor." : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ضع iPhone والشاشة إلى الأعلى، بحيث يكون المستشعر أعلى الشاشة تحت وجهك مباشرة أثناء السجود. يجب أن يغطي وجهك المستشعر."
-          }
-        }
-      }
-    },
     "Please try sharing the verse again." : {
       "localizations" : {
         "ar" : {
@@ -1225,16 +1125,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "العد التنازلي للصلاة"
-          }
-        }
-      }
-    },
-    "Prayer counter" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "عداد الركعات"
           }
         }
       }
@@ -1294,16 +1184,6 @@
         }
       }
     },
-    "Proximity sensing is unavailable on this device." : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "مستشعر القرب غير متاح على هذا الجهاز."
-          }
-        }
-      }
-    },
     "Qatar" : {
       "localizations" : {
         "ar" : {
@@ -1320,16 +1200,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "القبلة"
-          }
-        }
-      }
-    },
-    "Rakaa %lld of %lld" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "الركعة %lld من %lld"
           }
         }
       }
@@ -1400,16 +1270,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "الموقع المحدّد"
-          }
-        }
-      }
-    },
-    "Sensor at top of screen" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "المستشعر أعلى الشاشة"
           }
         }
       }
@@ -1507,16 +1367,6 @@
         }
       }
     },
-    "Start counting" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "بدء العد"
-          }
-        }
-      }
-    },
     "Sunrise" : {
       "localizations" : {
         "ar" : {
@@ -1533,26 +1383,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "الغروب"
-          }
-        }
-      }
-    },
-    "Test placement" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "اختبر وضع الهاتف"
-          }
-        }
-      }
-    },
-    "The screen may turn off when covered. Keep the app open while praying." : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "قد تنطفئ الشاشة عند تغطية المستشعر. أبقِ التطبيق مفتوحًا أثناء الصلاة."
           }
         }
       }
@@ -1697,16 +1527,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "تعذّر التحديث"
-          }
-        }
-      }
-    },
-    "Uncovered" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "غير مغطى"
           }
         }
       }

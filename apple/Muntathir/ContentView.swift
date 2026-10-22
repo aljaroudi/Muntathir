@@ -20,13 +20,6 @@ struct ContentView: View {
                         } label: {
                             Label("Qibla", systemImage: "location.north.circle")
                         }
-                        if UIDevice.current.userInterfaceIdiom == .phone {
-                            NavigationLink {
-                                PrayerCounterView().toolbar { settingsToolbar }
-                            } label: {
-                                Label("Prayer counter", systemImage: "hand.point.up")
-                            }
-                        }
                     }
                     .navigationTitle("Tools")
                 }

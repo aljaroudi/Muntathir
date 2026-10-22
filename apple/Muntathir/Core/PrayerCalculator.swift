@@ -83,15 +83,6 @@ enum PrayerName: String, Codable, CaseIterable, Identifiable, Sendable {
         self == .fajr || self == .dhuhr || self == .maghrib
     }
 
-    var rakaaCount: Int? {
-        switch self {
-        case .fajr: 2
-        case .dhuhr, .asr, .isha: 4
-        case .maghrib: 3
-        default: nil
-        }
-    }
-
     var isPrayer: Bool {
         [.fajr, .dhuhr, .asr, .maghrib, .isha].contains(self)
     }

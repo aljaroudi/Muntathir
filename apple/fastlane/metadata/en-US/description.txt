@@ -10,7 +10,7 @@ HIJRI CALENDAR
 Browse Islamic dates and observances. Choose your month-verification preference and adjust month starts when needed. Dates use calculated Umm al-Qura values until matching confirmations are available.
 
 PRAYER TOOLS
-Find the Qibla direction and use the prayer counter on iPhone.
+Find the Qibla direction.
 
 ACROSS YOUR DEVICES
 Made for iPhone and iPad, with an Apple Watch companion and widgets. Available in Arabic and English.

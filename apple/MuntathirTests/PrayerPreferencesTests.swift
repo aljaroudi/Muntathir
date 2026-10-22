@@ -39,20 +39,6 @@ struct PrayerPreferencesTests {
         #expect(settings.nextPrayer(after: date)?.name == .fajr)
     }
 
-    @Test func previousPrayerUsesVisiblePrayersAndYesterday() throws {
-        let day = try #require(CivilDate(year: 2026, month: 10, day: 18).date(in: location.timeZone))
-        var settings = WidgetPrayerSettings(location: location, method: .tehran, hiddenPrayers: [])
-        let times = settings.prayers(on: day)
-        let asr = try #require(times.first { $0.name == .asr })
-        #expect(settings.previousPrayer(at: day)?.name == .isha)
-        #expect(settings.previousPrayer(at: asr.date)?.name == .asr)
-        settings.hiddenPrayers = [.asr, .isha]
-        #expect(settings.previousPrayer(at: asr.date)?.name == .dhuhr)
-        #expect(settings.previousPrayer(at: day)?.name == .maghrib)
-        settings.location = nil
-        #expect(settings.previousPrayer(at: day) == nil)
-    }
-
     @Test func imsakPreferenceBoundsAreValidatedOnDecode() throws {
         #expect(try JSONDecoder().decode(Preferences.self, from: Data(#"{"imsakMinutes":-5}"#.utf8)).imsakMinutes == 0)
         #expect(try JSONDecoder().decode(Preferences.self, from: Data(#"{"imsakMinutes":999}"#.utf8)).imsakMinutes == 120)

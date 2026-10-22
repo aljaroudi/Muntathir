@@ -47,7 +47,7 @@ Generated files live under ignored `build/marketing/`:
 
 **Duo preview upload limitation:** Fastlane 2.241.1 supports Duo screenshots but has no Duo preview upload type. Duo videos are exported separately for manual App Store Connect upload. Keeping them outside automatic preview discovery prevents silent skipping or assignment to another device slot. An upload integration can move to Apple's App Asset Library when that work is requested; no undocumented preview enum is invented here.
 
-Inspect all locales before upload: readable headlines, Arabic direction and joining, four visible prayer rows, no prompts, and Sun movement from start to finish. Simulator captures do not establish hardware compass, proximity counting, notifications or Watch behavior.
+Inspect all locales before upload: readable headlines, Arabic direction and joining, four visible prayer rows, no prompts, and Sun movement from start to finish. Simulator captures do not establish hardware compass, notifications or Watch behavior.
 
 ## Store metadata and private configuration
 
