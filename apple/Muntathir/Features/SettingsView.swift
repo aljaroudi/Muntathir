@@ -118,6 +118,7 @@ struct SettingsView: View {
                 }
                 Section {
                     NavigationLink("Sources and licenses") { LicensesView() }
+                        .accessibilityIdentifier("sources-and-licenses")
                 } header: {
                     Text("About")
                 } footer: {
@@ -201,6 +202,8 @@ struct LocationPicker: View {
 }
 
 struct LicensesView: View {
+    @Environment(\.locale) private var locale
+
     var body: some View {
         List {
             Section("Calculations") {
@@ -215,6 +218,16 @@ struct LicensesView: View {
                 )
             }
             Section("Library license") { Text(license("Adhan-LICENSE")) }
+            Section("Quran Translations") {
+                LabeledContent {
+                    Link(destination: URL(string: "https://tanzil.net/trans/en.qarai")!) {
+                        Text(verbatim: "Ali Quli Qara’i")
+                    }
+                } label: {
+                    Text(verbatim: locale.localizedString(forLanguageCode: "en") ?? "en")
+                }
+                .accessibilityIdentifier("quran-translation-credit")
+            }
             Section("Events") {
                 Text(
                     "Twelver Shia convention. Historical dates may differ between sources."
