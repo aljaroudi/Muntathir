@@ -68,6 +68,7 @@ jobs:
         with:
           name: apple-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
+            apple/build/marketing/watch
             apple/build/marketing/raw
             apple/build/marketing/store
             apple/build/marketing/previews

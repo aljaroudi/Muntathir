@@ -47,7 +47,10 @@ class LaneCheck
   def method_missing(name, *args, **options)
     @calls << [name, options]
     return "/tmp/Muntathir.ipa" if name == :build_app
-    return 9 if name == :latest_testflight_build_number
+    if name == :latest_testflight_build_number
+      raise "Version filter can miss equivalent 1.0/1.0.0 trains" if options.key?(:version)
+      return 9
+    end
     nil
   end
   def respond_to_missing?(*) = true
@@ -56,6 +59,7 @@ check = LaneCheck.new
 check.instance_eval(File.read(File.join(__dir__, "Fastfile")), File.join(__dir__, "Fastfile"))
 config = { "submission_information" => { "export_compliance_uses_encryption" => false } }
 beta_app = Object.new
+beta_app.define_singleton_method(:get_edit_app_store_version) { |**_| nil }
 beta_app.define_singleton_method(:get_beta_app_localizations) { [Struct.new(:feedback_email).new("review@example.com")] }
 check.screenshots
 captures = check.calls.select { |name, _| name == :capture_screenshots }.map(&:last)
@@ -71,11 +75,22 @@ MuntathirRelease.define_singleton_method(:review_config) { config }
 check.define_singleton_method(:check) {}
 check.define_singleton_method(:tests) {}
 check.define_singleton_method(:marketing) {}
+# Build allocation must search all trains: Apple treats 1.0 and 1.0.0 as equivalent.
+original_key_env = %w[ASC_KEY_PATH ASC_KEY_ID ASC_ISSUER_ID].to_h { |key| [key, ENV[key]] }
+begin
+  %w[ASC_KEY_PATH ASC_KEY_ID ASC_ISSUER_ID].each { |key| ENV[key] ||= "offline-check" }
+  check.archive(version: "1.0")
+ensure
+  original_key_env.each { |key, value| value ? ENV[key] = value : ENV.delete(key) }
+end
 check.define_singleton_method(:archive) { |**_| { ipa: "/tmp/Muntathir.ipa", build: 10 } }
 check.release
 release = check.calls.find { |name, _| name == :upload_to_app_store }.last
 assert(release[:submit_for_review] && release[:automatic_release] == false, "Release must submit with manual publication")
 assert(release[:overwrite_screenshots] == false && release[:overwrite_preview_videos] == false, "Existing assets must not be deleted")
+manual_app = Object.new
+manual_app.define_singleton_method(:get_edit_app_store_version) { |**_| Struct.new(:release_type).new("MANUAL") }
+assert(check.store_options(app: manual_app)[:automatic_release].nil?, "Existing manual release must not receive a redundant write")
 check.beta
 beta = check.calls.find { |name, _| name == :upload_to_testflight }.last
 assert(beta[:groups] == ["Public"] && beta[:distribute_external] && beta[:submit_beta_review], "Public beta wiring failed")

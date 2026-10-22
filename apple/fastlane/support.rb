@@ -41,6 +41,8 @@ module MuntathirRelease
         images = Dir.glob(File.join(root, "build/marketing/store", locale, "#{device}-*.png"))
         raise "Missing styled screenshots for #{locale}/#{device}; run marketing" unless images.size == 3
       end
+      watch = File.join(root, "build/marketing/store", locale, "Apple Watch Series 12 (46mm)-01-PrayerTimes.png")
+      raise "Missing required Apple Watch screenshot for #{locale}; run watch_screenshots" unless File.file?(watch)
       %w[IPHONE_67 IPAD_PRO_3GEN_129 IPHONE_DUO].each do |type|
         folder = type == "IPHONE_DUO" ? "duo-previews" : "previews"
         path = File.join(root, "build/marketing", folder, locale, "01-#{type}-SunriseToSunset.mp4")

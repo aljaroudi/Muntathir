@@ -55,6 +55,14 @@ Style raw screenshots with frames, backgrounds and localized headlines
 
 Record continuous sunrise-to-sunset simulator previews in both languages
 
+### ios watch_screenshots
+
+```sh
+[bundle exec] fastlane ios watch_screenshots
+```
+
+Capture required Arabic and English Apple Watch store screenshots
+
 ### ios marketing
 
 ```sh
@@ -87,6 +95,14 @@ Validate signing and export an IPA without uploading
 
 Test, archive, upload and submit Public external Beta App Review
 
+### ios upload_beta
+
+```sh
+[bundle exec] fastlane ios upload_beta
+```
+
+Retry TestFlight upload of an already tested and signed IPA
+
 ### ios assets
 
 ```sh
@@ -94,6 +110,14 @@ Test, archive, upload and submit Public external Beta App Review
 ```
 
 Upload current metadata and media without submitting App Review
+
+### ios prepare
+
+```sh
+[bundle exec] fastlane ios prepare
+```
+
+Upload metadata/media and select a processed TestFlight build without submitting review
 
 ### ios release
 

@@ -13,6 +13,7 @@ bundle exec fastlane marketing
 ## Lanes
 
 - `screenshots`: capture three screens in English and Arabic on iPhone 17 Pro Max, iPad Pro 13-inch (M5), and iPhone Duo.
+- `watch_screenshots`: capture the real Watch prayer list in both languages at 416 × 496, using a temporary Mecca connectivity cache that is restored afterward.
 - `style`: add device bezels, gradient backgrounds and native text rendering for Arabic shaping.
 - `previews`: record 15-second sunrise-to-sunset videos on all three devices.
 - `marketing`: run capture, styling and preview generation.
@@ -20,12 +21,14 @@ bundle exec fastlane marketing
 - `readiness` / `readiness release:true`: read TestFlight / App Store prerequisites without changing remote data.
 - `build`: export a signed IPA without uploading.
 - `beta`: test, archive, upload, wait for processing and submit external Beta App Review for Public.
+- `upload_beta ipa:/absolute/path.ipa`: retry upload of an already tested signed archive without rebuilding.
 - `assets`: upload existing metadata and supported media without submitting review.
+- `prepare build:NUMBER`: upload metadata/media and select a processed TestFlight build, leaving review submission pending.
 - `release`: test, generate media, archive, upload and submit App Review. Publication stays manual after approval.
 
 ## Capture settings and outputs
 
-Captures use a clean isolated test preferences suite, Mecca, 21 October 2026, light appearance and local weather data. Fajr, Dhuhr and Maghrib are visible, with sunset enabled; all other optional times are hidden. This fixture is Debug-only and leaves normal app preferences unchanged. Quran source text is never modified.
+Captures use a clean isolated test preferences suite, Mecca, 21 October 2026, light appearance and local weather data. Fajr, Dhuhr and Maghrib are visible, with sunset enabled; all other optional times are hidden. This fixture is Debug-only and leaves normal app preferences unchanged. Quran source text is never modified. Debug marketing captures use `exampleAyah` from `DailyAyahCard.swift`, shared with its SwiftUI previews; the displayed reference must match the bundled Quran text.
 
 Standard devices use `SCREENSHOT_IOS_VERSION` (default 27.0). Duo uses iOS 27.1 in a separate snapshot pass without deleting the standard captures. Install the runtimes in Xcode. Current snapshot captures use the native 1398 × 2034 Duo output; validation also accepts 2007 × 2853 and both landscape equivalents. Duo video recording explicitly selects the outer `primary` display; the simulator default can target the blank inner display. QA rejects blank frames. Capturing a single display does not establish layout correctness across folding transitions.
 
@@ -35,9 +38,10 @@ The Debug capture clock advances the actual Today UI continuously from sunrise t
 
 Generated files live under ignored `build/marketing/`:
 
+- `watch/`: native Watch captures required for the embedded companion.
 - `raw/`: original screenshots and snapshot HTML summary.
 - `frames/`: intermediate bezel images.
-- `store/`: styled store screenshots, 18 files across the three devices and two locales.
+- `store/`: styled store screenshots, 20 files across iPhone, iPad, Duo and Apple Watch in two locales.
 - `previews/`: 15-second standard iPhone/iPad videos and start/middle/end QA frames.
 - `duo-previews/`: 15-second Duo videos at 886 × 1920, with QA frames.
 
@@ -51,7 +55,7 @@ Manage names, subtitles, descriptions, keywords, promotional text, release notes
 
 Store API credentials at `~/.config/muntathir/fastlane.env`; field names are in `.env.local.example`. Protect the environment file, `.p8` key and private review JSON with `chmod 600`. `MUNTATHIR_FASTLANE_ENV_FILE` can select a different environment file. `MUNTATHIR_REVIEW_CONFIG` points to private review/contact/compliance values; `review.example.json` documents the shape. Never commit private keys or personal review details.
 
-Readiness uses existing store fields plus explicitly managed local values. Missing required data blocks submission; no contacts, URLs or compliance answers are inferred. Existing Xcode automatic signing covers the app, Watch companion and extensions. There is no certificate-sharing repository. Version/build overrides are passed to Xcode without committing bumps: reuse the editable store version, otherwise choose the project version or next published patch; allocate the next TestFlight build number. Do not run simultaneous deployment lanes outside Actions.
+Readiness uses existing store fields plus explicitly managed local values. Missing required data blocks submission; no contacts, URLs or compliance answers are inferred. Existing Xcode automatic signing covers the app, Watch companion and extensions. There is no certificate-sharing repository. Version/build overrides are passed to Xcode without committing bumps: reuse the editable store version, otherwise choose the project version or next published patch; allocate the next TestFlight build number across version trains to avoid equivalent 1.0/1.0.0 collisions. Do not run simultaneous deployment lanes outside Actions.
 
 ## Dedicated GitHub runner and workflow
 

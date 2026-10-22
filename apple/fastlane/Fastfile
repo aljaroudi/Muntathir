@@ -44,9 +44,15 @@ platform :ios do
     sh("bundle", "exec", "ruby", File.join(__dir__, "previews.rb"))
   end
 
+  desc "Capture required Arabic and English Apple Watch store screenshots"
+  lane :watch_screenshots do
+    sh("bundle", "exec", "ruby", File.join(__dir__, "watch_screenshots.rb"))
+  end
+
   desc "Generate all screenshots and App Preview videos locally"
   lane :marketing do
     screenshots
+    watch_screenshots
     style
     previews
   end
@@ -104,7 +110,7 @@ platform :ios do
   end
 
   private_lane :archive do |options|
-    number = latest_testflight_build_number(version: options.fetch(:version), initial_build_number: 0) + 1
+    number = latest_testflight_build_number(initial_build_number: 0) + 1
     provisioning = ["-allowProvisioningUpdates", "-authenticationKeyPath", File.expand_path(ENV.fetch("ASC_KEY_PATH")),
                     "-authenticationKeyID", ENV.fetch("ASC_KEY_ID"), "-authenticationKeyIssuerID", ENV.fetch("ASC_ISSUER_ID")].shelljoin
     ipa = build_app(project: "./Muntathir.xcodeproj", scheme: "Muntathir", configuration: "Release",
@@ -128,12 +134,26 @@ platform :ios do
     MuntathirRelease.compliance!(context.fetch(:config))
     tests
     artifact = archive(version: context.fetch(:version))
+    distribute_beta(ipa: artifact.fetch(:ipa), context: context)
+  end
+
+  desc "Retry TestFlight upload of an already tested and signed IPA"
+  lane :upload_beta do |options|
+    check
+    context = store
+    ipa = File.expand_path(options.fetch(:ipa))
+    UI.user_error!("Missing signed IPA: #{ipa}") unless File.file?(ipa)
+    distribute_beta(ipa: ipa, context: context)
+  end
+
+  private_lane :distribute_beta do |options|
+    context = options.fetch(:context)
     UI.header("Uploading binary; waiting for Apple build processing")
     config = context.fetch(:config)
     beta_localizations = context.fetch(:app).get_beta_app_localizations
     feedback = config["beta_app_feedback_email"] || beta_localizations.find { |l| !l.feedback_email.to_s.empty? }&.feedback_email
     MuntathirRelease.required!({ "feedback_email" => feedback }, ["feedback_email"], "TestFlight")
-    upload_to_testflight(ipa: artifact.fetch(:ipa), app_version: context.fetch(:version),
+    upload_to_testflight(ipa: options.fetch(:ipa), app_version: context.fetch(:version),
                          changelog: File.read(File.join(MuntathirRelease::ROOT, "fastlane/metadata/en-US/release_notes.txt")).strip,
                          localized_build_info: MuntathirRelease::LOCALES.to_h { |l| [l, { whats_new: File.read(File.join(MuntathirRelease::ROOT, "fastlane/metadata/#{l}/release_notes.txt")).strip }] },
                          beta_app_review_info: config["beta_app_review_info"],
@@ -149,16 +169,37 @@ platform :ios do
   lane :assets do
     check
     context = store(release: true)
-    upload_to_app_store(**store_options, app_version: context.fetch(:version), skip_binary_upload: true, submit_for_review: false)
+    upload_to_app_store(**store_options(app: context.fetch(:app)), app_version: context.fetch(:version), skip_binary_upload: true, submit_for_review: false)
   end
 
-  private_lane :store_options do
+  desc "Upload metadata/media and select a processed TestFlight build without submitting review"
+  lane :prepare do |options|
+    check
+    context = store(release: true)
+    number = options[:build]
+    UI.user_error!("Specify the uploaded TestFlight build: prepare build:NUMBER") if number.to_s.empty?
+    build = Spaceship::ConnectAPI::Build.all(app_id: context.fetch(:app).id, build_number: number.to_s,
+                                           platform: "IOS").find do |candidate|
+      Gem::Version.new(candidate.app_version) == Gem::Version.new(context.fetch(:version))
+    end
+    UI.user_error!("Build #{number} is missing or has not finished processing") unless build && build.processing_state == "VALID"
+    upload_to_app_store(**store_options(app: context.fetch(:app)), app_version: context.fetch(:version), skip_binary_upload: true, submit_for_review: false)
+    version = context.fetch(:app).get_edit_app_store_version(platform: "IOS")
+    UI.user_error!("No editable App Store version") unless version
+    version.select_build(build_id: build.id)
+    UI.success("Selected #{context.fetch(:version)} (#{number}); prepared for review, with manual release.")
+  end
+
+  private_lane :store_options do |context|
     config = MuntathirRelease.review_config
     MuntathirRelease.validate_media!
     options = { metadata_path: "./fastlane/metadata", screenshots_path: "./build/marketing/store",
                 app_previews_path: "./build/marketing/previews", preview_frame_time_code: "00:00:05:00",
                 overwrite_screenshots: false, overwrite_preview_videos: false,
                 automatic_release: false, force: true, precheck_include_in_app_purchases: false }
+    # Apple rejects a redundant releaseType write on some initial-version listings.
+    existing = context[:app]&.get_edit_app_store_version(platform: "IOS")
+    options[:automatic_release] = nil if existing&.release_type == "MANUAL"
     %w[app_review_information submission_information support_url privacy_url copyright].each do |key|
       options[key.to_sym] = config[key] if config[key] && !config[key].empty?
     end
@@ -173,7 +214,7 @@ platform :ios do
     marketing
     artifact = archive(version: context.fetch(:version))
     UI.header("Uploading binary, metadata and media; then submitting App Review")
-    upload_to_app_store(**store_options, ipa: artifact.fetch(:ipa), app_version: context.fetch(:version), submit_for_review: true)
+    upload_to_app_store(**store_options(app: context.fetch(:app)), ipa: artifact.fetch(:ipa), app_version: context.fetch(:version), submit_for_review: true)
     UI.success("App Review submitted. Release remains manual after approval.")
   end
 end

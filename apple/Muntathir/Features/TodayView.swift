@@ -167,7 +167,12 @@ struct TodayView: View {
             .navigationTitle(sun == nil ? title(now, engine: engine) : "")
             .navigationBarTitleDisplayMode(sun == nil ? .large : .inline)
             .task(id: engine.gregorian.startOfDay(for: now)) {
-                dailyAyah = model.content.verse(on: now, timeZone: model.zone)
+                #if DEBUG
+                    dailyAyah = ProcessInfo.processInfo.arguments.contains("--marketing-capture")
+                        ? exampleAyah : model.content.verse(on: now, timeZone: model.zone)
+                #else
+                    dailyAyah = model.content.verse(on: now, timeZone: model.zone)
+                #endif
             }
         }
         .task(id: model.location) { await weather.refresh(location: model.location) }

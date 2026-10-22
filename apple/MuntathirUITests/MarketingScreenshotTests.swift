@@ -15,6 +15,9 @@ final class MarketingScreenshotTests: XCTestCase {
         for name in ["imsak", "sunrise", "asr", "isha", "midnight"] {
             XCTAssertFalse(app.descendants(matching: .any)["prayer-\(name)"].exists)
         }
+        let verse = app.staticTexts["daily-ayah-text"]
+        XCTAssertTrue(verse.waitForExistence(timeout: 5))
+        XCTAssertEqual(verse.label, "وَمَآ أَنَا۠ بِطَارِدِ ٱلْمُؤْمِنِينَ")
         snapshot("01-Today", timeWaitingForIdle: 2)
         app.buttons[arabic ? "التقويم" : "Calendar"].firstMatch.tap()
         XCTAssertTrue(app.buttons[arabic ? "الشهر التالي" : "Next month"].waitForExistence(timeout: 5))

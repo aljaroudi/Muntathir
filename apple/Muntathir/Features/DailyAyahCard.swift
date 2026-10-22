@@ -122,10 +122,10 @@ private struct AyahShareSheet: UIViewControllerRepresentable {
 }
 
 #if DEBUG
-    private let exampleAyah = Ayah(
-        surah: 28,
-        number: 24,
-        text: "رَبِّ إِنِّى لِمَآ أَنزَلْتَ إِلَىَّ مِنْ خَيْرٍ فَقِيرٌ"
+    let exampleAyah = Ayah(
+        surah: 26,
+        number: 114,
+        text: "وَمَآ أَنَا۠ بِطَارِدِ ٱلْمُؤْمِنِينَ"
     )
 
     #Preview("Daily ayah") {
