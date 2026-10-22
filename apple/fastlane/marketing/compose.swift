@@ -45,6 +45,7 @@ NSGraphicsContext.saveGraphicsState()
 if kind == "duo" {
     NSBezierPath(roundedRect: deviceRect, xRadius: width * 0.023, yRadius: width * 0.023).addClip()
 }
+
 device.draw(in: deviceRect)
 NSGraphicsContext.restoreGraphicsState()
 context.flushGraphics()

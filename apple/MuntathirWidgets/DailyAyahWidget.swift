@@ -54,7 +54,7 @@ struct DailyAyahWidgetView: View {
                         .truncationMode(.tail)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .layoutPriority(1)
-                    if !isAccessory, let english = ayah.english {
+                    if !isAccessory, let english = ayah.translations["en.qarai"] {
                         Text(english)
                             .font(.caption)
                             .multilineTextAlignment(.leading)
@@ -70,7 +70,7 @@ struct DailyAyahWidgetView: View {
                     }
                 }
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(Text([ayah.text, isAccessory ? nil : ayah.english, ayah.id].compactMap(\.self).joined(separator: " ")))
+                .accessibilityLabel(Text([ayah.text, isAccessory ? nil : ayah.translations["en.qarai"], ayah.id].compactMap(\.self).joined(separator: " ")))
             } else {
                 Text("Verse unavailable").font(.caption)
             }

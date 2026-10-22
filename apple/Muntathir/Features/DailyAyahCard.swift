@@ -26,9 +26,10 @@ struct DailyAyahCard: View {
                 .accessibilityIdentifier("share-daily-ayah")
             }
             AyahText(ayah: ayah)
+                .accessibilityIdentifier("daily-ayah-text")
                 .textSelection(.enabled)
-            if let english = ayah.english {
-                Text(english)
+            if let translation = ayah.dailyTranslation(locale: locale) {
+                Text(translation)
                     .font(.body)
                     .environment(\.layoutDirection, .leftToRight)
                     .textSelection(.enabled)
@@ -64,7 +65,7 @@ struct DailyAyahCard: View {
     }
 }
 
-private struct AyahText: View {
+struct AyahText: View {
     let ayah: Ayah
     var body: some View {
         Text(ayah.text)
@@ -74,7 +75,6 @@ private struct AyahText: View {
             .frame(maxWidth: .infinity)
             .fixedSize(horizontal: false, vertical: true)
             .environment(\.layoutDirection, .rightToLeft)
-            .accessibilityIdentifier("daily-ayah-text")
     }
 }
 

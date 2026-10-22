@@ -28,3 +28,8 @@ The importer validates all 360 unique dates and resolves every ID against the da
 English translation credit: **Ali Quli Qara’i**, also shown in Settings → Sources and licenses.
 
 Run importer checks with `python3 -m unittest discover -s apple/scripts -p 'test_*.py'`.
+
+The Quran reader loads available translation columns through `QuranTranslation.catalog`.
+When adding a translation, add its catalog entry and include its column in `quran_fts`.
+Arabic search uses a disposable, normalized in-memory index; displayed text always comes
+from the unchanged database. Reader translation selection does not affect widgets.

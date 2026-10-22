@@ -219,14 +219,10 @@ struct LicensesView: View {
             }
             Section("Library license") { Text(license("Adhan-LICENSE")) }
             Section("Quran Translations") {
-                LabeledContent {
-                    Link(destination: URL(string: "https://tanzil.net/trans/en.qarai")!) {
-                        Text(verbatim: "Ali Quli Qara’i")
-                    }
-                } label: {
-                    Text(verbatim: locale.localizedString(forLanguageCode: "en") ?? "en")
+                ForEach(sortedQuranTranslations, id: \.id) { item in
+                    quranTranslationCredit(item)
+                        .accessibilityIdentifier(item.id)
                 }
-                .accessibilityIdentifier("quran-translation-credit")
             }
             Section("Events") {
                 Text(
@@ -243,10 +239,36 @@ struct LicensesView: View {
         }.navigationTitle("Sources and licenses")
     }
 
+    private var sortedQuranTranslations: [QuranTranslation] {
+        QuranTranslation.catalog.sorted {
+            languageName($0.language).compare(
+                languageName($1.language),
+                options: [.caseInsensitive, .diacriticInsensitive],
+                locale: locale
+            ) == .orderedAscending
+        }
+    }
+
     private func license(_ name: String) -> String {
         Bundle.main.url(forResource: name, withExtension: "txt").flatMap {
             try? String(contentsOf: $0, encoding: .utf8)
         } ?? ""
+    }
+
+    private func languageName(_ language: String) -> String {
+        locale.localizedString(forLanguageCode: language)
+            ?? locale.localizedString(forIdentifier: language)
+            ?? language
+    }
+
+    private func quranTranslationCredit(_ item: QuranTranslation) -> some View {
+        LabeledContent {
+            Link(destination: URL(string: "https://tanzil.net/trans/\(item.id)")!) {
+                Text(verbatim: item.translator)
+            }
+        } label: {
+            Text(verbatim: languageName(item.language))
+        }
     }
 }
 

@@ -15,7 +15,7 @@ final class CreditsUITests: XCTestCase {
             }
             XCTAssertTrue(sources.isHittable)
             sources.tap()
-            let credit = app.descendants(matching: .any)["quran-translation-credit"]
+            let credit = app.descendants(matching: .any)["en.qarai"]
             for _ in 0 ..< 8 where !credit.exists || !credit.isHittable {
                 app.swipeUp()
             }

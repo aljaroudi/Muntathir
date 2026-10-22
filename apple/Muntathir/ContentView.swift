@@ -16,6 +16,12 @@ struct ContentView: View {
                 shell {
                     List {
                         NavigationLink {
+                            QuranView()
+                        } label: {
+                            Label("The Holy Quran", systemImage: "book.closed")
+                        }
+                        .accessibilityIdentifier("holy-quran")
+                        NavigationLink {
                             QiblaView().toolbar { settingsToolbar }
                         } label: {
                             Label("Qibla", systemImage: "location.north.circle")

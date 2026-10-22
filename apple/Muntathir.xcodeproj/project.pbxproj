@@ -51,6 +51,8 @@
 		E50000000000000000000014 /* Muntathir/Core/ContentLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000004 /* Muntathir/Core/ContentLibrary.swift */; };
 		F70000000000000000000002 /* ../db.db in Resources */ = {isa = PBXBuildFile; fileRef = F70000000000000000000001 /* ../db.db */; };
 		F70000000000000000000003 /* ../db.db in Resources */ = {isa = PBXBuildFile; fileRef = F70000000000000000000001 /* ../db.db */; };
+		F70000000000000000000006 /* Muntathir/Core/QuranTranslation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F70000000000000000000004 /* Muntathir/Core/QuranTranslation.swift */; };
+		F70000000000000000000007 /* Muntathir/Core/QuranDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F70000000000000000000005 /* Muntathir/Core/QuranDatabase.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -163,6 +165,8 @@
 		E50000000000000000000004 /* Muntathir/Core/ContentLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/ContentLibrary.swift; sourceTree = SOURCE_ROOT; };
 		E50000000000000000000006 /* Muntathir/Resources/QPCHafs.woff2 */ = {isa = PBXFileReference; lastKnownFileType = file; path = Muntathir/Resources/QPCHafs.woff2; sourceTree = SOURCE_ROOT; };
 		F70000000000000000000001 /* ../db.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = ../db.db; sourceTree = SOURCE_ROOT; };
+		F70000000000000000000004 /* Muntathir/Core/QuranTranslation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/QuranTranslation.swift; sourceTree = SOURCE_ROOT; };
+		F70000000000000000000005 /* Muntathir/Core/QuranDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/QuranDatabase.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -262,6 +266,8 @@
 		04457E54308394FD00A8887D = {
 			isa = PBXGroup;
 			children = (
+				F70000000000000000000004 /* Muntathir/Core/QuranTranslation.swift */,
+				F70000000000000000000005 /* Muntathir/Core/QuranDatabase.swift */,
 				F70000000000000000000001 /* ../db.db */,
 				F60000000000000000000004 /* Muntathir/Resources */,
 				D40000000000000000000001 /* AppIcon.icon */,
@@ -613,6 +619,8 @@
 				A82000000000000000000006 /* Muntathir/Features/MoonDisc.swift in Sources */,
 				A72000000000000000000001 /* Muntathir/Core/SolarArcLayout.swift in Sources */,
 				A72000000000000000000000 /* Muntathir/Core/SolarPosition.swift in Sources */,
+				F70000000000000000000006 /* Muntathir/Core/QuranTranslation.swift in Sources */,
+				F70000000000000000000007 /* Muntathir/Core/QuranDatabase.swift in Sources */,
 				E50000000000000000000014 /* Muntathir/Core/ContentLibrary.swift in Sources */,
 				E50000000000000000000013 /* Muntathir/Features/AyahBackground.swift in Sources */,
 				E50000000000000000000012 /* MuntathirWidgets/DailyAyahWidget.swift in Sources */,

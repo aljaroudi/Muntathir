@@ -1,5 +1,4 @@
 import Foundation
-import SQLite3
 
 struct EventReference: Codable, Hashable, Sendable {
     let book: String
@@ -56,7 +55,14 @@ struct Ayah: Identifiable, Sendable {
     let surah: Int
     let number: Int
     let text: String
-    var english: String?
+    var translations: [String: String] = [:]
+
+    func dailyTranslation(locale: Locale) -> String? {
+        guard locale.language.languageCode?.identifier == "en",
+              let translation = QuranTranslation.preferred(in: QuranTranslation.catalog, locale: locale) else { return nil }
+        return translations[translation.id]
+    }
+
     var id: String {
         "\(surah):\(number)"
     }
@@ -101,43 +107,6 @@ struct ContentLibrary: Sendable {
         // Era ordinals need a normalized date to stay fixed until local midnight.
         guard !verses.isEmpty, let day = calendar.ordinality(of: .day, in: .era, for: calendar.startOfDay(for: date)) else { return nil }
         return verses[(day - 1) % verses.count]
-    }
-}
-
-/// Each lookup opens the bundled database read-only; no SQLite connection crosses threads.
-struct QuranDatabase: Sendable {
-    let url: URL?
-
-    func verses(ids: Set<Int>) -> [Int: Ayah] {
-        guard !ids.isEmpty, let url else { return [:] }
-        var database: OpaquePointer?
-        guard sqlite3_open_v2(url.path, &database, SQLITE_OPEN_READONLY, nil) == SQLITE_OK else {
-            if let database {
-                sqlite3_close(database)
-            }
-            return [:]
-        }
-        defer { sqlite3_close(database) }
-        var statement: OpaquePointer?
-        guard sqlite3_prepare_v2(database, "SELECT sura, aya, text, en_qarai FROM quran WHERE \"index\" = ?", -1, &statement, nil) == SQLITE_OK else { return [:] }
-        defer { sqlite3_finalize(statement) }
-        var result: [Int: Ayah] = [:]
-        for id in ids where id > 0 {
-            guard sqlite3_reset(statement) == SQLITE_OK,
-                  sqlite3_bind_int64(statement, 1, sqlite3_int64(id)) == SQLITE_OK else { return [:] }
-            let status = sqlite3_step(statement)
-            guard status == SQLITE_ROW || status == SQLITE_DONE else { return [:] }
-            guard status == SQLITE_ROW,
-                  let arabic = sqlite3_column_text(statement, 2),
-                  let english = sqlite3_column_text(statement, 3) else { continue }
-            let text = String(cString: arabic)
-            let translation = String(cString: english)
-            guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-                  !translation.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { continue }
-            result[id] = Ayah(surah: Int(sqlite3_column_int(statement, 0)), number: Int(sqlite3_column_int(statement, 1)),
-                              text: text, english: translation)
-        }
-        return result
     }
 }
 
