@@ -4,6 +4,22 @@ import Testing
 import UIKit
 
 struct VerseShareTests {
+    @MainActor @Test(arguments: ["zh.jian", "zh.majian"])
+    func chineseTranslationSharePreview(translationID: String) throws {
+        let translation = try #require(QuranTranslation.catalog.first { $0.id == translationID })
+        let database = QuranDatabase(url: Bundle.main.url(forResource: "quran", withExtension: "db"), translationURLs: {
+            QuranTestResources.translationURLs.filter { $0.key == translationID }
+        })
+        let verses = try database.verses(surah: 112)
+        #expect(verses.count == 4)
+        for verse in verses {
+            #expect(verse.translations[translationID]?.isEmpty == false)
+        }
+        let verse = try #require(verses.first)
+        let image = try #require(AyahImageRenderer.image(for: verse, locale: Locale(identifier: translation.language), translation: translation))
+        try Attachment.record(#require(image.pngData()), named: "quran-\(translation.language).png")
+    }
+
     @Test func copyIncludesOnlyTheShownTranslationAndReference() throws {
         let ayah = Ayah(surah: 1, number: 1, text: "Arabic source", translations: ["en.qarai": "English", "fr.hamidullah": "French"])
         let english = try #require(QuranTranslation.catalog.first { $0.id == "en.qarai" })
