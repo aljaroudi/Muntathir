@@ -122,7 +122,7 @@ struct CalendarScreen: View {
                 now = currentDate
             }
         }
-        .sheet(isPresented: $correcting) { CorrectionView(month: month, start: engine.start(of: month)) }
+        .sheet(isPresented: $correcting) { CorrectionView(month: month, offset: model.preferences.monthOffsets.first { $0.month == month }?.days ?? 0) }
     }
 
     private var currentDate: Date {
@@ -172,25 +172,48 @@ struct CorrectionView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     let month: HijriMonth
-    @State var start: Date
+    @State var offset: Int
     @State private var error: String?
+
+    private var start: Date {
+        let source = (try? CalendarEngine(timeZone: model.zone, confirmed: model.confirmations.map(\.correction)))
+            ?? (try! CalendarEngine(timeZone: model.zone))
+        return source.addingDays(-offset, to: source.start(of: month))
+    }
+
     var body: some View {
         NavigationStack {
             Form {
                 Text("Hijri month: \(month.month.formatted()) / \(month.year.formatted(.number.grouping(.never)))")
-                DatePicker("First Gregorian day", selection: $start, displayedComponents: .date)
-                    .environment(\.calendar, Calendar(identifier: .gregorian)).environment(\.timeZone, model.zone)
-                Text("This is a manual correction, not a confirmed announcement.").font(.footnote)
+                Picker("Day adjustment", selection: $offset) {
+                    ForEach(-2 ... 2, id: \.self) { days in
+                        Text(days, format: .number.sign(strategy: .always(includingZero: false))).tag(days)
+                    }
+                }
+                .accessibilityIdentifier("month-offset")
+                LabeledContent("Month starts", value: start.formatted(.dateTime.day().month(.wide).year().inZone(model.zone)))
+                Text("Positive values advance the Hijri date. Every month remains 29 or 30 days. Prayer times are unchanged.")
+                    .font(.footnote)
                 if let error {
                     Text(error).foregroundStyle(.red)
                 }
-                Button("Reset to calculated date", role: .destructive) { model.reset(month); dismiss() }
-            }.navigationTitle("Adjust month").toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                Button("Reset adjustment", role: .destructive) { save(0) }
+            }
+            .navigationTitle("Adjust month")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel", systemImage: "xmark") { dismiss() }.labelStyle(.iconOnly)
+                }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { do { try model.correct(month: month, start: start); dismiss() } catch { self.error = error.localizedDescription } }
+                    Button("Save", systemImage: "checkmark") { save(offset) }.labelStyle(.iconOnly)
                 }
             }
         }
+    }
+
+    private func save(_ days: Int) {
+        do { try model.correct(month: month, offset: days); dismiss() }
+        catch { self.error = error.localizedDescription }
     }
 }

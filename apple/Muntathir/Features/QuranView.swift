@@ -54,7 +54,7 @@ struct QuranView: View {
                             QuranChapterView(surah: surah, reader: reader)
                         } label: {
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("\(surah.id.formatted(.number.locale(locale))). \(surah.title(locale: locale))")
+                                Text("\(surah.id, format: .number). \(surah.title(locale: locale))")
                                     .font(.headline)
                                 if locale.language.languageCode?.identifier != "ar" {
                                     Text(surah.arabic).environment(\.layoutDirection, .rightToLeft)
@@ -182,7 +182,7 @@ struct QuranTranslationPicker: View {
                 switch status {
                 case let .downloading(fraction):
                     if let fraction {
-                        Text("Downloading \(Int(fraction * 100))%")
+                        Text("Downloading \(fraction, format: .percent.precision(.fractionLength(0)))")
                     } else {
                         Text("Downloading…")
                     }

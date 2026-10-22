@@ -2,6 +2,7 @@ import SwiftUI
 
 struct OnboardingView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.locale) private var locale
     private var step: Int {
         model.onboardingStep
     }
@@ -13,7 +14,7 @@ struct OnboardingView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    Text("Step \(step + 1) of 5")
+                    Text("Step \(step + 1, format: .number) of \(5, format: .number)")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     ProgressView(value: Double(step + 1), total: 5)
@@ -64,9 +65,9 @@ struct OnboardingView: View {
             Text("Choose your app language")
                 .font(.title.bold())
                 .accessibilityAddTraits(.isHeader)
-            Text(verbatim: "English · العربية")
+            Text(locale.localizedString(forIdentifier: locale.identifier) ?? locale.identifier)
                 .font(.title2)
-            Text("Choose English or Arabic in iOS Settings. Return here to continue setup.")
+            Text("Choose your preferred language in iOS Settings. Return here to continue setup.")
             AppLanguageLink()
                 .buttonStyle(.bordered)
         case 2:

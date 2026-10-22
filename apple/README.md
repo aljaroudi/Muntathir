@@ -24,7 +24,7 @@ Core Swift sources live in `Muntathir/Core` and are reused directly by Apple tar
 
 Validate real-device compass/calibration, notifications/background delivery, paired Watch synchronization and complications, CarPlay layouts, signed App Group provisioning, two-device iCloud sync, VoiceOver, and accessibility sizes. Review event dates and Arabic titles editorially.
 
-Production corrections endpoint/source catalog and push delivery remain unconfigured. Simulator tests cannot prove hardware behavior or deployed feed delivery.
+The app refreshes the version-one calendar feed from https://منتظر.com/calendar/corrections-v1.json on launch/foreground, source changes, and scheduled background refresh. The website publishes an empty feed until real announcements are supplied. Push delivery remains unconfigured. Simulator tests cannot prove hardware behavior or deployed feed delivery.
 
 ## Fastlane
 

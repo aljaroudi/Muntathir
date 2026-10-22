@@ -5,7 +5,19 @@
     "day": 1,
     "titles": {
       "en": "Beginning of Ramadan",
-      "ar": "بداية شهر رمضان"
+      "ar": "بداية شهر رمضان",
+      "fr": "Début du Ramadan",
+      "de": "Beginn des Ramadan",
+      "es": "Inicio de Ramadán",
+      "it": "Inizio del Ramadan",
+      "id": "Awal Ramadan",
+      "ms": "Awal Ramadan",
+      "tr": "Ramazan başlangıcı",
+      "ru": "Начало Рамадана",
+      "fa": "آغاز ماه رمضان",
+      "ur": "آغازِ رمضان",
+      "zh-Hans": "斋月开始",
+      "zh-Hant": "齋月開始"
     },
     "convention": null,
     "references": []
@@ -16,7 +28,19 @@
     "day": 1,
     "titles": {
       "en": "Eid al-Fitr",
-      "ar": "عيد الفطر"
+      "ar": "عيد الفطر",
+      "fr": "Aïd al-Fitr",
+      "de": "Fest des Fastenbrechens",
+      "es": "Eid al-Fitr",
+      "it": "Eid al-Fitr",
+      "id": "Idulfitri",
+      "ms": "Hari Raya Aidilfitri",
+      "tr": "Ramazan Bayramı",
+      "ru": "Ид аль-Фитр",
+      "fa": "عید فطر",
+      "ur": "عید الفطر",
+      "zh-Hans": "开斋节",
+      "zh-Hant": "開齋節"
     },
     "convention": null,
     "references": []
@@ -27,7 +51,19 @@
     "day": 9,
     "titles": {
       "en": "Day of Arafah",
-      "ar": "يوم عرفة"
+      "ar": "يوم عرفة",
+      "fr": "Jour d’Arafat",
+      "de": "Tag von Arafat",
+      "es": "Día de Arafat",
+      "it": "Giorno di Arafah",
+      "id": "Hari Arafah",
+      "ms": "Hari Arafah",
+      "tr": "Arefe Günü",
+      "ru": "День Арафа",
+      "fa": "روز عرفه",
+      "ur": "یومِ عرفہ",
+      "zh-Hans": "阿拉法日",
+      "zh-Hant": "阿拉法日"
     },
     "convention": null,
     "references": []
@@ -38,7 +74,19 @@
     "day": 10,
     "titles": {
       "en": "Eid al-Adha",
-      "ar": "عيد الأضحى"
+      "ar": "عيد الأضحى",
+      "fr": "Aïd al-Adha",
+      "de": "Opferfest",
+      "es": "Eid al-Adha",
+      "it": "Eid al-Adha",
+      "id": "Iduladha",
+      "ms": "Hari Raya Aidiladha",
+      "tr": "Kurban Bayramı",
+      "ru": "Ид аль-Адха",
+      "fa": "عید قربان",
+      "ur": "عید الاضحیٰ",
+      "zh-Hans": "宰牲节",
+      "zh-Hant": "宰牲節"
     },
     "convention": null,
     "references": []
@@ -49,7 +97,19 @@
     "day": 18,
     "titles": {
       "en": "Eid al-Ghadir",
-      "ar": "عيد الغدير"
+      "ar": "عيد الغدير",
+      "fr": "Aïd al-Ghadir",
+      "de": "Ghadir-Fest",
+      "es": "Eid al-Gadir",
+      "it": "Eid al-Ghadir",
+      "id": "Idul Ghadir",
+      "ms": "Aidil Ghadir",
+      "tr": "Gadir Bayramı",
+      "ru": "Ид аль-Гадир",
+      "fa": "عید غدیر",
+      "ur": "عیدِ غدیر",
+      "zh-Hans": "盖迪尔节",
+      "zh-Hant": "蓋迪爾節"
     },
     "convention": "twelver",
     "references": []
@@ -60,7 +120,19 @@
     "day": 20,
     "titles": {
       "en": "Arbaeen",
-      "ar": "الأربعين"
+      "ar": "الأربعين",
+      "fr": "Arbaïn",
+      "de": "Arbaʿin",
+      "es": "Arbaín",
+      "it": "Arbaeen",
+      "id": "Arbain",
+      "ms": "Arbain",
+      "tr": "Erbain",
+      "ru": "Арбаин",
+      "fa": "اربعین",
+      "ur": "اربعین",
+      "zh-Hans": "四十日纪念",
+      "zh-Hant": "四十日紀念"
     },
     "convention": "twelver",
     "references": []
@@ -71,7 +143,19 @@
     "day": 13,
     "titles": {
       "en": "Birth of Imam Ali",
-      "ar": "ولادة الإمام علي"
+      "ar": "ولادة الإمام علي",
+      "fr": "Naissance de l’imam Ali",
+      "de": "Geburt des Imams Ali",
+      "es": "Nacimiento del imán Ali",
+      "it": "Nascita dell’imam Ali",
+      "id": "Kelahiran Imam Ali",
+      "ms": "Kelahiran Imam Ali",
+      "tr": "İmam Ali’nin doğumu",
+      "ru": "Рождение имама Али",
+      "fa": "ولادت امام علی",
+      "ur": "ولادتِ امام علی",
+      "zh-Hans": "伊玛目阿里诞辰",
+      "zh-Hant": "伊瑪目阿里誕辰"
     },
     "convention": "twelver",
     "references": [
@@ -90,7 +174,19 @@
     "day": 21,
     "titles": {
       "en": "Martyrdom of Imam Ali",
-      "ar": "استشهاد الإمام علي"
+      "ar": "استشهاد الإمام علي",
+      "fr": "Martyre de l’imam Ali",
+      "de": "Martyrium des Imams Ali",
+      "es": "Martirio del imán Ali",
+      "it": "Martirio dell’imam Ali",
+      "id": "Kesyahidan Imam Ali",
+      "ms": "Kesyahidan Imam Ali",
+      "tr": "İmam Ali’nin şehadeti",
+      "ru": "Мученическая смерть имама Али",
+      "fa": "شهادت امام علی",
+      "ur": "شہادتِ امام علی",
+      "zh-Hans": "伊玛目阿里殉难日",
+      "zh-Hant": "伊瑪目阿里殉難日"
     },
     "convention": "twelver",
     "references": [
@@ -109,7 +205,19 @@
     "day": 15,
     "titles": {
       "en": "Birth of Imam Hasan",
-      "ar": "ولادة الإمام الحسن"
+      "ar": "ولادة الإمام الحسن",
+      "fr": "Naissance de l’imam Hasan",
+      "de": "Geburt des Imams Hasan",
+      "es": "Nacimiento del imán Hasan",
+      "it": "Nascita dell’imam Hasan",
+      "id": "Kelahiran Imam Hasan",
+      "ms": "Kelahiran Imam Hasan",
+      "tr": "İmam Hasan’ın doğumu",
+      "ru": "Рождение имама Хасана",
+      "fa": "ولادت امام حسن",
+      "ur": "ولادتِ امام حسن",
+      "zh-Hans": "伊玛目哈桑诞辰",
+      "zh-Hant": "伊瑪目哈桑誕辰"
     },
     "convention": "twelver",
     "references": [
@@ -128,7 +236,19 @@
     "day": 28,
     "titles": {
       "en": "Martyrdom of Imam Hasan",
-      "ar": "استشهاد الإمام الحسن"
+      "ar": "استشهاد الإمام الحسن",
+      "fr": "Martyre de l’imam Hasan",
+      "de": "Martyrium des Imams Hasan",
+      "es": "Martirio del imán Hasan",
+      "it": "Martirio dell’imam Hasan",
+      "id": "Kesyahidan Imam Hasan",
+      "ms": "Kesyahidan Imam Hasan",
+      "tr": "İmam Hasan’ın şehadeti",
+      "ru": "Мученическая смерть имама Хасана",
+      "fa": "شهادت امام حسن",
+      "ur": "شہادتِ امام حسن",
+      "zh-Hans": "伊玛目哈桑殉难日",
+      "zh-Hant": "伊瑪目哈桑殉難日"
     },
     "convention": "twelver",
     "references": [
@@ -147,7 +267,19 @@
     "day": 3,
     "titles": {
       "en": "Birth of Imam Husayn",
-      "ar": "ولادة الإمام الحسين"
+      "ar": "ولادة الإمام الحسين",
+      "fr": "Naissance de l’imam Husayn",
+      "de": "Geburt des Imams Husayn",
+      "es": "Nacimiento del imán Husayn",
+      "it": "Nascita dell’imam Husayn",
+      "id": "Kelahiran Imam Husayn",
+      "ms": "Kelahiran Imam Husayn",
+      "tr": "İmam Hüseyin’in doğumu",
+      "ru": "Рождение имама Хусейна",
+      "fa": "ولادت امام حسین",
+      "ur": "ولادتِ امام حسین",
+      "zh-Hans": "伊玛目侯赛因诞辰",
+      "zh-Hant": "伊瑪目侯賽因誕辰"
     },
     "convention": "twelver",
     "references": [
@@ -166,7 +298,19 @@
     "day": 10,
     "titles": {
       "en": "Martyrdom of Imam Husayn",
-      "ar": "استشهاد الإمام الحسين"
+      "ar": "استشهاد الإمام الحسين",
+      "fr": "Martyre de l’imam Husayn",
+      "de": "Martyrium des Imams Husayn",
+      "es": "Martirio del imán Husayn",
+      "it": "Martirio dell’imam Husayn",
+      "id": "Kesyahidan Imam Husayn",
+      "ms": "Kesyahidan Imam Husayn",
+      "tr": "İmam Hüseyin’in şehadeti",
+      "ru": "Мученическая смерть имама Хусейна",
+      "fa": "شهادت امام حسین",
+      "ur": "شہادتِ امام حسین",
+      "zh-Hans": "伊玛目侯赛因殉难日",
+      "zh-Hant": "伊瑪目侯賽因殉難日"
     },
     "convention": "twelver",
     "references": [
@@ -185,7 +329,19 @@
     "day": 5,
     "titles": {
       "en": "Birth of Imam Ali Zayn al-Abidin",
-      "ar": "ولادة الإمام علي السجاد"
+      "ar": "ولادة الإمام علي السجاد",
+      "fr": "Naissance de l’imam Ali Zayn al-Abidin",
+      "de": "Geburt des Imams Ali Zayn al-Abidin",
+      "es": "Nacimiento del imán Ali Zayn al-Abidin",
+      "it": "Nascita dell’imam Ali Zayn al-Abidin",
+      "id": "Kelahiran Imam Ali Zayn al-Abidin",
+      "ms": "Kelahiran Imam Ali Zayn al-Abidin",
+      "tr": "İmam Ali Zeynelabidin’in doğumu",
+      "ru": "Рождение имама Али Зайн аль-Абидина",
+      "fa": "ولادت امام علی زین‌العابدین",
+      "ur": "ولادتِ امام علی زین العابدین",
+      "zh-Hans": "伊玛目阿里·宰因·阿比丁诞辰",
+      "zh-Hant": "伊瑪目阿里·宰因·阿比丁誕辰"
     },
     "convention": "twelver",
     "references": [
@@ -204,7 +360,19 @@
     "day": 25,
     "titles": {
       "en": "Martyrdom of Imam Ali Zayn al-Abidin",
-      "ar": "استشهاد الإمام علي السجاد"
+      "ar": "استشهاد الإمام علي السجاد",
+      "fr": "Martyre de l’imam Ali Zayn al-Abidin",
+      "de": "Martyrium des Imams Ali Zayn al-Abidin",
+      "es": "Martirio del imán Ali Zayn al-Abidin",
+      "it": "Martirio dell’imam Ali Zayn al-Abidin",
+      "id": "Kesyahidan Imam Ali Zayn al-Abidin",
+      "ms": "Kesyahidan Imam Ali Zayn al-Abidin",
+      "tr": "İmam Ali Zeynelabidin’in şehadeti",
+      "ru": "Мученическая смерть имама Али Зайн аль-Абидина",
+      "fa": "شهادت امام علی زین‌العابدین",
+      "ur": "شہادتِ امام علی زین العابدین",
+      "zh-Hans": "伊玛目阿里·宰因·阿比丁殉难日",
+      "zh-Hant": "伊瑪目阿里·宰因·阿比丁殉難日"
     },
     "convention": "twelver",
     "references": [
@@ -223,7 +391,19 @@
     "day": 1,
     "titles": {
       "en": "Birth of Imam Muhammad al-Baqir",
-      "ar": "ولادة الإمام محمد الباقر"
+      "ar": "ولادة الإمام محمد الباقر",
+      "fr": "Naissance de l’imam Muhammad al-Baqir",
+      "de": "Geburt des Imams Muhammad al-Baqir",
+      "es": "Nacimiento del imán Muhammad al-Baqir",
+      "it": "Nascita dell’imam Muhammad al-Baqir",
+      "id": "Kelahiran Imam Muhammad al-Baqir",
+      "ms": "Kelahiran Imam Muhammad al-Baqir",
+      "tr": "İmam Muhammed Bakır’ın doğumu",
+      "ru": "Рождение имама Мухаммада аль-Бакира",
+      "fa": "ولادت امام محمد باقر",
+      "ur": "ولادتِ امام محمد باقر",
+      "zh-Hans": "伊玛目穆罕默德·巴基尔诞辰",
+      "zh-Hant": "伊瑪目穆罕默德·巴基爾誕辰"
     },
     "convention": "twelver",
     "references": [
@@ -242,7 +422,19 @@
     "day": 7,
     "titles": {
       "en": "Martyrdom of Imam Muhammad al-Baqir",
-      "ar": "استشهاد الإمام محمد الباقر"
+      "ar": "استشهاد الإمام محمد الباقر",
+      "fr": "Martyre de l’imam Muhammad al-Baqir",
+      "de": "Martyrium des Imams Muhammad al-Baqir",
+      "es": "Martirio del imán Muhammad al-Baqir",
+      "it": "Martirio dell’imam Muhammad al-Baqir",
+      "id": "Kesyahidan Imam Muhammad al-Baqir",
+      "ms": "Kesyahidan Imam Muhammad al-Baqir",
+      "tr": "İmam Muhammed Bakır’ın şehadeti",
+      "ru": "Мученическая смерть имама Мухаммада аль-Бакира",
+      "fa": "شهادت امام محمد باقر",
+      "ur": "شہادتِ امام محمد باقر",
+      "zh-Hans": "伊玛目穆罕默德·巴基尔殉难日",
+      "zh-Hant": "伊瑪目穆罕默德·巴基爾殉難日"
     },
     "convention": "twelver",
     "references": [
@@ -261,7 +453,19 @@
     "day": 17,
     "titles": {
       "en": "Birth of Imam Jafar al-Sadiq",
-      "ar": "ولادة الإمام جعفر الصادق"
+      "ar": "ولادة الإمام جعفر الصادق",
+      "fr": "Naissance de l’imam Jafar al-Sadiq",
+      "de": "Geburt des Imams Jafar al-Sadiq",
+      "es": "Nacimiento del imán Jafar al-Sadiq",
+      "it": "Nascita dell’imam Jafar al-Sadiq",
+      "id": "Kelahiran Imam Jafar al-Sadiq",
+      "ms": "Kelahiran Imam Jafar al-Sadiq",
+      "tr": "İmam Cafer Sadık’ın doğumu",
+      "ru": "Рождение имама Джафара ас-Садика",
+      "fa": "ولادت امام جعفر صادق",
+      "ur": "ولادتِ امام جعفر صادق",
+      "zh-Hans": "伊玛目贾法尔·萨迪格诞辰",
+      "zh-Hant": "伊瑪目賈法爾·薩迪格誕辰"
     },
     "convention": "twelver",
     "references": [
@@ -280,7 +484,19 @@
     "day": 25,
     "titles": {
       "en": "Martyrdom of Imam Jafar al-Sadiq",
-      "ar": "استشهاد الإمام جعفر الصادق"
+      "ar": "استشهاد الإمام جعفر الصادق",
+      "fr": "Martyre de l’imam Jafar al-Sadiq",
+      "de": "Martyrium des Imams Jafar al-Sadiq",
+      "es": "Martirio del imán Jafar al-Sadiq",
+      "it": "Martirio dell’imam Jafar al-Sadiq",
+      "id": "Kesyahidan Imam Jafar al-Sadiq",
+      "ms": "Kesyahidan Imam Jafar al-Sadiq",
+      "tr": "İmam Cafer Sadık’ın şehadeti",
+      "ru": "Мученическая смерть имама Джафара ас-Садика",
+      "fa": "شهادت امام جعفر صادق",
+      "ur": "شہادتِ امام جعفر صادق",
+      "zh-Hans": "伊玛目贾法尔·萨迪格殉难日",
+      "zh-Hant": "伊瑪目賈法爾·薩迪格殉難日"
     },
     "convention": "twelver",
     "references": [
@@ -299,7 +515,19 @@
     "day": 7,
     "titles": {
       "en": "Birth of Imam Musa al-Kadhim",
-      "ar": "ولادة الإمام موسى الكاظم"
+      "ar": "ولادة الإمام موسى الكاظم",
+      "fr": "Naissance de l’imam Musa al-Kadhim",
+      "de": "Geburt des Imams Musa al-Kadhim",
+      "es": "Nacimiento del imán Musa al-Kadhim",
+      "it": "Nascita dell’imam Musa al-Kadhim",
+      "id": "Kelahiran Imam Musa al-Kadhim",
+      "ms": "Kelahiran Imam Musa al-Kadhim",
+      "tr": "İmam Musa Kazım’ın doğumu",
+      "ru": "Рождение имама Мусы аль-Казима",
+      "fa": "ولادت امام موسی کاظم",
+      "ur": "ولادتِ امام موسیٰ کاظم",
+      "zh-Hans": "伊玛目穆萨·卡齐姆诞辰",
+      "zh-Hant": "伊瑪目穆薩·卡齊姆誕辰"
     },
     "convention": "twelver",
     "references": [
@@ -318,7 +546,19 @@
     "day": 25,
     "titles": {
       "en": "Martyrdom of Imam Musa al-Kadhim",
-      "ar": "استشهاد الإمام موسى الكاظم"
+      "ar": "استشهاد الإمام موسى الكاظم",
+      "fr": "Martyre de l’imam Musa al-Kadhim",
+      "de": "Martyrium des Imams Musa al-Kadhim",
+      "es": "Martirio del imán Musa al-Kadhim",
+      "it": "Martirio dell’imam Musa al-Kadhim",
+      "id": "Kesyahidan Imam Musa al-Kadhim",
+      "ms": "Kesyahidan Imam Musa al-Kadhim",
+      "tr": "İmam Musa Kazım’ın şehadeti",
+      "ru": "Мученическая смерть имама Мусы аль-Казима",
+      "fa": "شهادت امام موسی کاظم",
+      "ur": "شہادتِ امام موسیٰ کاظم",
+      "zh-Hans": "伊玛目穆萨·卡齐姆殉难日",
+      "zh-Hant": "伊瑪目穆薩·卡齊姆殉難日"
     },
     "convention": "twelver",
     "references": [
@@ -337,7 +577,19 @@
     "day": 17,
     "titles": {
       "en": "Martyrdom of Imam Ali al-Ridha",
-      "ar": "استشهاد الإمام علي الرضا"
+      "ar": "استشهاد الإمام علي الرضا",
+      "fr": "Martyre de l’imam Ali al-Ridha",
+      "de": "Martyrium des Imams Ali al-Ridha",
+      "es": "Martirio del imán Ali al-Ridha",
+      "it": "Martirio dell’imam Ali al-Ridha",
+      "id": "Kesyahidan Imam Ali al-Ridha",
+      "ms": "Kesyahidan Imam Ali al-Ridha",
+      "tr": "İmam Ali Rıza’nın şehadeti",
+      "ru": "Мученическая смерть имама Али ар-Риды",
+      "fa": "شهادت امام علی رضا",
+      "ur": "شہادتِ امام علی رضا",
+      "zh-Hans": "伊玛目阿里·里达殉难日",
+      "zh-Hant": "伊瑪目阿里·里達殉難日"
     },
     "convention": "twelver",
     "references": [
@@ -356,7 +608,19 @@
     "day": 10,
     "titles": {
       "en": "Birth of Imam Muhammad al-Jawad",
-      "ar": "ولادة الإمام محمد الجواد"
+      "ar": "ولادة الإمام محمد الجواد",
+      "fr": "Naissance de l’imam Muhammad al-Jawad",
+      "de": "Geburt des Imams Muhammad al-Jawad",
+      "es": "Nacimiento del imán Muhammad al-Jawad",
+      "it": "Nascita dell’imam Muhammad al-Jawad",
+      "id": "Kelahiran Imam Muhammad al-Jawad",
+      "ms": "Kelahiran Imam Muhammad al-Jawad",
+      "tr": "İmam Muhammed Cevad’ın doğumu",
+      "ru": "Рождение имама Мухаммада аль-Джавада",
+      "fa": "ولادت امام محمد جواد",
+      "ur": "ولادتِ امام محمد جواد",
+      "zh-Hans": "伊玛目穆罕默德·贾瓦德诞辰",
+      "zh-Hant": "伊瑪目穆罕默德·賈瓦德誕辰"
     },
     "convention": "twelver",
     "references": [
@@ -375,7 +639,19 @@
     "day": 30,
     "titles": {
       "en": "Martyrdom of Imam Muhammad al-Jawad",
-      "ar": "استشهاد الإمام محمد الجواد"
+      "ar": "استشهاد الإمام محمد الجواد",
+      "fr": "Martyre de l’imam Muhammad al-Jawad",
+      "de": "Martyrium des Imams Muhammad al-Jawad",
+      "es": "Martirio del imán Muhammad al-Jawad",
+      "it": "Martirio dell’imam Muhammad al-Jawad",
+      "id": "Kesyahidan Imam Muhammad al-Jawad",
+      "ms": "Kesyahidan Imam Muhammad al-Jawad",
+      "tr": "İmam Muhammed Cevad’ın şehadeti",
+      "ru": "Мученическая смерть имама Мухаммада аль-Джавада",
+      "fa": "شهادت امام محمد جواد",
+      "ur": "شہادتِ امام محمد جواد",
+      "zh-Hans": "伊玛目穆罕默德·贾瓦德殉难日",
+      "zh-Hant": "伊瑪目穆罕默德·賈瓦德殉難日"
     },
     "convention": "twelver",
     "references": [
@@ -394,7 +670,19 @@
     "day": 5,
     "titles": {
       "en": "Birth of Imam Ali al-Hadi",
-      "ar": "ولادة الإمام علي الهادي"
+      "ar": "ولادة الإمام علي الهادي",
+      "fr": "Naissance de l’imam Ali al-Hadi",
+      "de": "Geburt des Imams Ali al-Hadi",
+      "es": "Nacimiento del imán Ali al-Hadi",
+      "it": "Nascita dell’imam Ali al-Hadi",
+      "id": "Kelahiran Imam Ali al-Hadi",
+      "ms": "Kelahiran Imam Ali al-Hadi",
+      "tr": "İmam Ali Hadi’nin doğumu",
+      "ru": "Рождение имама Али аль-Хади",
+      "fa": "ولادت امام علی هادی",
+      "ur": "ولادتِ امام علی ہادی",
+      "zh-Hans": "伊玛目阿里·哈迪诞辰",
+      "zh-Hant": "伊瑪目阿里·哈迪誕辰"
     },
     "convention": "twelver",
     "references": [
@@ -413,7 +701,19 @@
     "day": 3,
     "titles": {
       "en": "Martyrdom of Imam Ali al-Hadi",
-      "ar": "استشهاد الإمام علي الهادي"
+      "ar": "استشهاد الإمام علي الهادي",
+      "fr": "Martyre de l’imam Ali al-Hadi",
+      "de": "Martyrium des Imams Ali al-Hadi",
+      "es": "Martirio del imán Ali al-Hadi",
+      "it": "Martirio dell’imam Ali al-Hadi",
+      "id": "Kesyahidan Imam Ali al-Hadi",
+      "ms": "Kesyahidan Imam Ali al-Hadi",
+      "tr": "İmam Ali Hadi’nin şehadeti",
+      "ru": "Мученическая смерть имама Али аль-Хади",
+      "fa": "شهادت امام علی هادی",
+      "ur": "شہادتِ امام علی ہادی",
+      "zh-Hans": "伊玛目阿里·哈迪殉难日",
+      "zh-Hant": "伊瑪目阿里·哈迪殉難日"
     },
     "convention": "twelver",
     "references": [
@@ -432,7 +732,19 @@
     "day": 8,
     "titles": {
       "en": "Birth of Imam Hasan al-Askari",
-      "ar": "ولادة الإمام الحسن العسكري"
+      "ar": "ولادة الإمام الحسن العسكري",
+      "fr": "Naissance de l’imam Hasan al-Askari",
+      "de": "Geburt des Imams Hasan al-Askari",
+      "es": "Nacimiento del imán Hasan al-Askari",
+      "it": "Nascita dell’imam Hasan al-Askari",
+      "id": "Kelahiran Imam Hasan al-Askari",
+      "ms": "Kelahiran Imam Hasan al-Askari",
+      "tr": "İmam Hasan Askeri’nin doğumu",
+      "ru": "Рождение имама Хасана аль-Аскари",
+      "fa": "ولادت امام حسن عسکری",
+      "ur": "ولادتِ امام حسن عسکری",
+      "zh-Hans": "伊玛目哈桑·阿斯卡里诞辰",
+      "zh-Hant": "伊瑪目哈桑·阿斯卡里誕辰"
     },
     "convention": "twelver",
     "references": [
@@ -451,7 +763,19 @@
     "day": 8,
     "titles": {
       "en": "Martyrdom of Imam Hasan al-Askari",
-      "ar": "استشهاد الإمام الحسن العسكري"
+      "ar": "استشهاد الإمام الحسن العسكري",
+      "fr": "Martyre de l’imam Hasan al-Askari",
+      "de": "Martyrium des Imams Hasan al-Askari",
+      "es": "Martirio del imán Hasan al-Askari",
+      "it": "Martirio dell’imam Hasan al-Askari",
+      "id": "Kesyahidan Imam Hasan al-Askari",
+      "ms": "Kesyahidan Imam Hasan al-Askari",
+      "tr": "İmam Hasan Askeri’nin şehadeti",
+      "ru": "Мученическая смерть имама Хасана аль-Аскари",
+      "fa": "شهادت امام حسن عسکری",
+      "ur": "شہادتِ امام حسن عسکری",
+      "zh-Hans": "伊玛目哈桑·阿斯卡里殉难日",
+      "zh-Hant": "伊瑪目哈桑·阿斯卡里殉難日"
     },
     "convention": "twelver",
     "references": [
@@ -470,7 +794,19 @@
     "day": 15,
     "titles": {
       "en": "Birth of Imam Muhammad al-Mahdi",
-      "ar": "ولادة الإمام محمد المهدي"
+      "ar": "ولادة الإمام محمد المهدي",
+      "fr": "Naissance de l’imam Muhammad al-Mahdi",
+      "de": "Geburt des Imams Muhammad al-Mahdi",
+      "es": "Nacimiento del imán Muhammad al-Mahdi",
+      "it": "Nascita dell’imam Muhammad al-Mahdi",
+      "id": "Kelahiran Imam Muhammad al-Mahdi",
+      "ms": "Kelahiran Imam Muhammad al-Mahdi",
+      "tr": "İmam Muhammed Mehdi’nin doğumu",
+      "ru": "Рождение имама Мухаммада аль-Махди",
+      "fa": "ولادت امام محمد مهدی",
+      "ur": "ولادتِ امام محمد مہدی",
+      "zh-Hans": "伊玛目穆罕默德·马赫迪诞辰",
+      "zh-Hant": "伊瑪目穆罕默德·馬赫迪誕辰"
     },
     "convention": "twelver",
     "references": [
@@ -489,7 +825,19 @@
     "day": 11,
     "titles": {
       "en": "Birth of Imam Ali al-Ridha",
-      "ar": "ولادة الإمام علي الرضا"
+      "ar": "ولادة الإمام علي الرضا",
+      "fr": "Naissance de l’imam Ali al-Ridha",
+      "de": "Geburt des Imams Ali al-Ridha",
+      "es": "Nacimiento del imán Ali al-Ridha",
+      "it": "Nascita dell’imam Ali al-Ridha",
+      "id": "Kelahiran Imam Ali al-Ridha",
+      "ms": "Kelahiran Imam Ali al-Ridha",
+      "tr": "İmam Ali Rıza’nın doğumu",
+      "ru": "Рождение имама Али ар-Риды",
+      "fa": "ولادت امام علی رضا",
+      "ur": "ولادتِ امام علی رضا",
+      "zh-Hans": "伊玛目阿里·里达诞辰",
+      "zh-Hant": "伊瑪目阿里·里達誕辰"
     },
     "convention": "twelver",
     "references": [
@@ -508,7 +856,19 @@
     "day": 17,
     "titles": {
       "en": "Birth of Prophet Muhammad",
-      "ar": "ولادة النبي محمد"
+      "ar": "ولادة النبي محمد",
+      "fr": "Naissance du prophète Muhammad",
+      "de": "Geburt des Propheten Muhammad",
+      "es": "Nacimiento del profeta Muhammad",
+      "it": "Nascita del profeta Muhammad",
+      "id": "Kelahiran Nabi Muhammad",
+      "ms": "Kelahiran Nabi Muhammad",
+      "tr": "Hz. Muhammed’in doğumu",
+      "ru": "Рождение пророка Мухаммада",
+      "fa": "ولادت پیامبر اکرم",
+      "ur": "ولادتِ پیغمبر محمد",
+      "zh-Hans": "先知穆罕默德诞辰",
+      "zh-Hant": "先知穆罕默德誕辰"
     },
     "convention": "twelver",
     "references": [
@@ -527,7 +887,19 @@
     "day": 28,
     "titles": {
       "en": "Death of Prophet Muhammad",
-      "ar": "وفاة النبي محمد"
+      "ar": "وفاة النبي محمد",
+      "fr": "Décès du prophète Muhammad",
+      "de": "Tod des Propheten Muhammad",
+      "es": "Fallecimiento del profeta Muhammad",
+      "it": "Morte del profeta Muhammad",
+      "id": "Wafat Nabi Muhammad",
+      "ms": "Kewafatan Nabi Muhammad",
+      "tr": "Hz. Muhammed’in vefatı",
+      "ru": "Кончина пророка Мухаммада",
+      "fa": "رحلت پیامبر اکرم",
+      "ur": "رحلتِ پیغمبر محمد",
+      "zh-Hans": "先知穆罕默德逝世纪念日",
+      "zh-Hant": "先知穆罕默德逝世紀念日"
     },
     "convention": "twelver",
     "references": [
@@ -546,7 +918,19 @@
     "day": 20,
     "titles": {
       "en": "Birth of Fatimah al-Zahra",
-      "ar": "ولادة الصديقة الزهراء"
+      "ar": "ولادة الصديقة الزهراء",
+      "fr": "Naissance de Fatima al-Zahra",
+      "de": "Geburt Fatima al-Zahras",
+      "es": "Nacimiento de Fátima al-Zahra",
+      "it": "Nascita di Fatima al-Zahra",
+      "id": "Kelahiran Fatimah az-Zahra",
+      "ms": "Kelahiran Fatimah al-Zahra",
+      "tr": "Hz. Fatıma Zehra’nın doğumu",
+      "ru": "Рождение Фатимы аз-Захры",
+      "fa": "ولادت حضرت فاطمهٔ زهرا",
+      "ur": "ولادتِ حضرت فاطمہ زہرا",
+      "zh-Hans": "法蒂玛·扎赫拉诞辰",
+      "zh-Hant": "法蒂瑪·扎赫拉誕辰"
     },
     "convention": "twelver",
     "references": [
@@ -565,7 +949,19 @@
     "day": 3,
     "titles": {
       "en": "Martyrdom of Fatimah al-Zahra",
-      "ar": "استشهاد الصديقة الزهراء"
+      "ar": "استشهاد الصديقة الزهراء",
+      "fr": "Martyre de Fatima al-Zahra",
+      "de": "Martyrium Fatima al-Zahras",
+      "es": "Martirio de Fátima al-Zahra",
+      "it": "Martirio di Fatima al-Zahra",
+      "id": "Kesyahidan Fatimah az-Zahra",
+      "ms": "Kesyahidan Fatimah al-Zahra",
+      "tr": "Hz. Fatıma Zehra’nın şehadeti",
+      "ru": "Мученическая смерть Фатимы аз-Захры",
+      "fa": "شهادت حضرت فاطمهٔ زهرا",
+      "ur": "شہادتِ حضرت فاطمہ زہرا",
+      "zh-Hans": "法蒂玛·扎赫拉殉难日",
+      "zh-Hant": "法蒂瑪·扎赫拉殉難日"
     },
     "convention": "twelver",
     "references": [
@@ -584,7 +980,19 @@
     "day": 27,
     "titles": {
       "en": "Isra and Mi'raj",
-      "ar": "الإسراء والمعراج"
+      "ar": "الإسراء والمعراج",
+      "fr": "Voyage nocturne et Ascension",
+      "de": "Isra und Miʿradsch",
+      "es": "Viaje nocturno y ascensión",
+      "it": "Viaggio notturno e ascensione",
+      "id": "Isra Mikraj",
+      "ms": "Israk dan Mikraj",
+      "tr": "İsra ve Miraç",
+      "ru": "Исра и Мирадж",
+      "fa": "اسراء و معراج",
+      "ur": "اسراء و معراج",
+      "zh-Hans": "夜行与登霄",
+      "zh-Hant": "夜行與登霄"
     },
     "convention": null,
     "references": []
@@ -595,7 +1003,19 @@
     "day": 27,
     "titles": {
       "en": "Prophetic Mission",
-      "ar": "المبعث النبوي"
+      "ar": "المبعث النبوي",
+      "fr": "Début de la mission prophétique",
+      "de": "Beginn der prophetischen Sendung",
+      "es": "Inicio de la misión profética",
+      "it": "Inizio della missione profetica",
+      "id": "Pengangkatan Nabi",
+      "ms": "Permulaan kerasulan",
+      "tr": "Peygamberlik görevinin başlangıcı",
+      "ru": "Начало пророческой миссии",
+      "fa": "مبعث پیامبر",
+      "ur": "بعثتِ نبوی",
+      "zh-Hans": "先知受命日",
+      "zh-Hant": "先知受命日"
     },
     "convention": "twelver",
     "references": []
@@ -606,7 +1026,19 @@
     "day": 19,
     "titles": {
       "en": "Night of Qadr",
-      "ar": "ليلة القدر"
+      "ar": "ليلة القدر",
+      "fr": "Nuit du Destin",
+      "de": "Nacht der Bestimmung",
+      "es": "Noche del Destino",
+      "it": "Notte del Destino",
+      "id": "Lailatulqadar",
+      "ms": "Lailatulqadar",
+      "tr": "Kadir Gecesi",
+      "ru": "Ночь предопределения",
+      "fa": "شب قدر",
+      "ur": "شبِ قدر",
+      "zh-Hans": "尊贵之夜",
+      "zh-Hant": "尊貴之夜"
     },
     "convention": "twelver",
     "references": []
@@ -617,7 +1049,19 @@
     "day": 21,
     "titles": {
       "en": "Night of Qadr",
-      "ar": "ليلة القدر"
+      "ar": "ليلة القدر",
+      "fr": "Nuit du Destin",
+      "de": "Nacht der Bestimmung",
+      "es": "Noche del Destino",
+      "it": "Notte del Destino",
+      "id": "Lailatulqadar",
+      "ms": "Lailatulqadar",
+      "tr": "Kadir Gecesi",
+      "ru": "Ночь предопределения",
+      "fa": "شب قدر",
+      "ur": "شبِ قدر",
+      "zh-Hans": "尊贵之夜",
+      "zh-Hant": "尊貴之夜"
     },
     "convention": "twelver",
     "references": []
@@ -628,7 +1072,19 @@
     "day": 23,
     "titles": {
       "en": "Night of Qadr",
-      "ar": "ليلة القدر"
+      "ar": "ليلة القدر",
+      "fr": "Nuit du Destin",
+      "de": "Nacht der Bestimmung",
+      "es": "Noche del Destino",
+      "it": "Notte del Destino",
+      "id": "Lailatulqadar",
+      "ms": "Lailatulqadar",
+      "tr": "Kadir Gecesi",
+      "ru": "Ночь предопределения",
+      "fa": "شب قدر",
+      "ur": "شبِ قدر",
+      "zh-Hans": "尊贵之夜",
+      "zh-Hant": "尊貴之夜"
     },
     "convention": "twelver",
     "references": []

@@ -75,3 +75,8 @@ test("sitemap and robots agree with production URLs and environment", () => {
     expect(sitemap).toContain(`<loc>${new URL(path, site).href}</loc>`)
   }
 })
+
+test("publishes a valid empty calendar feed", () => {
+  const feed = JSON.parse(readFileSync("dist/calendar/corrections-v1.json", "utf8"))
+  expect(feed).toEqual({ schemaVersion: 1, announcements: [] })
+})

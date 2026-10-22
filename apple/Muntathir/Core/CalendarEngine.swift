@@ -55,6 +55,11 @@ struct MonthCorrection: Codable, Hashable, Sendable {
     let sourceID: String?
 }
 
+struct MonthOffset: Codable, Equatable, Sendable {
+    let month: HijriMonth
+    let days: Int
+}
+
 struct ResolvedDay: Sendable {
     let month: HijriMonth
     let day: Int
@@ -103,6 +108,18 @@ struct CalendarEngine: Sendable {
         for row in corrections.values {
             guard abs(distance(baselineStart(row.month), row.start.date(in: timeZone)!)) <= 7 else { throw CalendarError.invalidDate }
         }
+    }
+
+    init(timeZone: TimeZone, offsets: [MonthOffset], confirmed: [MonthCorrection] = []) throws {
+        guard offsets.allSatisfy({ $0.month.isValid && (-2 ... 2).contains($0.days) }),
+              Set(offsets.map(\.month)).count == offsets.count else { throw CalendarError.invalidDate }
+        let source = try CalendarEngine(timeZone: timeZone, confirmed: confirmed)
+        let manual = offsets.filter { $0.days != 0 }.map { offset in
+            MonthCorrection(month: offset.month,
+                            start: CivilDate(source.addingDays(-offset.days, to: source.start(of: offset.month)), in: timeZone),
+                            provenance: .manual, sourceID: nil)
+        }
+        try self.init(timeZone: timeZone, manual: manual, confirmed: confirmed)
     }
 
     func distance(_ from: Date, _ to: Date) -> Int {

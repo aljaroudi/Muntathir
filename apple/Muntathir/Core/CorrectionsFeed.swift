@@ -2,12 +2,42 @@ import Foundation
 
 enum SightingMethod: String, Codable, CaseIterable, Sendable {
     case nakedEye, aidedSight, government, calculation
-    var title: String {
+}
+
+enum CalendarMethod: String, CaseIterable, Identifiable {
+    case system, nakedEye, government
+    var id: Self {
+        self
+    }
+
+    var title: LocalizedStringResource {
         switch self {
-        case .nakedEye: String(localized: "Naked-eye sighting")
-        case .aidedSight: String(localized: "Aided sighting")
-        case .government: String(localized: "Government announcement")
-        case .calculation: String(localized: "Calculated calendar")
+        case .system: "System calendar"
+        case .nakedEye: "Local naked eye"
+        case .government: "Government announcement"
+        }
+    }
+}
+
+enum CalendarSource {
+    static let countries = ["SA", "KW", "BH", "OM", "AE", "QA"]
+    static let middleEast = "naked-eye-middle-east"
+
+    static func method(for sourceID: String?) -> CalendarMethod {
+        if sourceID == middleEast {
+            return .nakedEye
+        }
+        if let sourceID, countries.contains(where: { sourceID == "government-" + $0 }) {
+            return .government
+        }
+        return .system
+    }
+
+    static func sightingMethod(for sourceID: String?) -> SightingMethod? {
+        switch method(for: sourceID) {
+        case .system: nil
+        case .nakedEye: .nakedEye
+        case .government: .government
         }
     }
 }
@@ -89,7 +119,8 @@ struct CorrectionsFeed: Codable, Sendable {
 
     func matching(location: SavedLocation, sourceID: String?) throws -> [Announcement] {
         guard let sourceID else { return [] }
-        let rows = announcements.filter { $0.sourceID == sourceID && $0.coverage.contains(location) }
+        guard let method = CalendarSource.sightingMethod(for: sourceID) else { return [] }
+        let rows = announcements.filter { $0.sourceID == sourceID && $0.method == method }
         var months: [HijriMonth: Announcement] = [:]
         for row in rows {
             if let previous = months[row.month], previous.start != row.start {
@@ -111,6 +142,17 @@ actor FeedClient {
     private var running: Task<CorrectionsFeed, Error>?
     init(url: URL, cacheURL: URL, session: URLSession = .shared) {
         self.url = url; self.cacheURL = cacheURL; self.session = session
+    }
+
+    static func production() -> FeedClient {
+        FeedClient(url: URL(string: "https://xn--pgbou4cf.com/calendar/corrections-v1.json")!,
+                   cacheURL: URL.cachesDirectory.appendingPathComponent("calendar/corrections-v1.json"))
+    }
+
+    nonisolated func cachedFeed() -> CorrectionsFeed? {
+        guard let data = try? Data(contentsOf: cacheURL),
+              let cache = try? JSONDecoder().decode(Cache.self, from: data) else { return nil }
+        return try? CorrectionsFeed.decode(cache.payload)
     }
 
     func refresh() async throws -> CorrectionsFeed {

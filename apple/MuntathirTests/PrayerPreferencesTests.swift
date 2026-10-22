@@ -44,3 +44,18 @@ struct PrayerPreferencesTests {
         #expect(try JSONDecoder().decode(Preferences.self, from: Data(#"{"imsakMinutes":999}"#.utf8)).imsakMinutes == 120)
     }
 }
+
+extension PrayerPreferencesTests {
+    @Test(arguments: [-2, -1, 0, 1, 2])
+    func calendarOffsetsNeverChangePrayers(days: Int) throws {
+        let date = try #require(CivilDate(year: 2026, month: 10, day: 18).date(in: location.timeZone))
+        var original = Preferences()
+        original.prayerMethod = .ummAlQura
+        let before = NotificationPlan.make(now: date, preferences: original, location: location)
+        var adjusted = original
+        adjusted.monthOffsets = [.init(month: .init(year: 1448, month: 9), days: days)]
+        let after = NotificationPlan.make(now: date, preferences: adjusted, location: location)
+        #expect(before.map(\.date) == after.map(\.date))
+        #expect(before.map(\.name) == after.map(\.name))
+    }
+}

@@ -1,6 +1,6 @@
 # iPhone and iPad
 
-Today shows the current date, prayer schedule, and daily ayah. Calendar contains observances. Tools contains Qibla; Settings is available from the navigation toolbar; Arabic/English localization; Adhan 1.5.0 prayer calculations; manual month-start corrections; bundled observances and daily Quran verses; saved-place iCloud preferences; local prayer notifications. A foreground GPS fix is remembered locally across launches and never uploaded to iCloud; reverse geocoding is not used.
+Today shows the current date, prayer schedule, and daily ayah. Calendar contains observances. Tools contains Qibla; Settings is available from the navigation toolbar; 14 interface locales (Arabic, English, French, German, Indonesian, Italian, Malay, Persian, Russian, Spanish, Turkish, Urdu, Simplified Chinese, Traditional Chinese); Adhan 1.5.0 prayer calculations; source-relative manual month offsets (−2 through +2 days); bundled observances and daily Quran verses; saved-place iCloud preferences; local prayer notifications. A foreground GPS fix is remembered locally across launches and never uploaded to iCloud; reverse geocoding is not used.
 
 New preferences default to Jafari/Qum; legacy preferences without a method retain Tehran. Tehran's Maghrib must be later than calculated sunset; if the library cannot produce that result, the app reports unavailable times. Ramadan Isha intervals for Umm al-Qura/Qatar use the independent Foundation baseline, not manual religious-date corrections. No prayer engine is implemented here.
 
@@ -29,3 +29,11 @@ Onboarding introduces the app, offers an app-language step that opens iOS Settin
 Completion is stored on this device and does not sync through iCloud. Existing saved locations do not bypass setup. Interrupted setup resumes at the current step and retains saved choices, including when changing the app language restarts the app. The app-language link is also available in Settings. After completion, launch opens Today.
 
 Quran translations use [Apple-hosted on-demand packs](../AssetPacks/). Only Arabic is bundled. Auto matches preferred languages; explicit selection and None persist and also control daily ayah and widgets. Downloads never block Arabic reading.
+
+## Calendar sources and month offsets
+
+Settings offers System calendar (Apple Foundation Umm al-Qura), Local naked eye (Middle East), and Government announcement (Saudi Arabia, Kuwait, Bahrain, Oman, UAE, Qatar). Country names follow the app locale. Source selection applies worldwide and is independent of GPS coverage. With no published announcement, the system calendar provides dates.
+
+Calendar’s Adjust this month sheet stores an offset for that Hijri month. Positive values advance the displayed Hijri date: +1 starts the month one Gregorian day earlier than the selected source. The sheet previews the resulting start date. Zero removes that month’s adjustment. All months remain 29 or 30 days; unconfirmed neighboring boundaries may move, and conflicting anchors are rejected without changing saved choices. Offsets survive source changes and apply to observances, dated daily verses, widgets, and Watch snapshots. Prayer calculations and prayer notification times remain unchanged.
+
+Legacy absolute month corrections reset to zero; unrelated settings remain intact. The production feed refreshes on launch/foreground, source changes, and background refresh, using ETag and a last-good cache. Month notifications follow successful refreshes rather than immediate push delivery.

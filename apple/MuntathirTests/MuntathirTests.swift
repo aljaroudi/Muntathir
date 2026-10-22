@@ -193,11 +193,11 @@ struct FeedTests {
         #expect(polygon.contains(location))
         #expect(!Coverage(countries: ["IQ"], polygons: []).contains(location))
         let engine = try CalendarEngine(timeZone: location.timeZone), month = HijriMonth(year: 1448, month: 1)
-        let row = Announcement(id: "example", revision: 1, method: .nakedEye, sourceID: "example-source", coverage: polygon, month: month, start: CivilDate(engine.start(of: month), in: location.timeZone))
+        let row = Announcement(id: "example", revision: 1, method: .nakedEye, sourceID: CalendarSource.middleEast, coverage: polygon, month: month, start: CivilDate(engine.start(of: month), in: location.timeZone))
         let feed = try CorrectionsFeed.decode(JSONEncoder().encode(CorrectionsFeed(schemaVersion: 1, announcements: [row])))
         #expect(try feed.matching(location: location, sourceID: nil).isEmpty)
         #expect(try feed.matching(location: location, sourceID: "other").isEmpty)
-        #expect(try feed.matching(location: location, sourceID: "example-source").count == 1)
+        #expect(try feed.matching(location: location, sourceID: CalendarSource.middleEast).count == 1)
         #expect(throws: CalendarError.self) { try CorrectionsFeed.decode(JSONEncoder().encode(CorrectionsFeed(schemaVersion: 2, announcements: []))) }
         #expect(throws: CalendarError.self) { try CorrectionsFeed.decode(JSONEncoder().encode(CorrectionsFeed(schemaVersion: 1, announcements: [row, row]))) }
     }
@@ -285,5 +285,97 @@ struct PreferenceMigrationTests {
         #expect(BackgroundRefresh.isRegistered)
         let identifiers = Bundle.main.object(forInfoDictionaryKey: "BGTaskSchedulerPermittedIdentifiers") as? [String]
         #expect(identifiers?.contains(BackgroundRefresh.identifier) == true)
+    }
+}
+
+extension CalendarTests {
+    @Test(arguments: [-2, -1, 0, 1, 2])
+    func sourceRelativeOffsetsPreserveBoundaries(days: Int) throws {
+        let month = HijriMonth(year: 1448, month: 1)
+        let baseline = try CalendarEngine(timeZone: zone)
+        let confirmation = MonthCorrection(month: month,
+                                           start: CivilDate(baseline.addingDays(1, to: baseline.start(of: month)), in: zone),
+                                           provenance: .confirmed, sourceID: CalendarSource.middleEast)
+        let source = try CalendarEngine(timeZone: zone, confirmed: [confirmation])
+        let offset = MonthOffset(month: month, days: days)
+        let engine = try CalendarEngine(timeZone: zone, offsets: [offset], confirmed: [confirmation])
+        #expect(engine.start(of: month) == source.addingDays(-days, to: source.start(of: month)))
+        #expect(engine.resolve(engine.start(of: month)).day == 1)
+        #expect(engine.resolve(engine.start(of: month)).provenance == (days == 0 ? .confirmed : .manual))
+        for index in -12 ... 12 {
+            let candidate = month.advanced(index)
+            #expect((29 ... 30).contains(engine.days(in: candidate).count))
+            #expect(engine.resolve(engine.start(of: candidate)).month == candidate)
+        }
+        let manual = engine.corrections.values.filter { $0.provenance == .manual }
+        let widget = WidgetCalendarSettings(timeZoneID: zone.identifier, manual: manual, confirmed: [confirmation])
+        let watch = WatchSettings(prayers: .init(location: nil, method: .jafari, hiddenPrayers: []), calendar: widget)
+        #expect(widget.engine.start(of: month) == engine.start(of: month))
+        #expect(try WatchSettings.decode(watch.encoded()).calendar.engine.start(of: month) == engine.start(of: month))
+    }
+
+    @MainActor @Test func monthOffsetPersistenceMigrationAndConflictRejection() throws {
+        let suite = "CalendarOffset.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set(Data(#"{"prayerMethod":"kuwait","showFeelsLikeTemperature":true,"selectedSourceID":"legacy","overrides":[{"month":{"year":1448,"month":1},"start":{"year":2026,"month":6,"day":16},"provenance":"manual"}]}"#.utf8), forKey: "preferences.v1")
+        let model = AppModel(defaults: defaults, cloud: nil)
+        #expect(model.preferences.monthOffsets.isEmpty)
+        #expect(model.preferences.selectedSourceID == nil)
+        #expect(model.preferences.prayerMethod == .kuwait)
+        #expect(model.preferences.showFeelsLikeTemperature)
+        let month = HijriMonth(year: 1448, month: 12)
+        try model.correct(month: month, offset: -2)
+        let saved = model.preferences
+        #expect(throws: CalendarError.self) { try model.correct(month: month.advanced(1), offset: 2) }
+        #expect(model.preferences == saved)
+        #expect(throws: CalendarError.self) { try model.correct(month: month, offset: 3) }
+        let restored = AppModel(defaults: defaults, cloud: nil)
+        #expect(restored.preferences.monthOffsets == saved.monthOffsets)
+        try restored.correct(month: month, offset: 0)
+        #expect(restored.preferences.monthOffsets.isEmpty)
+        #expect(restored.engine.start(of: month) == restored.engine.baselineStart(month))
+        #expect(try String(decoding: JSONEncoder().encode(restored.preferences), as: UTF8.self).contains("overrides") == false)
+    }
+
+    @Test func knownSourcesApplyWorldwideAndRequireMatchingMethod() throws {
+        let location = SavedLocation(latitude: 51.5, longitude: -0.1, name: "London", countryCode: "GB", timeZoneID: "Europe/London")
+        let coverage = Coverage(countries: ["SA"], polygons: [])
+        let month = HijriMonth(year: 1448, month: 1)
+        let base = try CalendarEngine(timeZone: location.timeZone)
+        for source in [CalendarSource.middleEast] + CalendarSource.countries.map({ "government-" + $0 }) {
+            let method = try #require(CalendarSource.sightingMethod(for: source))
+            let row = Announcement(id: source, revision: 1, method: method, sourceID: source, coverage: coverage,
+                                   month: month, start: CivilDate(base.start(of: month), in: location.timeZone))
+            let wrong = Announcement(id: source + "-wrong", revision: 1, method: .aidedSight, sourceID: source,
+                                     coverage: coverage, month: month, start: row.start)
+            let feed = CorrectionsFeed(schemaVersion: 1, announcements: [row, wrong])
+            #expect(try feed.matching(location: location, sourceID: source) == [row])
+            #expect(try feed.matching(location: location, sourceID: nil).isEmpty)
+            #expect(try feed.matching(location: location, sourceID: "unknown").isEmpty)
+        }
+    }
+}
+
+extension CalendarTests {
+    @Test(arguments: ["en", "ar", "fr", "de", "id", "it", "ms", "fa", "ru", "es", "tr", "ur", "zh-Hans", "zh-Hant"])
+    func supportedLanguagesAreBundled(language: String) throws {
+        let app = Bundle.main
+        let relativeBundles = ["", "PlugIns/MuntathirWidgets.appex", "Watch/MuntathirWatch.app",
+                               "Watch/MuntathirWatch.app/PlugIns/MuntathirWatchWidgets.appex"]
+        for path in relativeBundles {
+            let url = app.bundleURL.appendingPathComponent(path)
+            let bundle = try #require(Bundle(url: url))
+            #expect(bundle.localizations.contains(language))
+            let translation = try #require(bundle.url(forResource: "Localizable", withExtension: "strings", subdirectory: nil, localization: language))
+            let contents = try Data(contentsOf: translation)
+            let strings = try #require(try PropertyListSerialization.propertyList(from: contents, format: nil) as? [String: String])
+            #expect(strings["Calendar"]?.isEmpty == false)
+            #expect(strings["System calendar"]?.isEmpty == false)
+            #expect(strings["Day adjustment"]?.isEmpty == false)
+            if language != "en" {
+                #expect(strings["System calendar"] != "System calendar")
+            }
+        }
     }
 }

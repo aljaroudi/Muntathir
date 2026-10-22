@@ -26,10 +26,10 @@ struct MuntathirApp: App {
                     model.select(SavedLocation(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh"))
                 }
             } else {
-                model = AppModel()
+                model = AppModel(feedClient: .production())
             }
         #else
-            model = AppModel()
+            model = AppModel(feedClient: .production())
         #endif
         _model = State(initialValue: model)
         _quranStore = State(initialValue: QuranUserStore.application())
@@ -46,6 +46,10 @@ struct MuntathirApp: App {
                 }
             }
             .environment(model)
+            .task(id: scenePhase) {
+                guard scenePhase == .active else { return }
+                await model.refreshInBackground()
+            }
             .task(id: "\(scenePhase)-\(locale.identifier)-\(translations.downloadRequest)") {
                 guard scenePhase == .active else { return }
                 translations.activate(languages: Locale.preferredLanguages)

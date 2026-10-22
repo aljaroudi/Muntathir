@@ -4,7 +4,7 @@ const en = {
   name: "Muntathir",
   title: "Muntathir: Prayer times, Quran, and Hijri calendar",
   description:
-    "Prayer times, daily Quran verses, the Hijri calendar, and Qibla. An Arabic and English app for iPhone, iPad, and Apple Watch.",
+    "Prayer times, daily Quran verses, the Hijri calendar, and Qibla. An app in 14 languages for iPhone, iPad, and Apple Watch.",
   skip: "Skip to content",
   nav: { language: "Choose language" },
   hero: {
@@ -39,7 +39,7 @@ const en = {
     ],
   },
   companions:
-    "Available in Arabic and English. Made for iPhone and iPad, with an Apple Watch companion and Home Screen widgets.",
+    "Available in 14 languages, including Arabic and English. Made for iPhone and iPad, with an Apple Watch companion and Home Screen widgets.",
   faq: {
     title: "A few useful details",
     items: [
@@ -49,7 +49,7 @@ const en = {
       },
       {
         q: "Which calendar verification methods are supported?",
-        a: "Choose Umm Al-Qura calculations, naked-eye moon sighting, aided moon sighting, or government announcements.",
+        a: "Choose the system calendar, local naked-eye sighting for the Middle East, or government announcements from Saudi Arabia, Kuwait, Bahrain, Oman, the UAE, or Qatar. Adjust individual months by up to two days.",
       },
       {
         q: "How does the Hijri calendar stay accurate?",
@@ -66,7 +66,7 @@ const ar: typeof en = {
   name: "منتظِر",
   title: "منتظِر — مواقيت الصلاة والقرآن والتقويم الهجري",
   description:
-    "مواقيت الصلاة وآيات قرآنية يومية والتقويم الهجري واتجاه القبلة. تطبيق بالعربية والإنجليزية لأجهزة iPhone وiPad وApple Watch.",
+    "مواقيت الصلاة وآيات قرآنية يومية والتقويم الهجري واتجاه القبلة. تطبيق بـ١٤ لغة لأجهزة iPhone وiPad وApple Watch.",
   skip: "انتقل إلى المحتوى",
   nav: { language: "اختر اللغة" },
   hero: {
@@ -98,7 +98,7 @@ const ar: typeof en = {
     ],
   },
   companions:
-    "بالعربية والإنجليزية. لأجهزة \u2066iPhone\u2069 و\u2066iPad\u2069، مع تطبيق مرافق لساعة \u2066Apple Watch\u2069 وأدوات للشاشة الرئيسية.",
+    "متوفر بـ١٤ لغة، منها العربية والإنجليزية. لأجهزة \u2066iPhone\u2069 و\u2066iPad\u2069، مع تطبيق مرافق لساعة \u2066Apple Watch\u2069 وأدوات للشاشة الرئيسية.",
   faq: {
     title: "تفاصيل مفيدة",
     items: [
@@ -108,7 +108,7 @@ const ar: typeof en = {
       },
       {
         q: "ما طرق التحقق من بداية الشهر المدعومة؟",
-        a: "يمكنك اختيار حسابات أم القرى، أو رؤية الهلال بالعين المجردة، أو الرؤية بالأجهزة البصرية، أو الإعلانات الرسمية.",
+        a: "يمكنك اختيار تقويم النظام، أو الرؤية بالعين المجردة لمنطقة الشرق الأوسط، أو الإعلانات الرسمية للسعودية والكويت والبحرين وعُمان والإمارات وقطر. ويمكنك تعديل كل شهر بما يصل إلى يومين.",
       },
       {
         q: "كيف يحافظ التطبيق على دقة التقويم الهجري؟",

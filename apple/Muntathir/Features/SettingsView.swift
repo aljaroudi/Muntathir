@@ -4,6 +4,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.locale) private var locale
     var body: some View {
         NavigationStack {
             Form {
@@ -54,24 +55,46 @@ struct SettingsView: View {
                     Text("Imsak is a precaution before calculated Fajr.")
                 }
                 Section {
-                    LabeledContent(
-                        "Baseline",
-                        value: String(localized: "Umm al-Qura")
-                    )
-                    ForEach(SightingMethod.allCases, id: \.rawValue) { method in
-                        LabeledContent(
-                            method.title,
-                            value: method == .calculation
-                                ? String(localized: "Active")
-                                : String(localized: "Not connected")
-                        )
+                    Picker("Method", selection: Binding(
+                        get: { CalendarSource.method(for: model.preferences.selectedSourceID) },
+                        set: { method in
+                            model.update {
+                                switch method {
+                                case .system: $0.selectedSourceID = nil
+                                case .nakedEye: $0.selectedSourceID = CalendarSource.middleEast
+                                case .government: $0.selectedSourceID = "government-SA"
+                                }
+                            }
+                        }
+                    )) {
+                        ForEach(CalendarMethod.allCases) { method in
+                            Text(method.title).tag(method)
+                        }
+                    }
+                    .accessibilityIdentifier("calendar-method")
+                    switch CalendarSource.method(for: model.preferences.selectedSourceID) {
+                    case .system:
+                        LabeledContent("Baseline", value: String(localized: "Umm al-Qura"))
+                    case .nakedEye:
+                        LabeledContent { Text("Middle East") } label: { Text("Region") }
+                    case .government:
+                        Picker("Country", selection: Binding(
+                            get: { String((model.preferences.selectedSourceID ?? "government-SA").suffix(2)) },
+                            set: { country in model.update { $0.selectedSourceID = "government-" + country } }
+                        )) {
+                            ForEach(CalendarSource.countries, id: \.self) { country in
+                                Text(locale.localizedString(forRegionCode: country) ?? country).tag(country)
+                            }
+                        }
+                        .accessibilityIdentifier("calendar-country")
                     }
                 } header: {
                     Text("Calendar corrections")
                 } footer: {
-                    Text(
-                        "Live sources are not connected yet. Use the Calendar tab to adjust a month manually."
-                    )
+                    Text("Without a published announcement, dates use the system calendar. Adjust individual months in Calendar.")
+                    if let error = model.error {
+                        Text(error).foregroundStyle(.red)
+                    }
                 }
                 Section("Weather") {
                     Toggle("Show feels-like temperature", isOn: Binding(
@@ -114,7 +137,7 @@ struct SettingsView: View {
                     Text("Announcement notifications")
                 } footer: {
                     Text(
-                        "Ready for future sources. Alerts will follow a successful refresh; delivery is not immediate."
+                        "Alerts follow published month announcements after a successful refresh; delivery is not immediate."
                     )
                 }
                 Section {
