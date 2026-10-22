@@ -31,14 +31,13 @@ names.each do |name|
       FileUtils.mkdir_p(folder)
       recording = "#{root}/#{locale}-#{duo ? 'duo' : (ipad ? 'ipad' : 'iphone')}-recording.mov"
       FileUtils.rm_f(recording)
-      language = locale.start_with?("ar") ? "ar" : "en"
       puts "Recording #{locale}/#{name}: sunrise through sunset"
       begins_at = Time.now.to_f + 10
       MuntathirRelease.run!("xcrun", "simctl", "launch", "--terminate-running-process", id, "com.aljaroudi.Muntathir",
                            "--ui-testing", "--ui-testing-mecca", "--marketing-capture", "--sky-date", "2026-10-21T03:19:00Z",
                            "--sky-end", "2026-10-21T14:52:00Z", "--sky-duration", "15", "--sky-begins-at", begins_at,
                            "--ui-testing-weather", "--weather-condition", "clear",
-                           "-AppleLanguages", "(#{language})", "-AppleLocale", locale.tr('-', '_'), "-AppleInterfaceStyle", "Light")
+                           "-AppleLanguages", "(#{locale})", "-AppleLocale", locale.tr('-', '_'), "-AppleInterfaceStyle", "Light")
       log = "#{recording}.log"
       record_command = ["xcrun", "simctl", "io", id, "recordVideo", "--codec=h264"]
       record_command << "--display=primary" if duo

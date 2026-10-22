@@ -17,6 +17,16 @@ def rejects(message)
 end
 
 MuntathirRelease.validate_metadata!
+MuntathirRelease.validate_metadata!(File.join(__dir__, "listing-drafts"), locales: ["fa"])
+require "fastlane_core/languages"
+assert((MuntathirRelease::LOCALES - FastlaneCore::Languages::ALL_LANGUAGES).empty?, "Unsupported App Store locale")
+require "snapshot"
+snapshot_config = FastlaneCore::Configuration.create(Snapshot::Options.available_options, {})
+snapshot_options = FastlaneCore::ConfigurationFile.new(snapshot_config, File.join(__dir__, "Snapfile"), nil, true).options
+assert(snapshot_options[:languages] == MuntathirRelease::LOCALES, "Screenshot locales must match metadata")
+headlines = JSON.parse(File.read(File.join(__dir__, "marketing/headlines.json")))
+assert(headlines.keys.sort == MuntathirRelease::LOCALES.sort, "Store headline locale mismatch")
+assert(headlines.values.all? { |screens| screens.keys == headlines.fetch("en-US").keys && screens.values.all? { |text| !text.strip.empty? } }, "Missing localized screenshot headline")
 assert(MuntathirRelease.next_version("1.0.0", nil, nil) == "1.0.0", "First version changed")
 assert(MuntathirRelease.next_version("1.0.0", "1.0.0", nil) == "1.0.1", "Patch increment failed")
 assert(MuntathirRelease.next_version("1.0.0", "1.0.0", "1.1.0") == "1.1.0", "Pending version not reused")

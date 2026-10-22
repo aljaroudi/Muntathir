@@ -22,7 +22,7 @@ platform :ios do
               derived_data_path: "./build/DerivedData")
   end
 
-  desc "Capture raw Arabic and English iPhone, iPad and Duo screenshots"
+  desc "Capture localized iPhone, iPad and Duo screenshots"
   lane :screenshots do |options|
     settings = {}
     settings[:devices] = options[:devices].split(",") if options[:devices]
@@ -40,12 +40,12 @@ platform :ios do
     sh("bundle", "exec", "ruby", File.join(__dir__, "style.rb"))
   end
 
-  desc "Record continuous sunrise-to-sunset simulator previews in both languages"
+  desc "Record continuous sunrise-to-sunset simulator previews in every store locale"
   lane :previews do
     sh("bundle", "exec", "ruby", File.join(__dir__, "previews.rb"))
   end
 
-  desc "Capture required Arabic and English Apple Watch store screenshots"
+  desc "Capture required localized Apple Watch store screenshots"
   lane :watch_screenshots do
     sh("bundle", "exec", "ruby", File.join(__dir__, "watch_screenshots.rb"))
   end

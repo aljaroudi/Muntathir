@@ -12,8 +12,8 @@ bundle exec fastlane marketing
 
 ## Lanes
 
-- `screenshots`: capture Today, Quran, Calendar, and Tools in English and Arabic on iPhone 17 Pro Max, iPad Pro 13-inch (M5), and iPhone Duo.
-- `watch_screenshots`: capture the real Watch prayer list in both languages at 416 × 496, using a temporary Mecca connectivity cache that is restored afterward.
+- `screenshots`: capture Today, Quran, Calendar, and Tools in all 14 supported store locales on iPhone 17 Pro Max, iPad Pro 13-inch (M5), and iPhone Duo.
+- `watch_screenshots`: capture the real Watch prayer list in every store locale at 416 × 496, using a temporary Mecca connectivity cache that is restored afterward.
 - `style`: add device bezels, gradient backgrounds and native text rendering for Arabic shaping.
 - `previews`: record 15-second sunrise-to-sunset videos on all three devices.
 - `marketing`: run capture, styling and preview generation.
@@ -41,7 +41,7 @@ Generated files live under ignored `build/marketing/`:
 - `watch/`: native Watch captures required for the embedded companion.
 - `raw/`: original screenshots and snapshot HTML summary.
 - `frames/`: intermediate bezel images.
-- `store/`: styled store screenshots, 26 files across iPhone, iPad, Duo and Apple Watch in two locales.
+- `store/`: styled store screenshots, 182 files across iPhone, iPad, Duo and Apple Watch in 14 locales.
 - `previews/`: 15-second standard iPhone/iPad videos and start/middle/end QA frames.
 - `duo-previews/`: 15-second Duo videos at 886 × 1920, with QA frames.
 
@@ -53,7 +53,7 @@ Inspect all locales before upload: readable headlines, Arabic direction and join
 
 Manage names, subtitles, descriptions, keywords, promotional text, release notes, support/privacy URLs and the copyright notice under `metadata/`. `check` validates all 15 interface locales, interpolation placeholders, observance titles, permission strings, store text limits, and offline lane checks. `tests` also checks interface localization before invoking Xcode.
 
-The app supports 15 interface locales, including Japanese. Store metadata and marketing captures remain English and Arabic; their locale list is independent of the app’s supported languages. Preserve existing pricing, territories, categories, age rating, content-rights and privacy declarations.
+The app supports 15 interface locales, including Japanese. Metadata, screenshot headlines, captures, Watch captures, previews and TestFlight copy cover all 14 corresponding locales supported by Apple: Arabic, English, French, German, Indonesian, Italian, Japanese, Malay, Russian, Spanish, Turkish, Urdu, Simplified Chinese and Traditional Chinese. Apple does not support Persian listing metadata; translated copy is kept under `listing-drafts/fa/` outside the upload directory. Persian remains fully available in the app. See [Apple’s supported locales](https://developer.apple.com/documentation/appstoreconnectapi/managing-metadata-in-your-app-by-using-locale-shortcodes). Preserve existing pricing, territories, categories, age rating, content-rights and privacy declarations.
 
 Store API credentials at `~/.config/muntathir/fastlane.env`; field names are in `.env.local.example`. Protect the environment file, `.p8` key and private review JSON with `chmod 600`. `MUNTATHIR_FASTLANE_ENV_FILE` can select a different environment file. `MUNTATHIR_REVIEW_CONFIG` points to private review/contact/compliance values; `review.example.json` documents the shape. Never commit private keys or personal review details.
 
@@ -73,6 +73,6 @@ References: [Fastlane 2.241.1](https://github.com/fastlane/fastlane/releases/tag
 
 Apple requires 15–30 seconds for App Store previews. The capture clock advances the full Sun movement over 15 seconds. Today and daily ayah share one screenshot and headline. Duo screenshots clip to rounded corners inside a dark bezel.
 
-The Quran capture opens Al-Ikhlas with translation set to None, so both localized interfaces can be captured offline without depending on asset-pack downloads. Screenshot validation reads the required screen names from `marketing/headlines.json`.
+The Quran capture opens Al-Ikhlas with translation set to None, so all localized interfaces can be captured offline without depending on asset-pack downloads. Screenshot validation reads the required screen names from `marketing/headlines.json`.
 
 Snapshot builds use `build/marketing/DerivedData` so they do not share a build cache with regression tests.

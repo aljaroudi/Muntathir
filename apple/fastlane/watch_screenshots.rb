@@ -36,9 +36,8 @@ begin
   MuntathirRelease.run!("xcrun", "simctl", "boot", id)
   MuntathirRelease.run!("xcrun", "simctl", "bootstatus", id, "-b")
   MuntathirRelease::LOCALES.each do |locale|
-    language = locale.start_with?("ar") ? "ar" : "en"
     MuntathirRelease.run!("xcrun", "simctl", "launch", "--terminate-running-process", id, bundle,
-                         "-AppleLanguages", "(#{language})", "-AppleLocale", locale.tr("-", "_"))
+                         "-AppleLanguages", "(#{locale})", "-AppleLocale", locale.tr("-", "_"))
     sleep(5)
     raw = "#{root}/watch/#{locale}/AppleWatch-PrayerTimes.png"
     FileUtils.mkdir_p(File.dirname(raw))

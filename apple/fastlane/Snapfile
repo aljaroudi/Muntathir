@@ -1,9 +1,11 @@
+require File.expand_path("fastlane/support")
+
 project("./Muntathir.xcodeproj")
 scheme("Muntathir")
 configuration("Debug")
 devices(["iPhone 17 Pro Max", "iPad Pro 13-inch (M5)"])
 ios_version(ENV.fetch("SCREENSHOT_IOS_VERSION", "27.0"))
-languages(["en-US", "ar-SA"])
+languages(MuntathirRelease::LOCALES)
 only_testing(["MuntathirUITests/MarketingScreenshotTests"])
 output_directory("./build/marketing/raw")
 buildlog_path("./build/logs/snapshot")

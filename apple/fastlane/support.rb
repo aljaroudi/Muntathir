@@ -6,14 +6,14 @@ require_relative "asset_packs"
 
 module MuntathirRelease
   ROOT = File.expand_path("..", __dir__)
-  # Store locales are independent of the interface languages bundled in the app.
-  LOCALES = %w[en-US ar-SA].freeze
+  # Apple does not support Persian store metadata; its copy stays in listing-drafts/fa.
+  LOCALES = %w[en-US ar-SA fr-FR de-DE id it ja ms ru es-ES tr ur-PK zh-Hans zh-Hant].freeze
   DEVICES = ["iPhone 17 Pro Max", "iPad Pro 13-inch (M5)", "iPhone Duo"].freeze
   LIMITS = { "name" => 30, "subtitle" => 30, "keywords" => 100, "description" => 4000,
              "promotional_text" => 170, "release_notes" => 4000 }.freeze
 
-  def self.validate_metadata!(root = File.join(__dir__, "metadata"))
-    LOCALES.each do |locale|
+  def self.validate_metadata!(root = File.join(__dir__, "metadata"), locales: LOCALES)
+    locales.each do |locale|
       LIMITS.each do |field, limit|
         path = File.join(root, locale, "#{field}.txt")
         text = File.read(path).strip

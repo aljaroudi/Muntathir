@@ -6,7 +6,8 @@ precondition(arguments.count == 8, "compose frame output width height locale hea
 let kind = arguments[7]
 let framePath = arguments[1], output = arguments[2]
 let width = CGFloat(Int(arguments[3])!), height = CGFloat(Int(arguments[4])!)
-let arabic = arguments[5].hasPrefix("ar"), headline = arguments[6]
+let rightToLeft = Locale.Language(identifier: arguments[5]).characterDirection == .rightToLeft
+let headline = arguments[6]
 guard let device = NSImage(contentsOfFile: framePath),
       let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(width), pixelsHigh: Int(height),
                                     bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
@@ -19,7 +20,7 @@ NSGradient(starting: NSColor(srgbRed: 0.06, green: 0.15, blue: 0.25, alpha: 1),
            ending: NSColor(srgbRed: 0.17, green: 0.35, blue: 0.43, alpha: 1))!.draw(in: bounds, angle: 90)
 let paragraph = NSMutableParagraphStyle()
 paragraph.alignment = .center
-paragraph.baseWritingDirection = arabic ? .rightToLeft : .leftToRight
+paragraph.baseWritingDirection = rightToLeft ? .rightToLeft : .leftToRight
 paragraph.lineBreakMode = .byWordWrapping
 func text(_ value: String, size: CGFloat, color: NSColor, rect: NSRect, weight: NSFont.Weight) {
     (value as NSString).draw(in: rect, withAttributes: [.font: NSFont.systemFont(ofSize: size, weight: weight),
@@ -29,7 +30,7 @@ func text(_ value: String, size: CGFloat, color: NSColor, rect: NSRect, weight: 
 let brand = "منتظِر"
 text(brand, size: width * 0.029, color: NSColor.white.withAlphaComponent(0.78),
      rect: NSRect(x: width * 0.1, y: height * 0.91, width: width * 0.8, height: height * 0.045), weight: .medium)
-text(headline, size: width * (arabic ? 0.051 : 0.049), color: .white,
+text(headline, size: width * (rightToLeft ? 0.051 : 0.049), color: .white,
      rect: NSRect(x: width * 0.08, y: height * 0.79, width: width * 0.84, height: height * 0.12), weight: .semibold)
 let available = NSSize(width: width * 0.87, height: height * 0.73)
 let scale = min(available.width / device.size.width, available.height / device.size.height)

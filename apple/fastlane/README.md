@@ -37,7 +37,7 @@ Run unit and UI regression tests, excluding marketing captures
 [bundle exec] fastlane ios screenshots
 ```
 
-Capture raw Arabic and English iPhone, iPad and Duo screenshots
+Capture localized iPhone, iPad and Duo screenshots
 
 ### ios style
 
@@ -53,7 +53,7 @@ Style raw screenshots with frames, backgrounds and localized headlines
 [bundle exec] fastlane ios previews
 ```
 
-Record continuous sunrise-to-sunset simulator previews in both languages
+Record continuous sunrise-to-sunset simulator previews in every store locale
 
 ### ios watch_screenshots
 
@@ -61,7 +61,7 @@ Record continuous sunrise-to-sunset simulator previews in both languages
 [bundle exec] fastlane ios watch_screenshots
 ```
 
-Capture required Arabic and English Apple Watch store screenshots
+Capture required localized Apple Watch store screenshots
 
 ### ios marketing
 

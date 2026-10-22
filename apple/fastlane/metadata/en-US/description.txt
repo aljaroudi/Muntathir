@@ -7,7 +7,7 @@ A VERSE EACH DAY
 Read a daily Quran verse and share it as an image card.
 
 HIJRI CALENDAR
-Browse Islamic dates and observances. Choose your month-verification preference and adjust month starts when needed. Dates use calculated Umm al-Qura values until matching confirmations are available.
+Browse Islamic dates and observances. Choose System calendar, Local naked eye in the Middle East, or Government announcement. Adjust individual months from −2 to +2 days. Dates use calculated Umm al-Qura values until matching confirmations are available.
 
 PRAYER TOOLS
 Find the Qibla direction.
