@@ -28,7 +28,7 @@ struct WeatherReading: Codable, Sendable {
     }
 
     func isCurrent(at date: Date) -> Bool {
-        date.timeIntervalSince(self.date) < 3600
+        (0 ..< 3600).contains(date.timeIntervalSince(self.date))
     }
 
     static func fetch(_ location: SavedLocation) async throws -> WeatherReading {

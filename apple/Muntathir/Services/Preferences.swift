@@ -9,6 +9,13 @@ struct Preferences: Codable, Equatable, Sendable {
     var enabledPrayers: Set<PrayerName> = [.fajr, .dhuhr, .maghrib]
     var showFeelsLikeTemperature = false
     var announcementNotifications = false
+    var timeSensitiveNotifications = true
+    var prayerSounds: [String: PrayerAlertSound] = [:]
+
+    func sound(for prayer: PrayerName) -> PrayerAlertSound {
+        prayerSounds[prayer.rawValue] ?? .system
+    }
+
     var selectedSourceID: String? = CalendarSource.middleEast
     var monthOffsets: [MonthOffset] = []
     var hiddenPrayers: Set<PrayerName> = []
@@ -17,6 +24,7 @@ struct Preferences: Codable, Equatable, Sendable {
     }
 
     enum CodingKeys: String, CodingKey {
+        case timeSensitiveNotifications, prayerSounds
         case showFeelsLikeTemperature, savedLocation, prayerMethod, imsakMinutes, enabledPrayers, announcementNotifications, selectedSourceID, monthOffsets, hiddenPrayers
     }
 
@@ -29,6 +37,8 @@ struct Preferences: Codable, Equatable, Sendable {
         imsakMinutes = try min(120, max(0, c.decodeIfPresent(Int.self, forKey: .imsakMinutes) ?? 10))
         enabledPrayers = try c.decodeIfPresent(Set<PrayerName>.self, forKey: .enabledPrayers) ?? [.fajr, .dhuhr, .maghrib]
         announcementNotifications = try c.decodeIfPresent(Bool.self, forKey: .announcementNotifications) ?? false
+        timeSensitiveNotifications = try c.decodeIfPresent(Bool.self, forKey: .timeSensitiveNotifications) ?? true
+        prayerSounds = try c.decodeIfPresent([String: PrayerAlertSound].self, forKey: .prayerSounds) ?? [:]
         let sourceID = try c.decodeIfPresent(String.self, forKey: .selectedSourceID)
         selectedSourceID = CalendarSource.method(for: sourceID) == .system ? nil : sourceID
         // Absolute month-start overrides cannot be migrated to source-relative offsets.

@@ -177,7 +177,12 @@ struct TodayView: View {
                 #endif
             }
         }
-        .task(id: model.location) { await weather.refresh(location: model.location) }
+        .task(id: model.location) {
+            while !Task.isCancelled {
+                await weather.refresh(location: model.location)
+                do { try await Task.sleep(for: .seconds(900)) } catch { break }
+            }
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 refreshedAt = .now

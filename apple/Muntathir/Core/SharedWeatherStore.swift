@@ -8,7 +8,13 @@ enum SharedWeatherStore {
         let reading: WeatherReading
     }
 
+    private struct Attempt: Codable {
+        let location: SavedLocation
+        let date: Date
+    }
+
     private static let key = "widgetWeather.v1"
+    private static let attemptKey = "widgetWeather.attempt.v1"
 
     static func read(for location: SavedLocation, at date: Date = .now,
                      from defaults: UserDefaults? = UserDefaults(suiteName: WidgetPrayerStore.groupID)) -> WeatherReading?
@@ -27,13 +33,22 @@ enum SharedWeatherStore {
         if let cached, date.timeIntervalSince(cached.date) < 900 {
             return cached
         }
+        // Bound retries across timeline reloads, including failures without a usable reading.
+        if let data = defaults?.data(forKey: attemptKey),
+           let attempt = try? JSONDecoder().decode(Attempt.self, from: data),
+           attempt.location == location, (0 ..< 300).contains(date.timeIntervalSince(attempt.date))
+        {
+            return cached
+        }
+        defaults?.set(try? JSONEncoder().encode(Attempt(location: location, date: date)), forKey: attemptKey)
         do {
             let reading = try await fetch(location)
             write(reading, for: location, to: defaults)
             return reading
         } catch {
+            let failure = error as NSError
             Logger(subsystem: "com.aljaroudi.Muntathir", category: "CalendarWeather")
-                .error("Widget weather refresh failed: \(String(describing: error))")
+                .error("Weather refresh failed: \(failure.domain, privacy: .public) (\(failure.code))")
             return cached
         }
     }

@@ -1,5 +1,6 @@
 import MapKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
@@ -310,18 +311,67 @@ struct PrayerVisibilitySettings: View {
 
 struct PrayerNotificationSettings: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.openURL) private var openURL
+    @State private var importing = false
+    @State private var hasAdhan = FileManager.default.fileExists(atPath: PrayerAlertSound.adhanURL.path)
     var body: some View {
         Form {
             Section {
+                Toggle("Time Sensitive", isOn: Binding(get: { model.preferences.timeSensitiveNotifications }, set: { value in
+                    model.update { $0.timeSensitiveNotifications = value }
+                }))
+                Button("System notification settings") {
+                    if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+                        openURL(url)
+                    }
+                }
+            } footer: {
+                Text("Allow Time Sensitive alerts in Settings and Focus. Sound follows Silent mode and your Ringtone and Alerts volume.")
+            }
+            Section {
                 ForEach(PrayerName.allCases) { prayer in
-                    Toggle(prayer.title, isOn: Binding(get: { model.preferences.enabledPrayers.contains(prayer) }, set: { enabled in
-                        Task { await model.setPrayer(prayer, enabled: enabled) }
-                    }))
+                    VStack(alignment: .leading) {
+                        Toggle(prayer.title, isOn: Binding(get: { model.preferences.enabledPrayers.contains(prayer) }, set: { enabled in
+                            Task { await model.setPrayer(prayer, enabled: enabled) }
+                        }))
+                        if model.preferences.enabledPrayers.contains(prayer) {
+                            Picker("Sound", selection: Binding(get: { model.preferences.sound(for: prayer) }, set: { sound in
+                                model.update { $0.prayerSounds[prayer.rawValue] = sound }
+                                preview(sound)
+                            })) {
+                                ForEach(PrayerAlertSound.allCases) { sound in
+                                    Text(sound.title).tag(sound)
+                                }
+                            }
+                            Button("Preview sound", systemImage: "speaker.wave.2") { preview(model.preferences.sound(for: prayer)) }
+                                .disabled(model.preferences.sound(for: prayer) == .silent)
+                        }
+                    }
                 }
             } footer: {
                 Text("Alerts are scheduled for up to 10 days. Open the app regularly to refresh them.")
             }
+            Section {
+                Button(hasAdhan ? "Replace adhan recording" : "Import adhan recording") { importing = true }
+                if !hasAdhan {
+                    Text("Import your recording to use My adhan. Until then, alerts use the system sound.").foregroundStyle(.secondary)
+                }
+            } footer: {
+                Text("The first 29 seconds play. Recordings stay on this device; import again on other devices.")
+            }
         }.navigationTitle("Notifications")
+            .fileImporter(isPresented: $importing, allowedContentTypes: [.audio]) { result in
+                do {
+                    try PrayerAlertSound.importAdhan(from: result.get())
+                    hasAdhan = true
+                    model.reschedule()
+                    preview(.adhan)
+                } catch {
+                    if (error as NSError).code != CocoaError.userCancelled.rawValue {
+                        model.error = String(localized: "Could not import audio. Choose a playable audio file.")
+                    }
+                }
+            }
             .task {
                 if !model.preferences.enabledPrayers.isEmpty {
                     if await model.notifications.authorize() {
@@ -331,5 +381,12 @@ struct PrayerNotificationSettings: View {
                     }
                 }
             }
+    }
+
+    private func preview(_ sound: PrayerAlertSound) {
+        Task {
+            do { try await model.notifications.preview(sound: sound, timeSensitive: model.preferences.timeSensitiveNotifications) }
+            catch { model.error = String(localized: "Could not preview this alert. Check system notification settings.") }
+        }
     }
 }

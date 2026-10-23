@@ -20,9 +20,28 @@ enum NotificationPlan {
     }
 }
 
-@MainActor final class NotificationService {
+@MainActor final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     private let center = UNUserNotificationCenter.current()
     private var generation = UUID()
+    override init() {
+        super.init()
+        center.delegate = self
+    }
+
+    nonisolated func userNotificationCenter(_: UNUserNotificationCenter, willPresent _: UNNotification) async -> UNNotificationPresentationOptions {
+        [.banner, .sound]
+    }
+
+    func preview(sound: PrayerAlertSound, timeSensitive: Bool) async throws {
+        guard await authorize() else { throw CocoaError(.userCancelled) }
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "Notification test")
+        content.sound = sound.notificationSound
+        content.interruptionLevel = timeSensitive ? .timeSensitive : .active
+        try await center.add(UNNotificationRequest(identifier: "sound-preview", content: content,
+                                                   trigger: UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)))
+    }
+
     func authorize() async -> Bool {
         await (try? center.requestAuthorization(options: [.alert, .sound])) ?? false
     }
@@ -37,8 +56,7 @@ enum NotificationPlan {
         guard generation == token, !Task.isCancelled, settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional else { return }
         for prayer in NotificationPlan.make(now: Date(), preferences: preferences, location: location).prefix(50) {
             guard generation == token, !Task.isCancelled else { return }
-            let content = UNMutableNotificationContent(); content.title = prayer.name.isPrayer ? String(localized: "Time for prayer") : prayer.name.title
-            content.body = prayer.name.notificationBody; content.sound = .default
+            let content = Self.content(for: prayer.name, preferences: preferences)
             var calendar = Calendar(identifier: .gregorian); calendar.timeZone = .gmt
             var parts = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: prayer.date); parts.timeZone = .gmt
             let request = UNNotificationRequest(identifier: prayer.id, content: content, trigger: UNCalendarNotificationTrigger(dateMatching: parts, repeats: false))
@@ -47,6 +65,16 @@ enum NotificationPlan {
                 center.removePendingNotificationRequests(withIdentifiers: [prayer.id]); return
             }
         }
+    }
+
+    static func content(for prayer: PrayerName, preferences: Preferences) -> UNMutableNotificationContent {
+        let content = UNMutableNotificationContent()
+        content.title = prayer.isPrayer ? String(localized: "Time for prayer") : prayer.title
+        content.body = prayer.notificationBody
+        content.sound = preferences.sound(for: prayer).notificationSound
+        content.interruptionLevel = preferences.timeSensitiveNotifications ? .timeSensitive : .active
+        content.threadIdentifier = "prayer.\(prayer.rawValue)"
+        return content
     }
 
     func announce(_ rows: [Announcement], enabled: Bool, defaults: UserDefaults = .standard) async {

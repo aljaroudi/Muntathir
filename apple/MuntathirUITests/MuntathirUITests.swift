@@ -8,6 +8,42 @@ final class MuntathirUITests: XCTestCase {
         verifyPrayerVisibility(in: app)
     }
 
+    @MainActor func testNotificationCustomization() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        addUIInterruptionMonitor(withDescription: "Notification permission") { alert in
+            if alert.buttons["Allow"].exists {
+                alert.buttons["Allow"].tap(); return true
+            }
+            return false
+        }
+        app.launch()
+        app.buttons["Settings"].tap()
+        let link = app.buttons["Notifications"]
+        for _ in 0 ..< 4 where !link.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(link.waitForExistence(timeout: 5))
+        link.tap()
+        XCTAssertTrue(app.switches["Time Sensitive"].waitForExistence(timeout: 5))
+        let allow = XCUIApplication(bundleIdentifier: "com.apple.springboard").buttons["Allow"]
+        if allow.waitForExistence(timeout: 2) {
+            allow.tap()
+        }
+        let sensitive = app.switches["Time Sensitive"]
+        sensitive.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        XCTAssertTrue(NSPredicate(format: "value == %@", "0").evaluate(with: sensitive))
+        XCTAssertTrue(app.buttons["System notification settings"].exists)
+        XCTAssertTrue(app.buttons["Preview sound"].firstMatch.exists)
+        XCTAssertTrue(app.switches["Fajr"].exists)
+        for _ in 0 ..< 8 where !app.buttons["Import adhan recording"].isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(app.buttons["Import adhan recording"].isHittable)
+        app.buttons["Import adhan recording"].tap()
+        XCTAssertTrue(app.navigationBars["Browse"].waitForExistence(timeout: 5) || app.buttons["Cancel"].exists)
+    }
+
     @MainActor func testToolsDeviceAvailability() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
