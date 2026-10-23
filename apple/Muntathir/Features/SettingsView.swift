@@ -1,6 +1,5 @@
 import MapKit
 import SwiftUI
-import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
@@ -312,8 +311,6 @@ struct PrayerVisibilitySettings: View {
 struct PrayerNotificationSettings: View {
     @Environment(AppModel.self) private var model
     @Environment(\.openURL) private var openURL
-    @State private var importing = false
-    @State private var hasAdhan = FileManager.default.fileExists(atPath: PrayerAlertSound.adhanURL.path)
     var body: some View {
         Form {
             Section {
@@ -351,27 +348,7 @@ struct PrayerNotificationSettings: View {
             } footer: {
                 Text("Alerts are scheduled for up to 10 days. Open the app regularly to refresh them.")
             }
-            Section {
-                Button(hasAdhan ? "Replace adhan recording" : "Import adhan recording") { importing = true }
-                if !hasAdhan {
-                    Text("Import your recording to use My adhan. Until then, alerts use the system sound.").foregroundStyle(.secondary)
-                }
-            } footer: {
-                Text("The first 29 seconds play. Recordings stay on this device; import again on other devices.")
-            }
         }.navigationTitle("Notifications")
-            .fileImporter(isPresented: $importing, allowedContentTypes: [.audio]) { result in
-                do {
-                    try PrayerAlertSound.importAdhan(from: result.get())
-                    hasAdhan = true
-                    model.reschedule()
-                    preview(.adhan)
-                } catch {
-                    if (error as NSError).code != CocoaError.userCancelled.rawValue {
-                        model.error = String(localized: "Could not import audio. Choose a playable audio file.")
-                    }
-                }
-            }
             .task {
                 if !model.preferences.enabledPrayers.isEmpty {
                     if await model.notifications.authorize() {

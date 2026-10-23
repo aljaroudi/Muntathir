@@ -36,12 +36,7 @@ final class MuntathirUITests: XCTestCase {
         XCTAssertTrue(app.buttons["System notification settings"].exists)
         XCTAssertTrue(app.buttons["Preview sound"].firstMatch.exists)
         XCTAssertTrue(app.switches["Fajr"].exists)
-        for _ in 0 ..< 8 where !app.buttons["Import adhan recording"].isHittable {
-            app.swipeUp()
-        }
-        XCTAssertTrue(app.buttons["Import adhan recording"].isHittable)
-        app.buttons["Import adhan recording"].tap()
-        XCTAssertTrue(app.navigationBars["Browse"].waitForExistence(timeout: 5) || app.buttons["Cancel"].exists)
+        XCTAssertFalse(app.buttons["Import adhan recording"].exists)
     }
 
     @MainActor func testToolsDeviceAvailability() {

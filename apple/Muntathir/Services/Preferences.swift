@@ -13,7 +13,7 @@ struct Preferences: Codable, Equatable, Sendable {
     var prayerSounds: [String: PrayerAlertSound] = [:]
 
     func sound(for prayer: PrayerName) -> PrayerAlertSound {
-        prayerSounds[prayer.rawValue] ?? .system
+        prayerSounds[prayer.rawValue] ?? .chime
     }
 
     var selectedSourceID: String? = CalendarSource.middleEast
