@@ -231,8 +231,7 @@ struct LicensesView: View {
     var body: some View {
         List {
             Section {
-                Link("Adhan Swift 1.5.0", destination: URL(string: "https://github.com/batoulapps/adhan-swift")!)
-                NavigationLink("Adhan license") {
+                NavigationLink("Adhan Swift 1.5.0") {
                     ScrollView {
                         Text(license("Adhan-LICENSE"))
                             .environment(\.layoutDirection, .leftToRight)
@@ -243,20 +242,14 @@ struct LicensesView: View {
                     }
                     .navigationTitle("Adhan license")
                 }
-                Text("Hijri baseline: [Apple Foundation](https://developer.apple.com/documentation/foundation/calendar/identifier-swift.enum/islamicummalqura), Umm al-Qura.")
             } header: {
                 Text("Calculations")
-            } footer: {
-                Text("Calculated dates are not sighting confirmations.")
             }
             Section("Quran Translations") {
                 ForEach(sortedQuranTranslations, id: \.id) { item in
                     quranTranslationCredit(item)
                         .accessibilityIdentifier(item.id)
                 }
-            }
-            Section("Events") {
-                Text("Twelver Shia convention. Historical dates may differ between sources. [Event references](https://al-islam.org/islam-faith-practice-history-sayyid-muhammad-rizvi/lesson-17-twelve-caliphs-or-imams).")
             }
         }.navigationTitle("Sources and licenses")
     }
