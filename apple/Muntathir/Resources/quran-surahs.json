@@ -1,0 +1,572 @@
+[
+  {
+    "id": 1,
+    "arabic": "الفاتحة",
+    "transliteration": "Al-Faatiha"
+  },
+  {
+    "id": 2,
+    "arabic": "البقرة",
+    "transliteration": "Al-Baqara"
+  },
+  {
+    "id": 3,
+    "arabic": "آل عمران",
+    "transliteration": "Aal-i-Imraan"
+  },
+  {
+    "id": 4,
+    "arabic": "النساء",
+    "transliteration": "An-Nisaa"
+  },
+  {
+    "id": 5,
+    "arabic": "المائدة",
+    "transliteration": "Al-Maaida"
+  },
+  {
+    "id": 6,
+    "arabic": "الأنعام",
+    "transliteration": "Al-An'aam"
+  },
+  {
+    "id": 7,
+    "arabic": "الأعراف",
+    "transliteration": "Al-A'raaf"
+  },
+  {
+    "id": 8,
+    "arabic": "الأنفال",
+    "transliteration": "Al-Anfaal"
+  },
+  {
+    "id": 9,
+    "arabic": "التوبة",
+    "transliteration": "At-Tawba"
+  },
+  {
+    "id": 10,
+    "arabic": "يونس",
+    "transliteration": "Yunus"
+  },
+  {
+    "id": 11,
+    "arabic": "هود",
+    "transliteration": "Hud"
+  },
+  {
+    "id": 12,
+    "arabic": "يوسف",
+    "transliteration": "Yusuf"
+  },
+  {
+    "id": 13,
+    "arabic": "الرعد",
+    "transliteration": "Ar-Ra'd"
+  },
+  {
+    "id": 14,
+    "arabic": "ابراهيم",
+    "transliteration": "Ibrahim"
+  },
+  {
+    "id": 15,
+    "arabic": "الحجر",
+    "transliteration": "Al-Hijr"
+  },
+  {
+    "id": 16,
+    "arabic": "النحل",
+    "transliteration": "An-Nahl"
+  },
+  {
+    "id": 17,
+    "arabic": "الإسراء",
+    "transliteration": "Al-Israa"
+  },
+  {
+    "id": 18,
+    "arabic": "الكهف",
+    "transliteration": "Al-Kahf"
+  },
+  {
+    "id": 19,
+    "arabic": "مريم",
+    "transliteration": "Maryam"
+  },
+  {
+    "id": 20,
+    "arabic": "طه",
+    "transliteration": "Taa-Haa"
+  },
+  {
+    "id": 21,
+    "arabic": "الأنبياء",
+    "transliteration": "Al-Anbiyaa"
+  },
+  {
+    "id": 22,
+    "arabic": "الحج",
+    "transliteration": "Al-Hajj"
+  },
+  {
+    "id": 23,
+    "arabic": "المؤمنون",
+    "transliteration": "Al-Muminoon"
+  },
+  {
+    "id": 24,
+    "arabic": "النور",
+    "transliteration": "An-Noor"
+  },
+  {
+    "id": 25,
+    "arabic": "الفرقان",
+    "transliteration": "Al-Furqaan"
+  },
+  {
+    "id": 26,
+    "arabic": "الشعراء",
+    "transliteration": "Ash-Shu'araa"
+  },
+  {
+    "id": 27,
+    "arabic": "النمل",
+    "transliteration": "An-Naml"
+  },
+  {
+    "id": 28,
+    "arabic": "القصص",
+    "transliteration": "Al-Qasas"
+  },
+  {
+    "id": 29,
+    "arabic": "العنكبوت",
+    "transliteration": "Al-Ankaboot"
+  },
+  {
+    "id": 30,
+    "arabic": "الروم",
+    "transliteration": "Ar-Room"
+  },
+  {
+    "id": 31,
+    "arabic": "لقمان",
+    "transliteration": "Luqman"
+  },
+  {
+    "id": 32,
+    "arabic": "السجدة",
+    "transliteration": "As-Sajda"
+  },
+  {
+    "id": 33,
+    "arabic": "الأحزاب",
+    "transliteration": "Al-Ahzaab"
+  },
+  {
+    "id": 34,
+    "arabic": "سبإ",
+    "transliteration": "Saba"
+  },
+  {
+    "id": 35,
+    "arabic": "فاطر",
+    "transliteration": "Faatir"
+  },
+  {
+    "id": 36,
+    "arabic": "يس",
+    "transliteration": "Yaseen"
+  },
+  {
+    "id": 37,
+    "arabic": "الصافات",
+    "transliteration": "As-Saaffaat"
+  },
+  {
+    "id": 38,
+    "arabic": "ص",
+    "transliteration": "Saad"
+  },
+  {
+    "id": 39,
+    "arabic": "الزمر",
+    "transliteration": "Az-Zumar"
+  },
+  {
+    "id": 40,
+    "arabic": "غافر",
+    "transliteration": "Al-Ghaafir"
+  },
+  {
+    "id": 41,
+    "arabic": "فصلت",
+    "transliteration": "Fussilat"
+  },
+  {
+    "id": 42,
+    "arabic": "الشورى",
+    "transliteration": "Ash-Shura"
+  },
+  {
+    "id": 43,
+    "arabic": "الزخرف",
+    "transliteration": "Az-Zukhruf"
+  },
+  {
+    "id": 44,
+    "arabic": "الدخان",
+    "transliteration": "Ad-Dukhaan"
+  },
+  {
+    "id": 45,
+    "arabic": "الجاثية",
+    "transliteration": "Al-Jaathiya"
+  },
+  {
+    "id": 46,
+    "arabic": "الأحقاف",
+    "transliteration": "Al-Ahqaf"
+  },
+  {
+    "id": 47,
+    "arabic": "محمد",
+    "transliteration": "Muhammad"
+  },
+  {
+    "id": 48,
+    "arabic": "الفتح",
+    "transliteration": "Al-Fath"
+  },
+  {
+    "id": 49,
+    "arabic": "الحجرات",
+    "transliteration": "Al-Hujuraat"
+  },
+  {
+    "id": 50,
+    "arabic": "ق",
+    "transliteration": "Qaaf"
+  },
+  {
+    "id": 51,
+    "arabic": "الذاريات",
+    "transliteration": "Adh-Dhaariyat"
+  },
+  {
+    "id": 52,
+    "arabic": "الطور",
+    "transliteration": "At-Tur"
+  },
+  {
+    "id": 53,
+    "arabic": "النجم",
+    "transliteration": "An-Najm"
+  },
+  {
+    "id": 54,
+    "arabic": "القمر",
+    "transliteration": "Al-Qamar"
+  },
+  {
+    "id": 55,
+    "arabic": "الرحمن",
+    "transliteration": "Ar-Rahmaan"
+  },
+  {
+    "id": 56,
+    "arabic": "الواقعة",
+    "transliteration": "Al-Waaqia"
+  },
+  {
+    "id": 57,
+    "arabic": "الحديد",
+    "transliteration": "Al-Hadid"
+  },
+  {
+    "id": 58,
+    "arabic": "المجادلة",
+    "transliteration": "Al-Mujaadila"
+  },
+  {
+    "id": 59,
+    "arabic": "الحشر",
+    "transliteration": "Al-Hashr"
+  },
+  {
+    "id": 60,
+    "arabic": "الممتحنة",
+    "transliteration": "Al-Mumtahana"
+  },
+  {
+    "id": 61,
+    "arabic": "الصف",
+    "transliteration": "As-Saff"
+  },
+  {
+    "id": 62,
+    "arabic": "الجمعة",
+    "transliteration": "Al-Jumu'a"
+  },
+  {
+    "id": 63,
+    "arabic": "المنافقون",
+    "transliteration": "Al-Munaafiqoon"
+  },
+  {
+    "id": 64,
+    "arabic": "التغابن",
+    "transliteration": "At-Taghaabun"
+  },
+  {
+    "id": 65,
+    "arabic": "الطلاق",
+    "transliteration": "At-Talaaq"
+  },
+  {
+    "id": 66,
+    "arabic": "التحريم",
+    "transliteration": "At-Tahrim"
+  },
+  {
+    "id": 67,
+    "arabic": "الملك",
+    "transliteration": "Al-Mulk"
+  },
+  {
+    "id": 68,
+    "arabic": "القلم",
+    "transliteration": "Al-Qalam"
+  },
+  {
+    "id": 69,
+    "arabic": "الحاقة",
+    "transliteration": "Al-Haaqqa"
+  },
+  {
+    "id": 70,
+    "arabic": "المعارج",
+    "transliteration": "Al-Ma'aarij"
+  },
+  {
+    "id": 71,
+    "arabic": "نوح",
+    "transliteration": "Nooh"
+  },
+  {
+    "id": 72,
+    "arabic": "الجن",
+    "transliteration": "Al-Jinn"
+  },
+  {
+    "id": 73,
+    "arabic": "المزمل",
+    "transliteration": "Al-Muzzammil"
+  },
+  {
+    "id": 74,
+    "arabic": "المدثر",
+    "transliteration": "Al-Muddaththir"
+  },
+  {
+    "id": 75,
+    "arabic": "القيامة",
+    "transliteration": "Al-Qiyaama"
+  },
+  {
+    "id": 76,
+    "arabic": "الانسان",
+    "transliteration": "Al-Insaan"
+  },
+  {
+    "id": 77,
+    "arabic": "المرسلات",
+    "transliteration": "Al-Mursalaat"
+  },
+  {
+    "id": 78,
+    "arabic": "النبإ",
+    "transliteration": "An-Naba"
+  },
+  {
+    "id": 79,
+    "arabic": "النازعات",
+    "transliteration": "An-Naazi'aat"
+  },
+  {
+    "id": 80,
+    "arabic": "عبس",
+    "transliteration": "Abasa"
+  },
+  {
+    "id": 81,
+    "arabic": "التكوير",
+    "transliteration": "At-Takwir"
+  },
+  {
+    "id": 82,
+    "arabic": "الإنفطار",
+    "transliteration": "Al-Infitaar"
+  },
+  {
+    "id": 83,
+    "arabic": "المطففين",
+    "transliteration": "Al-Mutaffifin"
+  },
+  {
+    "id": 84,
+    "arabic": "الإنشقاق",
+    "transliteration": "Al-Inshiqaaq"
+  },
+  {
+    "id": 85,
+    "arabic": "البروج",
+    "transliteration": "Al-Burooj"
+  },
+  {
+    "id": 86,
+    "arabic": "الطارق",
+    "transliteration": "At-Taariq"
+  },
+  {
+    "id": 87,
+    "arabic": "الأعلى",
+    "transliteration": "Al-A'laa"
+  },
+  {
+    "id": 88,
+    "arabic": "الغاشية",
+    "transliteration": "Al-Ghaashiya"
+  },
+  {
+    "id": 89,
+    "arabic": "الفجر",
+    "transliteration": "Al-Fajr"
+  },
+  {
+    "id": 90,
+    "arabic": "البلد",
+    "transliteration": "Al-Balad"
+  },
+  {
+    "id": 91,
+    "arabic": "الشمس",
+    "transliteration": "Ash-Shams"
+  },
+  {
+    "id": 92,
+    "arabic": "الليل",
+    "transliteration": "Al-Lail"
+  },
+  {
+    "id": 93,
+    "arabic": "الضحى",
+    "transliteration": "Ad-Dhuhaa"
+  },
+  {
+    "id": 94,
+    "arabic": "الشرح",
+    "transliteration": "Ash-Sharh"
+  },
+  {
+    "id": 95,
+    "arabic": "التين",
+    "transliteration": "At-Tin"
+  },
+  {
+    "id": 96,
+    "arabic": "العلق",
+    "transliteration": "Al-Alaq"
+  },
+  {
+    "id": 97,
+    "arabic": "القدر",
+    "transliteration": "Al-Qadr"
+  },
+  {
+    "id": 98,
+    "arabic": "البينة",
+    "transliteration": "Al-Bayyina"
+  },
+  {
+    "id": 99,
+    "arabic": "الزلزلة",
+    "transliteration": "Az-Zalzala"
+  },
+  {
+    "id": 100,
+    "arabic": "العاديات",
+    "transliteration": "Al-Aadiyaat"
+  },
+  {
+    "id": 101,
+    "arabic": "القارعة",
+    "transliteration": "Al-Qaari'a"
+  },
+  {
+    "id": 102,
+    "arabic": "التكاثر",
+    "transliteration": "At-Takaathur"
+  },
+  {
+    "id": 103,
+    "arabic": "العصر",
+    "transliteration": "Al-Asr"
+  },
+  {
+    "id": 104,
+    "arabic": "الهمزة",
+    "transliteration": "Al-Humaza"
+  },
+  {
+    "id": 105,
+    "arabic": "الفيل",
+    "transliteration": "Al-Fil"
+  },
+  {
+    "id": 106,
+    "arabic": "قريش",
+    "transliteration": "Quraish"
+  },
+  {
+    "id": 107,
+    "arabic": "الماعون",
+    "transliteration": "Al-Maa'un"
+  },
+  {
+    "id": 108,
+    "arabic": "الكوثر",
+    "transliteration": "Al-Kawthar"
+  },
+  {
+    "id": 109,
+    "arabic": "الكافرون",
+    "transliteration": "Al-Kaafiroon"
+  },
+  {
+    "id": 110,
+    "arabic": "النصر",
+    "transliteration": "An-Nasr"
+  },
+  {
+    "id": 111,
+    "arabic": "المسد",
+    "transliteration": "Al-Masad"
+  },
+  {
+    "id": 112,
+    "arabic": "الإخلاص",
+    "transliteration": "Al-Ikhlaas"
+  },
+  {
+    "id": 113,
+    "arabic": "الفلق",
+    "transliteration": "Al-Falaq"
+  },
+  {
+    "id": 114,
+    "arabic": "الناس",
+    "transliteration": "An-Naas"
+  }
+]

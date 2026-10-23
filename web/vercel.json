@@ -9,9 +9,37 @@
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
       ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/support",
+      "destination": "https://docs.google.com/forms/d/e/1FAIpQLSdDOEiaLaS2_-cI-n5ZDNVMjHyv6OX2IPECM_dboG1qFj8bsA/viewform?usp=header",
+      "permanent": false
+    },
+    {
+      "source": "/support/",
+      "destination": "https://docs.google.com/forms/d/e/1FAIpQLSdDOEiaLaS2_-cI-n5ZDNVMjHyv6OX2IPECM_dboG1qFj8bsA/viewform?usp=header",
+      "permanent": false
+    },
+    {
+      "source": "/en/support",
+      "destination": "https://docs.google.com/forms/d/e/1FAIpQLSdDOEiaLaS2_-cI-n5ZDNVMjHyv6OX2IPECM_dboG1qFj8bsA/viewform?usp=header",
+      "permanent": false
+    },
+    {
+      "source": "/en/support/",
+      "destination": "https://docs.google.com/forms/d/e/1FAIpQLSdDOEiaLaS2_-cI-n5ZDNVMjHyv6OX2IPECM_dboG1qFj8bsA/viewform?usp=header",
+      "permanent": false
     }
   ]
 }

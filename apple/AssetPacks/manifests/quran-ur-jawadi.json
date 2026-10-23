@@ -1,0 +1,16 @@
+{
+  "assetPackID": "quran-ur-jawadi",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/ur.jawadi.db",
+      "fileDestination": "Quran/ur.jawadi.db"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ],
+  "sourceRoot": "../../.."
+}

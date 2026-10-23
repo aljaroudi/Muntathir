@@ -12,6 +12,7 @@ struct WeatherReading: Codable, Sendable {
 
     struct Attribution: Codable, Sendable {
         let legalPageURL: URL
+        // Variants are named for the background: light uses black artwork, dark uses white.
         let combinedMarkLightURL: URL
         let combinedMarkDarkURL: URL
 
@@ -27,7 +28,7 @@ struct WeatherReading: Codable, Sendable {
     }
 
     func isCurrent(at date: Date) -> Bool {
-        date.timeIntervalSince(self.date) < 3600
+        (0 ..< 3600).contains(date.timeIntervalSince(self.date))
     }
 
     static func fetch(_ location: SavedLocation) async throws -> WeatherReading {

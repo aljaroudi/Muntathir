@@ -1,0 +1,39 @@
+---
+import { Font } from "astro:assets";
+import "../styles/global.css";
+import { site, type Locale } from "../site";
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const arabic = locale === "ar";
+const title = arabic ? "سياسة الخصوصية" : "Privacy policy";
+const paragraphs = arabic ? [
+  "لا يجمع مطوّر منتظِر أي بيانات شخصية عنك، ولا يشاركها مع أي جهة.",
+  "تبقى بيانات التطبيق على أجهزتك. تُزامَن الإعدادات وبيانات القرآن الشخصية عبر حساب iCloud الخاص بك عند تفعيله. تستخدم خدمات Apple، مثل الطقس والموقع والتنزيلات، البيانات اللازمة لتقديم الخدمة وفق سياسة خصوصية Apple.",
+  "إذا اخترت التواصل معنا عبر نموذج الدعم، فسنستخدم المعلومات التي ترسلها طوعًا للرد عليك فقط. تستضيف Google النموذج وفق سياسة خصوصيتها.",
+] : [
+  "Muntathir’s developer does not collect personal data about you or share it with anyone.",
+  "App data stays on your devices. Settings and personal Quran data sync through your own iCloud account when enabled. Apple services, including weather, location, and downloads, use the data needed to provide those services under Apple’s privacy policy.",
+  "If you contact us through the support form, we use the information you voluntarily submit only to reply. Google hosts the form under its privacy policy.",
+];
+---
+<!doctype html>
+<html lang={locale} dir={arabic ? "rtl" : "ltr"}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title} · {arabic ? "منتظِر" : "Muntathir"}</title>
+    <link rel="canonical" href={new URL(arabic ? "/privacy/" : "/en/privacy/", site)} />
+    <Font cssVariable="--font-arabic" preload />
+  </head>
+  <body class="bg-ivory text-emerald antialiased">
+    <main class="mx-auto max-w-2xl px-6 py-16">
+      <a href={arabic ? "/" : "/en/"} class="underline">{arabic ? "منتظِر" : "Muntathir"}</a>
+      <h1 class="my-8 text-3xl font-medium">{title}</h1>
+      {paragraphs.map(text => <p class="my-5 leading-loose">{text}</p>)}
+      <nav class="mt-10 flex gap-6" aria-label={arabic ? "روابط" : "Links"}>
+        <a class="underline" href="/support/">{arabic ? "الدعم" : "Support"}</a>
+        <a class="underline" href={arabic ? "/en/privacy/" : "/privacy/"} lang={arabic ? "en" : "ar"}>{arabic ? "English" : "العربية"}</a>
+      </nav>
+    </main>
+  </body>
+</html>

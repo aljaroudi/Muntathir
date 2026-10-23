@@ -75,3 +75,24 @@ test("sitemap and robots agree with production URLs and environment", () => {
     expect(sitemap).toContain(`<loc>${new URL(path, site).href}</loc>`)
   }
 })
+
+test("publishes a valid empty calendar feed", () => {
+  const feed = JSON.parse(readFileSync("dist/calendar/corrections-v1.json", "utf8"))
+  expect(feed).toEqual({ schemaVersion: 1, announcements: [] })
+})
+
+
+test("privacy pages and support redirect are ready before deployment", () => {
+  const config = JSON.parse(readFileSync("vercel.json", "utf8"))
+  const target = "https://docs.google.com/forms/d/e/1FAIpQLSdDOEiaLaS2_-cI-n5ZDNVMjHyv6OX2IPECM_dboG1qFj8bsA/viewform?usp=header"
+  for (const path of ["/support", "/support/", "/en/support", "/en/support/"]) {
+    expect(config.redirects.find((item: { source: string }) => item.source === path)?.destination).toBe(target)
+  }
+  for (const [path, language] of [["privacy", "ar"], ["en/privacy", "en"]]) {
+    const html = readFileSync(join("dist", path, "index.html"), "utf8")
+    expect(html).toContain(`lang="${language}"`)
+    expect(html).toContain("iCloud")
+    expect(html).toContain("Google")
+    expect(html).toContain('href="/support/"')
+  }
+})

@@ -1,636 +1,680 @@
 [
   {
-    "id": "ramadan",
-    "month": 9,
-    "day": 1,
-    "titles": {
-      "en": "Beginning of Ramadan",
-      "ar": "بداية شهر رمضان"
-    },
-    "convention": null,
-    "references": []
+    "id": "husayn-arrival-karbala",
+    "month": 1,
+    "day": 2,
+    "year": 61
   },
   {
-    "id": "fitr",
-    "month": 10,
-    "day": 1,
-    "titles": {
-      "en": "Eid al-Fitr",
-      "ar": "عيد الفطر"
-    },
-    "convention": null,
-    "references": []
-  },
-  {
-    "id": "arafah",
-    "month": 12,
-    "day": 9,
-    "titles": {
-      "en": "Day of Arafah",
-      "ar": "يوم عرفة"
-    },
-    "convention": null,
-    "references": []
-  },
-  {
-    "id": "adha",
-    "month": 12,
-    "day": 10,
-    "titles": {
-      "en": "Eid al-Adha",
-      "ar": "عيد الأضحى"
-    },
-    "convention": null,
-    "references": []
-  },
-  {
-    "id": "ghadir",
-    "month": 12,
-    "day": 18,
-    "titles": {
-      "en": "Eid al-Ghadir",
-      "ar": "عيد الغدير"
-    },
-    "convention": "twelver",
-    "references": []
-  },
-  {
-    "id": "arbaeen",
-    "month": 2,
-    "day": 20,
-    "titles": {
-      "en": "Arbaeen",
-      "ar": "الأربعين"
-    },
-    "convention": "twelver",
-    "references": []
-  },
-  {
-    "id": "ali-birth",
-    "month": 7,
-    "day": 13,
-    "titles": {
-      "en": "Birth of Imam Ali",
-      "ar": "ولادة الإمام علي"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
-  },
-  {
-    "id": "ali-death",
-    "month": 9,
-    "day": 21,
-    "titles": {
-      "en": "Martyrdom of Imam Ali",
-      "ar": "استشهاد الإمام علي"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
-  },
-  {
-    "id": "hasan-birth",
-    "month": 9,
-    "day": 15,
-    "titles": {
-      "en": "Birth of Imam Hasan",
-      "ar": "ولادة الإمام الحسن"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
-  },
-  {
-    "id": "hasan-death",
-    "month": 2,
-    "day": 28,
-    "titles": {
-      "en": "Martyrdom of Imam Hasan",
-      "ar": "استشهاد الإمام الحسن"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
-  },
-  {
-    "id": "husayn-birth",
-    "month": 8,
-    "day": 3,
-    "titles": {
-      "en": "Birth of Imam Husayn",
-      "ar": "ولادة الإمام الحسين"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
+    "id": "husayn-water-cut",
+    "month": 1,
+    "day": 7,
+    "year": 61
   },
   {
     "id": "husayn-death",
     "month": 1,
     "day": 10,
-    "titles": {
-      "en": "Martyrdom of Imam Husayn",
-      "ar": "استشهاد الإمام الحسين"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
+    "year": 61
   },
   {
-    "id": "sajjad-birth",
-    "month": 8,
-    "day": 5,
-    "titles": {
-      "en": "Birth of Imam Ali Zayn al-Abidin",
-      "ar": "ولادة الإمام علي السجاد"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
+    "id": "captives-to-kufa",
+    "month": 1,
+    "day": 11,
+    "year": 61
+  },
+  {
+    "id": "captives-leave-for-sham",
+    "month": 1,
+    "day": 19,
+    "year": 61
+  },
+  {
+    "id": "askariyin-shrine-attack",
+    "month": 1,
+    "day": 23,
+    "year": 1427
   },
   {
     "id": "sajjad-death",
     "month": 1,
     "day": 25,
-    "titles": {
-      "en": "Martyrdom of Imam Ali Zayn al-Abidin",
-      "ar": "استشهاد الإمام علي السجاد"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
+    "year": 95
   },
   {
-    "id": "baqir-birth",
-    "month": 7,
+    "id": "captives-arrive-sham",
+    "month": 2,
     "day": 1,
-    "titles": {
-      "en": "Birth of Imam Muhammad al-Baqir",
-      "ar": "ولادة الإمام محمد الباقر"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
+    "year": 61
   },
   {
-    "id": "baqir-death",
-    "month": 12,
-    "day": 7,
-    "titles": {
-      "en": "Martyrdom of Imam Muhammad al-Baqir",
-      "ar": "استشهاد الإمام محمد الباقر"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
-  },
-  {
-    "id": "sadiq-birth",
-    "month": 3,
-    "day": 17,
-    "titles": {
-      "en": "Birth of Imam Jafar al-Sadiq",
-      "ar": "ولادة الإمام جعفر الصادق"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
-  },
-  {
-    "id": "sadiq-death",
-    "month": 10,
-    "day": 25,
-    "titles": {
-      "en": "Martyrdom of Imam Jafar al-Sadiq",
-      "ar": "استشهاد الإمام جعفر الصادق"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
-  },
-  {
-    "id": "kadhim-birth",
+    "id": "ruqayya-death",
     "month": 2,
-    "day": 7,
-    "titles": {
-      "en": "Birth of Imam Musa al-Kadhim",
-      "ar": "ولادة الإمام موسى الكاظم"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
-  },
-  {
-    "id": "kadhim-death",
-    "month": 7,
-    "day": 25,
-    "titles": {
-      "en": "Martyrdom of Imam Musa al-Kadhim",
-      "ar": "استشهاد الإمام موسى الكاظم"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
-  },
-  {
-    "id": "ridha-death",
-    "month": 2,
-    "day": 17,
-    "titles": {
-      "en": "Martyrdom of Imam Ali al-Ridha",
-      "ar": "استشهاد الإمام علي الرضا"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
-  },
-  {
-    "id": "jawad-birth",
-    "month": 7,
-    "day": 10,
-    "titles": {
-      "en": "Birth of Imam Muhammad al-Jawad",
-      "ar": "ولادة الإمام محمد الجواد"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
-  },
-  {
-    "id": "jawad-death",
-    "month": 11,
-    "day": 30,
-    "titles": {
-      "en": "Martyrdom of Imam Muhammad al-Jawad",
-      "ar": "استشهاد الإمام محمد الجواد"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
-  },
-  {
-    "id": "hadi-birth",
-    "month": 7,
     "day": 5,
-    "titles": {
-      "en": "Birth of Imam Ali al-Hadi",
-      "ar": "ولادة الإمام علي الهادي"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
+    "year": 61
   },
   {
-    "id": "hadi-death",
-    "month": 7,
-    "day": 3,
-    "titles": {
-      "en": "Martyrdom of Imam Ali al-Hadi",
-      "ar": "استشهاد الإمام علي الهادي"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
+    "id": "hasan-death-2-7",
+    "month": 2,
+    "day": 7,
+    "year": 50
   },
   {
-    "id": "askari-birth",
-    "month": 4,
-    "day": 8,
-    "titles": {
-      "en": "Birth of Imam Hasan al-Askari",
-      "ar": "ولادة الإمام الحسن العسكري"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
+    "id": "ahl-bayt-return-karbala",
+    "month": 2,
+    "day": 20,
+    "year": 61
   },
   {
-    "id": "askari-death",
-    "month": 3,
-    "day": 8,
-    "titles": {
-      "en": "Martyrdom of Imam Hasan al-Askari",
-      "ar": "استشهاد الإمام الحسن العسكري"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
+    "id": "arbaeen",
+    "month": 2,
+    "day": 20,
+    "year": 61
   },
   {
-    "id": "mahdi-birth",
-    "month": 8,
-    "day": 15,
-    "titles": {
-      "en": "Birth of Imam Muhammad al-Mahdi",
-      "ar": "ولادة الإمام محمد المهدي"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Islam: Faith, Practice & History — Lesson 17 (Sayyid Muhammad Rizvi)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
+    "id": "jabir-ziyarah",
+    "month": 2,
+    "day": 20,
+    "year": 61
   },
   {
-    "id": "ridha-birth",
-    "month": 11,
-    "day": 11,
-    "titles": {
-      "en": "Birth of Imam Ali al-Ridha",
-      "ar": "ولادة الإمام علي الرضا"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Fundamentals of Islam — Appendix 10 (Mirza Mahdi Pooya)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
+    "id": "razziyat-yawm-al-khamis",
+    "month": 2,
+    "day": 25,
+    "year": 11
   },
   {
-    "id": "prophet-birth",
-    "month": 3,
-    "day": 17,
-    "titles": {
-      "en": "Birth of Prophet Muhammad",
-      "ar": "ولادة النبي محمد"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Fundamentals of Islam — Appendix 10 (Mirza Mahdi Pooya)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
+    "id": "hasan-death",
+    "month": 2,
+    "day": 28,
+    "year": 50
   },
   {
     "id": "prophet-death",
     "month": 2,
     "day": 28,
-    "titles": {
-      "en": "Death of Prophet Muhammad",
-      "ar": "وفاة النبي محمد"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Fundamentals of Islam — Appendix 10 (Mirza Mahdi Pooya)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
+    "year": 11
   },
   {
-    "id": "fatima-birth",
-    "month": 6,
-    "day": 20,
-    "titles": {
-      "en": "Birth of Fatimah al-Zahra",
-      "ar": "ولادة الصديقة الزهراء"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Fundamentals of Islam — Appendix 10 (Mirza Mahdi Pooya)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
+    "id": "ridha-death",
+    "month": 2,
+    "day": 29,
+    "year": 203
+  },
+  {
+    "id": "askari-death-3-1",
+    "month": 3,
+    "day": 1,
+    "year": 260
+  },
+  {
+    "id": "attack-fatima-house",
+    "month": 3,
+    "day": 1,
+    "year": 11
+  },
+  {
+    "id": "laylat-al-mabit",
+    "month": 3,
+    "day": 1
+  },
+  {
+    "id": "sakina-death",
+    "month": 3,
+    "day": 5,
+    "year": 117
+  },
+  {
+    "id": "askari-death",
+    "month": 3,
+    "day": 8,
+    "year": 260
+  },
+  {
+    "id": "prophet-khadija-marriage",
+    "month": 3,
+    "day": 10
+  },
+  {
+    "id": "prophet-arrival-medina",
+    "month": 3,
+    "day": 12,
+    "year": 1
+  },
+  {
+    "id": "prophet-birth-3-12",
+    "month": 3,
+    "day": 12,
+    "year": -53
+  },
+  {
+    "id": "yazid-death",
+    "month": 3,
+    "day": 14,
+    "year": 64
+  },
+  {
+    "id": "prophet-birth",
+    "month": 3,
+    "day": 17,
+    "year": -53
+  },
+  {
+    "id": "sadiq-birth",
+    "month": 3,
+    "day": 17,
+    "year": 83
+  },
+  {
+    "id": "hasan-peace",
+    "month": 3,
+    "day": 23,
+    "year": 41
+  },
+  {
+    "id": "masuma-arrival-qom",
+    "month": 3,
+    "day": 23,
+    "year": 201
+  },
+  {
+    "id": "baqir-death-4-1",
+    "month": 4,
+    "day": 1,
+    "year": 114
+  },
+  {
+    "id": "askari-birth",
+    "month": 4,
+    "day": 8,
+    "year": 232
+  },
+  {
+    "id": "hasan-birth-4-8",
+    "month": 4,
+    "day": 8,
+    "year": 3
+  },
+  {
+    "id": "masuma-death",
+    "month": 4,
+    "day": 10,
+    "year": 201
+  },
+  {
+    "id": "zaynab-birth",
+    "month": 5,
+    "day": 5,
+    "year": 5
+  },
+  {
+    "id": "fatima-death-5-13",
+    "month": 5,
+    "day": 13,
+    "year": 11
+  },
+  {
+    "id": "sajjad-birth-5-15",
+    "month": 5,
+    "day": 15,
+    "year": 38
+  },
+  {
+    "id": "qasim-kadhim-death",
+    "month": 5,
+    "day": 22,
+    "year": 189
+  },
+  {
+    "id": "abdul-muttalib-death",
+    "month": 5,
+    "day": 27,
+    "year": -45
   },
   {
     "id": "fatima-death",
     "month": 6,
     "day": 3,
-    "titles": {
-      "en": "Martyrdom of Fatimah al-Zahra",
-      "ar": "استشهاد الصديقة الزهراء"
-    },
-    "convention": "twelver",
-    "references": [
-      {
-        "book": "Fundamentals of Islam — Appendix 10 (Mirza Mahdi Pooya)",
-        "author": null,
-        "edition": null,
-        "volume": null,
-        "page": null
-      }
-    ]
+    "year": 11
   },
   {
-    "id": "isra-miraj",
+    "id": "umm-al-banin-death",
+    "month": 6,
+    "day": 13,
+    "year": 64
+  },
+  {
+    "id": "battle-of-jamal",
+    "month": 6,
+    "day": 15,
+    "year": 36
+  },
+  {
+    "id": "abdullah-amina-marriage",
+    "month": 6,
+    "day": 19
+  },
+  {
+    "id": "fatima-birth",
+    "month": 6,
+    "day": 20,
+    "year": -8
+  },
+  {
+    "id": "umm-kulthum-death",
+    "month": 6,
+    "day": 21,
+    "year": 61
+  },
+  {
+    "id": "abu-bakr-death",
+    "month": 6,
+    "day": 22,
+    "year": 13
+  },
+  {
+    "id": "hadi-death-6-26",
+    "month": 6,
+    "day": 26,
+    "year": 254
+  },
+  {
+    "id": "baqir-birth",
     "month": 7,
-    "day": 27,
-    "titles": {
-      "en": "Isra and Mi'raj",
-      "ar": "الإسراء والمعراج"
-    },
-    "convention": null,
-    "references": []
+    "day": 1,
+    "year": 57
+  },
+  {
+    "id": "hadi-birth",
+    "month": 7,
+    "day": 2,
+    "year": 212
+  },
+  {
+    "id": "hadi-death",
+    "month": 7,
+    "day": 3,
+    "year": 254
+  },
+  {
+    "id": "kadhim-death-7-7",
+    "month": 7,
+    "day": 7,
+    "year": 183
+  },
+  {
+    "id": "jawad-birth",
+    "month": 7,
+    "day": 10,
+    "year": 195
+  },
+  {
+    "id": "ali-birth",
+    "month": 7,
+    "day": 13,
+    "year": -23
+  },
+  {
+    "id": "qibla-change",
+    "month": 7,
+    "day": 15
+  },
+  {
+    "id": "sadiq-death-7-15",
+    "month": 7,
+    "day": 15,
+    "year": 148
+  },
+  {
+    "id": "zaynab-death",
+    "month": 7,
+    "day": 15,
+    "year": 62
+  },
+  {
+    "id": "sakina-birth",
+    "month": 7,
+    "day": 20,
+    "year": 47
+  },
+  {
+    "id": "kadhim-death",
+    "month": 7,
+    "day": 25,
+    "year": 183
+  },
+  {
+    "id": "abu-talib-death",
+    "month": 7,
+    "day": 26,
+    "year": -3
   },
   {
     "id": "mabath",
     "month": 7,
     "day": 27,
-    "titles": {
-      "en": "Prophetic Mission",
-      "ar": "المبعث النبوي"
-    },
-    "convention": "twelver",
-    "references": []
+    "year": -13
+  },
+  {
+    "id": "husayn-leave-mecca",
+    "month": 7,
+    "day": 28,
+    "year": 60
+  },
+  {
+    "id": "husayn-leave-medina",
+    "month": 7,
+    "day": 28,
+    "year": 60
+  },
+  {
+    "id": "khadija-death",
+    "month": 7,
+    "day": 29,
+    "year": -3
+  },
+  {
+    "id": "husayn-birth",
+    "month": 8,
+    "day": 3,
+    "year": 4
+  },
+  {
+    "id": "husayn-enter-mecca",
+    "month": 8,
+    "day": 3,
+    "year": 60
+  },
+  {
+    "id": "abbas-birth",
+    "month": 8,
+    "day": 4,
+    "year": 26
+  },
+  {
+    "id": "sajjad-birth",
+    "month": 8,
+    "day": 5,
+    "year": 38
+  },
+  {
+    "id": "ali-akbar-birth",
+    "month": 8,
+    "day": 11,
+    "year": 33
+  },
+  {
+    "id": "qasim-hasan-birth",
+    "month": 8,
+    "day": 14,
+    "year": 47
+  },
+  {
+    "id": "fourth-deputy-death",
+    "month": 8,
+    "day": 15,
+    "year": 329
+  },
+  {
+    "id": "mahdi-birth",
+    "month": 8,
+    "day": 15,
+    "year": 255
+  },
+  {
+    "id": "major-occultation",
+    "month": 8,
+    "day": 15,
+    "year": 329
+  },
+  {
+    "id": "ruqayya-birth",
+    "month": 8,
+    "day": 17,
+    "year": 57
+  },
+  {
+    "id": "ridha-wilayah",
+    "month": 9,
+    "day": 1,
+    "year": 200
+  },
+  {
+    "id": "abu-talib-death-9-7",
+    "month": 9,
+    "day": 7,
+    "year": -3
+  },
+  {
+    "id": "khadija-death-9-10",
+    "month": 9,
+    "day": 10,
+    "year": -3
+  },
+  {
+    "id": "hasan-birth",
+    "month": 9,
+    "day": 15,
+    "year": 3
+  },
+  {
+    "id": "muslim-leaves-mecca",
+    "month": 9,
+    "day": 15,
+    "year": 60
+  },
+  {
+    "id": "miraj",
+    "month": 9,
+    "day": 17
+  },
+  {
+    "id": "qadr-18",
+    "month": 9,
+    "day": 18
+  },
+  {
+    "id": "ali-struck",
+    "month": 9,
+    "day": 19,
+    "year": 40
+  },
+  {
+    "id": "conquest-of-mecca",
+    "month": 9,
+    "day": 19,
+    "year": 8
   },
   {
     "id": "qadr-19",
     "month": 9,
-    "day": 19,
-    "titles": {
-      "en": "Night of Qadr",
-      "ar": "ليلة القدر"
-    },
-    "convention": "twelver",
-    "references": []
+    "day": 19
+  },
+  {
+    "id": "qadr-20",
+    "month": 9,
+    "day": 20
+  },
+  {
+    "id": "ali-death",
+    "month": 9,
+    "day": 21,
+    "year": 40
   },
   {
     "id": "qadr-21",
     "month": 9,
-    "day": 21,
-    "titles": {
-      "en": "Night of Qadr",
-      "ar": "ليلة القدر"
-    },
-    "convention": "twelver",
-    "references": []
+    "day": 21
   },
   {
-    "id": "qadr-23",
+    "id": "qadr-22",
     "month": 9,
+    "day": 22
+  },
+  {
+    "id": "fitr",
+    "month": 10,
+    "day": 1
+  },
+  {
+    "id": "muslim-arrives-kufa",
+    "month": 10,
+    "day": 5,
+    "year": 60
+  },
+  {
+    "id": "hamza-death",
+    "month": 10,
+    "day": 7,
+    "year": 3
+  },
+  {
+    "id": "hamza-death-10-15",
+    "month": 10,
+    "day": 15,
+    "year": 3
+  },
+  {
+    "id": "radd-al-shams",
+    "month": 10,
+    "day": 15,
+    "year": 7
+  },
+  {
+    "id": "sadiq-death",
+    "month": 10,
+    "day": 25,
+    "year": 148
+  },
+  {
+    "id": "abu-talib-death-11-1",
+    "month": 11,
+    "day": 1,
+    "year": -3
+  },
+  {
+    "id": "masuma-birth",
+    "month": 11,
+    "day": 1,
+    "year": 173
+  },
+  {
+    "id": "moses-appointment",
+    "month": 11,
+    "day": 1
+  },
+  {
+    "id": "ridha-birth",
+    "month": 11,
+    "day": 11,
+    "year": 148
+  },
+  {
+    "id": "ridha-death-11-23",
+    "month": 11,
     "day": 23,
-    "titles": {
-      "en": "Night of Qadr",
-      "ar": "ليلة القدر"
-    },
-    "convention": "twelver",
-    "references": []
+    "year": 203
+  },
+  {
+    "id": "dahw-al-ard",
+    "month": 11,
+    "day": 25
+  },
+  {
+    "id": "farewell-hajj-departure",
+    "month": 11,
+    "day": 25,
+    "year": 10
+  },
+  {
+    "id": "ibrahim-birth",
+    "month": 11,
+    "day": 25
+  },
+  {
+    "id": "isa-birth",
+    "month": 11,
+    "day": 25
+  },
+  {
+    "id": "jawad-death",
+    "month": 11,
+    "day": 29,
+    "year": 220
+  },
+  {
+    "id": "ali-fatima-marriage",
+    "month": 12,
+    "day": 1,
+    "year": 2
+  },
+  {
+    "id": "ibrahim-birth-12-1",
+    "month": 12,
+    "day": 1
+  },
+  {
+    "id": "baqir-death",
+    "month": 12,
+    "day": 7,
+    "year": 114
+  },
+  {
+    "id": "husayn-leave-mecca-12-8",
+    "month": 12,
+    "day": 8,
+    "year": 60
+  },
+  {
+    "id": "arafah",
+    "month": 12,
+    "day": 9
+  },
+  {
+    "id": "hani-death",
+    "month": 12,
+    "day": 9,
+    "year": 60
+  },
+  {
+    "id": "muslim-death",
+    "month": 12,
+    "day": 9,
+    "year": 60
+  },
+  {
+    "id": "adha",
+    "month": 12,
+    "day": 10
+  },
+  {
+    "id": "fadak-grant",
+    "month": 12,
+    "day": 14,
+    "year": 7
+  },
+  {
+    "id": "hadi-birth-12-15",
+    "month": 12,
+    "day": 15,
+    "year": 212
+  },
+  {
+    "id": "ghadir",
+    "month": 12,
+    "day": 18,
+    "year": 10
+  },
+  {
+    "id": "ali-ring-charity",
+    "month": 12,
+    "day": 24,
+    "year": 9
+  },
+  {
+    "id": "mubahala",
+    "month": 12,
+    "day": 24,
+    "year": 9
   }
 ]

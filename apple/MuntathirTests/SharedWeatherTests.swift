@@ -41,6 +41,20 @@ struct SharedWeatherTests {
         #expect(SharedWeatherStore.read(for: other, at: now, from: defaults) == nil)
     }
 
+    @Test func failedWidgetRequestsBackOffWithoutCache() async throws {
+        let suite = UUID().uuidString
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        var calls = 0
+        for offset in [0.0, 299, 300] {
+            _ = await SharedWeatherStore.refresh(for: location, at: now.addingTimeInterval(offset), defaults: defaults) { _ in
+                calls += 1
+                throw URLError(.timedOut)
+            }
+        }
+        #expect(calls == 2)
+    }
+
     @Test func successfulRefreshPublishesReading() async throws {
         let suite = UUID().uuidString
         let defaults = try #require(UserDefaults(suiteName: suite))

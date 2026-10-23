@@ -1,9 +1,10 @@
 .DEFAULT_GOAL := help
-.PHONY: help apple-format apple-build apple-test
+.PHONY: help apple-format apple-build apple-test apple-localizations
 
 help:
 	@echo "apple-format  Format Apple Swift sources"
 	@echo "apple-build   Build the Apple app and embedded extensions for Simulator"
+	@echo "apple-localizations  Check translation coverage and placeholders"
 	@echo "apple-test    Run Apple unit tests (optional TEST_DESTINATION override)"
 
 apple-format:
@@ -12,7 +13,10 @@ apple-format:
 apple-build:
 	xcodebuild -project apple/Muntathir.xcodeproj -scheme Muntathir -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
 
-apple-test:
+apple-localizations:
+	python3 apple/scripts/check_localizations.py
+
+apple-test: apple-localizations
 	@set -eu; \
 	destination="$${TEST_DESTINATION:-}"; \
 	if [ -z "$$destination" ]; then \

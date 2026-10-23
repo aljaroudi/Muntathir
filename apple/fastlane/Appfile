@@ -1,0 +1,3 @@
+app_identifier("com.aljaroudi.Muntathir")
+team_id("5VGKP2QV6H")
+apple_dev_portal_id(ENV["APPLE_ID"]) if ENV["APPLE_ID"]

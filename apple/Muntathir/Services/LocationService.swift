@@ -97,6 +97,15 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
 
     func startHeading(owner: UUID) {
         guard headingOwners.insert(owner).inserted, headingOwners.count == 1 else { return }
+        #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
+               ProcessInfo.processInfo.arguments.contains("--marketing-heading")
+            {
+                heading = 0
+                headingAccuracy = 0
+                return
+            }
+        #endif
         guard CLLocationManager.headingAvailable() else {
             message = String(
                 localized:

@@ -25,11 +25,11 @@ struct TodayInfoCards: View {
                 .accessibilityElement(children: .combine)
                 .accessibilityIdentifier("gregorian-date-card")
             }
-            if !weather.failed {
+            if !weather.failed || weather.reading?.isCurrent(at: .now) == true {
                 tile {
                     weatherContent
                 } decoration: {
-                    if !weather.isLoading, let reading = weather.reading, model.location != nil {
+                    if let reading = weather.reading, reading.isCurrent(at: .now), model.location != nil {
                         WeatherCardScene(condition: reading.weatherCondition, sun: sun, moon: moon)
                     }
                 }
@@ -62,7 +62,7 @@ struct TodayInfoCards: View {
     private var weatherContent: some View {
         VStack(alignment: .leading, spacing: 6) {
             if model.location != nil {
-                if weather.isLoading || weather.reading == nil {
+                if weather.reading?.isCurrent(at: .now) != true {
                     weatherSkeleton
                 } else if let reading = weather.reading {
                     Color.clear.frame(height: 58).accessibilityHidden(true)
@@ -74,7 +74,7 @@ struct TodayInfoCards: View {
                         .accessibilityValue(reading.condition)
                     if let attribution = reading.attribution {
                         Link(destination: attribution.legalPageURL) {
-                            AsyncImage(url: colorScheme == .dark ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL) { image in
+                            AsyncImage(url: colorScheme == .dark ? attribution.combinedMarkDarkURL : attribution.combinedMarkLightURL) { image in
                                 image.resizable().scaledToFit()
                             } placeholder: { Text("Apple Weather").font(.caption2) }
                                 .frame(width: 86, height: 16)

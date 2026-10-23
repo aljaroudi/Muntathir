@@ -10,7 +10,7 @@ From repository root: `make apple-format`, `make apple-build`, and `make apple-t
 
 ## Components
 
-- [iPhone/iPad](Muntathir/): navigation, prayer counter, preferences, notifications, and daily ayah.
+- [iPhone/iPad](Muntathir/): navigation, preferences, notifications, and daily ayah.
 - [iOS/CarPlay widgets](MuntathirWidgets/).
 - [Watch app](MuntathirWatch/) and [complications](MuntathirWatchWidgets/).
 - [Shared calendar, feed contract, and content provenance](Shared/).
@@ -22,6 +22,10 @@ Core Swift sources live in `Muntathir/Core` and are reused directly by Apple tar
 
 ## Release checks
 
-Validate real-device compass/calibration, notifications/background delivery, paired Watch synchronization and complications, CarPlay layouts, signed App Group provisioning, two-device iCloud sync, VoiceOver, and accessibility sizes. Validate proximity counting on notch and Dynamic Island iPhones, including placement, display recovery, timing, interruptions, and a four-rakaa session. Review event dates and Arabic titles editorially.
+Validate real-device compass/calibration, notifications/background delivery, paired Watch synchronization and complications, CarPlay layouts, signed App Group provisioning, two-device iCloud sync, VoiceOver, and accessibility sizes. Review event dates and Arabic titles editorially.
 
-Production corrections endpoint/source catalog and push delivery remain unconfigured. Simulator tests cannot prove hardware behavior or deployed feed delivery.
+The app refreshes the version-one calendar feed from https://منتظر.com/calendar/corrections-v1.json on launch/foreground, source changes, and scheduled background refresh. The website publishes an empty feed until real announcements are supplied. Push delivery remains unconfigured. Simulator tests cannot prove hardware behavior or deployed feed delivery.
+
+## Fastlane
+
+See [release automation](fastlane/SETUP.md) for local commands, bilingual store metadata, styled screenshots, sunrise-to-sunset previews, and the dedicated GitHub Actions runner.

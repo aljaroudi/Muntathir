@@ -1,0 +1,86 @@
+{
+  "en-US": {
+    "01-Today": "Prayer times and a verse for your day.",
+    "02-Calendar": "Your Hijri calendar, close at hand.",
+    "03-Quran": "Read the Quran, wherever you are.",
+    "04-Qibla": "Find your direction for prayer."
+  },
+  "ar-SA": {
+    "01-Today": "مواقيت صلاتك وآية ليومك",
+    "02-Calendar": "تقويمك الهجري بين يديك",
+    "03-Quran": "القرآن الكريم بين يديك",
+    "04-Qibla": "وجهتك إلى القبلة"
+  },
+  "fr-FR": {
+    "01-Today": "Vos prières et un verset chaque jour.",
+    "02-Calendar": "Votre calendrier hégirien à portée de main.",
+    "03-Quran": "Lisez le Coran où que vous soyez.",
+    "04-Qibla": "Trouvez la direction de la prière."
+  },
+  "de-DE": {
+    "01-Today": "Gebetszeiten und ein Vers für Ihren Tag.",
+    "02-Calendar": "Ihr islamischer Kalender, immer dabei.",
+    "03-Quran": "Lesen Sie den Koran, wo Sie auch sind.",
+    "04-Qibla": "Finden Sie die Gebetsrichtung."
+  },
+  "id": {
+    "01-Today": "Waktu salat dan satu ayat setiap hari.",
+    "02-Calendar": "Kalender Hijriah di tangan Anda.",
+    "03-Quran": "Baca Al-Quran di mana pun Anda berada.",
+    "04-Qibla": "Temukan arah kiblat Anda."
+  },
+  "it": {
+    "01-Today": "Orari di preghiera e un versetto al giorno.",
+    "02-Calendar": "Il calendario islamico sempre con te.",
+    "03-Quran": "Leggi il Corano, ovunque tu sia.",
+    "04-Qibla": "Trova la direzione della preghiera."
+  },
+  "ja": {
+    "01-Today": "毎日の礼拝時刻とクルアーンの一節。",
+    "02-Calendar": "ヒジュラ暦をいつも手元に。",
+    "03-Quran": "どこにいても、クルアーンを読む。",
+    "04-Qibla": "礼拝の方角を確認。"
+  },
+  "ms": {
+    "01-Today": "Waktu solat dan satu ayat setiap hari.",
+    "02-Calendar": "Kalendar Hijrah di tangan anda.",
+    "03-Quran": "Baca al-Quran di mana-mana sahaja.",
+    "04-Qibla": "Cari arah kiblat anda."
+  },
+  "ru": {
+    "01-Today": "Время намаза и аят на каждый день.",
+    "02-Calendar": "Календарь хиджры всегда под рукой.",
+    "03-Quran": "Читайте Коран, где бы вы ни были.",
+    "04-Qibla": "Найдите направление киблы."
+  },
+  "es-ES": {
+    "01-Today": "Horarios de oración y una aleya al día.",
+    "02-Calendar": "Tu calendario islámico, siempre a mano.",
+    "03-Quran": "Lee el Corán estés donde estés.",
+    "04-Qibla": "Encuentra la dirección de la oración."
+  },
+  "tr": {
+    "01-Today": "Namaz vakitleri ve her güne bir ayet.",
+    "02-Calendar": "Hicri takviminiz her an elinizin altında.",
+    "03-Quran": "Nerede olursanız olun Kuran okuyun.",
+    "04-Qibla": "Kıble yönünü bulun."
+  },
+  "ur-PK": {
+    "01-Today": "نماز کے اوقات اور ہر دن ایک آیت۔",
+    "02-Calendar": "آپ کی ہجری تقویم، ہر وقت پاس۔",
+    "03-Quran": "جہاں بھی ہوں، قرآن پڑھیں۔",
+    "04-Qibla": "نماز کے لیے قبلے کی سمت جانیں۔"
+  },
+  "zh-Hans": {
+    "01-Today": "每日礼拜时间与一节经文。",
+    "02-Calendar": "随时查看您的伊斯兰历。",
+    "03-Quran": "无论身在何处，都能阅读古兰经。",
+    "04-Qibla": "找到礼拜的朝向。"
+  },
+  "zh-Hant": {
+    "01-Today": "每日禮拜時間與一節經文。",
+    "02-Calendar": "隨時查看您的伊斯蘭曆。",
+    "03-Quran": "無論身在何處，都能閱讀古蘭經。",
+    "04-Qibla": "找到禮拜的朝向。"
+  }
+}

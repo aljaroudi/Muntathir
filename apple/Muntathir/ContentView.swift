@@ -16,17 +16,17 @@ struct ContentView: View {
                 shell {
                     List {
                         NavigationLink {
+                            QuranView()
+                        } label: {
+                            Label("The Holy Quran", systemImage: "book.closed")
+                        }
+                        .accessibilityIdentifier("holy-quran")
+                        NavigationLink {
                             QiblaView().toolbar { settingsToolbar }
                         } label: {
                             Label("Qibla", systemImage: "location.north.circle")
                         }
-                        if UIDevice.current.userInterfaceIdiom == .phone {
-                            NavigationLink {
-                                PrayerCounterView().toolbar { settingsToolbar }
-                            } label: {
-                                Label("Prayer counter", systemImage: "hand.point.up")
-                            }
-                        }
+                        .accessibilityIdentifier("qibla")
                     }
                     .navigationTitle("Tools")
                 }
@@ -165,33 +165,16 @@ struct EventRows: View {
             Text("No observances today").foregroundStyle(.secondary)
         }
         ForEach(events) { event in
-            NavigationLink {
-                EventDetail(event: event)
-            } label: {
-                Label(event.title(locale: locale), systemImage: "sparkle")
-            }
-        }
-    }
-}
-
-struct EventDetail: View {
-    let event: IslamicEvent
-    @Environment(\.locale) private var locale
-    var body: some View {
-        List {
-            Text(event.title(locale: locale)).font(.title2)
-            if event.convention != nil {
-                Text(
-                    "Twelver Shia convention. Historical dates may differ between sources."
-                ).foregroundStyle(.secondary)
-            }
-            if !event.references.isEmpty {
-                Section("References") {
-                    ForEach(event.references, id: \.self) {
-                        Text($0.description).textSelection(.enabled)
+            Label {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(event.title(locale: locale))
+                    if let year = event.yearText(locale: locale) {
+                        Text(year).font(.caption).foregroundStyle(.secondary)
                     }
                 }
+            } icon: {
+                Image(systemName: "sparkle")
             }
-        }.navigationTitle("Observance")
+        }
     }
 }

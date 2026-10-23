@@ -1,28 +1,20 @@
 # iPhone and iPad
 
-Today shows the current date, prayer schedule, and daily ayah. Calendar contains observances. Tools groups Qibla and the iPhone prayer counter; Settings is available from the navigation toolbar; Arabic/English localization; Adhan 1.5.0 prayer calculations; manual month-start corrections; bundled observances and daily Quran verses; saved-place iCloud preferences; local prayer notifications. A foreground GPS fix is remembered locally across launches and never uploaded to iCloud; reverse geocoding is not used.
+Today shows the current date, prayer schedule, and daily ayah. Calendar shows plain observance names, localized through `Localizable.xcstrings`; bundled JSON retains only their IDs and dates. Fresh calendar settings use naked-eye sightings from the Middle East; saved settings are preserved. Tools contains Qibla; Settings is available from the navigation toolbar; 15 interface locales (Arabic, English, French, German, Indonesian, Italian, Japanese, Malay, Persian, Russian, Spanish, Turkish, Urdu, Simplified Chinese, Traditional Chinese); Adhan 1.5.0 prayer calculations; source-relative manual month offsets (−2 through +2 days); bundled observances and daily Quran verses; saved-place iCloud preferences; local prayer notifications. A foreground GPS fix is remembered locally across launches and never uploaded to iCloud; reverse geocoding is not used.
 
 New preferences default to Jafari/Qum; legacy preferences without a method retain Tehran. Tehran's Maghrib must be later than calculated sunset; if the library cannot produce that result, the app reports unavailable times. Ramadan Isha intervals for Umm al-Qura/Qatar use the independent Foundation baseline, not manual religious-date corrections. No prayer engine is implemented here.
 
-## Prayer counter
-
-Open **Tools → Prayer counter**. Place the phone face-up with the sensor at the top of the screen directly beneath your face during sujood, so your face covers it. Lower and lift your face to check Covered/Uncovered status. With the sensor uncovered, tap **Start counting** and choose a prayer from the menu to start immediately. The suggested prayer has a checkmark. The black screen shows the current rakaa, starting at 1; the first sujood turns it gray, and the second advances it. The final pair leaves the target number white until exit. No session history is saved.
-
-Proximity monitoring is required; there is no camera, light-sensor, or manual fallback. A cycle requires at least 1 second near and 1 second continuously far. Leaving the app or locking the phone interrupts counting; an interrupted session cannot resume. Proximity-induced display blanking alone must not interrupt the session. Monitoring and idle-lock overrides are released when counting ends or the presentation closes.
-
-Before release, validate mat placement, display recovery, sensor timing, lock/background interruptions, and a full four-rakaa session on physical notch and Dynamic Island iPhones. The simulator can verify unsupported-sensor UI and the pure counting state machine, but cannot establish detection accuracy. These timing thresholds are provisional until those device checks pass.
-
 ## Prayer preferences and notifications
 
-Prayer calculations now always use standard Asr. Legacy Hanafi preferences are ignored without losing location, visibility, or notification choices. Imsak defaults to a precautionary 10 minutes before calculated Fajr, adjustable from 0–120 minutes in prayer calculations; it syncs to watch and widgets. It never becomes the upcoming prayer or counter default.
+Prayer calculations now always use standard Asr. Legacy Hanafi preferences are ignored without losing location, visibility, or notification choices. Imsak defaults to a precautionary 10 minutes before calculated Fajr, adjustable from 0–120 minutes in prayer calculations; it syncs to watch and widgets. It never becomes the upcoming prayer.
 
-The counter selects the most recent visible prayer, checking the previous day before Fajr; without a location it starts with Fajr. Settings → Prayers contains Visibility and Notifications. Fajr, Dhuhr, and Maghrib remain visible; new notification preferences enable those three, while existing choices are preserved. Opening Notifications requests device permission. Prayer alerts are independent of visibility; the nearest 50 fit the local notification budget.
+Settings → Prayers contains Visibility and Notifications. Fajr, Dhuhr, and Maghrib remain visible; new notification preferences enable those three, while existing choices are preserved. Opening Notifications requests device permission. Prayer alerts are independent of visibility; the nearest 50 fit the local notification budget. Each alert defaults to the bundled chime (نغمة), with bell, system sound, and silent also available. Saved per-prayer sound choices are preserved. The Time Sensitive switch controls interruption level; the entitlement enables the corresponding iOS setting. Sound previews use a real notification, including while the app is open, so system volume, Silent mode, and Focus apply.
 
 Local alerts are plannedacross ten days, limited to the nearest 50 requests. Launch, foreground, preferences, date/time-zone changes, and opportunistic background refresh rebuild them. iOS controls background execution; open the app regularly. Permissions stay device-local.
 
 ## Daily ayah
 
-The daily ayah uses a fine-grained emerald-to-ivory background with soft lighting, shared by the app, widgets, and exported images. The background is static. Its share button opens the native share sheet with a 1080-pixel-wide image that expands vertically for the entire verse, including its verse reference. Rendering uses a fixed readable type size and light appearance, independent of the current screen settings. The displayed verse stays fixed for the local day while Today remains loaded.
+The daily ayah uses a fine-grained emerald-to-ivory background with soft lighting, shared by the app, widgets, and exported images. The background is static. Its share button opens the native share sheet with a 1080-pixel-wide image that expands vertically for the entire verse, including its verse reference. Rendering uses a fixed readable type size and light appearance, independent of the current screen settings. The displayed verse follows the corrected Islamic month and day and stays fixed until midnight in the selected location’s time zone. The card reads bundled Arabic and the selected installed translation from read-only SQLite databases. Sources and licenses credits each translator. Sharing includes the translation currently shown. See [dated schedule preparation](../content/daily-verses/) for the pending migration to a complete corrected Hijri month/day schedule.
 
 See [widgets](../MuntathirWidgets/), [calendar and content](../Shared/), and [Apple setup](../).
 
@@ -32,6 +24,18 @@ Open **Tools → Qibla**. The compass stays blurred with a warning unless a vali
 
 ## First-run setup
 
-Onboarding introduces the app, requires a city or device location, lets users choose a prayer calculation method (Jafari/Qum by default), and offers optional notification permission. Denying notifications does not block setup. Location denial or GPS failure leaves city search available; city search requires a network connection.
+Onboarding introduces the app, offers an app-language step that opens iOS Settings, requires a city or device location, lets users choose a prayer calculation method (Jafari/Qum by default), and offers optional notification permission. Denying notifications does not block setup. Location denial or GPS failure leaves city search available; city search requires a network connection.
 
-Completion is stored on this device and does not sync through iCloud. Existing saved locations do not bypass setup. Interrupted setup restarts at Welcome and retains saved choices. After completion, launch opens Today.
+Completion is stored on this device and does not sync through iCloud. Existing saved locations do not bypass setup. Interrupted setup resumes at the current step and retains saved choices, including when changing the app language restarts the app. The app-language link is also available in Settings. After completion, launch opens Today.
+
+Quran translations use [Apple-hosted on-demand packs](../AssetPacks/). Only Arabic is bundled. Auto matches preferred languages; explicit selection and None persist and also control daily ayah and widgets. Downloads never block Arabic reading.
+
+## Calendar sources and month offsets
+
+Settings offers System calendar (Apple Foundation Umm al-Qura), Local naked eye (Middle East), and Government announcement (Saudi Arabia, Kuwait, Bahrain, Oman, UAE, Qatar). Country names follow the app locale. Source selection applies worldwide and is independent of GPS coverage. With no published announcement, the system calendar provides dates.
+
+Calendar’s Adjust this month sheet stores an offset for that Hijri month. Positive values advance the displayed Hijri date: +1 starts the month one Gregorian day earlier than the selected source. The sheet previews the resulting start date. Zero removes that month’s adjustment. All months remain 29 or 30 days; unconfirmed neighboring boundaries may move, and conflicting anchors are rejected without changing saved choices. Offsets survive source changes and apply to observances, dated daily verses, widgets, and Watch snapshots. Prayer calculations and prayer notification times remain unchanged.
+
+Legacy absolute month corrections reset to zero; unrelated settings remain intact. The production feed refreshes on launch/foreground, source changes, and background refresh, using ETag and a last-good cache. Month notifications follow successful refreshes rather than immediate push delivery.
+
+Today reuses current App Group weather on launch and refreshes every 15 minutes while displayed. App and widget retries back off for five minutes after failure, retaining only matching readings younger than one hour. WidgetKit controls actual Home Screen refresh timing; expired weather is hidden rather than shown as current.

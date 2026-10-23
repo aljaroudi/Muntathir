@@ -1,0 +1,1 @@
+namaz,vakit,kuran,ayet,hicri,takvim,kıble,islam,hatırlatıcı

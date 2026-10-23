@@ -1,0 +1,23 @@
+{
+  "app_review_information": {
+    "first_name": "",
+    "last_name": "",
+    "phone_number": "",
+    "email_address": "",
+    "demo_account_required": false,
+    "notes": ""
+  },
+  "beta_app_review_info": {
+    "contact_first_name": "",
+    "contact_last_name": "",
+    "contact_phone": "",
+    "contact_email": "",
+    "demo_account_required": false
+  },
+  "submission_information": {},
+  "support_url": {},
+  "privacy_url": {},
+  "beta_app_description": {},
+  "beta_app_feedback_email": "",
+  "copyright": ""
+}

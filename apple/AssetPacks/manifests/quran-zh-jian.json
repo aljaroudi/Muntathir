@@ -1,0 +1,16 @@
+{
+  "assetPackID": "quran-zh-jian",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/zh.jian.db",
+      "fileDestination": "Quran/zh.jian.db"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ],
+  "sourceRoot": "../../.."
+}

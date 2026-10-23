@@ -23,6 +23,11 @@ struct TodayView: View {
         return CurrentWeatherStore()
     }()
 
+    #if DEBUG
+        @State private var captureClock = CaptureClock()
+    #endif
+
+    @State private var translationStore = QuranTranslationStore.shared
     @State private var dailyAyah: Ayah?
     @Environment(\.scenePhase) private var scenePhase
     @State private var skyTitleHeight: CGFloat = 52
@@ -30,8 +35,8 @@ struct TodayView: View {
     @ScaledMetric(relativeTo: .body) private var prayerSymbolWidth: CGFloat = 28
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 60)) { context in
-            let now = referenceDate ?? max(context.date, refreshedAt)
+        TimelineView(timelineSchedule) { context in
+            let now = displayDate(context.date)
             let engine = model.engine
             let sun = model.location.flatMap { SolarPosition.calculate(at: now, latitude: $0.latitude, longitude: $0.longitude) }
             let moon = model.location.flatMap { MoonPosition.calculate(at: now, latitude: $0.latitude, longitude: $0.longitude) }
@@ -162,17 +167,48 @@ struct TodayView: View {
             .toolbarColorScheme(sun == nil ? nil : .dark, for: .navigationBar)
             .navigationTitle(sun == nil ? title(now, engine: engine) : "")
             .navigationBarTitleDisplayMode(sun == nil ? .large : .inline)
-            .task(id: engine.gregorian.startOfDay(for: now)) {
-                dailyAyah = model.content.verse(on: now, timeZone: model.zone)
+            .task(id: "\(engine.timeZone.identifier)-\(engine.resolve(now).month.index)-\(engine.resolve(now).day)-\(translationStore.revision)") {
+                #if DEBUG
+                    dailyAyah = ProcessInfo.processInfo.arguments.contains("--marketing-capture")
+                        ? (ProcessInfo.processInfo.arguments.contains("--screenshot-verse")
+                            ? (try? QuranDatabase().verse(surah: 94, number: 6)) : exampleAyah) : ContentLibrary().verse(on: now, engine: engine)
+                #else
+                    dailyAyah = ContentLibrary().verse(on: now, engine: engine)
+                #endif
             }
         }
-        .task(id: model.location) { await weather.refresh(location: model.location) }
+        .task(id: model.location) {
+            while !Task.isCancelled {
+                await weather.refresh(location: model.location)
+                do { try await Task.sleep(for: .seconds(900)) } catch { break }
+            }
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 refreshedAt = .now
                 Task { await weather.refresh(location: model.location) }
             }
         }
+    }
+
+    #if DEBUG
+        /// Display-linked updates keep marketing animation continuous in Simulator.
+        private var timelineSchedule: AnimationTimelineSchedule {
+            .animation(minimumInterval: captureClock?.isAnimated == true ? 1.0 / 30 : 60)
+        }
+    #else
+        private var timelineSchedule: PeriodicTimelineSchedule {
+            .periodic(from: .now, by: 60)
+        }
+    #endif
+
+    private func displayDate(_ date: Date) -> Date {
+        #if DEBUG
+            if let captureClock {
+                return captureClock.date(at: .now)
+            }
+        #endif
+        return referenceDate ?? max(date, refreshedAt)
     }
 
     private var skyHeight: CGFloat {

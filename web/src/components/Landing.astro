@@ -105,6 +105,10 @@ const schema = {
     </main>
     <footer class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 border-t border-emerald/15 px-5 py-7 text-xs text-muted sm:px-8">
       <span>© {new Date().getUTCFullYear()} {t.name}</span>
+      <nav class="flex gap-5" aria-label={locale === "ar" ? "روابط" : "Links"}>
+        <a href="/support/" class="inline-flex min-h-10 items-center">{locale === "ar" ? "الدعم" : "Support"}</a>
+        <a href={locale === "ar" ? "/privacy/" : "/en/privacy/"} class="inline-flex min-h-10 items-center">{locale === "ar" ? "الخصوصية" : "Privacy"}</a>
+      </nav>
       <a href="#top" class="inline-flex min-h-10 items-center gap-2">{t.footer.top}<span aria-hidden="true">↑</span></a>
     </footer>
   </body>

@@ -23,15 +23,6 @@ struct WidgetPrayerSettings: Codable, Equatable, Sendable {
                       imsakMinutes: c.decodeIfPresent(Int.self, forKey: .imsakMinutes) ?? 10)
     }
 
-    func previousPrayer(at date: Date) -> PrayerMoment? {
-        guard let location else { return nil }
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = location.timeZone
-        let yesterday = calendar.date(byAdding: .day, value: -1, to: date)!
-        return (prayers(on: yesterday) + prayers(on: date))
-            .filter { $0.name.isPrayer && $0.date <= date }.max { $0.date < $1.date }
-    }
-
     func prayers(on date: Date) -> [PrayerMoment] {
         guard let location else { return [] }
         return PrayerCalculator.times(on: date, location: location, method: method, imsakMinutes: imsakMinutes)

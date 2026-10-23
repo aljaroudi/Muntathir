@@ -1,53 +1,45 @@
 import Foundation
 
-struct EventReference: Codable, Hashable, Sendable {
-    let book: String
-    let author: String?
-    let edition: String?
-    let volume: String?
-    let page: String?
-    var description: String {
-        [book, author, edition, volume, page].compactMap(\.self).joined(separator: " · ")
-    }
-}
-
 struct IslamicEvent: Codable, Identifiable, Hashable, Sendable {
     let id: String
     let month: Int
     let day: Int
-    let titles: [String: String]
-    let convention: String?
-    let references: [EventReference]
-    func title(locale: Locale) -> String {
-        func normalizedTag(_ identifier: String) -> String {
-            let components = Locale.Components(identifier: identifier).languageComponents
-            return [components.languageCode?.identifier, components.script?.identifier, components.region?.identifier]
-                .compactMap(\.self).joined(separator: "-").lowercased()
-        }
+    /// Optional Hijri year (AH). Negative values are before the Hijra.
+    let year: Int?
 
-        let language = locale.language.languageCode?.identifier
-        let script = locale.language.script?.identifier
-        let languageWithScript = language.flatMap { language in
-            script.map { "\(language)-\($0)" }
-        }
-        let region = Locale.Components(identifier: locale.identifier).languageComponents.region
-        let fullLanguageTag = languageWithScript.flatMap { languageWithScript in
-            region.map { "\(languageWithScript)-\($0.identifier)" }
-        }
-        let candidates = [locale.identifier, fullLanguageTag, languageWithScript, language, "en"]
-            .compactMap(\.self)
-        let keys = titles.keys.sorted()
-        var visited: Set<String> = []
-        for candidate in candidates {
-            let normalized = normalizedTag(candidate)
-            guard visited.insert(normalized).inserted else { continue }
-            for key in keys where normalizedTag(key) == normalized {
-                if let title = titles[key], !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    return title
-                }
-            }
-        }
-        return id
+    init(id: String, month: Int, day: Int, year: Int? = nil) {
+        self.id = id
+        self.month = month
+        self.day = day
+        self.year = year
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, month, day, year
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(month, forKey: .month)
+        try container.encode(day, forKey: .day)
+        try container.encodeIfPresent(year, forKey: .year)
+    }
+
+    private func bundle(for locale: Locale) -> Bundle {
+        let language = Bundle.preferredLocalizations(from: Bundle.main.localizations, forPreferences: [locale.identifier]).first ?? "en"
+        return Bundle.main.url(forResource: language, withExtension: "lproj").flatMap(Bundle.init(url:)) ?? .main
+    }
+
+    func title(locale: Locale) -> String {
+        bundle(for: locale).localizedString(forKey: "event.\(id)", value: nil, table: nil)
+    }
+
+    /// Localized AH year for separate SwiftUI presentation; `nil` when the source has no year.
+    func yearText(locale: Locale) -> String? {
+        guard let year else { return nil }
+        let format = bundle(for: locale).localizedString(forKey: "%lld AH", value: nil, table: nil)
+        return String(format: format, locale: locale, year)
     }
 }
 
@@ -55,6 +47,13 @@ struct Ayah: Identifiable, Sendable {
     let surah: Int
     let number: Int
     let text: String
+    var translations: [String: String] = [:]
+
+    var selectedTranslationText: String? {
+        // Database reads include only the shared selected translation.
+        translations.values.first
+    }
+
     var id: String {
         "\(surah):\(number)"
     }
@@ -63,15 +62,26 @@ struct Ayah: Identifiable, Sendable {
 struct ContentLibrary: Sendable {
     let events: [IslamicEvent]
     let verses: [Ayah]
+    private let datedSchedule: DailyVerseSchedule?
+    private let hasDatedSchedule: Bool
+    private let versesByID: [Int: Ayah]
+
     init(bundle: Bundle = .main) {
         events = bundle.url(forResource: "events", withExtension: "json")
             .flatMap { try? Data(contentsOf: $0) }.flatMap { try? JSONDecoder().decode([IslamicEvent].self, from: $0) } ?? []
-        let text = bundle.url(forResource: "quran-daily", withExtension: "txt")
-            .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? ""
-        verses = text.split(separator: "\n").compactMap { line in
-            let fields = line.split(separator: "|", maxSplits: 2, omittingEmptySubsequences: false)
-            guard fields.count == 3, let surah = Int(fields[0]), let number = Int(fields[1]) else { return nil }
-            return Ayah(surah: surah, number: number, text: String(fields[2]))
+        let scheduleURL = bundle.url(forResource: "quran-daily", withExtension: "json")
+        hasDatedSchedule = scheduleURL != nil
+        let schedule = scheduleURL.flatMap { try? Data(contentsOf: $0) }
+            .flatMap { try? JSONDecoder().decode(DailyVerseSchedule.self, from: $0) }
+        let dailyIDs = bundle.url(forResource: "quran-daily-ids", withExtension: "json")
+            .flatMap { try? Data(contentsOf: $0) }
+            .flatMap { try? JSONDecoder().decode([Int].self, from: $0) } ?? []
+        let ids = Set(dailyIDs + (schedule?.entries.map(\.verseID) ?? []))
+        let records = QuranDatabase(bundle: bundle).verses(ids: ids)
+        versesByID = records
+        verses = dailyIDs.compactMap { records[$0] }
+        datedSchedule = schedule.flatMap { candidate in
+            candidate.entries.allSatisfy { records[$0.verseID] != nil } ? candidate : nil
         }
     }
 
@@ -79,10 +89,48 @@ struct ContentLibrary: Sendable {
         events.filter { $0.month == day.month.month && $0.day == day.day }
     }
 
-    func verse(on date: Date, timeZone: TimeZone) -> Ayah? {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = timeZone
-        guard !verses.isEmpty, let day = calendar.ordinality(of: .day, in: .era, for: date) else { return nil }
-        return verses[(day - 1) % verses.count]
+    func verse(on date: Date, engine: CalendarEngine) -> Ayah? {
+        if hasDatedSchedule {
+            return datedSchedule?.verseID(on: engine.resolve(date)).flatMap { versesByID[$0] }
+        }
+        guard !verses.isEmpty else { return nil }
+        let day = engine.resolve(date)
+        // Keep the rotation tied to the corrected Hijri date until a complete schedule is bundled.
+        let index = (day.month.month - 1) * 30 + day.day - 1
+        return verses[index % verses.count]
     }
+}
+
+/// A dated schedule is accepted as a whole; every reference must resolve in the Quran database.
+struct DailyVerseSchedule: Decodable, Sendable {
+    struct Entry: Codable, Sendable {
+        let hijriMonth: Int
+        let hijriDay: Int
+        let verseID: Int
+    }
+
+    let entries: [Entry]
+
+    init(entries: [Entry]) throws {
+        var dates = Set<Int>()
+        guard entries.count == 360 else { throw ValidationError.invalidSchedule }
+        for entry in entries {
+            guard (1 ... 12).contains(entry.hijriMonth), (1 ... 30).contains(entry.hijriDay), entry.verseID > 0,
+                  dates.insert((entry.hijriMonth - 1) * 30 + entry.hijriDay).inserted
+            else { throw ValidationError.invalidSchedule }
+        }
+        self.entries = entries
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        try self.init(entries: container.decode([Entry].self, forKey: .entries))
+    }
+
+    func verseID(on day: ResolvedDay) -> Int? {
+        entries.first { $0.hijriMonth == day.month.month && $0.hijriDay == day.day }?.verseID
+    }
+
+    private enum CodingKeys: String, CodingKey { case entries }
+    enum ValidationError: Error { case invalidSchedule }
 }

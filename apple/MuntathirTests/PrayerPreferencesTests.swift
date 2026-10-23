@@ -5,6 +5,15 @@ import Testing
 struct PrayerPreferencesTests {
     private let location = SavedLocation(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh")
 
+    @Test func freshCalendarDefaultPreservesSavedSystemChoice() throws {
+        #expect(Preferences().selectedSourceID == CalendarSource.middleEast)
+        let saved = try JSONDecoder().decode(Preferences.self, from: Data("{}".utf8))
+        #expect(saved.selectedSourceID == nil)
+        var government = Preferences()
+        government.selectedSourceID = "government-SA"
+        #expect(try JSONDecoder().decode(Preferences.self, from: JSONEncoder().encode(government)).selectedSourceID == "government-SA")
+    }
+
     @Test func oldSettingsKeepChoicesAndDefaultNewFields() throws {
         let data = Data(#"{"prayerMethod":"tehran","asrRule":"hanafi","enabledPrayers":[],"hiddenPrayers":["asr"]}"#.utf8)
         let preferences = try JSONDecoder().decode(Preferences.self, from: data)
@@ -39,22 +48,23 @@ struct PrayerPreferencesTests {
         #expect(settings.nextPrayer(after: date)?.name == .fajr)
     }
 
-    @Test func previousPrayerUsesVisiblePrayersAndYesterday() throws {
-        let day = try #require(CivilDate(year: 2026, month: 10, day: 18).date(in: location.timeZone))
-        var settings = WidgetPrayerSettings(location: location, method: .tehran, hiddenPrayers: [])
-        let times = settings.prayers(on: day)
-        let asr = try #require(times.first { $0.name == .asr })
-        #expect(settings.previousPrayer(at: day)?.name == .isha)
-        #expect(settings.previousPrayer(at: asr.date)?.name == .asr)
-        settings.hiddenPrayers = [.asr, .isha]
-        #expect(settings.previousPrayer(at: asr.date)?.name == .dhuhr)
-        #expect(settings.previousPrayer(at: day)?.name == .maghrib)
-        settings.location = nil
-        #expect(settings.previousPrayer(at: day) == nil)
-    }
-
     @Test func imsakPreferenceBoundsAreValidatedOnDecode() throws {
         #expect(try JSONDecoder().decode(Preferences.self, from: Data(#"{"imsakMinutes":-5}"#.utf8)).imsakMinutes == 0)
         #expect(try JSONDecoder().decode(Preferences.self, from: Data(#"{"imsakMinutes":999}"#.utf8)).imsakMinutes == 120)
+    }
+}
+
+extension PrayerPreferencesTests {
+    @Test(arguments: [-2, -1, 0, 1, 2])
+    func calendarOffsetsNeverChangePrayers(days: Int) throws {
+        let date = try #require(CivilDate(year: 2026, month: 10, day: 18).date(in: location.timeZone))
+        var original = Preferences()
+        original.prayerMethod = .ummAlQura
+        let before = NotificationPlan.make(now: date, preferences: original, location: location)
+        var adjusted = original
+        adjusted.monthOffsets = [.init(month: .init(year: 1448, month: 9), days: days)]
+        let after = NotificationPlan.make(now: date, preferences: adjusted, location: location)
+        #expect(before.map(\.date) == after.map(\.date))
+        #expect(before.map(\.name) == after.map(\.name))
     }
 }

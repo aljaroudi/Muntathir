@@ -4,9 +4,11 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.locale) private var locale
     var body: some View {
         NavigationStack {
             Form {
+                Section { AppLanguageLink() }
                 Section {
                     NavigationLink {
                         LocationPicker()
@@ -53,24 +55,46 @@ struct SettingsView: View {
                     Text("Imsak is a precaution before calculated Fajr.")
                 }
                 Section {
-                    LabeledContent(
-                        "Baseline",
-                        value: String(localized: "Umm al-Qura")
-                    )
-                    ForEach(SightingMethod.allCases, id: \.rawValue) { method in
-                        LabeledContent(
-                            method.title,
-                            value: method == .calculation
-                                ? String(localized: "Active")
-                                : String(localized: "Not connected")
-                        )
+                    Picker("Method", selection: Binding(
+                        get: { CalendarSource.method(for: model.preferences.selectedSourceID) },
+                        set: { method in
+                            model.update {
+                                switch method {
+                                case .system: $0.selectedSourceID = nil
+                                case .nakedEye: $0.selectedSourceID = CalendarSource.middleEast
+                                case .government: $0.selectedSourceID = "government-SA"
+                                }
+                            }
+                        }
+                    )) {
+                        ForEach(CalendarMethod.allCases) { method in
+                            Text(method.title).tag(method)
+                        }
+                    }
+                    .accessibilityIdentifier("calendar-method")
+                    switch CalendarSource.method(for: model.preferences.selectedSourceID) {
+                    case .system:
+                        LabeledContent("Baseline", value: String(localized: "Umm al-Qura"))
+                    case .nakedEye:
+                        LabeledContent { Text("Middle East") } label: { Text("Region") }
+                    case .government:
+                        Picker("Country", selection: Binding(
+                            get: { String((model.preferences.selectedSourceID ?? "government-SA").suffix(2)) },
+                            set: { country in model.update { $0.selectedSourceID = "government-" + country } }
+                        )) {
+                            ForEach(CalendarSource.countries, id: \.self) { country in
+                                Text(locale.localizedString(forRegionCode: country) ?? country).tag(country)
+                            }
+                        }
+                        .accessibilityIdentifier("calendar-country")
                     }
                 } header: {
                     Text("Calendar corrections")
                 } footer: {
-                    Text(
-                        "Live sources are not connected yet. Use the Calendar tab to adjust a month manually."
-                    )
+                    Text("Without a published announcement, dates use the system calendar. Adjust individual months in Calendar.")
+                    if let error = model.error {
+                        Text(error).foregroundStyle(.red)
+                    }
                 }
                 Section("Weather") {
                     Toggle("Show feels-like temperature", isOn: Binding(
@@ -113,11 +137,12 @@ struct SettingsView: View {
                     Text("Announcement notifications")
                 } footer: {
                     Text(
-                        "Ready for future sources. Alerts will follow a successful refresh; delivery is not immediate."
+                        "Alerts follow published month announcements after a successful refresh; delivery is not immediate."
                     )
                 }
                 Section {
                     NavigationLink("Sources and licenses") { LicensesView() }
+                        .accessibilityIdentifier("sources-and-licenses")
                 } header: {
                     Text("About")
                 } footer: {
@@ -201,39 +226,64 @@ struct LocationPicker: View {
 }
 
 struct LicensesView: View {
+    @Environment(\.locale) private var locale
+
     var body: some View {
         List {
-            Section("Calculations") {
-                Link(
-                    "Adhan Swift 1.5.0",
-                    destination: URL(
-                        string: "https://github.com/batoulapps/adhan-swift"
-                    )!
-                )
-                Text(
-                    "Hijri baseline: Apple Foundation, Umm al-Qura. Calculated dates are not sighting confirmations."
-                )
+            Section {
+                NavigationLink("Adhan Swift 1.5.0") {
+                    ScrollView {
+                        Text(license("Adhan-LICENSE"))
+                            .environment(\.layoutDirection, .leftToRight)
+                            .font(.footnote)
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding()
+                    }
+                    .navigationTitle("Adhan license")
+                }
+            } header: {
+                Text("Calculations")
             }
-            Section("Library license") { Text(license("Adhan-LICENSE")) }
-            Section("Events") {
-                Text(
-                    "Twelver Shia convention. Historical dates may differ between sources."
-                )
-                Link(
-                    "Event references",
-                    destination: URL(
-                        string:
-                        "https://al-islam.org/islam-faith-practice-history-sayyid-muhammad-rizvi/lesson-17-twelve-caliphs-or-imams"
-                    )!
-                )
+            Section("Quran Translations") {
+                ForEach(sortedQuranTranslations, id: \.id) { item in
+                    quranTranslationCredit(item)
+                        .accessibilityIdentifier(item.id)
+                }
             }
         }.navigationTitle("Sources and licenses")
+    }
+
+    private var sortedQuranTranslations: [QuranTranslation] {
+        QuranTranslation.catalog.sorted {
+            languageName($0.language).compare(
+                languageName($1.language),
+                options: [.caseInsensitive, .diacriticInsensitive],
+                locale: locale
+            ) == .orderedAscending
+        }
     }
 
     private func license(_ name: String) -> String {
         Bundle.main.url(forResource: name, withExtension: "txt").flatMap {
             try? String(contentsOf: $0, encoding: .utf8)
         } ?? ""
+    }
+
+    private func languageName(_ language: String) -> String {
+        locale.localizedString(forLanguageCode: language)
+            ?? locale.localizedString(forIdentifier: language)
+            ?? language
+    }
+
+    private func quranTranslationCredit(_ item: QuranTranslation) -> some View {
+        LabeledContent {
+            Link(destination: URL(string: "https://tanzil.net/trans/\(item.id)")!) {
+                Text(verbatim: item.translator)
+            }
+        } label: {
+            Text(verbatim: languageName(item.language))
+        }
     }
 }
 
@@ -260,13 +310,40 @@ struct PrayerVisibilitySettings: View {
 
 struct PrayerNotificationSettings: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.openURL) private var openURL
     var body: some View {
         Form {
             Section {
+                Toggle("Time Sensitive", isOn: Binding(get: { model.preferences.timeSensitiveNotifications }, set: { value in
+                    model.update { $0.timeSensitiveNotifications = value }
+                }))
+                Button("System notification settings") {
+                    if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+                        openURL(url)
+                    }
+                }
+            } footer: {
+                Text("Allow Time Sensitive alerts in Settings and Focus. Sound follows Silent mode and your Ringtone and Alerts volume.")
+            }
+            Section {
                 ForEach(PrayerName.allCases) { prayer in
-                    Toggle(prayer.title, isOn: Binding(get: { model.preferences.enabledPrayers.contains(prayer) }, set: { enabled in
-                        Task { await model.setPrayer(prayer, enabled: enabled) }
-                    }))
+                    VStack(alignment: .leading) {
+                        Toggle(prayer.title, isOn: Binding(get: { model.preferences.enabledPrayers.contains(prayer) }, set: { enabled in
+                            Task { await model.setPrayer(prayer, enabled: enabled) }
+                        }))
+                        if model.preferences.enabledPrayers.contains(prayer) {
+                            Picker("Sound", selection: Binding(get: { model.preferences.sound(for: prayer) }, set: { sound in
+                                model.update { $0.prayerSounds[prayer.rawValue] = sound }
+                                preview(sound)
+                            })) {
+                                ForEach(PrayerAlertSound.allCases) { sound in
+                                    Text(sound.title).tag(sound)
+                                }
+                            }
+                            Button("Preview sound", systemImage: "speaker.wave.2") { preview(model.preferences.sound(for: prayer)) }
+                                .disabled(model.preferences.sound(for: prayer) == .silent)
+                        }
+                    }
                 }
             } footer: {
                 Text("Alerts are scheduled for up to 10 days. Open the app regularly to refresh them.")
@@ -281,5 +358,12 @@ struct PrayerNotificationSettings: View {
                     }
                 }
             }
+    }
+
+    private func preview(_ sound: PrayerAlertSound) {
+        Task {
+            do { try await model.notifications.preview(sound: sound, timeSensitive: model.preferences.timeSensitiveNotifications) }
+            catch { model.error = String(localized: "Could not preview this alert. Check system notification settings.") }
+        }
     }
 }

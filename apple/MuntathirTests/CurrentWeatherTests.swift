@@ -13,6 +13,7 @@ import WeatherKit
     }
 
     @Test func widgetWeatherExpiresAfterAnHour() {
+        #expect(!reading().isCurrent(at: now.addingTimeInterval(-1)))
         #expect(reading().isCurrent(at: now.addingTimeInterval(3599)))
         #expect(!reading().isCurrent(at: now.addingTimeInterval(3600)))
         #expect(!reading().isCurrent(at: now.addingTimeInterval(86400)))
@@ -73,6 +74,19 @@ import WeatherKit
         #expect(store.reading?.temperature.value == 20)
         #expect(published == [20])
         #expect(!store.failed)
+    }
+
+    @Test func failedRequestsBackOffUntilRetryWindow() async {
+        var calls = 0
+        let store = CurrentWeatherStore(publish: { _, _ in }) { _ in
+            calls += 1
+            throw URLError(.timedOut)
+        }
+        await store.refresh(location: location, now: now)
+        await store.refresh(location: location, now: now.addingTimeInterval(299))
+        #expect(calls == 1)
+        await store.refresh(location: location, now: now.addingTimeInterval(300))
+        #expect(calls == 2)
     }
 
     @Test func failureCanRetry() async {
