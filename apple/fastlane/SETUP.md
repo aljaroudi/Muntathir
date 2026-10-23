@@ -12,7 +12,7 @@ bundle exec fastlane marketing
 
 ## Lanes
 
-- `screenshots`: capture Today, Quran, Calendar, and Tools in all 14 supported store locales on iPhone 17 Pro Max, iPad Pro 13-inch (M5), and iPhone Duo.
+- `screenshots`: capture Today, Calendar, Quran, and Qibla in all 14 supported store locales on iPhone 17 Pro Max, iPad Pro 13-inch (M5), and iPhone Duo.
 - `watch_screenshots`: capture the real Watch prayer list in every store locale at 416 × 496, using a temporary Mecca connectivity cache that is restored afterward.
 - `style`: add device bezels, gradient backgrounds and native text rendering for Arabic shaping.
 - `previews`: record 15-second sunrise-to-sunset videos on all three devices.
@@ -24,11 +24,12 @@ bundle exec fastlane marketing
 - `upload_beta ipa:/absolute/path.ipa`: retry upload of an already tested signed archive without rebuilding.
 - `assets`: upload existing metadata and supported media without submitting review.
 - `prepare build:NUMBER`: upload metadata/media and select a processed TestFlight build, leaving review submission pending.
+- `upload_prepared ipa:/absolute/path.ipa`: upload an approved archive and replace media, preserving the review draft.
 - `release`: test, generate media, archive, upload and submit App Review. Publication stays manual after approval.
 
 ## Capture settings and outputs
 
-Captures use a clean isolated test preferences suite, Mecca, 21 October 2026, light appearance and local weather data. Fajr, Dhuhr and Maghrib are visible, with sunset enabled; all other optional times are hidden. This fixture is Debug-only and leaves normal app preferences unchanged. Quran source text is never modified. Debug marketing captures use `exampleAyah` from `DailyAyahCard.swift`, shared with its SwiftUI previews; the displayed reference must match the bundled Quran text.
+Captures use a clean isolated test preferences suite, Mecca, 23 October 2026, light appearance and local weather data. Fajr, Dhuhr and Maghrib are visible, with sunset enabled; all other optional times are hidden. This fixture is Debug-only and leaves normal app preferences unchanged. Quran source text is never modified. Screenshot captures read 94:6 from the bundled Quran database. Video captures and SwiftUI previews retain `exampleAyah` from `DailyAyahCard.swift`; each reference matches its text.
 
 Standard devices use `SCREENSHOT_IOS_VERSION` (default 27.0). Duo uses iOS 27.1 in a separate snapshot pass without deleting the standard captures. Install the runtimes in Xcode. Current snapshot captures use the native 1398 × 2034 Duo output; validation also accepts 2007 × 2853 and both landscape equivalents. Duo video recording explicitly selects the outer `primary` display; the simulator default can target the blank inner display. QA rejects blank frames. Capturing a single display does not establish layout correctness across folding transitions.
 
@@ -43,7 +44,7 @@ Generated files live under ignored `build/marketing/`:
 - `frames/`: intermediate bezel images.
 - `store/`: styled store screenshots, 182 files across iPhone, iPad, Duo and Apple Watch in 14 locales.
 - `previews/`: 15-second standard iPhone/iPad videos and start/middle/end QA frames.
-- `duo-previews/`: 15-second Duo videos at 886 × 1920, with QA frames.
+- `duo-previews/`: 15-second Duo videos at 886 × 1920, with QA frames. Duo keeps the native screen proportions inside a neutral frame and background on Apple’s required 886 × 1920 canvas.
 
 **Duo preview upload limitation:** Fastlane 2.241.1 supports Duo screenshots but has no Duo preview upload type. Duo videos are exported separately for manual App Store Connect upload. Keeping them outside automatic preview discovery prevents silent skipping or assignment to another device slot. An upload integration can move to Apple's App Asset Library when that work is requested; no undocumented preview enum is invented here.
 
@@ -76,3 +77,11 @@ Apple requires 15–30 seconds for App Store previews. The capture clock advance
 The Quran capture opens Al-Ikhlas with translation set to None, so all localized interfaces can be captured offline without depending on asset-pack downloads. Screenshot validation reads the required screen names from `marketing/headlines.json`.
 
 Snapshot builds use `build/marketing/DerivedData` so they do not share a build cache with regression tests.
+
+## Reviewed local submission
+
+The four app screenshots are Today, Calendar, Quran, and Qibla. Marketing screenshots use Quran 94:6 and the October 2026 calendar. The sunrise-to-sunset preview keeps its original verse and sequence. Run screenshots, watch_screenshots, style, previews, tests, and build locally; inspect and approve the generated media before running `upload_prepared ipa:build/Muntathir.ipa`. This lane reuses the editable version, replaces screenshots and previews, and uploads the archive. After processing, select the uploaded build and submit the existing draft through App Store Connect, keeping release manual. Fastlane refuses drafts containing existing asset-pack items, so use the web UI for this final step. It does not regenerate approved media. Existing Ready for Review drafts are reused.
+
+For a first App Store submission, packs must have processed iOS versions; external TestFlight approval is a separate gate. Existing published apps still require live App Store packs. During this update, GitHub's Apple deployment workflow is disabled remotely until the owner merges and re-enables it. Do not push or create a PR as part of the local submission.
+
+For this submission, defer `quran-ms-basmeih`, `quran-ur-jawadi`, and `quran-zh-majian` (Malay, Urdu, Traditional Chinese). Keep the other ten packs with the app submission. Submit the deferred packs after app approval and before manually releasing the app.

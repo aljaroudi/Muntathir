@@ -5,6 +5,16 @@ require "open3"
 require_relative "asset_packs"
 
 module MuntathirRelease
+  # Fastlane 2.241.1 omits editable versions already attached to a draft review.
+  module EditableReviewDraft
+    def get_edit_app_store_version(**options)
+      super || get_app_store_versions(client: options[:client],
+                                     filter: { platform: options[:platform] || "IOS", appVersionState: "READY_FOR_REVIEW" },
+                                     includes: options[:includes] || Spaceship::ConnectAPI::AppStoreVersion::ESSENTIAL_INCLUDES)
+        .max_by { |version| Gem::Version.new(version.version_string) }
+    end
+  end
+
   ROOT = File.expand_path("..", __dir__)
   # Apple does not support Persian store metadata; its copy stays in listing-drafts/fa.
   LOCALES = %w[en-US ar-SA fr-FR de-DE id it ja ms ru es-ES tr ur-PK zh-Hans zh-Hant].freeze
@@ -89,6 +99,15 @@ module MuntathirRelease
     output, status = Open3.capture2e(*command.map(&:to_s))
     raise "#{command.first} failed: #{output.lines.last(12).join}" unless status.success?
     output
+  end
+
+  def self.preview_filter(size, duo: false)
+    if duo
+      "scale=830:1800:force_original_aspect_ratio=decrease:force_divisible_by=2," \
+        "pad=iw+16:ih+16:8:8:color=0x0d1117,pad=886:1920:(ow-iw)/2:(oh-ih)/2:color=0x10263f,setsar=1"
+    else
+      "scale=#{size.join(':')}:force_original_aspect_ratio=decrease,pad=#{size.join(':')}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1"
+    end
   end
 
   def self.validate_video!(path, size, seconds: 15)

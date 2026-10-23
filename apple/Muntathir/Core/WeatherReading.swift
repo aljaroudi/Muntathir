@@ -12,6 +12,7 @@ struct WeatherReading: Codable, Sendable {
 
     struct Attribution: Codable, Sendable {
         let legalPageURL: URL
+        // Variants are named for the background: light uses black artwork, dark uses white.
         let combinedMarkLightURL: URL
         let combinedMarkDarkURL: URL
 

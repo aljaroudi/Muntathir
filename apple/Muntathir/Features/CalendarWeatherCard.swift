@@ -27,7 +27,7 @@ struct CalendarWeatherCard: View {
                         .font(.title2.weight(.semibold))
                         .accessibilityValue(weather.condition)
                 } else {
-                    Text("—").foregroundStyle(.secondary)
+                    Text(verbatim: "—").foregroundStyle(.secondary)
                         .accessibilityLabel("Weather unavailable")
                 }
             }
@@ -53,7 +53,7 @@ struct CalendarWeatherCard: View {
                 Spacer(minLength: 0)
                 if let attribution = weather?.attribution {
                     Link(destination: attribution.legalPageURL) {
-                        if let data = colorScheme == .dark ? attributionLight : attributionDark,
+                        if let data = colorScheme == .dark ? attributionDark : attributionLight,
                            let image = UIImage(data: data)
                         {
                             Image(uiImage: image).resizable().scaledToFit().frame(width: 58, height: 10)

@@ -34,8 +34,8 @@ def main():
                 assert "{apple}" not in value and "{events}" not in value, f"Unresolved link: {locale}: {key}"
     events = json.loads((APPLE / "Muntathir/Resources/events.json").read_text())
     for event in events:
-        assert LOCALES <= event["titles"].keys(), f"Missing event locale: {event['id']}"
-        assert all(event["titles"][locale].strip() for locale in LOCALES)
+        assert set(event) == {"id", "month", "day"}, f"Unexpected event details: {event['id']}"
+        assert "event." + event["id"] in catalog, f"Missing event title: {event['id']}"
     for locale in LOCALES:
         permission = (APPLE / "Muntathir" / f"{locale}.lproj/InfoPlist.strings").read_text()
         assert '"NSLocationWhenInUseUsageDescription"' in permission, f"Missing location purpose: {locale}"

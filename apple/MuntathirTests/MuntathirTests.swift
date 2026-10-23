@@ -50,58 +50,17 @@ struct CalendarTests {
 }
 
 struct ContentTests {
-    private func event(titles: [String: String]) -> IslamicEvent {
-        IslamicEvent(id: "example", month: 1, day: 1, titles: titles, convention: nil, references: [])
+    @Test(arguments: [("en_US", "Eid al-Fitr"), ("ar_SA", "عيد الفطر"),
+                      ("fr_CA", "Aïd al-Fitr"), ("zh_Hans", "开斋节"), ("zh_Hant", "開齋節")])
+    func eventTitlesUseStringCatalog(identifier: String, expected: String) {
+        let event = IslamicEvent(id: "fitr", month: 10, day: 1)
+        #expect(event.title(locale: Locale(identifier: identifier)) == expected)
     }
 
-    @Test(arguments: ["en", "en_US", "en_GB", "ar", "ar_SA", "ar_EG"])
-    func titlesUseLocaleLanguage(identifier: String) {
-        let titles = ["en": "English title", "ar": "عنوان عربي"]
-        let locale = Locale(identifier: identifier)
-        let expected = titles[locale.language.languageCode?.identifier ?? "en"]
-        #expect(event(titles: titles).title(locale: locale) == expected)
-    }
-
-    @Test func titlesPreferRegionThenScriptThenLanguage() {
-        let locale = Locale(identifier: "sr_Latn_RS")
-        #expect(event(titles: ["sr-Latn-RS": "Regional", "sr-Latn": "Script", "sr": "Base", "en": "English"])
-            .title(locale: locale) == "Regional")
-        #expect(event(titles: ["sr-Latn": "Script", "sr": "Base", "en": "English"])
-            .title(locale: locale) == "Script")
-        #expect(event(titles: ["sr": "Base", "en": "English"])
-            .title(locale: locale) == "Base")
-    }
-
-    @Test func titlesNormalizeTagsAndIgnoreLocaleFormattingSettings() {
-        #expect(event(titles: ["FR_ca": "Regional", "fr": "Base"])
-            .title(locale: Locale(identifier: "fr-CA")) == "Regional")
-        #expect(event(titles: ["zh-Hant-TW": "Regional", "zh": "Base"])
-            .title(locale: Locale(identifier: "zh_TW")) == "Regional")
-        #expect(event(titles: ["sr-Cyrl": "Script", "sr": "Base"])
-            .title(locale: Locale(identifier: "sr_RS")) == "Script")
-        #expect(event(titles: ["ar-SA": "Regional", "ar": "Base"])
-            .title(locale: Locale(identifier: "ar_SA@numbers=latn;calendar=gregorian")) == "Regional")
-    }
-
-    @Test func missingTitlesFallBackDeterministically() {
-        let locale = Locale(identifier: "fr_CA")
-        #expect(event(titles: ["ar": "عنوان عربي", "en": "English"])
-            .title(locale: locale) == "English")
-        #expect(event(titles: ["fr-CA": " ", "fr": "Base", "en": "English"])
-            .title(locale: locale) == "Base")
-        #expect(event(titles: ["fr": "\n", "en": "English"])
-            .title(locale: locale) == "English")
-        #expect(event(titles: ["ar": "عنوان عربي"]).title(locale: locale) == "example")
-        #expect(event(titles: ["en": " "]).title(locale: locale) == "example")
-        #expect(event(titles: [:]).title(locale: locale) == "example")
-    }
-
-    @Test func arbitraryTitleLanguagesSurviveCoding() throws {
-        let original = event(titles: ["en": "English", "fr": "Synthetic French", "sr-Latn": "Synthetic Serbian"])
-        let data = try JSONEncoder().encode(original)
-        let decoded = try JSONDecoder().decode(IslamicEvent.self, from: data)
+    @Test func eventDatesSurviveCoding() throws {
+        let original = IslamicEvent(id: "fitr", month: 10, day: 1)
+        let decoded = try JSONDecoder().decode(IslamicEvent.self, from: JSONEncoder().encode(original))
         #expect(decoded == original)
-        #expect(decoded.title(locale: Locale(identifier: "fr_FR")) == "Synthetic French")
     }
 
     @Test func missingContentHasNoDailyVerse() throws {
@@ -116,7 +75,8 @@ struct ContentTests {
         #expect(library.events.count >= 30)
         for event in library.events {
             for language in ["en", "ar"] {
-                let title = try #require(event.titles[language])
+                let title = event.title(locale: Locale(identifier: language))
+                #expect(title != "event.\(event.id)")
                 #expect(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false)
             }
         }

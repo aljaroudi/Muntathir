@@ -23,6 +23,7 @@ export default defineConfig({
       styles: ["normal"],
     },
   ],
+  redirects: { "/support/": "https://docs.google.com/forms/d/e/1FAIpQLSdDOEiaLaS2_-cI-n5ZDNVMjHyv6OX2IPECM_dboG1qFj8bsA/viewform?usp=header", "/en/support/": "https://docs.google.com/forms/d/e/1FAIpQLSdDOEiaLaS2_-cI-n5ZDNVMjHyv6OX2IPECM_dboG1qFj8bsA/viewform?usp=header" },
   trailingSlash: "always",
   i18n: {
     defaultLocale: "ar",

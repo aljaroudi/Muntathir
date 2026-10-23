@@ -26,6 +26,7 @@ struct ContentView: View {
                         } label: {
                             Label("Qibla", systemImage: "location.north.circle")
                         }
+                        .accessibilityIdentifier("qibla")
                     }
                     .navigationTitle("Tools")
                 }
@@ -164,33 +165,7 @@ struct EventRows: View {
             Text("No observances today").foregroundStyle(.secondary)
         }
         ForEach(events) { event in
-            NavigationLink {
-                EventDetail(event: event)
-            } label: {
-                Label(event.title(locale: locale), systemImage: "sparkle")
-            }
+            Label(event.title(locale: locale), systemImage: "sparkle")
         }
-    }
-}
-
-struct EventDetail: View {
-    let event: IslamicEvent
-    @Environment(\.locale) private var locale
-    var body: some View {
-        List {
-            Text(event.title(locale: locale)).font(.title2)
-            if event.convention != nil {
-                Text(
-                    "Twelver Shia convention. Historical dates may differ between sources."
-                ).foregroundStyle(.secondary)
-            }
-            if !event.references.isEmpty {
-                Section("References") {
-                    ForEach(event.references, id: \.self) {
-                        Text($0.description).textSelection(.enabled)
-                    }
-                }
-            }
-        }.navigationTitle("Observance")
     }
 }

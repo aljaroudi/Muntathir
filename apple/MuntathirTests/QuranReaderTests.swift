@@ -45,6 +45,14 @@ struct QuranReaderTests {
         #expect(QuranSearchText.normalize("فى رحمة") == "في رحمه")
     }
 
+    @Test func searchIndexesMatchUpdatedOpeningVerses() throws {
+        let ids = try database.connection().query("SELECT rowid FROM quran_words WHERE quran_words MATCH ? ORDER BY rowid", parameters: ["text : \"بسم\""]) {
+            Int(sqlite3_column_int($0, 0))
+        }
+        let matches = try database.readVerses(where: "\"index\" IN (\(ids.map { _ in "?" }.joined(separator: ",")))", parameters: ids.map(String.init))
+        #expect(matches.map(\.1.id) == ["1:1", "11:41", "27:30"])
+    }
+
     @Test func arabicSearchFindsContainedWordsRootsTyposAndShortWords() async throws {
         let reader = QuranReader(database: database)
         #expect(try await reader.search("صوم", translationID: nil, limit: 6236).map(\.id).contains("19:26"))

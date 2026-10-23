@@ -27,4 +27,35 @@ struct CalendarWeatherCardTests {
             }
         }
     }
+
+    @MainActor @Test func freshWeatherAndAttributionStayVisibleAfterRefreshFailure() async throws {
+        let date = Date.now
+        let location = SavedLocation(latitude: 21.42, longitude: 39.82, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh")
+        let attribution = try JSONDecoder().decode(WeatherReading.Attribution.self, from: Data(#"{"legalPageURL":"https://example.invalid/legal","combinedMarkLightURL":"file:///missing-light.png","combinedMarkDarkURL":"file:///missing-dark.png"}"#.utf8))
+        var calls = 0
+        let weather = CurrentWeatherStore(publish: { _, _ in }) { _ in
+            calls += 1
+            if calls > 1 {
+                throw URLError(.notConnectedToInternet)
+            }
+            return WeatherReading(temperature: .init(value: 24, unit: .celsius), apparentTemperature: .init(value: 26, unit: .celsius),
+                                  condition: "Clear", weatherCondition: .clear, date: date, attribution: attribution)
+        }
+        let suite = UUID().uuidString
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let model = AppModel(defaults: defaults, cloud: nil)
+        model.select(location)
+        func renderedCards() throws -> Data {
+            let renderer = ImageRenderer(content: TodayInfoCards(date: date, skyBackground: false, weather: weather, sun: nil, moon: nil)
+                .frame(width: 380, height: 500).environment(model))
+            return try #require(renderer.uiImage?.pngData())
+        }
+        await weather.refresh(location: location, now: date)
+        let original = try renderedCards()
+        await weather.refresh(location: location, now: date.addingTimeInterval(901), force: true)
+        #expect(weather.failed)
+        #expect(weather.reading?.attribution?.legalPageURL == attribution.legalPageURL)
+        #expect(try renderedCards() == original)
+    }
 }

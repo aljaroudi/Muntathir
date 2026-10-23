@@ -177,6 +177,7 @@ struct QuranTranslationPicker: View {
             Button { store.select("") } label: {
                 Label("None", systemImage: store.selection.isEmpty ? "checkmark" : "minus")
             }
+            .accessibilityIdentifier("quran-translation-none")
             ForEach(QuranTranslation.catalog) { translation in
                 Button { store.select(translation.id) } label: {
                     Label(locale.localizedString(forIdentifier: translation.language) ?? translation.language,

@@ -17,7 +17,7 @@ platform :ios do
     sh("python3", File.join(__dir__, "../scripts/check_localizations.py"))
     run_tests(project: "./Muntathir.xcodeproj", scheme: "Muntathir",
               destination: "platform=iOS Simulator,name=iPhone 17 Pro Max,OS=#{ENV.fetch('SCREENSHOT_IOS_VERSION', '27.0')}",
-              skip_testing: ["MuntathirUITests/MarketingScreenshotTests"], parallel_testing: false,
+              skip_testing: ["MuntathirUITests/MarketingScreenshotTests", "MuntathirUITests/QuranScreenshotRefreshTests"], parallel_testing: false,
               output_directory: "./build/tests", buildlog_path: "./build/logs/tests",
               derived_data_path: "./build/DerivedData")
   end
@@ -64,6 +64,7 @@ platform :ios do
     end
     path = File.expand_path(ENV.fetch("ASC_KEY_PATH"))
     UI.user_error!("App Store Connect key does not exist: #{path}") unless File.file?(path)
+    Spaceship::ConnectAPI::App.prepend(MuntathirRelease::EditableReviewDraft)
     app_store_connect_api_key(key_id: ENV.fetch("ASC_KEY_ID"), issuer_id: ENV.fetch("ASC_ISSUER_ID"), key_filepath: path, in_house: false)
   end
 
@@ -73,8 +74,9 @@ platform :ios do
     UI.user_error!("Muntathir not found in App Store Connect") unless app
     UI.user_error!("Unexpected App Store app ID") unless app.id == "6824304362"
     live = app.get_live_app_store_version(platform: "IOS")
-    # A first app's packs must be reviewed alongside the app; require beta readiness until then.
-    MuntathirRelease.validate_asset_packs!(release: MuntathirRelease.app_store_asset_gate?(options[:release], live)) unless options[:build_only]
+    # First App Store packs are reviewed with the app; external beta approval is separate.
+    MuntathirRelease.validate_asset_packs!(release: MuntathirRelease.app_store_asset_gate?(options[:release], live),
+                                           review: options[:release] && live.nil?) unless options[:build_only]
     edit = app.get_edit_app_store_version(platform: "IOS")
     config = MuntathirRelease.review_config
     # Resolve store requirements against existing fields and explicitly managed local values.
@@ -199,7 +201,7 @@ platform :ios do
     MuntathirRelease.validate_media!
     options = { metadata_path: "./fastlane/metadata", screenshots_path: "./build/marketing/store",
                 app_previews_path: "./build/marketing/previews", preview_frame_time_code: "00:00:05:00",
-                overwrite_screenshots: false, overwrite_preview_videos: false,
+                overwrite_screenshots: context[:replace_media] == true, overwrite_preview_videos: context[:replace_media] == true,
                 automatic_release: false, force: true, precheck_include_in_app_purchases: false }
     # Apple rejects a redundant releaseType write on some initial-version listings.
     existing = context[:app]&.get_edit_app_store_version(platform: "IOS")
@@ -208,6 +210,18 @@ platform :ios do
       options[key.to_sym] = config[key] if config[key] && !config[key].empty?
     end
     options
+  end
+
+  desc "Upload an approved local archive and replace media without changing the existing review draft"
+  lane :upload_prepared do |options|
+    check
+    context = store(release: true)
+    ipa = File.expand_path(options.fetch(:ipa))
+    UI.user_error!("Missing approved IPA: #{ipa}") unless File.file?(ipa)
+    upload_to_app_store(**store_options(app: context.fetch(:app), replace_media: true),
+                        ipa: ipa, app_version: context.fetch(:version), submit_for_review: false,
+                        reject_if_possible: false)
+    UI.success("Approved archive and media uploaded; select the processed build and submit the existing review draft in App Store Connect.")
   end
 
   desc "Test, generate media, archive and submit App Review with manual release"

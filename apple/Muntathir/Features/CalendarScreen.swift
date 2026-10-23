@@ -77,16 +77,8 @@ struct CalendarScreen: View {
                                     }.frame(minWidth: 52)
                                     VStack(alignment: .leading, spacing: 12) {
                                         ForEach(events) { event in
-                                            NavigationLink {
-                                                EventDetail(event: event)
-                                            } label: {
-                                                HStack {
-                                                    Text(event.title(locale: locale))
-                                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                                    Image(systemName: "chevron.forward").font(.caption)
-                                                        .foregroundStyle(.tertiary)
-                                                }.contentShape(.rect)
-                                            }.buttonStyle(.plain)
+                                            Text(event.title(locale: locale))
+                                                .frame(maxWidth: .infinity, alignment: .leading)
                                         }
                                     }.frame(maxWidth: .infinity, alignment: .leading)
                                 }

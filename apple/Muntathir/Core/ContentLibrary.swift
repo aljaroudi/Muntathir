@@ -1,53 +1,14 @@
 import Foundation
 
-struct EventReference: Codable, Hashable, Sendable {
-    let book: String
-    let author: String?
-    let edition: String?
-    let volume: String?
-    let page: String?
-    var description: String {
-        [book, author, edition, volume, page].compactMap(\.self).joined(separator: " · ")
-    }
-}
-
 struct IslamicEvent: Codable, Identifiable, Hashable, Sendable {
     let id: String
     let month: Int
     let day: Int
-    let titles: [String: String]
-    let convention: String?
-    let references: [EventReference]
-    func title(locale: Locale) -> String {
-        func normalizedTag(_ identifier: String) -> String {
-            let components = Locale.Components(identifier: identifier).languageComponents
-            return [components.languageCode?.identifier, components.script?.identifier, components.region?.identifier]
-                .compactMap(\.self).joined(separator: "-").lowercased()
-        }
 
-        let language = locale.language.languageCode?.identifier
-        let script = locale.language.script?.identifier
-        let languageWithScript = language.flatMap { language in
-            script.map { "\(language)-\($0)" }
-        }
-        let region = Locale.Components(identifier: locale.identifier).languageComponents.region
-        let fullLanguageTag = languageWithScript.flatMap { languageWithScript in
-            region.map { "\(languageWithScript)-\($0.identifier)" }
-        }
-        let candidates = [locale.identifier, fullLanguageTag, languageWithScript, language, "en"]
-            .compactMap(\.self)
-        let keys = titles.keys.sorted()
-        var visited: Set<String> = []
-        for candidate in candidates {
-            let normalized = normalizedTag(candidate)
-            guard visited.insert(normalized).inserted else { continue }
-            for key in keys where normalizedTag(key) == normalized {
-                if let title = titles[key], !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    return title
-                }
-            }
-        }
-        return id
+    func title(locale: Locale) -> String {
+        let language = Bundle.preferredLocalizations(from: Bundle.main.localizations, forPreferences: [locale.identifier]).first ?? "en"
+        let bundle = Bundle.main.url(forResource: language, withExtension: "lproj").flatMap(Bundle.init(url:)) ?? .main
+        return bundle.localizedString(forKey: "event.\(id)", value: nil, table: nil)
     }
 }
 

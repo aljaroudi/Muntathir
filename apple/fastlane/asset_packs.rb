@@ -6,9 +6,9 @@ module MuntathirRelease
     (release == true || release == "true") && !live_version.nil?
   end
 
-  def self.validate_asset_packs!(release: false, get: method(:asset_pack_request))
+  def self.validate_asset_packs!(release: false, review: false, get: method(:asset_pack_request))
     relation = release ? "appStoreVersion" : "externalBetaVersion"
-    path = "/v1/apps/6824304362/backgroundAssets?include=#{relation}&limit=200"
+    path = review ? "/v1/apps/6824304362/backgroundAssets?limit=200" : "/v1/apps/6824304362/backgroundAssets?include=#{relation}&limit=200"
     assets = []
     versions = {}
     while path
@@ -21,12 +21,19 @@ module MuntathirRelease
     raise "Expected 13 Quran asset packs" unless expected.size == 13
     missing = expected.reject do |identifier|
       asset = assets.find { |item| item.dig("attributes", "assetPackIdentifier") == identifier && !item.dig("attributes", "archived") }
-      version_id = asset&.dig("relationships", relation, "data", "id")
-      version = versions[version_id]
-      version && version.dig("attributes", "platforms")&.include?("IOS")
+      if review
+        candidates = asset ? get.call("/v1/backgroundAssets/#{asset.fetch('id')}/versions?limit=200").fetch("data") : []
+        candidates.any? do |version|
+          version.dig("attributes", "state") == "COMPLETE" && version.dig("attributes", "platforms")&.include?("IOS")
+        end
+      else
+        version_id = asset&.dig("relationships", relation, "data", "id")
+        version = versions[version_id]
+        version && version.dig("attributes", "platforms")&.include?("IOS")
+      end
     end
     unless missing.empty?
-      raise "Quran packs unavailable for #{release ? 'App Store' : 'external TestFlight'}: #{missing.join(', ')}. " \
+      raise "Quran packs unavailable for #{review ? 'App Store review' : (release ? 'App Store' : 'external TestFlight')}: #{missing.join(', ')}. " \
             "Upload missing packs or submit their processed versions for review in App Store Connect."
     end
     true

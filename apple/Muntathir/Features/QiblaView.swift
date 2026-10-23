@@ -48,9 +48,8 @@ struct QiblaView: View {
                             .padding()
                         }
                     }
-                    .accessibilityIdentifier(model.locationService.hasAccurateHeading ? "qibla-compass-ready" : "qibla-compass-blocked")
                     Text(
-                        "\(degrees, format: .measurement(width: .narrow, usage: .asProvided, numberFormatStyle: .number.precision(.fractionLength(1)))) from true north"
+                        "\(degrees, format: .measurement(width: .narrow, usage: .asProvided, numberFormatStyle: .number.precision(.fractionLength(0)))) from true north"
                     ).font(.title3)
                     if model.locationService.heading == nil {
                         Text(
@@ -63,6 +62,7 @@ struct QiblaView: View {
                     } else {
                         Text("Keep your device flat and follow the arrow.")
                             .foregroundStyle(.secondary)
+                            .accessibilityIdentifier("qibla-compass-ready")
                     }
                 }
             } else {

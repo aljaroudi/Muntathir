@@ -5,6 +5,15 @@ import Testing
 struct PrayerPreferencesTests {
     private let location = SavedLocation(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh")
 
+    @Test func freshCalendarDefaultPreservesSavedSystemChoice() throws {
+        #expect(Preferences().selectedSourceID == CalendarSource.middleEast)
+        let saved = try JSONDecoder().decode(Preferences.self, from: Data("{}".utf8))
+        #expect(saved.selectedSourceID == nil)
+        var government = Preferences()
+        government.selectedSourceID = "government-SA"
+        #expect(try JSONDecoder().decode(Preferences.self, from: JSONEncoder().encode(government)).selectedSourceID == "government-SA")
+    }
+
     @Test func oldSettingsKeepChoicesAndDefaultNewFields() throws {
         let data = Data(#"{"prayerMethod":"tehran","asrRule":"hanafi","enabledPrayers":[],"hiddenPrayers":["asr"]}"#.utf8)
         let preferences = try JSONDecoder().decode(Preferences.self, from: data)

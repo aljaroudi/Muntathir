@@ -170,7 +170,8 @@ struct TodayView: View {
             .task(id: "\(engine.timeZone.identifier)-\(engine.resolve(now).month.index)-\(engine.resolve(now).day)-\(translationStore.revision)") {
                 #if DEBUG
                     dailyAyah = ProcessInfo.processInfo.arguments.contains("--marketing-capture")
-                        ? exampleAyah : ContentLibrary().verse(on: now, engine: engine)
+                        ? (ProcessInfo.processInfo.arguments.contains("--screenshot-verse")
+                            ? (try? QuranDatabase().verse(surah: 94, number: 6)) : exampleAyah) : ContentLibrary().verse(on: now, engine: engine)
                 #else
                     dailyAyah = ContentLibrary().verse(on: now, engine: engine)
                 #endif

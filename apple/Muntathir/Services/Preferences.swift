@@ -9,7 +9,7 @@ struct Preferences: Codable, Equatable, Sendable {
     var enabledPrayers: Set<PrayerName> = [.fajr, .dhuhr, .maghrib]
     var showFeelsLikeTemperature = false
     var announcementNotifications = false
-    var selectedSourceID: String?
+    var selectedSourceID: String? = CalendarSource.middleEast
     var monthOffsets: [MonthOffset] = []
     var hiddenPrayers: Set<PrayerName> = []
     func isVisible(_ prayer: PrayerName) -> Bool {

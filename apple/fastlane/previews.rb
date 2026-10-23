@@ -18,10 +18,11 @@ names.each do |name|
   begin
     MuntathirRelease.run!("xcrun", "simctl", "boot", id) unless was_booted
     MuntathirRelease.run!("xcrun", "simctl", "bootstatus", id, "-b")
+    derived_data = "#{root}/PreviewDerivedData/#{id}"
     puts "Building simulator capture app for #{name}"
     MuntathirRelease.run!("xcodebuild", "-project", "Muntathir.xcodeproj", "-scheme", "Muntathir", "-configuration", "Debug",
-                         "-destination", "platform=iOS Simulator,id=#{id}", "-derivedDataPath", "build/DerivedData", "CODE_SIGNING_ALLOWED=NO", "build")
-    MuntathirRelease.run!("xcrun", "simctl", "install", id, "build/DerivedData/Build/Products/Debug-iphonesimulator/Muntathir.app")
+                         "-destination", "platform=iOS Simulator,id=#{id}", "-derivedDataPath", derived_data, "CODE_SIGNING_ALLOWED=NO", "build")
+    MuntathirRelease.run!("xcrun", "simctl", "install", id, "#{derived_data}/Build/Products/Debug-iphonesimulator/Muntathir.app")
     MuntathirRelease.run!("xcrun", "simctl", "status_bar", id, "override", "--time", "9:41", "--dataNetwork", "wifi",
                          "--wifiMode", "active", "--wifiBars", "3", "--batteryState", "charged", "--batteryLevel", "100")
     MuntathirRelease::LOCALES.each do |locale|
@@ -58,14 +59,15 @@ names.each do |name|
       size = ipad ? [1200, 1600] : [886, 1920]
       MuntathirRelease.run!("ffmpeg", "-y", "-ss", (begins_at - recorded_at).round(3), "-i", recording,
                            "-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=48000",
-                           "-t", "15", "-vf", "scale=#{size.join(':')}:force_original_aspect_ratio=decrease,pad=#{size.join(':')}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1",
+                           "-t", "15", "-vf", MuntathirRelease.preview_filter(size, duo: duo),
                            "-r", "30", "-c:v", "libx264", "-b:v", "10M", "-pix_fmt", "yuv420p",
                            "-c:a", "aac", "-b:a", "256k", "-movflags", "+faststart", output)
       MuntathirRelease.validate_video!(output, size)
       [0, 7.5, 14.9].each_with_index do |time, index|
         frame = "#{folder}/#{type}-qa-#{index}.png"
         MuntathirRelease.run!("ffmpeg", "-y", "-ss", time, "-i", output, "-frames:v", "1", frame)
-        brightness = MuntathirRelease.run!("magick", frame, "-format", "%[fx:mean]", "info:").to_f
+        content_crop = duo ? ["-gravity", "center", "-crop", "80%x50%+0+0", "+repage"] : []
+        brightness = MuntathirRelease.run!("magick", frame, *content_crop, "-format", "%[fx:mean]", "info:").to_f
         raise "Blank simulator display captured for #{name}; inspect #{frame}" if brightness < 0.01
       end
       puts "Validated #{output}"

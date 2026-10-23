@@ -4,7 +4,7 @@ require "frameit"
 Dir.chdir(MuntathirRelease::ROOT)
 root = File.expand_path("build/marketing")
 headlines = JSON.parse(File.read("fastlane/marketing/headlines.json"))
-raw = Dir.glob("#{root}/raw/{en-US,ar-SA}/*.png").reject { |p| p.include?("_framed") }
+raw = MuntathirRelease::LOCALES.flat_map { |locale| Dir.glob("#{root}/raw/#{locale}/*.png") }.reject { |p| p.include?("_framed") }
 raise "No raw screenshots. Run bundle exec fastlane screenshots first." if raw.empty?
 FileUtils.mkdir_p("#{root}/tools")
 compositor = "#{root}/tools/compose"

@@ -119,6 +119,14 @@ Upload current metadata and media without submitting App Review
 
 Upload metadata/media and select a processed TestFlight build without submitting review
 
+### ios upload_prepared
+
+```sh
+[bundle exec] fastlane ios upload_prepared
+```
+
+Upload an approved local archive and replace media without changing the existing review draft
+
 ### ios release
 
 ```sh
