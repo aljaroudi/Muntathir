@@ -20,7 +20,8 @@ struct MuntathirApp: App {
                 }
                 model = AppModel(defaults: defaults, cloud: nil)
                 if ProcessInfo.processInfo.arguments.contains("--marketing-capture") {
-                    model.update { $0.hiddenPrayers = Set(PrayerName.optionalTimes).subtracting([.sunset]) }
+                    let visibleOptional: Set<PrayerName> = ProcessInfo.processInfo.arguments.contains("--marketing-compact") ? [] : [.sunset]
+                    model.update { $0.hiddenPrayers = Set(PrayerName.optionalTimes).subtracting(visibleOptional) }
                 }
                 if ProcessInfo.processInfo.arguments.contains("--ui-testing-mecca") {
                     model.select(SavedLocation(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh"))

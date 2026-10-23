@@ -76,6 +76,21 @@ struct DailyVerseScheduleTests {
         #expect(try #require(renewed.last) > #require(dates.last))
     }
 
+    @Test func bundledRotationFollowsCorrectedIslamicDate() throws {
+        let baseline = try CalendarEngine(timeZone: .gmt)
+        let month = HijriMonth(year: 1448, month: 5)
+        let date = baseline.addingDays(1, to: baseline.start(of: month))
+        let correction = MonthCorrection(month: month, start: CivilDate(date, in: .gmt), provenance: .manual, sourceID: nil)
+        let corrected = try CalendarEngine(timeZone: .gmt, manual: [correction])
+        let widget = WidgetCalendarSettings(timeZoneID: "GMT", manual: [correction]).engine
+        let library = ContentLibrary()
+        let verse = try #require(library.verse(on: date, engine: corrected))
+        #expect(verse.id != library.verse(on: date, engine: baseline)?.id)
+        #expect(verse.id == library.verse(on: baseline.start(of: month), engine: baseline)?.id)
+        #expect(verse.id == library.verse(on: date, engine: widget)?.id)
+        #expect(verse.id == library.verse(on: date.addingTimeInterval(86399), engine: corrected)?.id)
+    }
+
     @Test func databaseContainsTheCompleteArabicQuranAndIsReadOnly() throws {
         let url = try #require(Bundle.main.url(forResource: "quran", withExtension: "db"))
         let before = try Data(contentsOf: url)

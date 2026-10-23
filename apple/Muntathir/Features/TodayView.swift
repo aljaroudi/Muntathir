@@ -35,7 +35,7 @@ struct TodayView: View {
     @ScaledMetric(relativeTo: .body) private var prayerSymbolWidth: CGFloat = 28
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: timelineInterval)) { context in
+        TimelineView(timelineSchedule) { context in
             let now = displayDate(context.date)
             let engine = model.engine
             let sun = model.location.flatMap { SolarPosition.calculate(at: now, latitude: $0.latitude, longitude: $0.longitude) }
@@ -186,19 +186,21 @@ struct TodayView: View {
         }
     }
 
-    private var timelineInterval: TimeInterval {
-        #if DEBUG
-            if captureClock?.isAnimated == true {
-                return 1.0 / 30
-            }
-        #endif
-        return 60
-    }
+    #if DEBUG
+        /// Display-linked updates keep marketing animation continuous in Simulator.
+        private var timelineSchedule: AnimationTimelineSchedule {
+            .animation(minimumInterval: captureClock?.isAnimated == true ? 1.0 / 30 : 60)
+        }
+    #else
+        private var timelineSchedule: PeriodicTimelineSchedule {
+            .periodic(from: .now, by: 60)
+        }
+    #endif
 
     private func displayDate(_ date: Date) -> Date {
         #if DEBUG
             if let captureClock {
-                return captureClock.date(at: date)
+                return captureClock.date(at: .now)
             }
         #endif
         return referenceDate ?? max(date, refreshedAt)

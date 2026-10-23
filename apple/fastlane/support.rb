@@ -123,5 +123,7 @@ module MuntathirRelease
     raise "Invalid preview duration: #{duration}" unless ((seconds - 0.1)..(seconds + 0.1)).cover?(duration)
     raise "Preview exceeds 30 fps" if Rational(video.fetch("r_frame_rate")) > 30
     raise "Preview exceeds 500 MB" if File.size(path) > 500_000_000
+    motion = run!("ffmpeg", "-hide_banner", "-nostats", "-i", path, "-vf", "freezedetect=n=-100dB:d=1", "-an", "-f", "null", "-")
+    raise "Preview holds a frozen frame for at least one second: #{path}" if motion.include?("lavfi.freezedetect.freeze_start")
   end
 end

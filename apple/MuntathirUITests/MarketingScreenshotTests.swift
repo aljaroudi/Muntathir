@@ -31,10 +31,11 @@ final class MarketingScreenshotTests: XCTestCase {
                                 "--ui-testing-weather", "--weather-condition", "clear", "-AppleInterfaceStyle", "Light"]
         app.launch()
         XCTAssertTrue(app.descendants(matching: .any)["prayer-fajr"].waitForExistence(timeout: 15))
-        for name in ["fajr", "dhuhr", "sunset", "maghrib"] {
+        let compact = app.launchArguments.contains("--marketing-compact")
+        for name in ["fajr", "dhuhr", "maghrib"] + (compact ? [] : ["sunset"]) {
             XCTAssertTrue(app.descendants(matching: .any)["prayer-\(name)"].exists)
         }
-        for name in ["imsak", "sunrise", "asr", "isha", "midnight"] {
+        for name in ["imsak", "sunrise", "asr", "isha", "midnight"] + (compact ? ["sunset"] : []) {
             XCTAssertFalse(app.descendants(matching: .any)["prayer-\(name)"].exists)
         }
         let verse = app.staticTexts["daily-ayah-text"]

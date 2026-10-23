@@ -78,6 +78,17 @@ end
 
 # Every supported device/locale must include Quran, not merely four arbitrary images.
 original_video_check = MuntathirRelease.method(:validate_video!)
+Dir.mktmpdir do |dir|
+  %w[color=blue:s=32x64:d=2:r=30 testsrc2=s=32x64:d=2:r=30].each_with_index do |source, index|
+    path = File.join(dir, "motion-#{index}.mp4")
+    MuntathirRelease.run!("ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", source, "-c:v", "libx264", "-pix_fmt", "yuv420p", path)
+    if index.zero?
+      rejects("Frozen preview accepted") { MuntathirRelease.validate_video!(path, [32, 64], seconds: 2) }
+    else
+      MuntathirRelease.validate_video!(path, [32, 64], seconds: 2)
+    end
+  end
+end
 begin
   MuntathirRelease.define_singleton_method(:validate_video!) { |*_, **_| }
   Dir.mktmpdir do |root|

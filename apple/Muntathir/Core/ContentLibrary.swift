@@ -62,11 +62,11 @@ struct ContentLibrary: Sendable {
         if hasDatedSchedule {
             return datedSchedule?.verseID(on: engine.resolve(date)).flatMap { versesByID[$0] }
         }
-        // Keep the existing rotation until a complete dated schedule is bundled.
-        let calendar = engine.gregorian
-        // Era ordinals need a normalized date to stay fixed until local midnight.
-        guard !verses.isEmpty, let day = calendar.ordinality(of: .day, in: .era, for: calendar.startOfDay(for: date)) else { return nil }
-        return verses[(day - 1) % verses.count]
+        guard !verses.isEmpty else { return nil }
+        let day = engine.resolve(date)
+        // Keep the rotation tied to the corrected Hijri date until a complete schedule is bundled.
+        let index = (day.month.month - 1) * 30 + day.day - 1
+        return verses[index % verses.count]
     }
 }
 
