@@ -48,7 +48,10 @@ final class MarketingScreenshotTests: XCTestCase {
         app.buttons["qibla"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["qibla-compass-ready"].waitForExistence(timeout: 5))
         snapshot("04-Qibla", timeWaitingForIdle: 2)
-        app.navigationBars.buttons["BackButton"].tap()
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(app.buttons[labels[2]].firstMatch.waitForExistence(timeout: 15))
+        app.buttons[labels[2]].firstMatch.tap()
         app.buttons["holy-quran"].tap()
         XCTAssertTrue(app.buttons["quran-translation-picker"].waitForExistence(timeout: 10))
         // Capture the offline Arabic reader consistently, independent of downloaded packs.
