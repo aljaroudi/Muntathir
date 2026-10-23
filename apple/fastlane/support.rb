@@ -7,6 +7,11 @@ require_relative "asset_packs"
 module MuntathirRelease
   # Fastlane 2.241.1 omits editable versions already attached to a draft review.
   module EditableReviewDraft
+    def fetch_edit_app_info(client: nil, includes: Spaceship::ConnectAPI::AppInfo::ESSENTIAL_INCLUDES)
+      super || (client || Spaceship::ConnectAPI).get_app_infos(app_id: id, includes: includes)
+        .to_models.find { |info| info.state == "READY_FOR_REVIEW" }
+    end
+
     def get_edit_app_store_version(**options)
       super || get_app_store_versions(client: options[:client],
                                      filter: { platform: options[:platform] || "IOS", appVersionState: "READY_FOR_REVIEW" },

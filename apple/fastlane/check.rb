@@ -139,6 +139,8 @@ beta_app.define_singleton_method(:get_beta_app_localizations) { [Struct.new(:fee
 draft_version = Struct.new(:version_string).new("1.0")
 draft_base = Class.new do
   attr_accessor :draft
+  def id = "draft-app"
+  def fetch_edit_app_info(**_) = nil
   def get_edit_app_store_version(**_) = nil
   def get_app_store_versions(**_) = [draft]
 end
@@ -146,6 +148,13 @@ draft_base.prepend(MuntathirRelease::EditableReviewDraft)
 draft_app = draft_base.new
 draft_app.draft = draft_version
 assert(draft_app.get_edit_app_store_version(platform: "IOS", includes: "build") == draft_version, "Existing review draft must be editable")
+draft_info = Struct.new(:state).new("READY_FOR_REVIEW")
+info_response = Struct.new(:to_models).new([draft_info])
+info_client = Object.new
+info_client.define_singleton_method(:get_app_infos) { |**_| info_response }
+assert(draft_app.fetch_edit_app_info(client: info_client, includes: "") == draft_info, "Ready draft app information must be editable")
+draft_info.state = "IN_REVIEW"
+assert(draft_app.fetch_edit_app_info(client: info_client, includes: "").nil?, "Fallback must not edit app information already in review")
 check.tests
 regressions = check.calls.find { |name, _| name == :run_tests }.last
 assert(regressions[:skip_testing] == ["MuntathirUITests/MarketingScreenshotTests", "MuntathirUITests/QuranScreenshotRefreshTests"], "Regression lane must exclude only marketing captures")
