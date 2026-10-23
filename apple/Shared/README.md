@@ -22,16 +22,12 @@ The background refresh path accepts an injected FeedClient. Production construct
 
 - Quran: `Resources/Quran/quran.db` contains all 6,236 Arabic verses; translation source files are sibling `<id>.db` files keyed by the same verse `index`, delivered as [on-demand asset packs](../AssetPacks/) rather than bundled. The daily ayah cycles through 31 numeric database IDs by corrected Islamic month and day, changing at midnight in the selected location’s time zone. A complete dated dataset will select by corrected Hijri month/day; see [daily verse schedule](../content/daily-verses/). Never edit the Arabic text.
 - Prayer fixtures: copied from [Adhan Swift 1.5.0](https://github.com/batoulapps/adhan-swift/tree/1.5.0/Tests/Resources/Times); original source/tolerance remains in each JSON. Test-target copies mirror `Shared/Fixtures`.
-- Event date facts: [Islam: Faith, Practice & History, Lesson 17](https://al-islam.org/islam-faith-practice-history-sayyid-muhammad-rizvi/lesson-17-twelve-caliphs-or-imams), and [Fundamentals of Islam, Appendix 10](https://al-islam.org/fundamentals-islam-mirza-mahdi-pooya/appendix-10-historical-chart-14-masumeen). No prose from these books is bundled. References identify sections instead of invented page numbers.
-- The catalog chooses documented Twelver dates, including 28 Safar for Imam Hasan, 17 Safar for Imam Ridha, and 5 Rajab for Imam Hadi's birth. Alternatives exist. Imam Mahdi has a birth observance only. An event fixed to day 30 is not displayed in a 29-day month; no unreviewed substitution is inferred.
 
 Prayer fixtures remain duplicated in the test bundle because tests load bundled resources. Keep both copies identical. See [test coverage](../MuntathirTests/).
 
 ## Event titles
 
-Bundled events store localized titles in a `titles` dictionary keyed by language tags, for example `"titles": {"en": "Islamic New Year", "ar": "رأس السنة الهجرية"}`. Add another language entry without changing the Swift model. Keep English as the default title for every bundled event.
-
-`IslamicEvent.title(locale:)` uses the view's locale. Lookup tries the exact locale, language with script, base language, then English; if none contains a nonblank title, it returns the event ID. Foundation normalizes tags (including case, underscores, and redundant scripts), and duplicate lookup candidates are skipped. Other locale settings, such as calendar and numbering system, do not select a different title.
+Bundled events store `id`, `month`, and `day` in `Resources/events.json`, plus optional `year` (Hijri AH; negative before the Hijra) when sources name one. Localized titles live in `Localizable.xcstrings` under `event.<id>` (short factual lines; sibling dates may share the same text). The year is shown separately via `IslamicEvent.yearText(locale:)` using the `%lld AH` format string.
 
 ## Migration and source changes
 

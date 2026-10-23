@@ -4,11 +4,42 @@ struct IslamicEvent: Codable, Identifiable, Hashable, Sendable {
     let id: String
     let month: Int
     let day: Int
+    /// Optional Hijri year (AH). Negative values are before the Hijra.
+    let year: Int?
+
+    init(id: String, month: Int, day: Int, year: Int? = nil) {
+        self.id = id
+        self.month = month
+        self.day = day
+        self.year = year
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, month, day, year
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(month, forKey: .month)
+        try container.encode(day, forKey: .day)
+        try container.encodeIfPresent(year, forKey: .year)
+    }
+
+    private func bundle(for locale: Locale) -> Bundle {
+        let language = Bundle.preferredLocalizations(from: Bundle.main.localizations, forPreferences: [locale.identifier]).first ?? "en"
+        return Bundle.main.url(forResource: language, withExtension: "lproj").flatMap(Bundle.init(url:)) ?? .main
+    }
 
     func title(locale: Locale) -> String {
-        let language = Bundle.preferredLocalizations(from: Bundle.main.localizations, forPreferences: [locale.identifier]).first ?? "en"
-        let bundle = Bundle.main.url(forResource: language, withExtension: "lproj").flatMap(Bundle.init(url:)) ?? .main
-        return bundle.localizedString(forKey: "event.\(id)", value: nil, table: nil)
+        bundle(for: locale).localizedString(forKey: "event.\(id)", value: nil, table: nil)
+    }
+
+    /// Localized AH year for separate SwiftUI presentation; `nil` when the source has no year.
+    func yearText(locale: Locale) -> String? {
+        guard let year else { return nil }
+        let format = bundle(for: locale).localizedString(forKey: "%lld AH", value: nil, table: nil)
+        return String(format: format, locale: locale, year)
     }
 }
 

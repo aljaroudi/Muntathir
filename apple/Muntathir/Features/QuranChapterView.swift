@@ -72,12 +72,12 @@ struct QuranChapterView: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Enter a verse from 1 to \(verses.count).")
+            Text("Enter a verse from \(1, format: .number) to \(verses.count, format: .number).")
         }
         .alert("Invalid verse reference", isPresented: $invalidVerse) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text("Enter a verse from 1 to \(verses.count).")
+            Text("Enter a verse from \(1, format: .number) to \(verses.count, format: .number).")
         }
         .task(id: "\(retry)-\(translationStore.revision)") {
             loading = true

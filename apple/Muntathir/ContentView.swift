@@ -165,7 +165,16 @@ struct EventRows: View {
             Text("No observances today").foregroundStyle(.secondary)
         }
         ForEach(events) { event in
-            Label(event.title(locale: locale), systemImage: "sparkle")
+            Label {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(event.title(locale: locale))
+                    if let year = event.yearText(locale: locale) {
+                        Text(year).font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+            } icon: {
+                Image(systemName: "sparkle")
+            }
         }
     }
 }

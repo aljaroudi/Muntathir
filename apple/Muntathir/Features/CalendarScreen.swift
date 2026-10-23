@@ -57,10 +57,6 @@ struct CalendarScreen: View {
                             ForEach(days, id: \.self) { date in dayButton(date, engine: engine, proxy: proxy) }
                         }
                     }
-                    HStack {
-                        Spacer()
-                        Button("Adjust this month", systemImage: "calendar.badge.clock") { correcting = true }.labelStyle(.iconOnly)
-                    }
                 }
                 ScrollView {
                     LazyVStack(spacing: 10) {
@@ -77,8 +73,13 @@ struct CalendarScreen: View {
                                     }.frame(minWidth: 52)
                                     VStack(alignment: .leading, spacing: 12) {
                                         ForEach(events) { event in
-                                            Text(event.title(locale: locale))
-                                                .frame(maxWidth: .infinity, alignment: .leading)
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text(event.title(locale: locale))
+                                                if let year = event.yearText(locale: locale) {
+                                                    Text(year).font(.caption).foregroundStyle(.secondary)
+                                                }
+                                            }
+                                            .frame(maxWidth: .infinity, alignment: .leading)
                                         }
                                     }.frame(maxWidth: .infinity, alignment: .leading)
                                 }
@@ -108,6 +109,11 @@ struct CalendarScreen: View {
         .frame(maxWidth: .infinity)
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Calendar")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Adjust this month", systemImage: "calendar.badge.clock") { correcting = true }
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in now = currentDate }
         .onChange(of: scenePhase) {
             _, phase in if phase == .active {

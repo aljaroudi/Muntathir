@@ -63,6 +63,15 @@ struct ContentTests {
         #expect(decoded == original)
     }
 
+    @Test func eventYearMetadataSurvivesCoding() throws {
+        let original = IslamicEvent(id: "husayn-death", month: 1, day: 10, year: 61)
+        let decoded = try JSONDecoder().decode(IslamicEvent.self, from: JSONEncoder().encode(original))
+        #expect(decoded == original)
+        #expect(decoded.yearText(locale: Locale(identifier: "en")) == "61 AH")
+        let beforeHijra = IslamicEvent(id: "prophet-birth", month: 3, day: 17, year: -53)
+        #expect(beforeHijra.yearText(locale: Locale(identifier: "en")) == "-53 AH")
+    }
+
     @Test func missingContentHasNoDailyVerse() throws {
         let emptyBundle = try #require(Bundle(identifier: "com.apple.Foundation"))
         #expect(try ContentLibrary(bundle: emptyBundle).verse(on: Date(), engine: CalendarEngine(timeZone: .gmt)) == nil)
