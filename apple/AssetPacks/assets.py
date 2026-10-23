@@ -3,6 +3,7 @@
 import argparse
 import json
 from pathlib import Path
+import plistlib
 import sqlite3
 import subprocess
 import zipfile
@@ -36,18 +37,22 @@ def validate():
 
 def check_bundle(path):
     path = Path(path)
+    downloader = 'Extensions/MuntathirAssetDownloader.appex/Info.plist'
     if path.suffix == '.ipa':
         with zipfile.ZipFile(path) as archive:
             files = archive.namelist()
+            downloader_info = next((plistlib.loads(archive.read(f)) for f in files if f.endswith(downloader)), None)
     else:
         assert path.is_dir() and path.suffix == '.app', 'Expected an .app directory or .ipa'
         files = [str(f.relative_to(path)) for f in path.rglob('*') if f.is_file()]
+        downloader_info = next((plistlib.loads((path / f).read_bytes()) for f in files if f.endswith(downloader)), None)
     translations = {json.loads(p.read_text())['fileSelectors'][0]['fileDestination'].split('/')[-1] for p in validate()}
     leaked = [f for f in files if Path(f).name in translations]
     assert not leaked, f'Translation databases leaked into shipping bundle: {leaked}'
     assert any(f.endswith('quran.db') for f in files), 'Missing Arabic database'
     assert any(f.endswith('MuntathirWidgets.appex/quran.db') for f in files), 'Missing widget Arabic database'
-    assert any(f.endswith('Extensions/MuntathirAssetDownloader.appex/Info.plist') for f in files), 'Missing ExtensionKit downloader'
+    assert downloader_info is not None, 'Missing ExtensionKit downloader'
+    assert downloader_info.get('CFBundleDisplayName', '').strip(), 'Missing asset downloader display name required by App Store Connect'
     print('Verified Arabic-only app/widget and embedded asset downloader')
 
 
