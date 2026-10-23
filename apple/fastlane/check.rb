@@ -127,6 +127,7 @@ class LaneCheck
   def initialize = @calls = []
   def default_platform(*) = nil
   def desc(*) = nil
+  def sh(*args) = @calls << [:sh, args]
   def platform(*) = yield
   def lane(name, &block) = define_singleton_method(name) { |options = {}| instance_exec(options, &block) }
   alias private_lane lane
@@ -172,10 +173,8 @@ assert(regressions[:skip_testing] == ["MuntathirUITests/MarketingScreenshotTests
 assert(regressions[:parallel_testing] == false, "Regression lane must serialize UI tests")
 assert(regressions[:derived_data_path] == "./build/DerivedData", "Regression and marketing build caches must stay separate")
 check.screenshots
-captures = check.calls.select { |name, _| name == :capture_screenshots }.map(&:last)
-assert(captures.size == 2, "Expected separate runtime passes")
-assert(captures.last[:devices] == ["iPhone Duo"] && captures.last[:ios_version] == "27.1", "Duo runtime mismatch")
-assert(captures.last[:clear_previous_screenshots] == false, "Duo pass would delete standard captures")
+capture = check.calls.reverse.find { |name, args| name == :sh && args.include?(File.join(__dir__, "screenshots.rb")) }
+assert(capture, "Screenshot lane must stage local pack inputs in a Debug capture build")
 check.define_singleton_method(:store) { |**_| { app: beta_app, version: "1.0.1", config: config } }
 Dir.mktmpdir { |dir| rejects("Missing media accepted") { MuntathirRelease.validate_media!(dir) } }
 rejects("Unconfirmed compliance accepted") { MuntathirRelease.compliance!({}) }

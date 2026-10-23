@@ -182,7 +182,7 @@ struct QuranTranslationPicker: View {
                 Button { store.select(translation.id) } label: {
                     Label(locale.localizedString(forIdentifier: translation.language) ?? translation.language,
                           systemImage: symbol(for: translation.id))
-                }
+                }.accessibilityIdentifier("quran-translation-option-\(translation.id)")
             }
             if let status = store.statuses[store.activeID] {
                 switch status {

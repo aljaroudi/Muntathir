@@ -24,15 +24,7 @@ platform :ios do
 
   desc "Capture localized iPhone, iPad and Duo screenshots"
   lane :screenshots do |options|
-    settings = {}
-    settings[:devices] = options[:devices].split(",") if options[:devices]
-    settings[:languages] = options[:languages].split(",") if options[:languages]
-    requested = settings.delete(:devices) || MuntathirRelease::DEVICES
-    standard = requested - ["iPhone Duo"]
-    capture_screenshots(**settings, devices: standard) unless standard.empty?
-    if requested.include?("iPhone Duo")
-      capture_screenshots(**settings, devices: ["iPhone Duo"], ios_version: "27.1", clear_previous_screenshots: standard.empty?)
-    end
+    sh("bundle", "exec", "ruby", File.join(__dir__, "screenshots.rb"), options[:devices].to_s, options[:languages].to_s)
   end
 
   desc "Style raw screenshots with frames, backgrounds and localized headlines"

@@ -118,7 +118,7 @@ struct DailyVerseScheduleTests {
         let widget = try #require(Bundle(url: plugins.appendingPathComponent("MuntathirWidgets.appex")))
         let appVerses = ContentLibrary().verses
         let widgetVerses = ContentLibrary(bundle: widget).verses
-        #expect(appVerses.count == 31)
+        #expect(appVerses.count == 32)
         #expect(appVerses.map(\.id) == widgetVerses.map(\.id))
         #expect(appVerses.map(\.text) == widgetVerses.map(\.text))
         let appDB = try #require(Bundle.main.url(forResource: "quran", withExtension: "db"))

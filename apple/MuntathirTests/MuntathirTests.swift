@@ -79,7 +79,7 @@ struct ContentTests {
 
     @Test func bundledContentIsCompleteAndStable() throws {
         let library = ContentLibrary()
-        #expect(library.verses.count == 31)
+        #expect(library.verses.count == 32)
         #expect(Set(library.verses.map(\.id)).count == library.verses.count)
         #expect(library.events.count >= 30)
         for event in library.events {

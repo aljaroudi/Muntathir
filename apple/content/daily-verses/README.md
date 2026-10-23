@@ -12,7 +12,7 @@ Find an ID from a surah and verse number, for example 20:25:
 sqlite3 apple/Muntathir/Resources/Quran/quran.db 'SELECT "index", sura, aya FROM quran WHERE sura = 20 AND aya = 25;'
 ```
 
-The CSV stays outside app resources. Until a complete generated `quran-daily.json` is bundled, the existing 31-verse sequence remains active through `quran-daily-ids.json`. The dated selector has no random or modulo fallback. An invalid bundled schedule shows verse unavailable rather than selecting unrelated content.
+The CSV stays outside app resources. Until a complete generated `quran-daily.json` is bundled, the existing 32-verse sequence remains active through `quran-daily-ids.json`. The dated selector has no random or modulo fallback. An invalid bundled schedule shows verse unavailable rather than selecting unrelated content.
 
 After filling the schedule, run from repository root:
 

@@ -84,6 +84,15 @@ enum QuranTranslationPreferences {
     }
 
     static func url(for translation: QuranTranslation) throws -> URL {
+        #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("--marketing-local-translations"),
+               ProcessInfo.processInfo.arguments.contains("--marketing-capture"),
+               let url = Bundle.main.resourceURL?.appending(path: translation.assetPath),
+               FileManager.default.fileExists(atPath: url.path)
+            {
+                return url
+            }
+        #endif
         guard assetManagerAvailable else { throw QuranDatabaseError.unavailable }
         return try AssetPackManager.shared.url(for: FilePath(translation.assetPath))
     }
