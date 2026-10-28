@@ -21,26 +21,16 @@ struct SavedLocation: Codable, Hashable, Sendable {
 }
 
 enum PrayerMethod: String, Codable, CaseIterable, Identifiable, Sendable {
-    case tehran, jafari, muslimWorldLeague, egyptian, karachi, ummAlQura, dubai, moonsightingCommittee, northAmerica, kuwait, qatar, singapore, turkey
+    case jafari, tehran, ummAlQura
     var id: String {
         rawValue
     }
 
     var title: String {
         switch self {
-        case .tehran: String(localized: "Jafari - Tehran")
         case .jafari: String(localized: "Jafari - Qum")
-        case .muslimWorldLeague: String(localized: "Muslim World League")
-        case .egyptian: String(localized: "Egyptian General Authority")
-        case .karachi: String(localized: "University of Karachi")
+        case .tehran: String(localized: "Jafari - Tehran")
         case .ummAlQura: String(localized: "Umm al-Qura — Makkah")
-        case .dubai: String(localized: "Dubai")
-        case .moonsightingCommittee: String(localized: "Moonsighting Committee")
-        case .northAmerica: String(localized: "ISNA — North America")
-        case .kuwait: String(localized: "Kuwait")
-        case .qatar: String(localized: "Qatar")
-        case .singapore: String(localized: "Singapore")
-        case .turkey: String(localized: "Turkey")
         }
     }
 }
@@ -125,7 +115,7 @@ enum PrayerCalculator {
         parameters.madhab = .shafi
         parameters.highLatitudeRule = HighLatitudeRule.recommended(for: coordinates)
         // Use the independent calculated calendar for the preset's Ramadan interval.
-        if method == .ummAlQura || method == .qatar, engine.baseline.component(.month, from: date) == 9 {
+        if method == .ummAlQura, engine.baseline.component(.month, from: date) == 9 {
             parameters.ishaInterval += 30
         }
         guard let times = PrayerTimes(coordinates: coordinates, date: components, calculationParameters: parameters) else { return [] }

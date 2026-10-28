@@ -25,7 +25,7 @@ struct WidgetPrayerSettings: Codable, Equatable, Sendable {
 
     func sunset(on date: Date) -> Date? {
         guard let location, location.hasValidCoordinates, TimeZone(identifier: location.timeZoneID) != nil else { return nil }
-        return PrayerCalculator.times(on: date, location: location, method: .muslimWorldLeague)
+        return PrayerCalculator.times(on: date, location: location, method: .jafari)
             .first { $0.name == .sunset }?.date
     }
 

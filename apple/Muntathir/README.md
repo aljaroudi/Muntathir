@@ -2,7 +2,7 @@
 
 Today shows the current date, prayer schedule, and daily ayah. Calendar shows plain observance names, localized through `Localizable.xcstrings`; bundled JSON retains only their IDs and dates. Fresh calendar settings use naked-eye sightings from the Middle East; saved settings are preserved. Tools contains Qibla; Settings is available from the navigation toolbar; 15 interface locales (Arabic, English, French, German, Indonesian, Italian, Japanese, Malay, Persian, Russian, Spanish, Turkish, Urdu, Simplified Chinese, Traditional Chinese); Adhan 1.5.0 prayer calculations; source-relative manual month offsets (−2 through +2 days); bundled observances and daily Quran verses; saved-place iCloud preferences; local prayer notifications. A foreground GPS fix is remembered locally across launches and never uploaded to iCloud; reverse geocoding is not used.
 
-New preferences default to Jafari/Qum; legacy preferences without a method retain Tehran. Tehran's Maghrib must be later than calculated sunset; if the library cannot produce that result, the app reports unavailable times. Ramadan Isha intervals for Umm al-Qura/Qatar use the independent Foundation baseline, not manual religious-date corrections. No prayer engine is implemented here.
+Supported prayer methods are Jafari/Qum, Jafari/Tehran, and Umm al-Qura. New preferences default to Jafari/Tehran. Tehran's Maghrib must be later than calculated sunset; if the library cannot produce that result, the app reports unavailable times. Umm al-Qura's Ramadan Isha interval uses the independent Foundation baseline, not manual religious-date corrections. No prayer engine is implemented here.
 
 ## Prayer preferences and notifications
 
@@ -24,7 +24,7 @@ Open **Tools → Qibla**. The compass stays blurred with a warning unless a vali
 
 ## First-run setup
 
-Onboarding introduces the app, offers an app-language step that opens iOS Settings, requires a city or device location, lets users choose a prayer calculation method (Jafari/Qum by default), and offers optional notification permission. Denying notifications does not block setup. Location denial or GPS failure leaves city search available; city search requires a network connection.
+Onboarding introduces the app, offers an app-language step that opens iOS Settings, requires a city or device location, lets users choose a prayer calculation method (Jafari/Tehran by default), and offers optional notification permission. Denying notifications does not block setup. Location denial or GPS failure leaves city search available; city search requires a network connection.
 
 Completion is stored on this device and does not sync through iCloud. Existing saved locations do not bypass setup. Interrupted setup resumes at the current step and retains saved choices, including when changing the app language restarts the app. The app-language link is also available in Settings. After completion, launch opens Today.
 

@@ -104,12 +104,12 @@ struct PrayerTests {
         let times: [[String: String]]
     }
 
-    @Test(arguments: ["Tehran-Tehran", "London-MoonsightingCommittee", "Singapore-Singapore"])
-    func matchesReferenceFixtures(name: String) throws {
+    @Test func matchesTehranReferenceFixture() throws {
+        let name = "Tehran-Tehran"
         let url = try #require(Bundle(for: BundleMarker.self).url(forResource: name, withExtension: "json"))
         let fixture = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: url))
         let location = SavedLocation(latitude: fixture.params.latitude, longitude: fixture.params.longitude, name: name, countryCode: "", timeZoneID: fixture.params.timezone)
-        let method: PrayerMethod = name.hasPrefix("Tehran") ? .tehran : name.hasPrefix("London") ? .moonsightingCommittee : .singapore
+        let method: PrayerMethod = .tehran
         let dateParser = DateFormatter(); dateParser.locale = Locale(identifier: "en_US_POSIX"); dateParser.timeZone = location.timeZone; dateParser.dateFormat = "yyyy-MM-dd"
         let timeParser = DateFormatter(); timeParser.locale = Locale(identifier: "en_US_POSIX"); timeParser.timeZone = location.timeZone; timeParser.dateFormat = "yyyy-MM-dd h:mm a"
         for row in fixture.times {
@@ -186,12 +186,12 @@ struct FeedTests {
         let saved = SavedLocation(latitude: 24, longitude: 46, name: "Saved", countryCode: "SA", timeZoneID: "Asia/Riyadh")
         model.select(saved)
         model.applyLive(.init(latitude: 25, longitude: 47, name: "Live", countryCode: "SA", timeZoneID: "Asia/Riyadh"))
-        model.update { $0.prayerMethod = .karachi; $0.hiddenPrayers = [.asr, .isha] }
+        model.update { $0.prayerMethod = .ummAlQura; $0.hiddenPrayers = [.asr, .isha] }
         let restored = AppModel(defaults: defaults, cloud: nil)
         #expect(restored.location == model.liveLocation)
         #expect(restored.liveLocation != nil)
         #expect(restored.preferences.savedLocation == saved)
-        #expect(restored.preferences.prayerMethod == .karachi)
+        #expect(restored.preferences.prayerMethod == .ummAlQura)
         #expect(restored.preferences.enabledPrayers == [.fajr, .dhuhr, .maghrib])
         #expect(!restored.preferences.isVisible(.asr))
         #expect(!restored.preferences.isVisible(.isha))
@@ -286,11 +286,11 @@ extension CalendarTests {
         let suite = "CalendarOffset.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        defaults.set(Data(#"{"prayerMethod":"kuwait","showFeelsLikeTemperature":true,"selectedSourceID":"legacy","overrides":[{"month":{"year":1448,"month":1},"start":{"year":2026,"month":6,"day":16},"provenance":"manual"}]}"#.utf8), forKey: "preferences.v1")
+        defaults.set(Data(#"{"prayerMethod":"tehran","showFeelsLikeTemperature":true,"selectedSourceID":"legacy","overrides":[{"month":{"year":1448,"month":1},"start":{"year":2026,"month":6,"day":16},"provenance":"manual"}]}"#.utf8), forKey: "preferences.v1")
         let model = AppModel(defaults: defaults, cloud: nil)
         #expect(model.preferences.monthOffsets.isEmpty)
         #expect(model.preferences.selectedSourceID == nil)
-        #expect(model.preferences.prayerMethod == .kuwait)
+        #expect(model.preferences.prayerMethod == .tehran)
         #expect(model.preferences.showFeelsLikeTemperature)
         let month = HijriMonth(year: 1448, month: 12)
         try model.correct(month: month, offset: -2)
