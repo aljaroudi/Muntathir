@@ -360,7 +360,9 @@ struct PrayerNotificationSettings: View {
     }
 
     private func preview(_ sound: PrayerAlertSound) {
-        do { try model.notifications.preview(sound: sound) }
-        catch { model.error = error.localizedDescription }
+        Task {
+            do { try await model.notifications.preview(sound: sound) }
+            catch { model.error = error.localizedDescription }
+        }
     }
 }

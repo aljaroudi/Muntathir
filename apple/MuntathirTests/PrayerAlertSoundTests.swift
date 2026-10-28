@@ -40,8 +40,8 @@ struct PrayerAlertSoundTests {
         let center = UNUserNotificationCenter.current()
         let before = await center.pendingNotificationRequests().map(\.identifier)
         defer { service.stopPreview() }
-        try service.preview(sound: .bell)
-        try service.preview(sound: .silent)
+        try await service.preview(sound: .bell)
+        try await service.preview(sound: .silent)
         let after = await center.pendingNotificationRequests().map(\.identifier)
         #expect(Set(after) == Set(before))
     }

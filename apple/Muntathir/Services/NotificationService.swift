@@ -40,19 +40,27 @@ enum NotificationPlan {
         previewPlayer = nil
     }
 
-    func preview(sound: PrayerAlertSound) throws {
+    func preview(sound: PrayerAlertSound) async throws {
         stopPreview()
         switch sound {
         case .silent:
             return
         case .system:
-            AudioServicesPlaySystemSound(1007)
+            await Self.playSystemSound()
         default:
             guard let url = sound.audioURL else { throw CocoaError(.fileNoSuchFile) }
-            let player = try AVAudioPlayer(contentsOf: url)
-            guard player.play() else { throw CocoaError(.fileReadUnknown) }
-            previewPlayer = player
+            previewPlayer = try await Self.playAudio(at: url)
         }
+    }
+
+    nonisolated private static func playSystemSound() async {
+        AudioServicesPlaySystemSound(1007)
+    }
+
+    nonisolated private static func playAudio(at url: URL) async throws -> AVAudioPlayer {
+        let player = try AVAudioPlayer(contentsOf: url)
+        guard player.play() else { throw CocoaError(.fileReadUnknown) }
+        return player
     }
 
     func authorize() async -> Bool {
