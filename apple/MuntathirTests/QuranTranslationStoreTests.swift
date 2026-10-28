@@ -123,6 +123,37 @@ private actor QuranDownloadAttempt {
         #expect(cancelled.statuses["en.qarai"] == nil)
     }
 
+    @Test func switchingLanguagesCancelsOldRequestAndInstallsNewSelection() async throws {
+        let source = try #require(QuranTestResources.translationURLs["fr.hamidullah"])
+        let destination = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: destination) }
+        let client = QuranAssetClient(url: { translation in
+            guard translation.id == "fr.hamidullah", FileManager.default.fileExists(atPath: destination.path) else {
+                throw QuranDatabaseError.unavailable
+            }
+            return destination
+        }, download: { translation in
+            if translation.id == "en.qarai" {
+                try await Task.sleep(nanoseconds: 60_000_000_000)
+            } else {
+                try FileManager.default.copyItem(at: source, to: destination)
+            }
+        }, remove: { _ in })
+        let store = QuranTranslationStore(defaults: nil, languages: ["en"], client: client, reloadWidgets: {})
+        let first = Task { await store.downloadSelected() }
+        for _ in 0 ..< 100 where store.statuses["en.qarai"] == nil {
+            await Task.yield()
+        }
+        #expect(store.statuses["en.qarai"] == .downloading(nil))
+        store.select("fr.hamidullah")
+        first.cancel()
+        await first.value
+        await store.downloadSelected()
+        #expect(store.statuses["en.qarai"] == nil)
+        #expect(store.statuses["fr.hamidullah"] == .installed)
+        #expect(store.activeID == "fr.hamidullah")
+    }
+
     @Test func noneNeverDownloadsAndAutoFollowsLocale() async {
         let client = QuranAssetClient(url: { _ in throw QuranDatabaseError.unavailable }, download: { _ in Issue.record("Unexpected download") }, remove: { _ in })
         let store = QuranTranslationStore(defaults: nil, languages: ["ar"], client: client, reloadWidgets: {})

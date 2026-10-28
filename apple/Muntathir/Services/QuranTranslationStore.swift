@@ -1,12 +1,23 @@
 import BackgroundAssets
 import Foundation
 import Observation
+import OSLog
 import WidgetKit
 
 struct QuranAssetClient: Sendable {
     var url: @Sendable (QuranTranslation) throws -> URL
     var download: @Sendable (QuranTranslation) async throws -> Void
     var remove: @Sendable (QuranTranslation) async throws -> Void
+
+    #if DEBUG
+        static let uiTesting = QuranAssetClient(
+            url: { _ in throw QuranDatabaseError.unavailable },
+            download: { _ in
+                try await Task.sleep(nanoseconds: 3_000_000_000)
+                throw QuranDatabaseError.unavailable
+            }, remove: { _ in }
+        )
+    #endif
 
     static let live = QuranAssetClient(url: { try QuranTranslationPreferences.url(for: $0) }, download: { translation in
         guard QuranTranslationPreferences.assetManagerAvailable else { throw QuranDatabaseError.unavailable }
@@ -42,6 +53,9 @@ struct QuranAssetClient: Sendable {
                 QuranTranslationPreferences.defaults?.removeObject(forKey: QuranTranslationPreferences.selectionKey)
                 QuranTranslationPreferences.defaults?.removeObject(forKey: QuranTranslationPreferences.resolvedKey)
             }
+            if ProcessInfo.processInfo.arguments.contains("--ui-testing-translation-downloads") {
+                return QuranTranslationStore(client: .uiTesting)
+            }
         #endif
         return QuranTranslationStore()
     }()
@@ -51,6 +65,7 @@ struct QuranAssetClient: Sendable {
     private(set) var statuses: [String: Status] = [:]
     private(set) var revision = 0
     private(set) var retry = 0
+    private let logger = Logger(subsystem: "com.aljaroudi.Muntathir", category: "QuranAssets")
     private let defaults: UserDefaults?
     private let client: QuranAssetClient
     private let reloadWidgets: () -> Void
@@ -111,12 +126,16 @@ struct QuranAssetClient: Sendable {
         guard let translation = QuranTranslation.catalog.first(where: { $0.id == activeID }), statuses[activeID] != .installed else { return }
         let corruptURL = try? client.url(translation)
         statuses[translation.id] = .downloading(nil)
+        var operation = "download"
         do {
             if let corruptURL, (try? QuranDatabase.validateTranslation(at: corruptURL)) == nil {
+                operation = "remove corrupt asset"
                 try await client.remove(translation)
             }
+            operation = "download"
             try await client.download(translation)
             try Task.checkCancellation()
+            operation = "validate downloaded asset"
             try QuranDatabase.validateTranslation(at: client.url(translation))
             statuses[translation.id] = .installed
             changed()
@@ -126,6 +145,7 @@ struct QuranAssetClient: Sendable {
                 statuses[translation.id] = nil
             }
         } catch {
+            log(error, packID: translation.assetPackID, operation: operation)
             statuses[translation.id] = .failed
         }
     }
@@ -142,6 +162,7 @@ struct QuranAssetClient: Sendable {
             statuses[translation.id] = nil
             changed()
         } catch {
+            log(error, packID: translation.assetPackID, operation: "remove")
             statuses[translation.id] = .failed
         }
     }
@@ -158,7 +179,8 @@ struct QuranAssetClient: Sendable {
                 updateProgress(packID: pack.id, fraction: nil)
             case .finished:
                 refresh()
-            case let .failed(pack, _):
+            case let .failed(pack, error):
+                log(error, packID: pack.id, operation: "status update")
                 if let translation = QuranTranslation.catalog.first(where: { $0.assetPackID == pack.id }) {
                     statuses[translation.id] = .failed
                 }
@@ -170,6 +192,11 @@ struct QuranAssetClient: Sendable {
     func updateProgress(packID: String, fraction: Double?) {
         guard let translation = QuranTranslation.catalog.first(where: { $0.assetPackID == packID }) else { return }
         statuses[translation.id] = .downloading(fraction.map { min(1, max(0, $0)) })
+    }
+
+    private func log(_ error: Error, packID: String, operation: String) {
+        let error = error as NSError
+        logger.error("Asset pack \(packID, privacy: .public), \(operation, privacy: .public): \(error.domain, privacy: .public) (\(error.code)): \(error.description, privacy: .public)")
     }
 
     private func publish() {

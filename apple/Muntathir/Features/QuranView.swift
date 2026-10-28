@@ -106,6 +106,9 @@ struct QuranView: View {
                 ContentUnavailableView.search(text: request.query)
             }
         }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            QuranTranslationStatusView()
+        }
         .navigationTitle("The Holy Quran")
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Surah, 2:255, or Quran text")
         .autocorrectionDisabled()

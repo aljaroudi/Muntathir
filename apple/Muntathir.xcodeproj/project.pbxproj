@@ -134,8 +134,8 @@
 		};
 		D80000000000000000000010 /* Embed ExtensionKit Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
-			dstPath = "$(EXTENSIONS_FOLDER_PATH)";
-			dstSubfolder = Product;
+			dstPath = Extensions;
+			dstSubfolder = Wrapper;
 			files = (
 				D80000000000000000000003 /* MuntathirAssetDownloader.appex in Embed ExtensionKit Extensions */,
 			);

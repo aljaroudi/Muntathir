@@ -41,11 +41,16 @@ def check_bundle(path):
     if path.suffix == '.ipa':
         with zipfile.ZipFile(path) as archive:
             files = archive.namelist()
-            downloader_info = next((plistlib.loads(archive.read(f)) for f in files if f.endswith(downloader)), None)
+            app_infos = [f for f in files if len(Path(f).parts) == 3
+                         and f.startswith('Payload/') and f.endswith('.app/Info.plist')]
+            assert len(app_infos) == 1, 'Expected exactly one parent app in IPA'
+            app_root = str(Path(app_infos[0]).parent) + '/'
+            expected_downloader = app_root + downloader
+            downloader_info = plistlib.loads(archive.read(expected_downloader)) if expected_downloader in files else None
     else:
         assert path.is_dir() and path.suffix == '.app', 'Expected an .app directory or .ipa'
         files = [str(f.relative_to(path)) for f in path.rglob('*') if f.is_file()]
-        downloader_info = next((plistlib.loads((path / f).read_bytes()) for f in files if f.endswith(downloader)), None)
+        downloader_info = plistlib.loads((path / downloader).read_bytes()) if downloader in files else None
     translations = {json.loads(p.read_text())['fileSelectors'][0]['fileDestination'].split('/')[-1] for p in validate()}
     leaked = [f for f in files if Path(f).name in translations]
     assert not leaked, f'Translation databases leaked into shipping bundle: {leaked}'

@@ -49,6 +49,9 @@ struct QuranChapterView: View {
                 target = nil
             }
         }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            QuranTranslationStatusView()
+        }
         .navigationTitle(surah.title(locale: locale))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
