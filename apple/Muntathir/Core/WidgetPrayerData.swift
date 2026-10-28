@@ -23,6 +23,21 @@ struct WidgetPrayerSettings: Codable, Equatable, Sendable {
                       imsakMinutes: c.decodeIfPresent(Int.self, forKey: .imsakMinutes) ?? 10)
     }
 
+    func sunset(on date: Date) -> Date? {
+        guard let location, location.hasValidCoordinates, TimeZone(identifier: location.timeZoneID) != nil else { return nil }
+        return PrayerCalculator.times(on: date, location: location, method: .muslimWorldLeague)
+            .first { $0.name == .sunset }?.date
+    }
+
+    func dailyVerseTimelineDates(from date: Date, engine: CalendarEngine) -> [Date] {
+        let midnight = engine.gregorian.startOfDay(for: date)
+        let boundaries = (0 ... 7).map { offset in
+            let day = engine.addingDays(offset, to: midnight)
+            return sunset(on: day) ?? engine.addingDays(1, to: day)
+        }.filter { $0 > date }
+        return [date] + Array(boundaries.prefix(7))
+    }
+
     func prayers(on date: Date) -> [PrayerMoment] {
         guard let location else { return [] }
         return PrayerCalculator.times(on: date, location: location, method: method, imsakMinutes: imsakMinutes)

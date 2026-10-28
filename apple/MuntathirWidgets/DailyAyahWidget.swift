@@ -15,18 +15,20 @@ struct DailyAyahProvider: TimelineProvider {
     func getSnapshot(in context: Context, completion: @escaping (DailyAyahEntry) -> Void) {
         let now = Date()
         let library = ContentLibrary()
-        completion(context.isPreview ? placeholder(in: context) : entry(at: now, library: library, settings: .read()))
+        completion(context.isPreview ? placeholder(in: context) : entry(at: now, library: library, settings: .read(), prayerSettings: WidgetPrayerStore.read()))
     }
 
     func getTimeline(in _: Context, completion: @escaping (Timeline<DailyAyahEntry>) -> Void) {
         let settings = WidgetCalendarSettings.read()
         let library = ContentLibrary()
-        let entries = settings.timelineDates(from: .now).map { entry(at: $0, library: library, settings: settings) }
+        let prayerSettings = WidgetPrayerStore.read()
+        let dates = prayerSettings?.dailyVerseTimelineDates(from: .now, engine: settings.engine) ?? settings.timelineDates(from: .now)
+        let entries = dates.map { entry(at: $0, library: library, settings: settings, prayerSettings: prayerSettings) }
         completion(Timeline(entries: entries, policy: .atEnd))
     }
 
-    private func entry(at date: Date, library: ContentLibrary, settings: WidgetCalendarSettings) -> DailyAyahEntry {
-        DailyAyahEntry(date: date, ayah: library.verse(on: date, engine: settings.engine), translation: QuranTranslationPreferences.selected)
+    private func entry(at date: Date, library: ContentLibrary, settings: WidgetCalendarSettings, prayerSettings: WidgetPrayerSettings?) -> DailyAyahEntry {
+        DailyAyahEntry(date: date, ayah: library.verse(on: date, engine: settings.engine, prayerSettings: prayerSettings), translation: QuranTranslationPreferences.selected)
     }
 }
 

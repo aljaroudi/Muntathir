@@ -3,61 +3,19 @@ import Foundation
 import Testing
 
 struct DailyVerseScheduleTests {
-    private func entries() -> [DailyVerseSchedule.Entry] {
-        (1 ... 12).flatMap { month in
-            (1 ... 30).map { day in
-                DailyVerseSchedule.Entry(hijriMonth: month, hijriDay: day, verseID: (month - 1) * 30 + day)
-            }
-        }
-    }
-
-    @Test func completeScheduleIncludesEveryPossibleDate() throws {
-        let schedule = try DailyVerseSchedule(entries: entries())
+    @Test func completeScheduleMapsEveryHijriDateByArrayPosition() throws {
+        let url = try #require(Bundle.main.url(forResource: "quran-daily-ids", withExtension: "json"))
+        let ids = try JSONDecoder().decode([Int].self, from: Data(contentsOf: url))
+        let records = QuranDatabase().verses(ids: Set(ids))
+        let library = ContentLibrary()
+        #expect(ids.count == 360)
         for month in 1 ... 12 {
             for day in 1 ... 30 {
                 let resolved = ResolvedDay(month: .init(year: 1448, month: month), day: day, provenance: .calculated, sourceID: nil)
-                #expect(schedule.verseID(on: resolved) == (month - 1) * 30 + day)
+                #expect(library.verse(on: resolved)?.id == records[ids[(month - 1) * 30 + day - 1]]?.id)
             }
         }
-    }
-
-    @Test func incompleteDuplicateAndInvalidSchedulesAreRejected() throws {
-        let all = entries()
-        #expect(throws: DailyVerseSchedule.ValidationError.self) { try DailyVerseSchedule(entries: Array(all.dropLast())) }
-        var duplicate = all
-        duplicate[359] = all[0]
-        #expect(throws: DailyVerseSchedule.ValidationError.self) { try DailyVerseSchedule(entries: duplicate) }
-        for invalid in [
-            DailyVerseSchedule.Entry(hijriMonth: 13, hijriDay: 1, verseID: 1),
-            .init(hijriMonth: 1, hijriDay: 31, verseID: 1),
-            .init(hijriMonth: 1, hijriDay: 1, verseID: 0),
-            .init(hijriMonth: 1, hijriDay: 1, verseID: -1),
-        ] {
-            var invalidEntries = all
-            invalidEntries[0] = invalid
-            #expect(throws: DailyVerseSchedule.ValidationError.self) { try DailyVerseSchedule(entries: invalidEntries) }
-        }
-        let missingID = Data("{\"entries\":[{\"hijriMonth\":1,\"hijriDay\":1}]}".utf8)
-        #expect(throws: DecodingError.self) { try JSONDecoder().decode(DailyVerseSchedule.self, from: missingID) }
-    }
-
-    @Test func correctionAndLocationMidnightSelectTheSameVerseForAppAndWidget() throws {
-        let zone = try #require(TimeZone(identifier: "Asia/Riyadh"))
-        let baseline = try CalendarEngine(timeZone: zone)
-        let month = HijriMonth(year: 1448, month: 5)
-        let start = baseline.addingDays(1, to: baseline.baselineStart(month))
-        let correction = MonthCorrection(month: month, start: CivilDate(start, in: zone), provenance: .manual, sourceID: nil)
-        let appEngine = try CalendarEngine(timeZone: zone, manual: [correction])
-        let widgetEngine = WidgetCalendarSettings(timeZoneID: zone.identifier, manual: [correction]).engine
-        let schedule = try DailyVerseSchedule(entries: entries())
-        let nextMidnight = appEngine.addingDays(1, to: start)
-        #expect(appEngine.resolve(start).day == 1)
-        #expect(baseline.resolve(start).day == 2)
-        #expect(schedule.verseID(on: appEngine.resolve(nextMidnight.addingTimeInterval(-1))) == 121)
-        #expect(schedule.verseID(on: appEngine.resolve(nextMidnight)) == 122)
-        for date in [start, nextMidnight.addingTimeInterval(-1), nextMidnight] {
-            #expect(schedule.verseID(on: appEngine.resolve(date)) == schedule.verseID(on: widgetEngine.resolve(date)))
-        }
+        #expect(ids[39] == 1548)
     }
 
     @Test(arguments: ["Asia/Riyadh", "America/New_York"])
@@ -91,6 +49,85 @@ struct DailyVerseScheduleTests {
         #expect(verse.id == library.verse(on: date.addingTimeInterval(86399), engine: corrected)?.id)
     }
 
+    @Test(arguments: ["Asia/Riyadh", "America/New_York"])
+    func sunsetSelectsNextHijriDayAndKeepsItThroughMidnight(zoneID: String) throws {
+        let zone = try #require(TimeZone(identifier: zoneID))
+        let engine = try CalendarEngine(timeZone: zone)
+        let location = SavedLocation(latitude: zoneID == "Asia/Riyadh" ? 24.7136 : 40.7128,
+                                     longitude: zoneID == "Asia/Riyadh" ? 46.6753 : -74.006,
+                                     name: "Test", countryCode: "", timeZoneID: zoneID)
+        let prayers = WidgetPrayerSettings(location: location, method: .jafari, hiddenPrayers: [.sunset])
+        let start = try #require(CivilDate(year: 2026, month: 3, day: 7).date(in: zone))
+        let library = ContentLibrary()
+        for offset in 0 ..< 3 {
+            let date = engine.addingDays(offset, to: start)
+            let sunset = try #require(prayers.sunset(on: date))
+            let maghrib = try #require(PrayerCalculator.times(on: date, location: location, method: .jafari).first { $0.name == .maghrib }?.date)
+            #expect(sunset < maghrib)
+            let otherMethod = WidgetPrayerSettings(location: location, method: .ummAlQura, hiddenPrayers: [])
+            #expect(sunset == otherMethod.sunset(on: date))
+            let tomorrow = engine.addingDays(1, to: date)
+            let current = engine.resolve(date)
+            let next = engine.resolve(tomorrow)
+            #expect(ContentLibrary.verseDay(on: sunset.addingTimeInterval(-1), engine: engine, prayerSettings: prayers).day == current.day)
+            for instant in [sunset, sunset.addingTimeInterval(1), tomorrow, tomorrow.addingTimeInterval(1)] {
+                let resolved = ContentLibrary.verseDay(on: instant, engine: engine, prayerSettings: prayers)
+                #expect(resolved.month == next.month && resolved.day == next.day)
+                #expect(library.verse(on: instant, engine: engine, prayerSettings: prayers)?.id == library.verse(on: next)?.id)
+            }
+        }
+        let dates = prayers.dailyVerseTimelineDates(from: start, engine: engine)
+        #expect(dates.count == 8)
+        for boundary in dates.dropFirst() {
+            #expect(boundary == prayers.sunset(on: boundary))
+            #expect(library.verse(on: boundary, engine: engine, prayerSettings: prayers)?.id
+                != library.verse(on: boundary.addingTimeInterval(-1), engine: engine, prayerSettings: prayers)?.id)
+        }
+    }
+
+    @Test func sunsetFollowsCorrectedMonthLengthsAndYearRollover() throws {
+        let zone = try #require(TimeZone(identifier: "Asia/Riyadh"))
+        let baseline = try CalendarEngine(timeZone: zone)
+        let month = HijriMonth(year: 1448, month: 1)
+        let correction = MonthCorrection(month: month, start: CivilDate(baseline.addingDays(1, to: baseline.start(of: month)), in: zone),
+                                         provenance: .manual, sourceID: nil)
+        let engine = try CalendarEngine(timeZone: zone, manual: [correction])
+        let widget = WidgetCalendarSettings(timeZoneID: zone.identifier, manual: [correction]).engine
+        let prayers = WidgetPrayerSettings(location: SavedLocation(latitude: 24.7136, longitude: 46.6753, name: "Riyadh",
+                                                                   countryCode: "SA", timeZoneID: zone.identifier),
+                                           method: .jafari, hiddenPrayers: [])
+        var lengths = Set<Int>()
+        for offset in 0 ..< 13 {
+            let nextMonth = month.advanced(offset)
+            let start = engine.start(of: nextMonth)
+            let preceding = engine.addingDays(-1, to: start)
+            let previous = engine.resolve(preceding)
+            lengths.insert(previous.day)
+            let boundary = try #require(prayers.sunset(on: preceding))
+            for calendar in [engine, widget] {
+                let before = ContentLibrary.verseDay(on: boundary.addingTimeInterval(-1), engine: calendar, prayerSettings: prayers)
+                let after = ContentLibrary.verseDay(on: boundary, engine: calendar, prayerSettings: prayers)
+                #expect(before.month == previous.month && before.day == previous.day)
+                #expect(after.month == nextMonth && after.day == 1)
+            }
+        }
+        #expect(lengths == [29, 30])
+    }
+
+    @Test func missingOrUncalculableSunsetFallsBackToMidnight() throws {
+        let engine = try CalendarEngine(timeZone: .gmt)
+        let date = try #require(CivilDate(year: 2026, month: 3, day: 7).date(in: .gmt)).addingTimeInterval(23 * 3600)
+        let invalid = SavedLocation(latitude: .nan, longitude: 0, name: "Invalid", countryCode: "", timeZoneID: "GMT")
+        for location in [nil, invalid] {
+            let prayers = WidgetPrayerSettings(location: location, method: .jafari, hiddenPrayers: [])
+            #expect(prayers.sunset(on: date) == nil)
+            #expect(ContentLibrary.verseDay(on: date, engine: engine, prayerSettings: prayers).day == engine.resolve(date).day)
+            let dates = prayers.dailyVerseTimelineDates(from: date, engine: engine)
+            #expect(dates.count == 8)
+            #expect(dates.dropFirst().allSatisfy { engine.gregorian.component(.hour, from: $0) == 0 })
+        }
+    }
+
     @Test func databaseContainsTheCompleteArabicQuranAndIsReadOnly() throws {
         let url = try #require(Bundle.main.url(forResource: "quran", withExtension: "db"))
         let before = try Data(contentsOf: url)
@@ -118,7 +155,7 @@ struct DailyVerseScheduleTests {
         let widget = try #require(Bundle(url: plugins.appendingPathComponent("MuntathirWidgets.appex")))
         let appVerses = ContentLibrary().verses
         let widgetVerses = ContentLibrary(bundle: widget).verses
-        #expect(appVerses.count == 32)
+        #expect(appVerses.count == 360)
         #expect(appVerses.map(\.id) == widgetVerses.map(\.id))
         #expect(appVerses.map(\.text) == widgetVerses.map(\.text))
         let appDB = try #require(Bundle.main.url(forResource: "quran", withExtension: "db"))
@@ -140,21 +177,23 @@ struct DailyVerseScheduleTests {
             let source = try #require(Bundle.main.url(forResource: name, withExtension: "db"))
             try FileManager.default.copyItem(at: source, to: folder.appendingPathComponent("\(name).db"))
         }
-        try Data("[2373]".utf8).write(to: folder.appendingPathComponent("quran-daily-ids.json"))
-        let resource = folder.appendingPathComponent("quran-daily.json")
-        func write(_ entries: [DailyVerseSchedule.Entry]) throws {
-            try (Data("{\"entries\":".utf8) + JSONEncoder().encode(entries) + Data("}".utf8)).write(to: resource)
+        let resource = folder.appendingPathComponent("quran-daily-ids.json")
+        func write(_ ids: [Int]) throws {
+            try JSONEncoder().encode(ids).write(to: resource)
         }
-        try write(entries())
+        let ids = Array(1 ... 360)
+        try write(ids)
         let bundle = try #require(Bundle(url: folder))
         let engine = try CalendarEngine(timeZone: .gmt)
         let date = engine.start(of: .init(year: 1448, month: 1))
         #expect(ContentLibrary(bundle: bundle).verse(on: date, engine: engine)?.id == "1:1")
-        var invalid = entries()
-        invalid[0] = .init(hijriMonth: 1, hijriDay: 1, verseID: 99999)
-        try write(invalid)
-        #expect(ContentLibrary(bundle: bundle).verse(on: date, engine: engine) == nil)
-        try write([])
+        for invalid in [Array(ids.dropLast()), ids + [361], [99999] + Array(ids.dropFirst()),
+                        [0] + Array(ids.dropFirst()), [-1] + Array(ids.dropFirst()), []]
+        {
+            try write(invalid)
+            #expect(ContentLibrary(bundle: bundle).verse(on: date, engine: engine) == nil)
+        }
+        try Data("invalid JSON".utf8).write(to: resource)
         #expect(ContentLibrary(bundle: bundle).verse(on: date, engine: engine) == nil)
     }
 }

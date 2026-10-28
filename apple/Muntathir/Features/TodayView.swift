@@ -38,6 +38,10 @@ struct TodayView: View {
         TimelineView(timelineSchedule) { context in
             let now = displayDate(context.date)
             let engine = model.engine
+            let versePrayerSettings = WidgetPrayerSettings(
+                location: model.location, method: model.preferences.prayerMethod, hiddenPrayers: [], imsakMinutes: model.preferences.imsakMinutes
+            )
+            let verseDay = ContentLibrary.verseDay(on: now, engine: engine, prayerSettings: versePrayerSettings)
             let sun = model.location.flatMap { SolarPosition.calculate(at: now, latitude: $0.latitude, longitude: $0.longitude) }
             let moon = model.location.flatMap { MoonPosition.calculate(at: now, latitude: $0.latitude, longitude: $0.longitude) }
             let prayers = model.location.map { location in
@@ -167,14 +171,20 @@ struct TodayView: View {
             .toolbarColorScheme(sun == nil ? nil : .dark, for: .navigationBar)
             .navigationTitle(sun == nil ? title(now, engine: engine) : "")
             .navigationBarTitleDisplayMode(sun == nil ? .large : .inline)
-            .task(id: "\(engine.timeZone.identifier)-\(engine.resolve(now).month.index)-\(engine.resolve(now).day)-\(translationStore.revision)") {
+            .task(id: "\(engine.timeZone.identifier)-\(verseDay.month.index)-\(verseDay.day)-\(translationStore.revision)-\(String(describing: model.location))") {
                 #if DEBUG
                     dailyAyah = ProcessInfo.processInfo.arguments.contains("--marketing-capture")
                         ? (ProcessInfo.processInfo.arguments.contains("--screenshot-verse")
-                            ? (try? QuranDatabase().verse(surah: 94, number: 6)) : exampleAyah) : ContentLibrary().verse(on: now, engine: engine)
+                            ? (try? QuranDatabase().verse(surah: 94, number: 6)) : exampleAyah) : ContentLibrary().verse(on: verseDay)
                 #else
-                    dailyAyah = ContentLibrary().verse(on: now, engine: engine)
+                    dailyAyah = ContentLibrary().verse(on: verseDay)
                 #endif
+                guard referenceDate == nil,
+                      let boundary = versePrayerSettings.dailyVerseTimelineDates(from: now, engine: engine).dropFirst().first else { return }
+                do {
+                    try await Task.sleep(for: .seconds(max(0, boundary.timeIntervalSinceNow)))
+                    refreshedAt = .now
+                } catch {}
             }
         }
         .task(id: model.location) {
