@@ -38,6 +38,12 @@ const en = {
       { title: "Qibla", text: "Find the direction of prayer with a compass view." },
     ],
   },
+  calendar: {
+    title: "Islamic calendar subscription",
+    subscribe: "Subscribe to calendar",
+    description:
+      "Dates follow Middle East naked-eye confirmations, with Umm al-Qura calculations until confirmed. Subscribe to receive date corrections; your calendar app controls refresh timing.",
+  },
   companions:
     "Available in 15 languages, including Arabic and English. Made for iPhone and iPad, with an Apple Watch companion and Home Screen widgets.",
   faq: {
@@ -96,6 +102,12 @@ const ar: typeof en = {
       },
       { title: "اتجاه القبلة", text: "اعرف اتجاه الصلاة من خلال بوصلة واضحة." },
     ],
+  },
+  calendar: {
+    title: "الاشتراك في تقويم المناسبات الإسلامية",
+    subscribe: "اشترك في التقويم",
+    description:
+      "تتبع التواريخ تأكيدات الرؤية بالعين المجردة للشرق الأوسط، وحسابات أم القرى حتى ورود التأكيد. اشترك لتصلك تصحيحات التواريخ؛ ويتحكم تطبيق التقويم في مواعيد التحديث.",
   },
   companions:
     "متوفر بـ١٥ لغة، منها العربية والإنجليزية. لأجهزة \u2066iPhone\u2069 و\u2066iPad\u2069، مع تطبيق مرافق لساعة \u2066Apple Watch\u2069 وأدوات للشاشة الرئيسية.",
