@@ -1,3 +1,5 @@
+import AVFoundation
+import AudioToolbox
 import Foundation
 import UserNotifications
 
@@ -23,6 +25,7 @@ enum NotificationPlan {
 @MainActor final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     private let center = UNUserNotificationCenter.current()
     private var generation = UUID()
+    private var previewPlayer: AVAudioPlayer?
     override init() {
         super.init()
         center.delegate = self
@@ -32,14 +35,24 @@ enum NotificationPlan {
         [.banner, .sound]
     }
 
-    func preview(sound: PrayerAlertSound, timeSensitive: Bool) async throws {
-        guard await authorize() else { throw CocoaError(.userCancelled) }
-        let content = UNMutableNotificationContent()
-        content.title = String(localized: "Notification test")
-        content.sound = sound.notificationSound
-        content.interruptionLevel = timeSensitive ? .timeSensitive : .active
-        try await center.add(UNNotificationRequest(identifier: "sound-preview", content: content,
-                                                   trigger: UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)))
+    func stopPreview() {
+        previewPlayer?.stop()
+        previewPlayer = nil
+    }
+
+    func preview(sound: PrayerAlertSound) throws {
+        stopPreview()
+        switch sound {
+        case .silent:
+            return
+        case .system:
+            AudioServicesPlaySystemSound(1007)
+        default:
+            guard let url = sound.audioURL else { throw CocoaError(.fileNoSuchFile) }
+            let player = try AVAudioPlayer(contentsOf: url)
+            guard player.play() else { throw CocoaError(.fileReadUnknown) }
+            previewPlayer = player
+        }
     }
 
     func authorize() async -> Bool {
@@ -71,20 +84,20 @@ enum NotificationPlan {
         let content = UNMutableNotificationContent()
         content.title = prayer.isPrayer ? String(localized: "Time for prayer") : prayer.title
         content.body = prayer.notificationBody
-        content.sound = preferences.sound(for: prayer).notificationSound
+        content.sound = preferences.notificationSound.notificationSound
         content.interruptionLevel = preferences.timeSensitiveNotifications ? .timeSensitive : .active
         content.threadIdentifier = "prayer.\(prayer.rawValue)"
         return content
     }
 
-    func announce(_ rows: [Announcement], enabled: Bool, defaults: UserDefaults = .standard) async {
+    func announce(_ rows: [Announcement], enabled: Bool, sound: PrayerAlertSound, defaults: UserDefaults = .standard) async {
         guard enabled else { return }
         var delivered = Set(defaults.stringArray(forKey: "announcements.delivered") ?? [])
         for row in rows {
             let key = "\(row.id).\(row.revision)"
             guard !delivered.contains(key) else { continue }
             let content = UNMutableNotificationContent(); content.title = String(localized: "Month confirmed")
-            content.body = row.sourceID; content.sound = .default
+            content.body = row.sourceID; content.sound = sound.notificationSound
             do {
                 try await center.add(UNNotificationRequest(identifier: "announcement.\(key)", content: content, trigger: nil))
                 delivered.insert(key)

@@ -326,29 +326,28 @@ struct PrayerNotificationSettings: View {
                 Text("Allow Time Sensitive alerts in Settings and Focus. Sound follows Silent mode and your Ringtone and Alerts volume.")
             }
             Section {
-                ForEach(PrayerName.allCases) { prayer in
-                    VStack(alignment: .leading) {
-                        Toggle(prayer.title, isOn: Binding(get: { model.preferences.enabledPrayers.contains(prayer) }, set: { enabled in
-                            Task { await model.setPrayer(prayer, enabled: enabled) }
-                        }))
-                        if model.preferences.enabledPrayers.contains(prayer) {
-                            Picker("Sound", selection: Binding(get: { model.preferences.sound(for: prayer) }, set: { sound in
-                                model.update { $0.prayerSounds[prayer.rawValue] = sound }
-                                preview(sound)
-                            })) {
-                                ForEach(PrayerAlertSound.allCases) { sound in
-                                    Text(sound.title).tag(sound)
-                                }
-                            }
-                            Button("Preview sound", systemImage: "speaker.wave.2") { preview(model.preferences.sound(for: prayer)) }
-                                .disabled(model.preferences.sound(for: prayer) == .silent)
-                        }
+                Picker("Sound", selection: Binding(get: { model.preferences.notificationSound }, set: { sound in
+                    model.update { $0.notificationSound = sound }
+                    preview(sound)
+                })) {
+                    ForEach(PrayerAlertSound.allCases) { sound in
+                        Text(sound.title).tag(sound)
                     }
+                }
+                Button("Preview sound", systemImage: "speaker.wave.2") { preview(model.preferences.notificationSound) }
+                    .disabled(model.preferences.notificationSound == .silent)
+            }
+            Section {
+                ForEach(PrayerName.allCases) { prayer in
+                    Toggle(prayer.title, isOn: Binding(get: { model.preferences.enabledPrayers.contains(prayer) }, set: { enabled in
+                        Task { await model.setPrayer(prayer, enabled: enabled) }
+                    }))
                 }
             } footer: {
                 Text("Alerts are scheduled for up to 10 days. Open the app regularly to refresh them.")
             }
         }.navigationTitle("Notifications")
+            .onDisappear { model.notifications.stopPreview() }
             .task {
                 if !model.preferences.enabledPrayers.isEmpty {
                     if await model.notifications.authorize() {
@@ -361,9 +360,7 @@ struct PrayerNotificationSettings: View {
     }
 
     private func preview(_ sound: PrayerAlertSound) {
-        Task {
-            do { try await model.notifications.preview(sound: sound, timeSensitive: model.preferences.timeSensitiveNotifications) }
-            catch { model.error = String(localized: "Could not preview this alert. Check system notification settings.") }
-        }
+        do { try model.notifications.preview(sound: sound) }
+        catch { model.error = error.localizedDescription }
     }
 }
