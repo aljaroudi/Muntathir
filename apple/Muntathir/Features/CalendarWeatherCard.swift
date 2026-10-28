@@ -6,8 +6,6 @@ struct CalendarWeatherCard: View {
     let settings: WidgetCalendarSettings
     let location: SavedLocation?
     let weather: WeatherReading?
-    var attributionLight: Data?
-    var attributionDark: Data?
     var fullColor = true
     @Environment(\.locale) private var locale
     @Environment(\.colorScheme) private var colorScheme
@@ -51,16 +49,9 @@ struct CalendarWeatherCard: View {
             HStack(alignment: .bottom, spacing: 4) {
                 Text(gregorianDate).font(.caption).foregroundStyle(.secondary)
                 Spacer(minLength: 0)
-                if let attribution = weather?.attribution {
-                    Link(destination: attribution.legalPageURL) {
-                        if let data = colorScheme == .dark ? attributionDark : attributionLight,
-                           let image = UIImage(data: data)
-                        {
-                            Image(uiImage: image).resizable().scaledToFit().frame(width: 58, height: 10)
-                        } else {
-                            Text("Apple Weather").font(.system(size: 8)).foregroundStyle(.secondary)
-                        }
-                    }.accessibilityLabel("Apple Weather attribution")
+                if let weather {
+                    WeatherAttributionLink(legalPageURL: weather.attribution?.legalPageURL,
+                                           size: CGSize(width: 58, height: 10))
                 }
             }
         }

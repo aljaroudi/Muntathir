@@ -18,6 +18,8 @@ From repository root: `make apple-format`, `make apple-build`, and `make apple-t
 
 Core Swift sources live in `Muntathir/Core` and are reused directly by Apple targets. Adhan 1.5.0 is pinned in the Xcode project's package resolution file. There is no separate prayer engine. Shared fixtures are reference data; test copies are bundle resources.
 
+Apple Weather marks in `Muntathir/Resources/WeatherAttribution.xcassets` are original 3× PNGs downloaded on 2026-10-28 from `https://weatherkit.apple.com/attribution/{language}` using its `logoLight@3x` and `logoDark@3x` URLs. Both app and widget bundle them. The 13 artwork languages match the app languages except Persian and Urdu, which use English because Apple returns generic marks for those codes. Simplified and Traditional Chinese use Apple's `zh-CN` and `zh-TW` artwork. Keep original artwork and filenames when updating; appearance variants use black on light backgrounds and white on dark backgrounds.
+
 `AppIcon.icon` is the shared Icon Composer source for iPhone/iPad and Watch in Debug and Release. Widget extensions use their containing app's identity. Quran Arabic text must never be edited. `QPCHafs.woff2` is registered through `UIAppFonts` with PostScript name `KFGQPCHAFSUthmanicScript-Regula`.
 
 ## Release checks

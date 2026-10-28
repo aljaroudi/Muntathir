@@ -7,8 +7,6 @@ struct IslamicDateEntry: TimelineEntry {
     var settings = WidgetCalendarSettings()
     var location: SavedLocation?
     var weather: WeatherReading?
-    var attributionLight: Data?
-    var attributionDark: Data?
 
     var currentWeather: WeatherReading? {
         weather.flatMap { $0.isCurrent(at: date) ? $0 : nil }
@@ -40,8 +38,7 @@ struct IslamicDateProvider: TimelineProvider {
             }
             completion(Timeline(entries: Set(dates).sorted().map { date in
                 IslamicDateEntry(date: date, settings: entry.settings, location: entry.location,
-                                 weather: entry.weather, attributionLight: entry.attributionLight,
-                                 attributionDark: entry.attributionDark)
+                                 weather: entry.weather)
             }, policy: includeWeather ? .after(entry.date.addingTimeInterval(1800)) : .atEnd))
         }
     }
@@ -51,19 +48,8 @@ struct IslamicDateProvider: TimelineProvider {
         var entry = IslamicDateEntry(date: .now, settings: .read(), location: location)
         if includeWeather, let location {
             entry.weather = await SharedWeatherStore.refresh(for: location)
-            if let attribution = entry.weather?.attribution {
-                async let light = mark(attribution.combinedMarkLightURL)
-                async let dark = mark(attribution.combinedMarkDarkURL)
-                entry.attributionLight = await light
-                entry.attributionDark = await dark
-            }
         }
         return entry
-    }
-
-    private func mark(_ url: URL) async -> Data? {
-        // WidgetKit archives views; download images in the provider, not AsyncImage.
-        try? await URLSession.shared.data(for: URLRequest(url: url, timeoutInterval: 10)).0
     }
 
     static func preview(condition: WeatherCondition = .clear) -> IslamicDateEntry {
@@ -119,8 +105,7 @@ struct IslamicDateWidgetView: View {
 
     private var calendarCard: CalendarWeatherCard {
         CalendarWeatherCard(date: entry.date, settings: entry.settings, location: entry.location,
-                            weather: entry.currentWeather, attributionLight: entry.attributionLight,
-                            attributionDark: entry.attributionDark, fullColor: renderingMode == .fullColor)
+                            weather: entry.currentWeather, fullColor: renderingMode == .fullColor)
     }
 
     private func monthName(_ month: HijriMonth, engine: CalendarEngine) -> String {

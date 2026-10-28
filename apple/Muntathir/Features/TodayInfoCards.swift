@@ -12,7 +12,6 @@ struct TodayInfoCards: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var availableWidth: CGFloat = 0
     @ScaledMetric(relativeTo: .body) private var minimumWidth = 160
-    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 18), count: !typeSize.isAccessibilitySize && availableWidth >= minimumWidth * 2 + 18 ? 2 : 1), spacing: 18) {
@@ -72,14 +71,8 @@ struct TodayInfoCards: View {
                         .lineLimit(1).minimumScaleFactor(0.6)
                         .accessibilityIdentifier("weather-temperature")
                         .accessibilityValue(reading.condition)
-                    if let attribution = reading.attribution {
-                        Link(destination: attribution.legalPageURL) {
-                            AsyncImage(url: colorScheme == .dark ? attribution.combinedMarkDarkURL : attribution.combinedMarkLightURL) { image in
-                                image.resizable().scaledToFit()
-                            } placeholder: { Text("Apple Weather").font(.caption2) }
-                                .frame(width: 86, height: 16)
-                        }.accessibilityLabel("Apple Weather attribution")
-                    }
+                    WeatherAttributionLink(legalPageURL: reading.attribution?.legalPageURL,
+                                           size: CGSize(width: 86, height: 16))
                 }
             } else {
                 Label("Weather", systemImage: "cloud.sun").font(.headline)

@@ -1792,6 +1792,7 @@
       }
     },
     "Apple Weather" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {

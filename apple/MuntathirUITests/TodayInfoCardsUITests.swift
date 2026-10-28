@@ -44,6 +44,7 @@ final class TodayInfoCardsUITests: XCTestCase {
         XCTAssertTrue(card.isHittable)
         XCTAssertTrue(app.staticTexts["22"].exists)
         XCTAssertTrue(app.otherElements["weather-card"].exists)
+        XCTAssertTrue(app.descendants(matching: .any)["weather-attribution"].firstMatch.exists)
         let capture = XCTAttachment(screenshot: app.screenshot())
         capture.name = "Today date and weather squares"
         capture.lifetime = .keepAlways
@@ -103,6 +104,7 @@ final class TodayInfoCardsUITests: XCTestCase {
         XCTAssertTrue(card.isHittable)
         XCTAssertLessThanOrEqual(card.frame.maxX, app.frame.maxX)
         XCTAssertGreaterThanOrEqual(card.frame.minX, app.frame.minX)
+        XCTAssertTrue(app.descendants(matching: .any)["weather-attribution"].firstMatch.exists)
         let capture = XCTAttachment(screenshot: app.screenshot())
         capture.name = "Accessibility weather card"
         capture.lifetime = .keepAlways
@@ -139,6 +141,7 @@ final class TodayInfoCardsUITests: XCTestCase {
         }
         XCTAssertTrue(card.isHittable)
         XCTAssertTrue(app.otherElements["weather-card"].exists)
+        XCTAssertTrue(app.descendants(matching: .any)["weather-attribution"].firstMatch.exists)
         let capture = XCTAttachment(screenshot: app.screenshot())
         capture.name = "Arabic date and weather squares"
         capture.lifetime = .keepAlways
