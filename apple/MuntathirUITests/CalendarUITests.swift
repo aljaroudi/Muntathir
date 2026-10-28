@@ -75,7 +75,7 @@ extension CalendarUITests {
             tab.tap()
             app.buttons[adjust].tap()
             XCTAssertTrue(app.navigationBars[title].waitForExistence(timeout: 5), language)
-            XCTAssertTrue(app.buttons["month-offset"].exists, language)
+            XCTAssertTrue(app.steppers["month-offset"].exists, language)
             let attachment = XCTAttachment(screenshot: app.screenshot())
             attachment.name = "Month adjustment \(language)"
             attachment.lifetime = .keepAlways
@@ -125,8 +125,8 @@ extension CalendarUITests {
             XCTAssertTrue(tab.waitForExistence(timeout: 10))
             tab.tap()
             app.buttons[adjust].tap()
-            XCTAssertTrue(app.buttons["month-offset"].waitForExistence(timeout: 5))
-            XCTAssertTrue(app.buttons["month-offset"].isHittable)
+            XCTAssertTrue(app.steppers["month-offset"].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.steppers["month-offset"].isHittable)
             let attachment = XCTAttachment(screenshot: app.screenshot())
             attachment.name = "Month adjustment large text \(language)"
             attachment.lifetime = .keepAlways

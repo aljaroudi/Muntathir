@@ -182,16 +182,16 @@ struct CorrectionView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Text("Hijri month: \(month.month.formatted()) / \(month.year.formatted(.number.grouping(.never)))")
-                Picker("Day adjustment", selection: $offset) {
-                    ForEach(-2 ... 2, id: \.self) { days in
-                        Text(days, format: .number.sign(strategy: .always(includingZero: false))).tag(days)
-                    }
+                Text("Hijri month: \(month.month, format: .number) / \(month.year, format: .number.grouping(.never))")
+                Stepper(value: $offset, in: -2 ... 2) {
+                    LabeledContent(
+                        "Day adjustment",
+                        value: offset,
+                        format: .number.sign(strategy: .always(includingZero: false))
+                    )
                 }
                 .accessibilityIdentifier("month-offset")
                 LabeledContent("Month starts", value: start.formatted(.dateTime.day().month(.wide).year().inZone(model.zone)))
-                Text("Positive values advance the Hijri date. Every month remains 29 or 30 days. Prayer times are unchanged.")
-                    .font(.footnote)
                 if let error {
                     Text(error).foregroundStyle(.red)
                 }
