@@ -27,7 +27,7 @@ Prayer fixtures remain duplicated in the test bundle because tests load bundled 
 
 ## Event titles
 
-Bundled events store `id`, `month`, and `day` in `Resources/events.json`, plus optional `year` (Hijri AH; negative before the Hijra) when sources name one. Localized titles live in `Localizable.xcstrings` under `event.<id>` (short factual lines; sibling dates may share the same text). The year is shown separately via `IslamicEvent.yearText(locale:)` using the `%lld AH` format string.
+Bundled events store `id`, `month`, and `day` in repository-root `shared/events.json` (bundled by explicit Xcode resource references as `events.json` in the app and iOS widgets), plus optional `year` (Hijri AH; negative before the Hijra) when sources name one. Localized titles live in each event’s `title` dictionary, keyed by language code (including `zh-Hans` and `zh-Hant`). All 15 existing translations are preserved. Arabic regional locales use `ar`; missing translations fall back to `en`, which is required. Short factual lines may be shared by sibling dates. The year is shown separately via `IslamicEvent.yearText(locale:)` using the `%lld AH` format string.
 
 ## Migration and source changes
 

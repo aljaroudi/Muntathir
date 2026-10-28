@@ -4,26 +4,16 @@ struct IslamicEvent: Codable, Identifiable, Hashable, Sendable {
     let id: String
     let month: Int
     let day: Int
+    let title: [String: String]
     /// Optional Hijri year (AH). Negative values are before the Hijra.
     let year: Int?
 
-    init(id: String, month: Int, day: Int, year: Int? = nil) {
+    init(id: String, month: Int, day: Int, year: Int? = nil, title: [String: String]) {
         self.id = id
         self.month = month
         self.day = day
+        self.title = title
         self.year = year
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case id, month, day, year
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(id, forKey: .id)
-        try container.encode(month, forKey: .month)
-        try container.encode(day, forKey: .day)
-        try container.encodeIfPresent(year, forKey: .year)
     }
 
     private func bundle(for locale: Locale) -> Bundle {
@@ -32,7 +22,9 @@ struct IslamicEvent: Codable, Identifiable, Hashable, Sendable {
     }
 
     func title(locale: Locale) -> String {
-        bundle(for: locale).localizedString(forKey: "event.\(id)", value: nil, table: nil)
+        let language = locale.language.languageCode?.identifier ?? "en"
+        let key = language == "zh" ? "zh-\(locale.language.script?.identifier ?? "Hans")" : language
+        return title[key] ?? title["en"] ?? id
     }
 
     /// Localized AH year for separate SwiftUI presentation; `nil` when the source has no year.

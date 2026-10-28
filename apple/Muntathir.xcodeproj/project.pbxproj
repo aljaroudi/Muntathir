@@ -54,6 +54,8 @@
 		E50000000000000000000014 /* Muntathir/Core/ContentLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000004 /* Muntathir/Core/ContentLibrary.swift */; };
 		F70000000000000000000006 /* Muntathir/Core/QuranTranslation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F70000000000000000000004 /* Muntathir/Core/QuranTranslation.swift */; };
 		F70000000000000000000007 /* Muntathir/Core/QuranDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F70000000000000000000005 /* Muntathir/Core/QuranDatabase.swift */; };
+		A93000000000000000000001 /* events.json in Resources */ = {isa = PBXBuildFile; fileRef = A94000000000000000000001 /* events.json */; };
+		A93000000000000000000002 /* events.json in Resources */ = {isa = PBXBuildFile; fileRef = A94000000000000000000001 /* events.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -186,6 +188,7 @@
 		E50000000000000000000006 /* Muntathir/Resources/QPCHafs.woff2 */ = {isa = PBXFileReference; lastKnownFileType = file; path = Muntathir/Resources/QPCHafs.woff2; sourceTree = SOURCE_ROOT; };
 		F70000000000000000000004 /* Muntathir/Core/QuranTranslation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/QuranTranslation.swift; sourceTree = SOURCE_ROOT; };
 		F70000000000000000000005 /* Muntathir/Core/QuranDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/QuranDatabase.swift; sourceTree = SOURCE_ROOT; };
+		A94000000000000000000001 /* events.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ../shared/events.json; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -325,6 +328,7 @@
 		04457E54308394FD00A8887D = {
 			isa = PBXGroup;
 			children = (
+				A94000000000000000000001 /* events.json */,
 				D80000000000000000000002 /* MuntathirAssetDownloader/DownloaderExtension.swift */,
 				D80000000000000000000006 /* Quran test fixtures */,
 				F70000000000000000000004 /* Muntathir/Core/QuranTranslation.swift */,
@@ -644,6 +648,7 @@
 		04457E5B308394FD00A8887D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				A93000000000000000000001 /* events.json in Resources */,
 				D40000000000000000000002 /* AppIcon.icon in Resources */,
 			);
 		};
@@ -661,6 +666,7 @@
 		B20000000000000000000005 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				A93000000000000000000002 /* events.json in Resources */,
 				B20000000000000000000022 /* Muntathir/Localizable.xcstrings in Resources */,
 			);
 		};

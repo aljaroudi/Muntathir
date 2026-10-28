@@ -52,23 +52,35 @@ struct CalendarTests {
 struct ContentTests {
     @Test(arguments: [("en_US", "Eid al-Fitr"), ("ar_SA", "عيد الفطر"),
                       ("fr_CA", "Aïd al-Fitr"), ("zh_Hans", "开斋节"), ("zh_Hant", "開齋節")])
-    func eventTitlesUseStringCatalog(identifier: String, expected: String) {
-        let event = IslamicEvent(id: "fitr", month: 10, day: 1)
+    func eventTitlesUseSharedContent(identifier: String, expected: String) throws {
+        let event = try #require(ContentLibrary().events.first { $0.id == "fitr" })
         #expect(event.title(locale: Locale(identifier: identifier)) == expected)
     }
 
+    @Test(arguments: ["ar", "ar_SA", "ar-AE", "ar_EG"])
+    func eventTitlesUseArabicAcrossRegions(identifier: String) {
+        let event = IslamicEvent(id: "test", month: 1, day: 1, title: ["ar": "عنوان", "en": "Title"])
+        #expect(event.title(locale: Locale(identifier: identifier)) == "عنوان")
+    }
+
+    @Test(arguments: ["fr_CA", "ar_SA", "zh_Hant", "ko_KR"])
+    func missingEventTranslationFallsBackToEnglish(identifier: String) {
+        let event = IslamicEvent(id: "test", month: 1, day: 1, title: ["en": "Title"])
+        #expect(event.title(locale: Locale(identifier: identifier)) == "Title")
+    }
+
     @Test func eventDatesSurviveCoding() throws {
-        let original = IslamicEvent(id: "fitr", month: 10, day: 1)
+        let original = IslamicEvent(id: "fitr", month: 10, day: 1, title: ["en": "Eid al-Fitr", "ar": "عيد الفطر"])
         let decoded = try JSONDecoder().decode(IslamicEvent.self, from: JSONEncoder().encode(original))
         #expect(decoded == original)
     }
 
     @Test func eventYearMetadataSurvivesCoding() throws {
-        let original = IslamicEvent(id: "husayn-death", month: 1, day: 10, year: 61)
+        let original = IslamicEvent(id: "husayn-death", month: 1, day: 10, year: 61, title: ["en": "Martyrdom of Imam Husayn"])
         let decoded = try JSONDecoder().decode(IslamicEvent.self, from: JSONEncoder().encode(original))
         #expect(decoded == original)
         #expect(decoded.yearText(locale: Locale(identifier: "en")) == "61 AH")
-        let beforeHijra = IslamicEvent(id: "prophet-birth", month: 3, day: 17, year: -53)
+        let beforeHijra = IslamicEvent(id: "prophet-birth", month: 3, day: 17, year: -53, title: ["en": "Birth of Prophet Muhammad"])
         #expect(beforeHijra.yearText(locale: Locale(identifier: "en")) == "-53 AH")
     }
 
@@ -84,7 +96,7 @@ struct ContentTests {
         for event in library.events {
             for language in ["en", "ar"] {
                 let title = event.title(locale: Locale(identifier: language))
-                #expect(title != "event.\(event.id)")
+                #expect(title != event.id)
                 #expect(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false)
             }
         }

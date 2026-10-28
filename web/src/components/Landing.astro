@@ -102,6 +102,11 @@ const schema = {
           {t.faq.items.map(item => <details class="group"><summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-sm font-medium"><span>{item.q}</span><span aria-hidden="true" class="text-xl font-normal group-open:rotate-45">+</span></summary><p class="max-w-2xl pb-5 text-sm leading-loose text-muted">{item.a}</p></details>)}
         </div>
       </section>
+      <section class="border-t border-emerald/15 py-12 sm:py-16" aria-labelledby="calendar-title">
+        <h2 id="calendar-title" class="text-2xl font-medium">{t.calendar.title}</h2>
+        <p class="mt-3 max-w-2xl text-sm leading-loose text-muted">{t.calendar.description}</p>
+        <a class="mt-4 inline-flex min-h-11 items-center underline underline-offset-4" href={`webcal://${site.host}/calendar/${locale}.ics`}>{t.calendar.subscribe}</a>
+      </section>
     </main>
     <footer class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 border-t border-emerald/15 px-5 py-7 text-xs text-muted sm:px-8">
       <span>© {new Date().getUTCFullYear()} {t.name}</span>

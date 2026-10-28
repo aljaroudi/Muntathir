@@ -32,11 +32,14 @@ def main():
                 assert value.strip(), f"Empty text: {locale}: {key}"
                 assert arguments(key) == arguments(value), f"Placeholder mismatch: {locale}: {key}"
                 assert "{apple}" not in value and "{events}" not in value, f"Unresolved link: {locale}: {key}"
-    events = json.loads((APPLE / "Muntathir/Resources/events.json").read_text())
+    events = json.loads((APPLE.parent / "shared/events.json").read_text())
     for event in events:
-        assert {"id", "month", "day"} <= set(event), f"Missing event fields: {event.get('id')}"
-        assert set(event) <= {"id", "month", "day", "year"}, f"Unexpected event details: {event['id']}"
-        assert "event." + event["id"] in catalog, f"Missing event title: {event['id']}"
+        assert {"id", "month", "day", "title"} <= set(event), f"Missing event fields: {event.get('id')}"
+        assert set(event) <= {"id", "month", "day", "year", "title"}, f"Unexpected event details: {event['id']}"
+        titles = event["title"]
+        assert isinstance(titles, dict) and "en" in titles, f"Missing English event title: {event['id']}"
+        for locale, title in titles.items():
+            assert isinstance(title, str) and title.strip(), f"Empty event title: {event['id']}: {locale}"
         if "year" in event:
             assert isinstance(event["year"], int), f"Invalid year: {event['id']}"
     assert "%lld AH" in catalog, "Missing year format: %lld AH"
