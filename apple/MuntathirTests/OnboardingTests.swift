@@ -11,7 +11,7 @@ struct OnboardingTests {
         #expect(model.onboardingCompleted == false)
         #expect(model.completeOnboarding() == false)
         #expect(defaults.bool(forKey: "onboardingCompleted") == false)
-        #expect(model.preferences.prayerMethod == .jafari)
+        #expect(model.preferences.prayerMethod == .tehran)
         #expect(model.preferences.enabledPrayers == [.fajr, .dhuhr, .maghrib])
 
         model.select(SavedLocation(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh"))

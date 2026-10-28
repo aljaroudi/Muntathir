@@ -2,7 +2,7 @@
 
 Today shows the current date, prayer schedule, and daily ayah. Calendar shows plain observance names, localized through `Localizable.xcstrings`; bundled JSON retains only their IDs and dates. Fresh calendar settings use naked-eye sightings from the Middle East; saved settings are preserved. Tools contains Qibla; Settings is available from the navigation toolbar; 15 interface locales (Arabic, English, French, German, Indonesian, Italian, Japanese, Malay, Persian, Russian, Spanish, Turkish, Urdu, Simplified Chinese, Traditional Chinese); Adhan 1.5.0 prayer calculations; source-relative manual month offsets (−2 through +2 days); bundled observances and daily Quran verses; saved-place iCloud preferences; local prayer notifications. A foreground GPS fix is remembered locally across launches and never uploaded to iCloud; reverse geocoding is not used.
 
-New preferences default to Jafari/Qum; legacy preferences without a method retain Tehran. Tehran's Maghrib must be later than calculated sunset; if the library cannot produce that result, the app reports unavailable times. Ramadan Isha intervals for Umm al-Qura/Qatar use the independent Foundation baseline, not manual religious-date corrections. No prayer engine is implemented here.
+Supported prayer methods are Jafari/Qum, Jafari/Tehran, and Umm al-Qura. New preferences default to Jafari/Tehran. Tehran's Maghrib must be later than calculated sunset; if the library cannot produce that result, the app reports unavailable times. Umm al-Qura's Ramadan Isha interval uses the independent Foundation baseline, not manual religious-date corrections. No prayer engine is implemented here.
 
 ## Prayer preferences and notifications
 
@@ -14,7 +14,7 @@ Local alerts are plannedacross ten days, limited to the nearest 50 requests. Lau
 
 ## Daily ayah
 
-The daily ayah uses a fine-grained emerald-to-ivory background with soft lighting, shared by the app, widgets, and exported images. The background is static. Its share button opens the native share sheet with a 1080-pixel-wide image that expands vertically for the entire verse, including its verse reference. Rendering uses a fixed readable type size and light appearance, independent of the current screen settings. The displayed verse follows the corrected Islamic month and day and stays fixed until midnight in the selected location’s time zone. The card reads bundled Arabic and the selected installed translation from read-only SQLite databases. Sources and licenses credits each translator. Sharing includes the translation currently shown. See [dated schedule preparation](../content/daily-verses/) for the pending migration to a complete corrected Hijri month/day schedule.
+The daily ayah uses a fine-grained emerald-to-ivory background with soft lighting, shared by the app, widgets, and exported images. The background is static. Its share button opens the native share sheet with a 1080-pixel-wide image that expands vertically for the entire verse, including its verse reference. Rendering uses a fixed readable type size and light appearance, independent of the current screen settings. The displayed verse follows the corrected Islamic month and day and advances at sunset in the selected location, independent of prayer method, remaining fixed through midnight. Without a location or calculable sunset, it changes at midnight. The card reads bundled Arabic and the selected installed translation from read-only SQLite databases. Sources and licenses credits each translator. Sharing includes the translation currently shown. See [daily verse schedule](../content/daily-verses/) for the complete corrected Hijri month/day schedule.
 
 See [widgets](../MuntathirWidgets/), [calendar and content](../Shared/), and [Apple setup](../).
 
@@ -24,7 +24,7 @@ Open **Tools → Qibla**. The compass stays blurred with a warning unless a vali
 
 ## First-run setup
 
-Onboarding introduces the app, offers an app-language step that opens iOS Settings, requires a city or device location, lets users choose a prayer calculation method (Jafari/Qum by default), and offers optional notification permission. Denying notifications does not block setup. Location denial or GPS failure leaves city search available; city search requires a network connection.
+Onboarding introduces the app, offers an app-language step that opens iOS Settings, requires a city or device location, lets users choose a prayer calculation method (Jafari/Tehran by default), and offers optional notification permission. Denying notifications does not block setup. Location denial or GPS failure leaves city search available; city search requires a network connection.
 
 Completion is stored on this device and does not sync through iCloud. Existing saved locations do not bypass setup. Interrupted setup resumes at the current step and retains saved choices, including when changing the app language restarts the app. The app-language link is also available in Settings. After completion, launch opens Today.
 
