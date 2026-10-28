@@ -1,6 +1,37 @@
 import XCTest
 
 final class TodayInfoCardsUITests: XCTestCase {
+    @MainActor func testWideHomeColumnsAndSettings() throws {
+        let app = XCUIApplication()
+        defer { XCUIDevice.shared.orientation = .portrait }
+        for language in ["en", "ar"] {
+            app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "--ui-testing-weather",
+                                   "-AppleLanguages", "(\(language))"]
+            app.launch()
+            try XCTSkipIf(app.frame.width < 700, "Run on a regular-width display to verify two columns.")
+            let prayers = app.descendants(matching: .any)["prayer-fajr"].firstMatch
+            let ayah = app.staticTexts["daily-ayah-text"]
+            XCTAssertTrue(prayers.waitForExistence(timeout: 10))
+            XCTAssertTrue(ayah.waitForExistence(timeout: 10))
+            XCTAssertTrue(prayers.isHittable)
+            XCTAssertTrue(ayah.isHittable)
+            if language == "ar" {
+                XCTAssertLessThan(ayah.frame.maxX, prayers.frame.minX)
+            } else {
+                XCTAssertLessThan(prayers.frame.maxX, ayah.frame.minX)
+            }
+            if language == "en" {
+                app.buttons["Settings"].tap()
+                XCUIDevice.shared.orientation = .landscapeLeft
+                XCTAssertTrue(app.buttons["Done"].waitForExistence(timeout: 5))
+                app.buttons["Done"].tap()
+                XCTAssertTrue(app.buttons["share-daily-ayah"].isHittable)
+            }
+            app.terminate()
+            XCUIDevice.shared.orientation = .portrait
+        }
+    }
+
     @MainActor func testCardsAndFeelsLikeSetting() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "--ui-testing-weather", "--sky-date", "2026-10-21T21:30:00Z",
