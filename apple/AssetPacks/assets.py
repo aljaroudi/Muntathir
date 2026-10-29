@@ -37,28 +37,20 @@ def validate():
 
 def check_bundle(path):
     path = Path(path)
-    downloader = 'Extensions/MuntathirAssetDownloader.appex/Info.plist'
     if path.suffix == '.ipa':
         with zipfile.ZipFile(path) as archive:
             files = archive.namelist()
-            app_infos = [f for f in files if len(Path(f).parts) == 3
-                         and f.startswith('Payload/') and f.endswith('.app/Info.plist')]
-            assert len(app_infos) == 1, 'Expected exactly one parent app in IPA'
-            app_root = str(Path(app_infos[0]).parent) + '/'
-            expected_downloader = app_root + downloader
-            downloader_info = plistlib.loads(archive.read(expected_downloader)) if expected_downloader in files else None
     else:
         assert path.is_dir() and path.suffix == '.app', 'Expected an .app directory or .ipa'
         files = [str(f.relative_to(path)) for f in path.rglob('*') if f.is_file()]
-        downloader_info = plistlib.loads((path / downloader).read_bytes()) if downloader in files else None
-    translations = {json.loads(p.read_text())['fileSelectors'][0]['fileDestination'].split('/')[-1] for p in validate()}
-    leaked = [f for f in files if Path(f).name in translations]
-    assert not leaked, f'Translation databases leaked into shipping bundle: {leaked}'
-    assert any(f.endswith('quran.db') for f in files), 'Missing Arabic database'
-    assert any(f.endswith('MuntathirWidgets.appex/quran.db') for f in files), 'Missing widget Arabic database'
-    assert downloader_info is not None, 'Missing ExtensionKit downloader'
-    assert downloader_info.get('CFBundleDisplayName', '').strip(), 'Missing asset downloader display name required by App Store Connect'
-    print('Verified Arabic-only app/widget and embedded asset downloader')
+    expected = {'quran.db', 'en.qarai.db', 'es.bornez.db', 'de.bubenheim.db',
+                'ru.kuliev.db', 'zh.jian.db', 'zh.majian.db'}
+    app_databases = {Path(f).name for f in files if f.endswith('.db') and '.appex/' not in f and '.xctest/' not in f and '/Watch/' not in f}
+    widget_databases = {Path(f).name for f in files if f.endswith('.db') and 'MuntathirWidgets.appex/' in f}
+    assert app_databases == expected, f'Unexpected app databases: {app_databases}'
+    assert widget_databases == expected, f'Unexpected widget databases: {widget_databases}'
+    assert not any('MuntathirAssetDownloader.appex/' in f for f in files), 'Unexpected downloader extension'
+    print('Verified bundled Quran translations in app and widget')
 
 
 def main():

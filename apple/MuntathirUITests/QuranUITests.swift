@@ -1,14 +1,11 @@
 import XCTest
 
 final class QuranUITests: XCTestCase {
-    @MainActor private func openQuran(arabic: Bool = false, largeText: Bool = false, translationDownloads: Bool = false) -> XCUIApplication {
+    @MainActor private func openQuran(arabic: Bool = false, largeText: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "-AppleLanguages", arabic ? "(ar)" : "(en)", "-AppleLocale", arabic ? "ar_SA" : "en_US"]
         if largeText {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
-        }
-        if translationDownloads {
-            app.launchArguments.append("--ui-testing-translation-downloads")
         }
         app.launch()
         app.buttons[arabic ? "الأدوات" : "Tools"].firstMatch.tap()
@@ -17,41 +14,11 @@ final class QuranUITests: XCTestCase {
         return app
     }
 
-    @MainActor func testSelectionStartsDownload() {
-        let app = openQuran(translationDownloads: true)
-        app.buttons["quran-translation-picker"].tap()
-        app.buttons["None"].tap()
-        app.buttons["quran-translation-picker"].tap()
-        app.buttons["French"].tap()
-        // Wait for the deterministic client to fail, then inspect the menu's status.
-        sleep(4)
-        app.buttons["quran-translation-picker"].tap()
-        XCTAssertTrue(app.staticTexts["Translation unavailable"].waitForExistence(timeout: 5))
-    }
-
-    @MainActor func testDownloadFailureAndRetryStayVisible() {
-        let app = openQuran(translationDownloads: true)
-        app.buttons["quran-translation-picker"].tap()
-        app.buttons["None"].tap()
-        app.buttons["quran-translation-picker"].tap()
-        app.buttons["French"].tap()
-        XCTAssertTrue(app.buttons["quran-translation-retry"].waitForExistence(timeout: 8))
-        app.buttons["quran-translation-retry"].tap()
-        XCTAssertTrue(app.descendants(matching: .any)["quran-translation-progress"].waitForExistence(timeout: 3))
-        XCTAssertTrue(app.buttons["quran-translation-retry"].waitForExistence(timeout: 8))
-        app.buttons["quran-surah-1"].tap()
-        XCTAssertTrue(app.buttons["quran-translation-retry"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.descendants(matching: .any)["quran-verse-1:1"].waitForExistence(timeout: 5))
-        app.buttons["quran-translation-picker"].tap()
-        app.buttons["None"].tap()
-        XCTAssertFalse(app.buttons["quran-translation-retry"].exists)
-    }
-
     @MainActor func testBrowseJumpAndTranslationSelection() {
         let app = openQuran()
         app.buttons["quran-surah-2"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-verse-2:1"].waitForExistence(timeout: 10))
-        XCTAssertFalse(app.staticTexts["quran-translation-2:1"].exists)
+        XCTAssertTrue(app.staticTexts["quran-translation-2:1"].exists)
         app.buttons["quran-jump"].tap()
         app.alerts.textFields.firstMatch.tap()
         app.alerts.textFields.firstMatch.typeText("255")
@@ -76,14 +43,14 @@ final class QuranUITests: XCTestCase {
         add(screenshot)
     }
 
-    @MainActor func testUnavailableTranslationKeepsArabicReadable() {
+    @MainActor func testBundledTranslationAndNone() {
         let app = openQuran()
         app.buttons["quran-surah-1"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-verse-1:1"].waitForExistence(timeout: 10))
         app.buttons["quran-translation-picker"].tap()
-        app.buttons["Persian"].tap()
+        app.buttons["Spanish"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-verse-1:1"].waitForExistence(timeout: 10))
-        XCTAssertFalse(app.staticTexts["quran-translation-1:1"].exists)
+        XCTAssertTrue(app.staticTexts["quran-translation-1:1"].exists)
         app.buttons["quran-translation-picker"].tap()
         app.buttons["None"].tap()
         XCTAssertFalse(app.staticTexts["quran-translation-1:1"].exists)

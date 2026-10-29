@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct MuntathirApp: App {
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.locale) private var locale
     @State private var model: AppModel
     @State private var quranStore: QuranUserStore
     init() {
@@ -37,16 +38,18 @@ struct MuntathirApp: App {
 
     var body: some Scene {
         WindowGroup {
-            QuranTranslationLifecycleView {
-                QuranUserDataView(store: quranStore) {
-                    if model.onboardingCompleted {
-                        ContentView()
-                    } else {
-                        OnboardingView()
-                    }
+            QuranUserDataView(store: quranStore) {
+                if model.onboardingCompleted {
+                    ContentView()
+                } else {
+                    OnboardingView()
                 }
             }
             .environment(model)
+            .task(id: "\(scenePhase)-\(locale.identifier)") {
+                guard scenePhase == .active else { return }
+                QuranTranslationStore.shared.activate(languages: Locale.preferredLanguages)
+            }
             .task(id: scenePhase) {
                 guard scenePhase == .active else { return }
                 await model.refreshInBackground()

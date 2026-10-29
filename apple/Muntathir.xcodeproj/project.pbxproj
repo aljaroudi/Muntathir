@@ -48,8 +48,6 @@
 		C30000000000000000000031 /* MuntathirWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C3000000000000000000001D /* MuntathirWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		D40000000000000000000002 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = D40000000000000000000001 /* AppIcon.icon */; };
 		D40000000000000000000003 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = D40000000000000000000001 /* AppIcon.icon */; };
-		D80000000000000000000001 /* MuntathirAssetDownloader/DownloaderExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = D80000000000000000000002 /* MuntathirAssetDownloader/DownloaderExtension.swift */; };
-		D80000000000000000000003 /* MuntathirAssetDownloader.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = D80000000000000000000004 /* MuntathirAssetDownloader.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		D80000000000000000000005 /* Quran test fixtures in Resources */ = {isa = PBXBuildFile; fileRef = D80000000000000000000006 /* Quran test fixtures */; };
 		E50000000000000000000011 /* MuntathirWidgets/LockScreenPrayerWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000001 /* MuntathirWidgets/LockScreenPrayerWidgets.swift */; };
 		E50000000000000000000012 /* MuntathirWidgets/DailyAyahWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50000000000000000000002 /* MuntathirWidgets/DailyAyahWidget.swift */; };
@@ -95,13 +93,6 @@
 			remoteGlobalIDString = C30000000000000000000030;
 			remoteInfo = MuntathirWatch;
 		};
-		D80000000000000000000007 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 04457E55308394FD00A8887D /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D80000000000000000000008;
-			remoteInfo = MuntathirAssetDownloader;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -131,15 +122,6 @@
 				C30000000000000000000031 /* MuntathirWatch.app in Embed Watch Content */,
 			);
 			name = "Embed Watch Content";
-		};
-		D80000000000000000000010 /* Embed ExtensionKit Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			dstPath = Extensions;
-			dstSubfolder = Wrapper;
-			files = (
-				D80000000000000000000003 /* MuntathirAssetDownloader.appex in Embed ExtensionKit Extensions */,
-			);
-			name = "Embed ExtensionKit Extensions";
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -181,8 +163,6 @@
 		C3000000000000000000001B /* MuntathirWatch/MuntathirWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MuntathirWatch/MuntathirWatch.entitlements; sourceTree = SOURCE_ROOT; };
 		C3000000000000000000001D /* MuntathirWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MuntathirWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D40000000000000000000001 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = SOURCE_ROOT; };
-		D80000000000000000000002 /* MuntathirAssetDownloader/DownloaderExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuntathirAssetDownloader/DownloaderExtension.swift; sourceTree = SOURCE_ROOT; };
-		D80000000000000000000004 /* MuntathirAssetDownloader.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MuntathirAssetDownloader.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		D80000000000000000000006 /* Quran test fixtures */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "Quran test fixtures"; path = Muntathir/Resources/Quran; sourceTree = SOURCE_ROOT; };
 		E50000000000000000000001 /* MuntathirWidgets/LockScreenPrayerWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuntathirWidgets/LockScreenPrayerWidgets.swift; sourceTree = SOURCE_ROOT; };
 		E50000000000000000000002 /* MuntathirWidgets/DailyAyahWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuntathirWidgets/DailyAyahWidget.swift; sourceTree = SOURCE_ROOT; };
@@ -198,19 +178,13 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				README.md,
-				Resources/Quran/de.bubenheim.db,
-				Resources/Quran/en.qarai.db,
-				Resources/Quran/es.bornez.db,
 				Resources/Quran/fa.fooladvand.db,
 				Resources/Quran/fr.hamidullah.db,
 				Resources/Quran/id.indonesian.db,
 				Resources/Quran/it.piccardo.db,
 				Resources/Quran/ms.basmeih.db,
-				Resources/Quran/ru.kuliev.db,
 				Resources/Quran/tr.vakfi.db,
 				Resources/Quran/ur.jawadi.db,
-				Resources/Quran/zh.jian.db,
-				Resources/Quran/zh.majian.db,
 			);
 			target = 04457E5C308394FD00A8887D /* Muntathir */;
 		};
@@ -234,19 +208,13 @@
 				alhalwachi.wav,
 				aliMulla.wav,
 				alsarraf.wav,
-				Quran/de.bubenheim.db,
-				Quran/en.qarai.db,
-				Quran/es.bornez.db,
 				Quran/fa.fooladvand.db,
 				Quran/fr.hamidullah.db,
 				Quran/id.indonesian.db,
 				Quran/it.piccardo.db,
 				Quran/ms.basmeih.db,
-				Quran/ru.kuliev.db,
 				Quran/tr.vakfi.db,
 				Quran/ur.jawadi.db,
-				Quran/zh.jian.db,
-				Quran/zh.majian.db,
 			);
 			target = B20000000000000000000001 /* MuntathirWidgets */;
 		};
@@ -322,11 +290,6 @@
 				C30000000000000000000025 /* Adhan in Frameworks */,
 			);
 		};
-		D8000000000000000000000B /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			files = (
-			);
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -334,7 +297,6 @@
 			isa = PBXGroup;
 			children = (
 				A94000000000000000000001 /* ../shared/events.json */,
-				D80000000000000000000002 /* MuntathirAssetDownloader/DownloaderExtension.swift */,
 				D80000000000000000000006 /* Quran test fixtures */,
 				F70000000000000000000004 /* Muntathir/Core/QuranTranslation.swift */,
 				F70000000000000000000005 /* Muntathir/Core/QuranDatabase.swift */,
@@ -354,7 +316,6 @@
 		04457E5E308394FD00A8887D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D80000000000000000000004 /* MuntathirAssetDownloader.appex */,
 				C3000000000000000000000B /* MuntathirWatchWidgets.appex */,
 				C3000000000000000000001D /* MuntathirWatch.app */,
 				04457E5D308394FD00A8887D /* Muntathir.app */,
@@ -442,7 +403,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 04457E7C308394FE00A8887D /* Build configuration list for PBXNativeTarget "Muntathir" */;
 			buildPhases = (
-				D80000000000000000000010 /* Embed ExtensionKit Extensions */,
 				C30000000000000000000032 /* Embed Watch Content */,
 				04457E59308394FD00A8887D /* Sources */,
 				04457E5A308394FD00A8887D /* Frameworks */,
@@ -452,7 +412,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				D8000000000000000000000D /* PBXTargetDependency */,
 				C30000000000000000000034 /* PBXTargetDependency */,
 				B20000000000000000000008 /* PBXTargetDependency */,
 			);
@@ -570,21 +529,6 @@
 			productReference = C3000000000000000000001D /* MuntathirWatch.app */;
 			productType = "com.apple.product-type.application";
 		};
-		D80000000000000000000008 /* MuntathirAssetDownloader */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = D80000000000000000000009 /* Build configuration list for PBXNativeTarget "MuntathirAssetDownloader" */;
-			buildPhases = (
-				D8000000000000000000000A /* Sources */,
-				D8000000000000000000000B /* Frameworks */,
-				D8000000000000000000000C /* Resources */,
-			);
-			buildRules = (
-			);
-			name = MuntathirAssetDownloader;
-			productName = MuntathirAssetDownloader;
-			productReference = D80000000000000000000004 /* MuntathirAssetDownloader.appex */;
-			productType = "com.apple.product-type.extensionkit-extension";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -639,7 +583,6 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D80000000000000000000008 /* MuntathirAssetDownloader */,
 				C30000000000000000000019 /* MuntathirWatchWidgets */,
 				C30000000000000000000030 /* MuntathirWatch */,
 				B20000000000000000000001 /* MuntathirWidgets */,
@@ -687,11 +630,6 @@
 			files = (
 				D40000000000000000000003 /* AppIcon.icon in Resources */,
 				C30000000000000000000027 /* Muntathir/Localizable.xcstrings in Resources */,
-			);
-		};
-		D8000000000000000000000C /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			files = (
 			);
 		};
 /* End PBXResourcesBuildPhase section */
@@ -760,12 +698,6 @@
 				C30000000000000000000023 /* Muntathir/Services/WatchConnectivityService.swift in Sources */,
 			);
 		};
-		D8000000000000000000000A /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			files = (
-				D80000000000000000000001 /* MuntathirAssetDownloader/DownloaderExtension.swift in Sources */,
-			);
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -793,11 +725,6 @@
 			isa = PBXTargetDependency;
 			target = C30000000000000000000030 /* MuntathirWatch */;
 			targetProxy = C30000000000000000000033 /* PBXContainerItemProxy */;
-		};
-		D8000000000000000000000D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D80000000000000000000008 /* MuntathirAssetDownloader */;
-			targetProxy = D80000000000000000000007 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1261,60 +1188,6 @@
 			};
 			name = Release;
 		};
-		D8000000000000000000000E /* Debug configuration for PBXNativeTarget "MuntathirAssetDownloader" */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGN_ENTITLEMENTS = MuntathirAssetDownloader/MuntathirAssetDownloader.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5VGKP2QV6H;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = MuntathirAssetDownloader/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.aljaroudi.Muntathir.AssetDownloader;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		D8000000000000000000000F /* Release configuration for PBXNativeTarget "MuntathirAssetDownloader" */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGN_ENTITLEMENTS = MuntathirAssetDownloader/MuntathirAssetDownloader.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5VGKP2QV6H;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = MuntathirAssetDownloader/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.aljaroudi.Muntathir.AssetDownloader;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1371,14 +1244,6 @@
 			buildConfigurations = (
 				C3000000000000000000002D /* Debug configuration for PBXNativeTarget "MuntathirWatch" */,
 				C3000000000000000000002E /* Release configuration for PBXNativeTarget "MuntathirWatch" */,
-			);
-			defaultConfigurationName = Release;
-		};
-		D80000000000000000000009 /* Build configuration list for PBXNativeTarget "MuntathirAssetDownloader" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				D8000000000000000000000E /* Debug configuration for PBXNativeTarget "MuntathirAssetDownloader" */,
-				D8000000000000000000000F /* Release configuration for PBXNativeTarget "MuntathirAssetDownloader" */,
 			);
 			defaultConfigurationName = Release;
 		};

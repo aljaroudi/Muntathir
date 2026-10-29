@@ -90,7 +90,7 @@ struct CalendarScreen: View {
                                     HStack(alignment: .firstTextBaseline, spacing: 10) {
                                         Text(day.day, format: .number)
                                             .font(.title.weight(.bold)).monospacedDigit()
-                                        Text(date.formatted(.dateTime.weekday(.abbreviated).locale(locale).inZone(model.zone)))
+                                        Text(date.formatted(.dateTime.weekday(.wide).locale(locale).inZone(model.zone)))
                                             .font(.headline)
                                         Spacer(minLength: 0)
                                     }

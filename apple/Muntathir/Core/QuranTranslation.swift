@@ -1,8 +1,6 @@
-import BackgroundAssets
 import Foundation
-import System
 
-/// Translation metadata is bundled; database files arrive in independent asset packs.
+/// Translations ship with the app and widget.
 struct QuranTranslation: Identifiable, Hashable, Sendable {
     let language: String
     let translator: String
@@ -12,25 +10,10 @@ struct QuranTranslation: Identifiable, Hashable, Sendable {
         .init(language: "zh-Hans", translator: "马坚", id: "zh.jian"),
         .init(language: "zh-Hant", translator: "马坚", id: "zh.majian"),
         .init(language: "en", translator: "Ali Quli Qara’i", id: "en.qarai"),
-        .init(language: "fr", translator: "Hamidullah", id: "fr.hamidullah"),
         .init(language: "de", translator: "Bubenheim & Elyas", id: "de.bubenheim"),
-        .init(language: "id", translator: "Bahasa Indonesia", id: "id.indonesian"),
-        .init(language: "it", translator: "Piccardo", id: "it.piccardo"),
-        .init(language: "ms", translator: "Basmeih", id: "ms.basmeih"),
-        .init(language: "fa", translator: "فولادوند", id: "fa.fooladvand"),
         .init(language: "ru", translator: "Кулиев", id: "ru.kuliev"),
         .init(language: "es", translator: "Bornez", id: "es.bornez"),
-        .init(language: "tr", translator: "Diyanet Vakfı", id: "tr.vakfi"),
-        .init(language: "ur", translator: "علامہ جوادی", id: "ur.jawadi"),
     ]
-
-    var assetPackID: String {
-        "quran-" + id.replacingOccurrences(of: ".", with: "-")
-    }
-
-    var assetPath: String {
-        "Quran/\(id).db"
-    }
 
     static func preferred(in available: [QuranTranslation], locale: Locale) -> QuranTranslation? {
         let language = locale.language.languageCode?.identifier
@@ -77,23 +60,10 @@ enum QuranTranslationPreferences {
         return resolve(selection, languages: Locale.preferredLanguages)
     }
 
-    /// Background Assets traps on invalid app-group configuration instead of throwing.
-    static var assetManagerAvailable: Bool {
-        Bundle.main.object(forInfoDictionaryKey: "BAAppGroupID") as? String == groupID
-            && FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID) != nil
-    }
-
     static func url(for translation: QuranTranslation) throws -> URL {
-        #if DEBUG
-            if ProcessInfo.processInfo.arguments.contains("--marketing-local-translations"),
-               ProcessInfo.processInfo.arguments.contains("--marketing-capture"),
-               let url = Bundle.main.resourceURL?.appending(path: translation.assetPath),
-               FileManager.default.fileExists(atPath: url.path)
-            {
-                return url
-            }
-        #endif
-        guard assetManagerAvailable else { throw QuranDatabaseError.unavailable }
-        return try AssetPackManager.shared.url(for: FilePath(translation.assetPath))
+        guard let url = Bundle.main.url(forResource: translation.id, withExtension: "db") else {
+            throw QuranDatabaseError.unavailable
+        }
+        return url
     }
 }

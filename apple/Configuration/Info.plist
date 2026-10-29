@@ -17,11 +17,5 @@
 		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
-	<key>BAAppGroupID</key>
-	<string>group.com.aljaroudi.Muntathir</string>
-	<key>BAHasManagedAssetPacks</key>
-	<true/>
-	<key>BAUsesAppleHosting</key>
-	<true/>
 </dict>
 </plist>
