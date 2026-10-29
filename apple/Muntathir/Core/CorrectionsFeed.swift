@@ -20,7 +20,7 @@ enum CalendarMethod: String, CaseIterable, Identifiable {
 }
 
 enum CalendarSource {
-    static let countries = ["SA", "KW", "BH", "OM", "AE", "QA"]
+    static let countries = ["SA"]
     static let middleEast = "naked-eye-middle-east"
 
     static func method(for sourceID: String?) -> CalendarMethod {

@@ -26,7 +26,7 @@ Apple Weather marks in `Muntathir/Resources/WeatherAttribution.xcassets` are ori
 
 Validate real-device compass/calibration, notifications/background delivery, paired Watch synchronization and complications, CarPlay layouts, signed App Group provisioning, two-device iCloud sync, VoiceOver, and accessibility sizes. Review event dates and Arabic titles editorially.
 
-The app refreshes the version-one calendar feed from https://منتظر.com/calendar/corrections-v1.json on launch/foreground, source changes, and scheduled background refresh. The website publishes an empty feed until real announcements are supplied. Push delivery remains unconfigured. Simulator tests cannot prove hardware behavior or deployed feed delivery.
+The app refreshes the version-one calendar feed from https://منتظر.com/calendar/corrections-v1.json on launch/foreground, source changes, and scheduled background refresh. The website publishes confirmed starts for 1448-05 on 2026-10-13 for Middle East naked-eye sightings and Saudi government announcements. Push delivery remains unconfigured. Simulator tests cannot prove hardware behavior or deployed feed delivery.
 
 ## Fastlane
 

@@ -32,7 +32,7 @@ Quran translations use [Apple-hosted on-demand packs](../AssetPacks/). Only Arab
 
 ## Calendar sources and month offsets
 
-Settings offers System calendar (Apple Foundation Umm al-Qura), Local naked eye (Middle East), and Government announcement (Saudi Arabia, Kuwait, Bahrain, Oman, UAE, Qatar). Country names follow the app locale. Source selection applies worldwide and is independent of GPS coverage. With no published announcement, the system calendar provides dates.
+Settings offers System calendar (Apple Foundation Umm al-Qura), Local naked eye (Middle East), and Government announcement (Saudi Arabia). Country names follow the app locale. Source selection applies worldwide and is independent of GPS coverage. With no published announcement, the system calendar provides dates.
 
 Calendar’s Adjust this month sheet stores an offset for that Hijri month. Positive values advance the displayed Hijri date: +1 starts the month one Gregorian day earlier than the selected source. The sheet previews the resulting start date. Zero removes that month’s adjustment. All months remain 29 or 30 days; unconfirmed neighboring boundaries may move, and conflicting anchors are rejected without changing saved choices. Offsets survive source changes and apply to observances, dated daily verses, widgets, and Watch snapshots. Prayer calculations and prayer notification times remain unchanged.
 

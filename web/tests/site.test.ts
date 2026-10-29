@@ -76,19 +76,42 @@ test("sitemap and robots agree with production URLs and environment", () => {
   }
 })
 
-test("publishes a valid empty calendar feed", () => {
+test("publishes confirmed calendar starts for both supported sources", () => {
   const feed = JSON.parse(readFileSync("dist/calendar/corrections-v1.json", "utf8"))
-  expect(feed).toEqual({ schemaVersion: 1, announcements: [] })
+  expect(feed.schemaVersion).toBe(1)
+  expect(feed.announcements).toHaveLength(2)
+  for (const [sourceID, method] of [
+    ["naked-eye-middle-east", "nakedEye"],
+    ["government-SA", "government"],
+  ]) {
+    expect(feed.announcements).toContainEqual({
+      id: `${sourceID}-1448-05`,
+      revision: 1,
+      sourceID,
+      method,
+      coverage: {
+        countries: sourceID === "government-SA" ? ["SA"] : ["SA", "KW", "BH", "OM", "AE", "QA"],
+        polygons: [],
+      },
+      month: { year: 1448, month: 5 },
+      start: { year: 2026, month: 10, day: 13 },
+    })
+  }
 })
-
 
 test("privacy pages and support redirect are ready before deployment", () => {
   const config = JSON.parse(readFileSync("vercel.json", "utf8"))
-  const target = "https://docs.google.com/forms/d/e/1FAIpQLSdDOEiaLaS2_-cI-n5ZDNVMjHyv6OX2IPECM_dboG1qFj8bsA/viewform?usp=header"
+  const target =
+    "https://docs.google.com/forms/d/e/1FAIpQLSdDOEiaLaS2_-cI-n5ZDNVMjHyv6OX2IPECM_dboG1qFj8bsA/viewform?usp=header"
   for (const path of ["/support", "/support/", "/en/support", "/en/support/"]) {
-    expect(config.redirects.find((item: { source: string }) => item.source === path)?.destination).toBe(target)
+    expect(
+      config.redirects.find((item: { source: string }) => item.source === path)?.destination
+    ).toBe(target)
   }
-  for (const [path, language] of [["privacy", "ar"], ["en/privacy", "en"]]) {
+  for (const [path, language] of [
+    ["privacy", "ar"],
+    ["en/privacy", "en"],
+  ]) {
     const html = readFileSync(join("dist", path, "index.html"), "utf8")
     expect(html).toContain(`lang="${language}"`)
     expect(html).toContain("iCloud")

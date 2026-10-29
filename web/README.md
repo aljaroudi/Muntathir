@@ -67,7 +67,7 @@ The final two commands restore and check production output. Deployment and DNS c
 
 ## Calendar feed
 
-The already-live website serves `/calendar/corrections-v1.json` from `public/calendar/corrections-v1.json`. Its initial payload is `{"schemaVersion":1,"announcements":[]}`. Keep the envelope even when there are no announcements. The Apple app fetches this URL from the production origin, using ETag and last-good caching. See [the shared calendar documentation](../apple/Shared/README.md) for source IDs, wire validation, and publication rules. Never publish fixture announcements as real data. After deployment, verify the production URL returns HTTP 200 and a valid version-one payload.
+The already-live website serves `/calendar/corrections-v1.json` from `public/calendar/corrections-v1.json`. Its production payload confirms 1448-05 starts on 2026-10-13 for `naked-eye-middle-east` / `nakedEye` and `government-SA` / `government`, each at revision 1. Keep the envelope even when there are no announcements. The Apple app fetches this URL from the production origin, using ETag and last-good caching. See [the shared calendar documentation](../apple/Shared/README.md) for source IDs, wire validation, and publication rules. Never publish fixture announcements as real data. After deployment, verify the production URL returns HTTP 200 and a valid version-one payload.
 
 ## Calendar subscriptions
 

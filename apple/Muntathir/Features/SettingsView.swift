@@ -78,15 +78,8 @@ struct SettingsView: View {
                     case .nakedEye:
                         LabeledContent { Text("Middle East") } label: { Text("Region") }
                     case .government:
-                        Picker("Country", selection: Binding(
-                            get: { String((model.preferences.selectedSourceID ?? "government-SA").suffix(2)) },
-                            set: { country in model.update { $0.selectedSourceID = "government-" + country } }
-                        )) {
-                            ForEach(CalendarSource.countries, id: \.self) { country in
-                                Text(locale.localizedString(forRegionCode: country) ?? country).tag(country)
-                            }
-                        }
-                        .accessibilityIdentifier("calendar-country")
+                        LabeledContent("Country", value: locale.localizedString(forRegionCode: "SA") ?? "SA")
+                            .accessibilityIdentifier("calendar-country")
                     }
                 } header: {
                     Text("Calendar corrections")

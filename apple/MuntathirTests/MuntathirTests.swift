@@ -318,6 +318,31 @@ extension CalendarTests {
         #expect(try String(decoding: JSONEncoder().encode(restored.preferences), as: UTF8.self).contains("overrides") == false)
     }
 
+    @Test func governmentSourceIsSaudiOnly() {
+        #expect(CalendarSource.countries == ["SA"])
+        #expect(CalendarSource.method(for: "government-SA") == .government)
+        for country in ["KW", "BH", "OM", "AE", "QA"] {
+            #expect(CalendarSource.sightingMethod(for: "government-" + country) == nil)
+        }
+    }
+
+    @Test func productionAnnouncementsResolveConfirmedMonth() throws {
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let data = try Data(contentsOf: root.appendingPathComponent("web/public/calendar/corrections-v1.json"))
+        let feed = try CorrectionsFeed.decode(data)
+        #expect(feed.announcements.count == 2)
+        let location = SavedLocation(latitude: 21.4, longitude: 39.8, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh")
+        let month = HijriMonth(year: 1448, month: 5)
+        let start = CivilDate(year: 2026, month: 10, day: 13)
+        for source in [CalendarSource.middleEast, "government-SA"] {
+            let rows = try feed.matching(location: location, sourceID: source)
+            #expect(rows.count == 1)
+            let engine = try CalendarEngine(timeZone: zone, confirmed: rows.map(\.correction))
+            #expect(CivilDate(engine.start(of: month), in: zone) == start)
+            #expect(engine.resolve(try #require(start.date(in: zone))).provenance == .confirmed)
+        }
+    }
+
     @Test func knownSourcesApplyWorldwideAndRequireMatchingMethod() throws {
         let location = SavedLocation(latitude: 51.5, longitude: -0.1, name: "London", countryCode: "GB", timeZoneID: "Europe/London")
         let coverage = Coverage(countries: ["SA"], polygons: [])

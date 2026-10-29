@@ -141,7 +141,7 @@ extension CalendarUITests {
         }
     }
 
-    @MainActor func testCalendarMethodAndLocalizedCountries() throws {
+    @MainActor func testCalendarMethodAndLocalizedSaudiCountry() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
@@ -154,14 +154,10 @@ extension CalendarUITests {
         XCTAssertFalse(app.buttons["calendar-country"].exists)
         method.tap()
         app.buttons["Government announcement"].tap()
-        let country = app.buttons["calendar-country"]
-        country.tap()
-        for code in ["SA", "KW", "BH", "OM", "AE", "QA"] {
-            let name = try XCTUnwrap(Locale(identifier: "en_US").localizedString(forRegionCode: code))
-            XCTAssertTrue(app.buttons[name].exists)
-        }
-        app.buttons["Qatar"].tap()
-        XCTAssertTrue(country.label.contains("Qatar"))
+        let country = app.descendants(matching: .any).matching(identifier: "calendar-country").firstMatch
+        XCTAssertTrue(country.waitForExistence(timeout: 5))
+        XCTAssertTrue(country.label.contains("Saudi Arabia"))
+        XCTAssertFalse(app.buttons["calendar-country"].exists)
         method.tap()
         app.buttons["System calendar"].tap()
         XCTAssertFalse(app.buttons["calendar-country"].exists)
