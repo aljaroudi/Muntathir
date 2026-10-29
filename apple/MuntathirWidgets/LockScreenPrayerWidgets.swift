@@ -13,16 +13,23 @@ struct LockScreenPrayerView: View {
                 if family == .accessoryInline {
                     Text("\(Text(next.name.title)) \(value(for: next))")
                 } else {
-                    VStack(alignment: family == .accessoryCircular ? .center : .leading, spacing: 2) {
-                        Text(next.name.title).font(.headline)
+                    ViewThatFits {
+                        VStack(alignment: family == .accessoryCircular ? .center : .leading, spacing: 2) {
+                            Text(next.name.title).font(.headline)
+                            value(for: next)
+                                .font(family == .accessoryCircular ? .caption : .title3)
+                                .monospacedDigit().widgetAccentable()
+                        }
+                        .fixedSize()
                         value(for: next)
                             .font(family == .accessoryCircular ? .caption : .title3)
-                            .monospacedDigit()
-                            .widgetAccentable()
+                            .lineLimit(2).minimumScaleFactor(0.7)
+                            .monospacedDigit().widgetAccentable()
                     }
                     .lineLimit(1)
-                    .minimumScaleFactor(0.7)
                     .frame(maxWidth: .infinity, alignment: family == .accessoryCircular ? .center : .leading)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text("\(Text(next.name.title)) \(value(for: next))"))
                 }
             } else if entry.settings?.location == nil {
                 Text("Set location in app")
@@ -90,3 +97,20 @@ struct PrayerCountdownWidget: Widget {
 #Preview("Countdown · Rectangular", as: .accessoryRectangular) {
     PrayerCountdownWidget()
 } timeline: { WidgetPreviewData.entry }
+
+private struct LockScreenPrayerWidgetsTextSizePreviews: PreviewProvider {
+    static var previews: some View {
+        ForEach([WidgetFamily.accessoryInline, .accessoryCircular, .accessoryRectangular], id: \.self) { family in
+            ForEach([DynamicTypeSize.large, .xxxLarge, .accessibility3], id: \.self) { size in
+                ForEach(["en_US", "ar_SA"], id: \.self) { language in
+                    LockScreenPrayerView(entry: WidgetPreviewData.entry, showsCountdown: true)
+                        .environment(\.dynamicTypeSize, size)
+                        .environment(\.locale, Locale(identifier: language))
+                        .environment(\.layoutDirection, language == "ar_SA" ? .rightToLeft : .leftToRight)
+                        .previewContext(WidgetPreviewContext(family: family))
+                        .previewDisplayName("\(language) · \(size)")
+                }
+            }
+        }
+    }
+}

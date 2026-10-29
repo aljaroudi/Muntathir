@@ -18,7 +18,7 @@
 		A82000000000000000000005 /* Muntathir/Features/SunDisc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81000000000000000000005 /* Muntathir/Features/SunDisc.swift */; };
 		A82000000000000000000006 /* Muntathir/Features/MoonDisc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81000000000000000000006 /* Muntathir/Features/MoonDisc.swift */; };
 		A82000000000000000000007 /* Muntathir/Core/SharedWeatherStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81000000000000000000007 /* Muntathir/Core/SharedWeatherStore.swift */; };
-		A82000000000000000000008 /* Muntathir/Features/CalendarWeatherCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81000000000000000000008 /* Muntathir/Features/CalendarWeatherCard.swift */; };
+		A82000000000000000000008 /* Muntathir/Features/WidgetDateCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81000000000000000000008 /* Muntathir/Features/WidgetDateCards.swift */; };
 		A82000000000000000000009 /* Muntathir/Features/WeatherAttributionLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81000000000000000000009 /* Muntathir/Features/WeatherAttributionLink.swift */; };
 		A93000000000000000000001 /* ../shared/events.json in Resources */ = {isa = PBXBuildFile; fileRef = A94000000000000000000001 /* ../shared/events.json */; };
 		A93000000000000000000002 /* ../shared/events.json in Resources */ = {isa = PBXBuildFile; fileRef = A94000000000000000000001 /* ../shared/events.json */; };
@@ -139,7 +139,7 @@
 		A81000000000000000000005 /* Muntathir/Features/SunDisc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Features/SunDisc.swift; sourceTree = SOURCE_ROOT; };
 		A81000000000000000000006 /* Muntathir/Features/MoonDisc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Features/MoonDisc.swift; sourceTree = SOURCE_ROOT; };
 		A81000000000000000000007 /* Muntathir/Core/SharedWeatherStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Core/SharedWeatherStore.swift; sourceTree = SOURCE_ROOT; };
-		A81000000000000000000008 /* Muntathir/Features/CalendarWeatherCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Features/CalendarWeatherCard.swift; sourceTree = SOURCE_ROOT; };
+		A81000000000000000000008 /* Muntathir/Features/WidgetDateCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Features/WidgetDateCards.swift; sourceTree = SOURCE_ROOT; };
 		A81000000000000000000009 /* Muntathir/Features/WeatherAttributionLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muntathir/Features/WeatherAttributionLink.swift; sourceTree = SOURCE_ROOT; };
 		A94000000000000000000001 /* ../shared/events.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ../shared/events.json; sourceTree = SOURCE_ROOT; };
 		B2000000000000000000000A /* PrayerWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerWidgets.swift; sourceTree = "<group>"; };
@@ -330,7 +330,7 @@
 			isa = PBXGroup;
 			children = (
 				B2000000000000000000000A /* PrayerWidgets.swift */,
-				A81000000000000000000008 /* Muntathir/Features/CalendarWeatherCard.swift */,
+				A81000000000000000000008 /* Muntathir/Features/WidgetDateCards.swift */,
 				A81000000000000000000009 /* Muntathir/Features/WeatherAttributionLink.swift */,
 				A81000000000000000000007 /* Muntathir/Core/SharedWeatherStore.swift */,
 				A81000000000000000000000 /* MuntathirWidgets/IslamicCalendarWidget.swift */,
@@ -654,7 +654,7 @@
 			isa = PBXSourcesBuildPhase;
 			files = (
 				B2000000000000000000001E /* PrayerWidgets.swift in Sources */,
-				A82000000000000000000008 /* Muntathir/Features/CalendarWeatherCard.swift in Sources */,
+				A82000000000000000000008 /* Muntathir/Features/WidgetDateCards.swift in Sources */,
 				A82000000000000000000009 /* Muntathir/Features/WeatherAttributionLink.swift in Sources */,
 				A82000000000000000000007 /* Muntathir/Core/SharedWeatherStore.swift in Sources */,
 				A82000000000000000000000 /* MuntathirWidgets/IslamicCalendarWidget.swift in Sources */,

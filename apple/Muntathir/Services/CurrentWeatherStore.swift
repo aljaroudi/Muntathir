@@ -17,7 +17,8 @@ import WidgetKit
 
     init(publish: @escaping (WeatherReading, SavedLocation) -> Void = { reading, location in
         SharedWeatherStore.write(reading, for: location)
-        WidgetCenter.shared.reloadTimelines(ofKind: "IslamicCalendar")
+        WidgetCenter.shared.reloadTimelines(ofKind: "WeatherDate")
+        WidgetCenter.shared.reloadTimelines(ofKind: "CalendarWeather")
     }, fetch: @escaping (SavedLocation) async throws -> WeatherReading = { location in
         guard let reading = await SharedWeatherStore.refresh(for: location) else { throw URLError(.cannotLoadFromNetwork) }
         return reading

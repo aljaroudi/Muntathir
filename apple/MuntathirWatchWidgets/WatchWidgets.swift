@@ -45,7 +45,7 @@ struct WatchPrayerWidgetView: View {
     var body: some View {
         Group {
             if let next = entry.next {
-                let time = next.date.formatted(.dateTime.hour().minute().inZone(entry.settings?.prayers.location?.timeZone ?? .current))
+                let time = next.date.formatted(.dateTime.hour().minute().locale(locale).inZone(entry.settings?.prayers.location?.timeZone ?? .current))
                 let remaining = String(PrayerCountdownFormat(target: next.date, locale: locale).format(entry.date).characters)
                 if family == .accessoryInline {
                     Text("\(next.name.title) \(countdown ? remaining : time)")
@@ -53,17 +53,17 @@ struct WatchPrayerWidgetView: View {
                     Image(systemName: next.name.symbol)
                         .widgetLabel { Text("\(next.name.title) \(countdown ? remaining : time)") }
                 } else {
-                    VStack(alignment: family == .accessoryRectangular ? .leading : .center, spacing: 3) {
-                        Label(next.name.title, systemImage: next.name.symbol)
-                            .font(.caption).widgetAccentable()
+                    ViewThatFits {
+                        prayerContent(next, time: time, remaining: remaining, details: true, symbol: true).fixedSize()
+                        prayerContent(next, time: time, remaining: remaining, details: false, symbol: true).fixedSize()
+                        prayerContent(next, time: time, remaining: remaining, details: false, symbol: false).fixedSize()
                         Text(countdown ? remaining : time).font(.headline).monospacedDigit()
-                        if countdown, family == .accessoryRectangular {
-                            Text(time).font(.caption).foregroundStyle(.secondary)
-                        }
+                            .lineLimit(2).minimumScaleFactor(0.7)
                     }
-                    .lineLimit(1).minimumScaleFactor(0.65)
+                    .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: family == .accessoryRectangular ? .leading : .center)
-                    .accessibilityElement(children: .combine)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text("\(Text(next.name.title)) \(countdown ? remaining + " " + time : time)"))
                 }
             } else {
                 if family == .accessoryInline {
@@ -77,6 +77,21 @@ struct WatchPrayerWidgetView: View {
             }
         }.containerBackground(.background, for: .widget)
     }
+
+    private func prayerContent(_ next: PrayerMoment, time: String, remaining: String, details: Bool, symbol: Bool) -> some View {
+        VStack(alignment: family == .accessoryRectangular ? .leading : .center, spacing: 3) {
+            HStack(spacing: 4) {
+                if symbol { Image(systemName: next.name.symbol).accessibilityHidden(true) }
+                Text(next.name.title)
+            }
+            .font(.caption).widgetAccentable()
+            Text(countdown ? remaining : time).font(.headline).monospacedDigit()
+            if details, countdown, family == .accessoryRectangular {
+                Text(time).font(.caption)
+            }
+        }
+    }
+
 }
 
 struct WatchDateWidgetView: View {
@@ -94,11 +109,19 @@ struct WatchDateWidgetView: View {
             } else if family == .accessoryCorner {
                 Text(day.day, format: .number).widgetLabel { Text(month) }
             } else {
-                VStack(spacing: 1) {
-                    Text(day.day, format: .number).font(.title2.weight(.semibold)).widgetAccentable()
-                    Text(month).font(.caption).multilineTextAlignment(.center)
-                        .lineLimit(2).minimumScaleFactor(0.7)
-                }.accessibilityElement(children: .combine)
+                ViewThatFits {
+                    VStack(spacing: 2) {
+                        Text(day.day, format: .number).font(.title2.weight(.semibold)).widgetAccentable()
+                        Text(month).font(.caption).multilineTextAlignment(.center)
+                    }.fixedSize(horizontal: false, vertical: true)
+                    Text("\(day.day.formatted(.number.locale(locale))) \(month)")
+                        .font(.headline).multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(day.day, format: .number)
+                        .font(.title2.weight(.semibold)).lineLimit(1).widgetAccentable()
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(day.day.formatted(.number.locale(locale))) \(month)")
             }
         }.containerBackground(.background, for: .widget)
     }
@@ -154,3 +177,20 @@ struct WatchWidgetBundle: WidgetBundle {
 #Preview("Countdown", as: .accessoryRectangular) { WatchCountdownWidget() } timeline: { WatchEntry.preview }
 #Preview("Corner", as: .accessoryCorner) { WatchCountdownWidget() } timeline: { WatchEntry.preview }
 #Preview("Inline", as: .accessoryInline) { WatchDateWidget() } timeline: { WatchEntry.preview }
+
+private struct WatchWidgetsTextSizePreviews: PreviewProvider {
+    static var previews: some View {
+        ForEach([WidgetFamily.accessoryInline, .accessoryCircular, .accessoryRectangular, .accessoryCorner], id: \.self) { family in
+            ForEach([DynamicTypeSize.large, .xxxLarge, .accessibility3], id: \.self) { size in
+                ForEach(["en_US", "ar_SA"], id: \.self) { language in
+                    WatchPrayerWidgetView(entry: .preview, countdown: true)
+                        .environment(\.dynamicTypeSize, size)
+                        .environment(\.locale, Locale(identifier: language))
+                        .environment(\.layoutDirection, language == "ar_SA" ? .rightToLeft : .leftToRight)
+                        .previewContext(WidgetPreviewContext(family: family))
+                        .previewDisplayName("\(language) · \(size)")
+                }
+            }
+        }
+    }
+}
