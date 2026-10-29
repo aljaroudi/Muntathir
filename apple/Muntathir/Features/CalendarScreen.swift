@@ -9,6 +9,7 @@ struct CalendarScreen: View {
     @State private var now: Date
     @State private var monthOffset = 0
     @State private var correcting = false
+    @State private var calendarExpanded = false
     init() {
         #if DEBUG
             let date = CaptureClock()?.start ?? .now
@@ -25,36 +26,56 @@ struct CalendarScreen: View {
         ScrollViewReader { proxy in
             VStack(spacing: 12) {
                 Card {
-                    HStack {
-                        Button("Previous month", systemImage: "chevron.backward") { monthOffset -= 1 }.labelStyle(.iconOnly).disabled(month.year <= 1300 && month.month == 1)
-                        Spacer()
-                        Button {
-                            if monthOffset == 0 {
-                                scrollToDay(now, engine: engine, proxy: proxy)
-                            } else {
-                                monthOffset = 0
-                            }
-                        } label: {
-                            Text(monthTitle(month, engine: engine)).font(.headline)
+                    let previous = Button("Previous month", systemImage: "chevron.backward") { monthOffset -= 1 }
+                        .labelStyle(.iconOnly).disabled(month.year <= 1300 && month.month == 1)
+                    let next = Button("Next month", systemImage: "chevron.forward") { monthOffset += 1 }
+                        .labelStyle(.iconOnly).disabled(month.year >= 1600 && month.month == 12)
+                    let heading = Button {
+                        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
+                            calendarExpanded.toggle()
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityHint("Back to today")
-                        .accessibilityIdentifier("calendar-month-title")
-                        Spacer()
-                        Button("Next month", systemImage: "chevron.forward") { monthOffset += 1 }.labelStyle(.iconOnly).disabled(month.year >= 1600 && month.month == 12)
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(monthTitle(month, engine: engine))
+                                .multilineTextAlignment(.center)
+                            Image(systemName: calendarExpanded ? "chevron.up" : "chevron.down")
+                                .font(.caption.weight(.semibold))
+                                .accessibilityHidden(true)
+                        }.font(.headline)
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityValue(calendarExpanded ? Text("Expanded") : Text("Collapsed"))
+                    .accessibilityIdentifier("calendar-month-title")
                     if typeSize.isAccessibilitySize {
-                        ScrollView {
-                            LazyVStack {
+                        heading.frame(maxWidth: .infinity)
+                        HStack {
+                            previous
+                            Spacer()
+                            next
+                        }
+                    } else {
+                        HStack {
+                            previous
+                            Spacer()
+                            heading
+                            Spacer()
+                            next
+                        }
+                    }
+                    if calendarExpanded {
+                        if typeSize.isAccessibilitySize {
+                            ScrollView {
+                                LazyVStack {
+                                    ForEach(days, id: \.self) { date in dayButton(date, engine: engine, proxy: proxy) }
+                                }
+                            }.frame(maxHeight: 240)
+                        } else {
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 7), spacing: 8) {
+                                ForEach(0 ..< 7, id: \.self) { index in Text(weekday(index, engine: engine)).font(.caption2).foregroundStyle(.secondary) }
+                                let blanks = (engine.gregorian.component(.weekday, from: days[0]) - engine.gregorian.firstWeekday + 7) % 7
+                                ForEach(0 ..< blanks, id: \.self) { _ in Color.clear.frame(height: 48).accessibilityHidden(true) }
                                 ForEach(days, id: \.self) { date in dayButton(date, engine: engine, proxy: proxy) }
                             }
-                        }.frame(maxHeight: 240)
-                    } else {
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 7), spacing: 8) {
-                            ForEach(0 ..< 7, id: \.self) { index in Text(weekday(index, engine: engine)).font(.caption2).foregroundStyle(.secondary) }
-                            let blanks = (engine.gregorian.component(.weekday, from: days[0]) - engine.gregorian.firstWeekday + 7) % 7
-                            ForEach(0 ..< blanks, id: \.self) { _ in Color.clear.frame(height: 48).accessibilityHidden(true) }
-                            ForEach(days, id: \.self) { date in dayButton(date, engine: engine, proxy: proxy) }
                         }
                     }
                 }
@@ -65,23 +86,28 @@ struct CalendarScreen: View {
                             let events = model.content.events(on: day)
                             let isToday = engine.gregorian.isDate(date, inSameDayAs: now)
                             if !events.isEmpty {
-                                HStack(alignment: .top, spacing: 14) {
-                                    VStack(spacing: 3) {
-                                        Text(day.day, format: .number).font(.title2.weight(.semibold))
-                                        Text(date.formatted(.dateTime.day().month(.abbreviated).inZone(model.zone)))
-                                            .font(.caption2).foregroundStyle(.secondary)
-                                    }.frame(minWidth: 52)
-                                    VStack(alignment: .leading, spacing: 12) {
-                                        ForEach(events) { event in
-                                            VStack(alignment: .leading, spacing: 2) {
-                                                Text(event.title(locale: locale))
-                                                if let year = event.yearText(locale: locale) {
-                                                    Text(year).font(.caption).foregroundStyle(.secondary)
-                                                }
+                                VStack(alignment: .leading, spacing: 14) {
+                                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                                        Text(day.day, format: .number)
+                                            .font(.title.weight(.bold)).monospacedDigit()
+                                        Text(date.formatted(.dateTime.weekday(.abbreviated).locale(locale).inZone(model.zone)))
+                                            .font(.headline)
+                                        Spacer(minLength: 0)
+                                    }
+                                    ForEach(events) { event in
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(event.title(locale: locale))
+                                                .font(.body)
+                                            if let year = event.yearText(locale: locale) {
+                                                Text(verbatim: day.day.formatted(.number.locale(locale)) + " " + monthTitle(day.month, engine: engine, includeYear: false) + " " + year)
+                                                    .font(.caption).foregroundStyle(.secondary)
                                             }
-                                            .frame(maxWidth: .infinity, alignment: .leading)
                                         }
-                                    }.frame(maxWidth: .infinity, alignment: .leading)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    }
+                                    Text(date.formatted(.dateTime.day().month(.wide).locale(locale).inZone(model.zone)))
+                                        .font(.caption2).foregroundStyle(.secondary)
                                 }
                                 .padding(16)
                                 .background(isToday ? Color.accentColor.opacity(0.08) : Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 16))
@@ -131,8 +157,8 @@ struct CalendarScreen: View {
         #endif
     }
 
-    private func monthTitle(_ month: HijriMonth, engine: CalendarEngine) -> String {
-        let f = DateFormatter(); f.locale = locale; f.calendar = engine.baseline; f.timeZone = engine.timeZone; f.dateFormat = "MMMM y"
+    private func monthTitle(_ month: HijriMonth, engine: CalendarEngine, includeYear: Bool = true) -> String {
+        let f = DateFormatter(); f.locale = locale; f.calendar = engine.baseline; f.timeZone = engine.timeZone; f.dateFormat = includeYear ? "MMMM y" : "MMMM"
         return f.string(from: engine.baselineStart(month))
     }
 
