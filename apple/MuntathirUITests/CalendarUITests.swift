@@ -1,6 +1,37 @@
 import XCTest
 
 final class CalendarUITests: XCTestCase {
+    @MainActor private func openAdjustments(_ app: XCUIApplication) {
+        app.buttons["settings"].firstMatch.tap()
+        let link = app.buttons["month-adjustments"]
+        if !link.isHittable { app.swipeUp() }
+        link.tap()
+    }
+
+    @MainActor func testSettingsMonthAdjustmentSaveResetAndDiscard() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        openAdjustments(app)
+        let stepper = app.steppers["month-offset"]
+        let original = stepper.label
+        stepper.buttons.element(boundBy: 0).tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.buttons["month-adjustments"].tap()
+        XCTAssertEqual(stepper.label, original)
+        app.buttons["Next month"].tap()
+        app.buttons["Previous month"].tap()
+        XCTAssertEqual(stepper.label, original)
+        stepper.buttons.element(boundBy: 0).tap()
+        let changed = stepper.label
+        app.buttons["Save"].tap()
+        app.buttons["month-adjustments"].tap()
+        XCTAssertEqual(stepper.label, changed)
+        app.buttons["Reset adjustment"].tap()
+        app.buttons["month-adjustments"].tap()
+        XCTAssertEqual(stepper.label, original)
+    }
+
     @MainActor func testCalendarCollapseSelectionAndEventDates() throws {
         try checkCalendar(accessibilityText: false)
     }
@@ -55,11 +86,12 @@ final class CalendarUITests: XCTestCase {
             title.tap()
             assertEventDates(app, calendar: calendar, locale: locale, date: firstDay)
 
-            app.buttons[language == "ar" ? "تعديل هذا الشهر" : "Adjust this month"].tap()
+            openAdjustments(app)
             let stepper = app.steppers["month-offset"]
             XCTAssertTrue(stepper.waitForExistence(timeout: 5))
             stepper.buttons.element(boundBy: 1).tap()
             app.buttons[language == "ar" ? "حفظ" : "Save"].tap()
+            app.buttons[language == "ar" ? "تم" : "Done"].tap()
             XCTAssertTrue(title.waitForExistence(timeout: 5))
             title.tap()
             eventDay.tap()
@@ -123,14 +155,14 @@ extension CalendarUITests {
             ("zh-Hans", "日历", "调整本月", "调整月份"),
             ("zh-Hant", "行事曆", "調整本月", "調整月份"),
         ]
-        for (language, calendar, adjust, title) in languages {
+        for (language, calendar, _, title) in languages {
             let app = XCUIApplication()
             app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(\(language))", "-AppleLocale", language]
             app.launch()
             let tab = app.descendants(matching: .any).matching(identifier: calendar).firstMatch
             XCTAssertTrue(tab.waitForExistence(timeout: 10), language)
             tab.tap()
-            app.buttons[adjust].tap()
+            openAdjustments(app)
             XCTAssertTrue(app.navigationBars[title].waitForExistence(timeout: 5), language)
             XCTAssertTrue(app.steppers["month-offset"].exists, language)
             let attachment = XCTAttachment(screenshot: app.screenshot())
@@ -166,7 +198,7 @@ extension CalendarUITests {
 
 extension CalendarUITests {
     @MainActor func testMonthAdjustmentAtAccessibilityTextSize() {
-        for (language, calendar, adjust, save) in [
+        for (language, calendar, _, save) in [
             ("de", "Kalender", "Diesen Monat anpassen", "Sichern"),
             ("ur", "تقویم", "یہ مہینہ درست کریں", "محفوظ کریں"),
         ] {
@@ -177,7 +209,7 @@ extension CalendarUITests {
             let tab = app.descendants(matching: .any).matching(identifier: calendar).firstMatch
             XCTAssertTrue(tab.waitForExistence(timeout: 10))
             tab.tap()
-            app.buttons[adjust].tap()
+            openAdjustments(app)
             XCTAssertTrue(app.steppers["month-offset"].waitForExistence(timeout: 5))
             XCTAssertTrue(app.steppers["month-offset"].isHittable)
             let attachment = XCTAttachment(screenshot: app.screenshot())
@@ -185,7 +217,7 @@ extension CalendarUITests {
             attachment.lifetime = .keepAlways
             add(attachment)
             app.buttons[save].tap()
-            XCTAssertTrue(app.navigationBars[calendar].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.buttons["month-adjustments"].waitForExistence(timeout: 5))
             app.terminate()
         }
     }

@@ -8,7 +8,6 @@ struct CalendarScreen: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var now: Date
     @State private var monthOffset = 0
-    @State private var correcting = false
     @State private var calendarExpanded = false
     init() {
         #if DEBUG
@@ -23,6 +22,8 @@ struct CalendarScreen: View {
         let engine = model.engine
         let month = engine.resolve(now).month.advanced(monthOffset)
         let days = engine.days(in: month)
+        let today = engine.gregorian.startOfDay(for: now)
+        let nextEvent = model.content.nextEventDate(onOrAfter: today, engine: engine)
         ScrollViewReader { proxy in
             VStack(spacing: 12) {
                 Card {
@@ -85,6 +86,8 @@ struct CalendarScreen: View {
                             let day = engine.resolve(date)
                             let events = model.content.events(on: day)
                             let isToday = engine.gregorian.isDate(date, inSameDayAs: now)
+                            let isPast = date < today
+                            let isNext = date == nextEvent
                             if !events.isEmpty {
                                 VStack(alignment: .leading, spacing: 14) {
                                     HStack(alignment: .firstTextBaseline, spacing: 10) {
@@ -93,6 +96,18 @@ struct CalendarScreen: View {
                                         Text(date.formatted(.dateTime.weekday(.wide).locale(locale).inZone(model.zone)))
                                             .font(.headline)
                                         Spacer(minLength: 0)
+                                    }
+                                    if isNext {
+                                        Group {
+                                            if isToday {
+                                                Text("Today")
+                                            } else {
+                                                Text(verbatim: Self.countdownText(days: engine.distance(today, date), locale: locale))
+                                            }
+                                        }
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(Color.accentColor)
+                                        .accessibilityIdentifier("calendar-countdown")
                                     }
                                     ForEach(events) { event in
                                         VStack(alignment: .leading, spacing: 4) {
@@ -109,11 +124,12 @@ struct CalendarScreen: View {
                                     Text(date.formatted(.dateTime.day().month(.wide).locale(locale).inZone(model.zone)))
                                         .font(.caption2).foregroundStyle(.secondary)
                                 }
+                                .foregroundStyle(isPast ? Color.secondary : Color.primary)
                                 .padding(16)
-                                .background(isToday ? Color.accentColor.opacity(0.08) : Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 16))
+                                .background(isNext ? Color.accentColor.opacity(0.08) : Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 16))
                                 .overlay {
                                     RoundedRectangle(cornerRadius: 16)
-                                        .strokeBorder(isToday ? Color.accentColor : .clear, lineWidth: 1.5)
+                                        .strokeBorder(isNext ? Color.accentColor : .clear, lineWidth: 1.5)
                                 }
                                 .accessibilityAddTraits(isToday ? .isSelected : [])
                                 .id(CivilDate(date, in: model.zone))
@@ -135,18 +151,20 @@ struct CalendarScreen: View {
         .frame(maxWidth: .infinity)
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Calendar")
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Adjust this month", systemImage: "calendar.badge.clock") { correcting = true }
-            }
-        }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in now = currentDate }
         .onChange(of: scenePhase) {
             _, phase in if phase == .active {
                 now = currentDate
             }
         }
-        .sheet(isPresented: $correcting) { CorrectionView(month: month, offset: model.preferences.monthOffsets.first { $0.month == month }?.days ?? 0) }
+    }
+
+    static func countdownText(days: Int, locale: Locale) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.locale = locale
+        formatter.dateTimeStyle = .numeric
+        formatter.unitsStyle = .full
+        return formatter.localizedString(from: DateComponents(day: days))
     }
 
     private var currentDate: Date {
@@ -189,55 +207,5 @@ struct CalendarScreen: View {
             .accessibilityValue(isToday ? String(localized: "Today") : "")
             .accessibilityAddTraits(isToday ? .isSelected : [])
             .accessibilityIdentifier("calendar-day-\(day.day)")
-    }
-}
-
-struct CorrectionView: View {
-    @Environment(AppModel.self) private var model
-    @Environment(\.dismiss) private var dismiss
-    let month: HijriMonth
-    @State var offset: Int
-    @State private var error: String?
-
-    private var start: Date {
-        let source = (try? CalendarEngine(timeZone: model.zone, confirmed: model.confirmations.map(\.correction)))
-            ?? (try! CalendarEngine(timeZone: model.zone))
-        return source.addingDays(-offset, to: source.start(of: month))
-    }
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                Text("Hijri month: \(month.month, format: .number) / \(month.year, format: .number.grouping(.never))")
-                Stepper(value: $offset, in: -2 ... 2) {
-                    LabeledContent(
-                        "Day adjustment",
-                        value: offset,
-                        format: .number.sign(strategy: .always(includingZero: false))
-                    )
-                }
-                .accessibilityIdentifier("month-offset")
-                LabeledContent("Month starts", value: start.formatted(.dateTime.day().month(.wide).year().inZone(model.zone)))
-                if let error {
-                    Text(error).foregroundStyle(.red)
-                }
-                Button("Reset adjustment", role: .destructive) { save(0) }
-            }
-            .navigationTitle("Adjust month")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel", systemImage: "xmark") { dismiss() }.labelStyle(.iconOnly)
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save", systemImage: "checkmark") { save(offset) }.labelStyle(.iconOnly)
-                }
-            }
-        }
-    }
-
-    private func save(_ days: Int) {
-        do { try model.correct(month: month, offset: days); dismiss() }
-        catch { self.error = error.localizedDescription }
     }
 }

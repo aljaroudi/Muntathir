@@ -87,7 +87,7 @@ struct ContentView: View {
         ToolbarItem(placement: .topBarTrailing) {
             Button("Settings", systemImage: "gearshape") {
                 settings = true
-            }
+            }.accessibilityIdentifier("settings")
         }
     }
 }

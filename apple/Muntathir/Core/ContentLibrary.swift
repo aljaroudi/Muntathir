@@ -70,6 +70,17 @@ struct ContentLibrary: Sendable {
         events.filter { $0.month == day.month.month && $0.day == day.day }
     }
 
+    func nextEventDate(onOrAfter date: Date, engine: CalendarEngine) -> Date? {
+        let today = engine.gregorian.startOfDay(for: date)
+        let month = engine.resolve(today).month
+        return (0 ... 12).lazy.compactMap { offset -> Date? in
+            let candidate = month.advanced(offset)
+            return engine.days(in: candidate).first {
+                $0 >= today && !events(on: engine.resolve($0)).isEmpty
+            }
+        }.first
+    }
+
     static func verseDay(on date: Date, engine: CalendarEngine, prayerSettings: WidgetPrayerSettings? = nil) -> ResolvedDay {
         let sunset = prayerSettings?.sunset(on: date)
         return engine.resolve(sunset.map { date >= $0 } == true ? engine.addingDays(1, to: date) : date)

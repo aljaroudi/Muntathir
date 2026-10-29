@@ -5,6 +5,14 @@ struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale
+    private var settingsDate: Date {
+        #if DEBUG
+            CaptureClock()?.start ?? .now
+        #else
+            .now
+        #endif
+    }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -81,10 +89,15 @@ struct SettingsView: View {
                         LabeledContent("Country", value: locale.localizedString(forRegionCode: "SA") ?? "SA")
                             .accessibilityIdentifier("calendar-country")
                     }
+                    NavigationLink("Month adjustments") {
+                        let month = model.engine.resolve(settingsDate).month
+                        MonthAdjustmentsView(month: month, offset: model.preferences.monthOffsets.first { $0.month == month }?.days ?? 0)
+                    }
+                    .accessibilityIdentifier("month-adjustments")
                 } header: {
                     Text("Calendar corrections")
                 } footer: {
-                    Text("Without a published announcement, dates use the system calendar. Adjust individual months in Calendar.")
+                    Text("Without a published announcement, dates use the system calendar. Adjust individual months in Month adjustments.")
                     if let error = model.error {
                         Text(error).foregroundStyle(.red)
                     }
@@ -224,7 +237,7 @@ struct LicensesView: View {
     var body: some View {
         List {
             Section {
-                NavigationLink("Adhan Swift 1.5.0") {
+                NavigationLink {
                     ScrollView {
                         Text(license("Adhan-LICENSE"))
                             .environment(\.layoutDirection, .leftToRight)
@@ -234,6 +247,8 @@ struct LicensesView: View {
                             .padding()
                     }
                     .navigationTitle("Adhan license")
+                } label: {
+                    Text(verbatim: "Adhan Swift 1.5.0")
                 }
             } header: {
                 Text("Calculations")
