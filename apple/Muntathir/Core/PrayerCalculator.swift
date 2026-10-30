@@ -28,9 +28,9 @@ enum PrayerMethod: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .jafari: String(localized: "Jafari - Qum")
-        case .tehran: String(localized: "Jafari - Tehran")
-        case .ummAlQura: String(localized: "Umm al-Qura — Makkah")
+        case .jafari: String(localized: "Jafari, Qum")
+        case .tehran: String(localized: "Jafari, Tehran")
+        case .ummAlQura: String(localized: "Umm al-Qura")
         }
     }
 }
@@ -70,7 +70,7 @@ enum PrayerName: String, Codable, CaseIterable, Identifiable, Sendable {
     }
 
     var isRequired: Bool {
-        self == .fajr || self == .dhuhr || self == .maghrib
+        [.fajr, .dhuhr, .maghrib].contains(self)
     }
 
     var isPrayer: Bool {

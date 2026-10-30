@@ -84,18 +84,38 @@ struct PrayerWidgetView: View {
 
     private var compactContent: some View {
         let upcoming = entry.settings?.upcomingPrayers(after: entry.date) ?? []
-        return VStack(alignment: .leading, spacing: 6) {
+        return ViewThatFits {
+            prayerContent(upcoming, rows: 2, countdown: true, symbols: true).fixedSize()
+            prayerContent(upcoming, rows: 1, countdown: true, symbols: true).fixedSize()
+            prayerContent(upcoming, rows: 0, countdown: true, symbols: true).fixedSize()
+            prayerContent(upcoming, rows: 0, countdown: false, symbols: true).fixedSize()
+            prayerContent(upcoming, rows: 0, countdown: false, symbols: false)
+        }
+    }
+
+    private func prayerContent(_ upcoming: [PrayerMoment], rows: Int, countdown: Bool, symbols: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
             if let first = upcoming.first {
-                VStack(alignment: .leading, spacing: 1) {
-                    Label(first.name.title, systemImage: first.name.symbol).font(.subheadline.weight(.semibold)).lineLimit(1)
-                    time(first.date).font(.title2.weight(.semibold)).widgetAccentable()
-                    Text(PrayerCountdownFormat(target: first.date, locale: locale).format(entry.date))
-                        .font(.caption).monospacedDigit().lineLimit(1)
-                }.accessibilityElement(children: .combine)
-                Spacer(minLength: 0)
-                ForEach(Array(upcoming.dropFirst().prefix(2))) { prayer in
+                VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 4) {
-                        Label(prayer.name.title, systemImage: prayer.name.symbol).lineLimit(1).minimumScaleFactor(0.8)
+                        if symbols { Image(systemName: first.name.symbol).accessibilityHidden(true) }
+                        Text(first.name.title)
+                    }
+                    .font(.subheadline.weight(.semibold)).lineLimit(1)
+                    time(first.date)
+                        .font(symbols ? .title2.weight(.semibold) : .body.weight(.semibold))
+                        .minimumScaleFactor(symbols ? 1 : 0.7)
+                        .widgetAccentable()
+                    if countdown {
+                        Text(PrayerCountdownFormat(target: first.date, locale: locale).format(entry.date))
+                            .font(.caption).monospacedDigit().lineLimit(1)
+                    }
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text("\(Text(first.name.title)) \(Text(first.date, format: .dateTime.hour().minute().locale(locale).inZone(entry.zone))) \(Text(PrayerCountdownFormat(target: first.date, locale: locale).format(entry.date)))"))
+                ForEach(Array(upcoming.dropFirst().prefix(rows))) { prayer in
+                    HStack(spacing: 8) {
+                        Label(prayer.name.title, systemImage: prayer.name.symbol).lineLimit(1)
                         Spacer(minLength: 0)
                         time(prayer.date)
                     }.font(.caption).accessibilityElement(children: .combine)
@@ -105,8 +125,8 @@ struct PrayerWidgetView: View {
     }
 
     private func time(_ date: Date) -> some View {
-        Text(date.formatted(.dateTime.hour().minute().inZone(entry.zone)))
-            .monospacedDigit().lineLimit(1).minimumScaleFactor(0.8)
+        Text(date.formatted(.dateTime.hour().minute().locale(locale).inZone(entry.zone)))
+            .monospacedDigit().lineLimit(1)
     }
 }
 
@@ -130,6 +150,8 @@ struct CombinedPrayerWidget: Widget {
     var body: some Widget {
         CombinedPrayerWidget()
         IslamicCalendarWidget()
+        WeatherDateWidget()
+        CalendarWeatherWidget()
         NextPrayerWidget()
         PrayerCountdownWidget()
         DailyAyahWidget()
@@ -168,36 +190,30 @@ private struct PrayerSkyBackground: View {
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        GeometryReader { geometry in
-            let bounds = CGRect(x: 12, y: 8, width: max(0, geometry.size.width - 24), height: max(0, geometry.size.height * 0.55))
-            ZStack {
-                Color(.systemBackground)
-                LinearGradient(colors: colors, startPoint: .top, endPoint: .bottom)
-                if let progress = sun.daylightProgress {
-                    Path { path in
-                        for step in 0 ... 60 {
-                            let point = SolarArcLayout.point(progress: Double(step) / 60, in: bounds)
-                            if step == 0 {
-                                path.move(to: point)
-                            } else {
-                                path.addLine(to: point)
-                            }
-                        }
-                    }.stroke(.primary.opacity(0.18), style: StrokeStyle(lineWidth: 1, dash: [2, 4]))
-                    Circle().fill(.yellow.opacity(0.55))
-                        .frame(width: 22, height: 22)
-                        .blur(radius: 2)
-                        .position(SolarArcLayout.point(progress: progress, in: bounds))
-                }
-            }
-        }
-        .environment(\.layoutDirection, .leftToRight)
-        .accessibilityHidden(true)
+        LinearGradient(colors: colors, startPoint: .top, endPoint: .bottom)
+            .accessibilityHidden(true)
     }
 
     private var colors: [Color] {
         let tint: Color = sun.elevation < -6 ? .indigo : sun.elevation < 10 ? .orange : .cyan
         let base = Color(.systemBackground)
         return [tint.opacity(colorScheme == .dark ? 0.25 : 0.14), base]
+    }
+}
+
+private struct PrayerWidgetsTextSizePreviews: PreviewProvider {
+    static var previews: some View {
+        ForEach([WidgetFamily.systemSmall], id: \.self) { family in
+            ForEach([DynamicTypeSize.large, .xxxLarge, .accessibility3], id: \.self) { size in
+                ForEach(["en_US", "ar_SA"], id: \.self) { language in
+                    PrayerWidgetView(entry: WidgetPreviewData.entry)
+                        .environment(\.dynamicTypeSize, size)
+                        .environment(\.locale, Locale(identifier: language))
+                        .environment(\.layoutDirection, language == "ar_SA" ? .rightToLeft : .leftToRight)
+                        .previewContext(WidgetPreviewContext(family: family))
+                        .previewDisplayName("\(language) · \(size)")
+                }
+            }
+        }
     }
 }

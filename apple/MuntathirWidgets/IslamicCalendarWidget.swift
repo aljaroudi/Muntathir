@@ -1,4 +1,5 @@
 import SwiftUI
+import AppIntents
 import WeatherKit
 import WidgetKit
 
@@ -7,11 +8,18 @@ struct IslamicDateEntry: TimelineEntry {
     var settings = WidgetCalendarSettings()
     var location: SavedLocation?
     var weather: WeatherReading?
-    var attributionLight: Data?
-    var attributionDark: Data?
 
     var currentWeather: WeatherReading? {
         weather.flatMap { $0.isCurrent(at: date) ? $0 : nil }
+    }
+
+    var weatherTimeline: Timeline<IslamicDateEntry> {
+        let dates = settings.timelineDates(from: date)
+            + [900.0, 1800, 3600].map { date.addingTimeInterval($0) }
+        let entries = Set(dates).sorted().map {
+            IslamicDateEntry(date: $0, settings: settings, location: location, weather: weather)
+        }
+        return Timeline(entries: entries, policy: .after(date.addingTimeInterval(1800)))
     }
 }
 
@@ -21,49 +29,13 @@ struct IslamicDateProvider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping @Sendable (IslamicDateEntry) -> Void) {
-        if context.isPreview {
-            completion(Self.preview())
-        } else {
-            let includeWeather = context.family == .systemSmall
-            Task { await completion(entry(includeWeather: includeWeather)) }
-        }
+        completion(context.isPreview ? Self.preview() : IslamicDateEntry(date: .now, settings: .read()))
     }
 
-    func getTimeline(in context: Context, completion: @escaping @Sendable (Timeline<IslamicDateEntry>) -> Void) {
-        let includeWeather = context.family == .systemSmall
-        Task {
-            let entry = await entry(includeWeather: includeWeather)
-            var dates = entry.settings.timelineDates(from: entry.date)
-            if includeWeather {
-                // Recompute the sky while waiting for WidgetKit's next permitted refresh.
-                dates += [900.0, 1800, 3600].map { entry.date.addingTimeInterval($0) }
-            }
-            completion(Timeline(entries: Set(dates).sorted().map { date in
-                IslamicDateEntry(date: date, settings: entry.settings, location: entry.location,
-                                 weather: entry.weather, attributionLight: entry.attributionLight,
-                                 attributionDark: entry.attributionDark)
-            }, policy: includeWeather ? .after(entry.date.addingTimeInterval(1800)) : .atEnd))
-        }
-    }
-
-    private func entry(includeWeather: Bool) async -> IslamicDateEntry {
-        let location = WidgetPrayerStore.read()?.location
-        var entry = IslamicDateEntry(date: .now, settings: .read(), location: location)
-        if includeWeather, let location {
-            entry.weather = await SharedWeatherStore.refresh(for: location)
-            if let attribution = entry.weather?.attribution {
-                async let light = mark(attribution.combinedMarkLightURL)
-                async let dark = mark(attribution.combinedMarkDarkURL)
-                entry.attributionLight = await light
-                entry.attributionDark = await dark
-            }
-        }
-        return entry
-    }
-
-    private func mark(_ url: URL) async -> Data? {
-        // WidgetKit archives views; download images in the provider, not AsyncImage.
-        try? await URLSession.shared.data(for: URLRequest(url: url, timeoutInterval: 10)).0
+    func getTimeline(in _: Context, completion: @escaping @Sendable (Timeline<IslamicDateEntry>) -> Void) {
+        let settings = WidgetCalendarSettings.read()
+        let entries = settings.timelineDates(from: .now).map { IslamicDateEntry(date: $0, settings: settings) }
+        completion(Timeline(entries: entries, policy: .atEnd))
     }
 
     static func preview(condition: WeatherCondition = .clear) -> IslamicDateEntry {
@@ -81,7 +53,6 @@ struct IslamicDateWidgetView: View {
     let entry: IslamicDateEntry
     @Environment(\.widgetFamily) private var family
     @Environment(\.locale) private var locale
-    @Environment(\.widgetRenderingMode) private var renderingMode
 
     var body: some View {
         let engine = entry.settings.engine
@@ -93,34 +64,38 @@ struct IslamicDateWidgetView: View {
             } else if family == .systemSmall {
                 calendarCard
             } else {
-                VStack(spacing: 0) {
-                    Text(day.day, format: .number)
-                        .font(.title2.weight(.semibold))
-                        .widgetAccentable()
-                    Text(month)
-                        .font(.caption)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(family == .accessoryCircular ? 2 : 1)
-                        .minimumScaleFactor(0.7)
+                ViewThatFits {
+                    VStack(spacing: 2) {
+                        Text(day.day, format: .number)
+                            .font(.title2.weight(.semibold))
+                            .widgetAccentable()
+                        Text(month)
+                            .font(.caption)
+                            .multilineTextAlignment(.center)
+                    }
+                    .fixedSize(horizontal: false, vertical: true)
+                    Text("\(day.day.formatted(.number.locale(locale))) \(month)")
+                        .font(.headline).multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                    VStack(spacing: 0) {
+                        Text(day.day, format: .number)
+                            .font(.headline).widgetAccentable()
+                        Text(month)
+                            .font(.caption2)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("\(day.day.formatted(.number.locale(locale))) \(month)")
             }
         }
-        .containerBackground(for: .widget) {
-            if family == .systemSmall {
-                calendarCard.surface
-            } else {
-                Color(.systemBackground)
-            }
-        }
+        .containerBackground(.background, for: .widget)
     }
 
-    private var calendarCard: CalendarWeatherCard {
-        CalendarWeatherCard(date: entry.date, settings: entry.settings, location: entry.location,
-                            weather: entry.currentWeather, attributionLight: entry.attributionLight,
-                            attributionDark: entry.attributionDark, fullColor: renderingMode == .fullColor)
+    private var calendarCard: CalendarCard {
+        CalendarCard(date: entry.date, settings: entry.settings)
     }
 
     private func monthName(_ month: HijriMonth, engine: CalendarEngine) -> String {
@@ -139,10 +114,77 @@ struct IslamicCalendarWidget: Widget {
             IslamicDateWidgetView(entry: $0)
         }
         .configurationDisplayName("Islamic calendar")
-        .description("Hijri and Gregorian dates with current weather.")
+        .description("Hijri and Gregorian dates.")
         .supportedFamilies([.systemSmall, .accessoryInline, .accessoryCircular, .accessoryRectangular])
     }
 }
+
+struct WeatherDateWidget: Widget {
+    var body: some WidgetConfiguration {
+        AppIntentConfiguration(kind: "WeatherDate", intent: WeatherDateConfiguration.self,
+                               provider: WeatherDateProvider()) { entry in
+            WeatherDateCard(date: entry.reading.date, settings: entry.reading.settings,
+                            weather: entry.reading.currentWeather, usesHijriDate: entry.calendar == .hijri)
+                .containerBackground(.background, for: .widget)
+        }
+        .configurationDisplayName("Weather")
+        .description("Current weather with the weekday and date.")
+        .supportedFamilies([.systemSmall])
+    }
+}
+
+enum WeatherDateCalendar: String, AppEnum {
+    case hijri, gregorian
+    static var typeDisplayRepresentation: TypeDisplayRepresentation { "Calendar" }
+    static var caseDisplayRepresentations: [Self: DisplayRepresentation] {
+        [.hijri: "Hijri", .gregorian: "Gregorian"]
+    }
+}
+
+struct WeatherDateConfiguration: WidgetConfigurationIntent {
+    static var title: LocalizedStringResource { "Weather" }
+    @Parameter(title: "Calendar", default: .hijri) var calendar: WeatherDateCalendar
+}
+
+struct WeatherDateEntry: TimelineEntry {
+    let reading: IslamicDateEntry
+    var calendar: WeatherDateCalendar = .hijri
+    var date: Date { reading.date }
+}
+
+struct WeatherDateProvider: AppIntentTimelineProvider {
+    static func weatherEntry() async -> IslamicDateEntry {
+        let location = WidgetPrayerStore.read()?.location
+        var entry = IslamicDateEntry(date: .now, settings: .read(), location: location)
+        if let location {
+            entry.weather = await SharedWeatherStore.refresh(for: location)
+        }
+        return entry
+    }
+
+    func placeholder(in context: Context) -> WeatherDateEntry {
+        WeatherDateEntry(reading: IslamicDateProvider.preview())
+    }
+
+    func snapshot(for configuration: WeatherDateConfiguration, in context: Context) async -> WeatherDateEntry {
+        let reading = context.isPreview ? IslamicDateProvider.preview()
+            : await Self.weatherEntry()
+        return WeatherDateEntry(reading: reading, calendar: configuration.calendar)
+    }
+
+    func timeline(for configuration: WeatherDateConfiguration, in context: Context) async -> Timeline<WeatherDateEntry> {
+        let reading = await Self.weatherEntry()
+        let timeline = reading.weatherTimeline
+        let entries = timeline.entries.map {
+            WeatherDateEntry(reading: $0, calendar: configuration.calendar)
+        }
+        return Timeline(entries: entries, policy: timeline.policy)
+    }
+}
+
+#Preview("Weather", as: .systemSmall) {
+    WeatherDateWidget()
+} timeline: { WeatherDateEntry(reading: IslamicDateProvider.preview()) }
 
 #Preview("Calendar · Small", as: .systemSmall) {
     IslamicCalendarWidget()
@@ -160,10 +202,57 @@ struct IslamicCalendarWidget: Widget {
     IslamicCalendarWidget()
 } timeline: { IslamicDateEntry(date: .now) }
 
-#Preview("Calendar · Rain", as: .systemSmall) {
-    IslamicCalendarWidget()
-} timeline: { IslamicDateProvider.preview(condition: .rain) }
+private struct IslamicCalendarWidgetTextSizePreviews: PreviewProvider {
+    static var previews: some View {
+        ForEach([WidgetFamily.systemSmall, .accessoryInline, .accessoryCircular, .accessoryRectangular], id: \.self) { family in
+            ForEach([DynamicTypeSize.large, .xxxLarge, .accessibility3], id: \.self) { size in
+                ForEach(["en_US", "ar_SA"], id: \.self) { language in
+                    IslamicDateWidgetView(entry: IslamicDateProvider.preview())
+                        .environment(\.dynamicTypeSize, size)
+                        .environment(\.locale, Locale(identifier: language))
+                        .environment(\.layoutDirection, language == "ar_SA" ? .rightToLeft : .leftToRight)
+                        .previewContext(WidgetPreviewContext(family: family))
+                        .previewDisplayName("\(language) · \(size)")
+                }
+            }
+        }
+    }
+}
 
-#Preview("Calendar · No weather", as: .systemSmall) {
-    IslamicCalendarWidget()
-} timeline: { IslamicDateEntry(date: .now) }
+struct CalendarWeatherProvider: TimelineProvider {
+    func placeholder(in _: Context) -> IslamicDateEntry { IslamicDateProvider.preview() }
+
+    func getSnapshot(in context: Context, completion: @escaping @Sendable (IslamicDateEntry) -> Void) {
+        if context.isPreview {
+            completion(IslamicDateProvider.preview())
+        } else {
+            Task { completion(await WeatherDateProvider.weatherEntry()) }
+        }
+    }
+
+    func getTimeline(in _: Context, completion: @escaping @Sendable (Timeline<IslamicDateEntry>) -> Void) {
+        Task {
+            let reading = await WeatherDateProvider.weatherEntry()
+            completion(reading.weatherTimeline)
+        }
+    }
+}
+
+struct CalendarWeatherWidget: Widget {
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: "CalendarWeather", provider: CalendarWeatherProvider()) { entry in
+            CalendarWeatherCard(date: entry.date, settings: entry.settings, weather: entry.currentWeather)
+                .containerBackground(for: .widget) {
+                    Color(.systemBackground)
+                    LinearGradient(colors: [.cyan.opacity(0.08), .clear], startPoint: .topTrailing, endPoint: .bottomLeading)
+                }
+        }
+        .configurationDisplayName("Calendar & Weather")
+        .description("Hijri and Gregorian dates with current weather.")
+        .supportedFamilies([.systemSmall])
+    }
+}
+
+#Preview("Calendar & Weather", as: .systemSmall) {
+    CalendarWeatherWidget()
+} timeline: { IslamicDateProvider.preview(condition: .rain) }

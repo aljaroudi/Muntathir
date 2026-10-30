@@ -10,11 +10,7 @@ struct Preferences: Codable, Equatable, Sendable {
     var showFeelsLikeTemperature = false
     var announcementNotifications = false
     var timeSensitiveNotifications = true
-    var prayerSounds: [String: PrayerAlertSound] = [:]
-
-    func sound(for prayer: PrayerName) -> PrayerAlertSound {
-        prayerSounds[prayer.rawValue] ?? .chime
-    }
+    var notificationSound: PrayerAlertSound = .chime
 
     var selectedSourceID: String? = CalendarSource.middleEast
     var monthOffsets: [MonthOffset] = []
@@ -24,7 +20,7 @@ struct Preferences: Codable, Equatable, Sendable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case timeSensitiveNotifications, prayerSounds
+        case timeSensitiveNotifications, notificationSound
         case showFeelsLikeTemperature, savedLocation, prayerMethod, imsakMinutes, enabledPrayers, announcementNotifications, selectedSourceID, monthOffsets, hiddenPrayers
     }
 
@@ -38,7 +34,7 @@ struct Preferences: Codable, Equatable, Sendable {
         enabledPrayers = try c.decodeIfPresent(Set<PrayerName>.self, forKey: .enabledPrayers) ?? [.fajr, .dhuhr, .maghrib]
         announcementNotifications = try c.decodeIfPresent(Bool.self, forKey: .announcementNotifications) ?? false
         timeSensitiveNotifications = try c.decodeIfPresent(Bool.self, forKey: .timeSensitiveNotifications) ?? true
-        prayerSounds = try c.decodeIfPresent([String: PrayerAlertSound].self, forKey: .prayerSounds) ?? [:]
+        notificationSound = try c.decodeIfPresent(PrayerAlertSound.self, forKey: .notificationSound) ?? .chime
         let sourceID = try c.decodeIfPresent(String.self, forKey: .selectedSourceID)
         selectedSourceID = CalendarSource.method(for: sourceID) == .system ? nil : sourceID
         // Absolute month-start overrides cannot be migrated to source-relative offsets.
@@ -201,7 +197,7 @@ struct Preferences: Codable, Equatable, Sendable {
         syncWidgets()
         let currentMonth = engine.resolve(Date()).month
         let relevant = matching.filter { $0.month >= currentMonth && $0.month <= currentMonth.advanced(1) }
-        await notifications.announce(relevant, enabled: preferences.announcementNotifications)
+        await notifications.announce(relevant, enabled: preferences.announcementNotifications, sound: preferences.notificationSound)
     }
 
     @discardableResult func refreshInBackground() async -> Bool {

@@ -1,1 +1,52 @@
-{"schemaVersion":1,"announcements":[]}
+{
+  "schemaVersion": 1,
+  "announcements": [
+    {
+      "id": "naked-eye-middle-east-1448-05",
+      "revision": 1,
+      "method": "nakedEye",
+      "sourceID": "naked-eye-middle-east",
+      "coverage": {
+        "countries": [
+          "SA",
+          "KW",
+          "BH",
+          "OM",
+          "AE",
+          "QA"
+        ],
+        "polygons": []
+      },
+      "month": {
+        "year": 1448,
+        "month": 5
+      },
+      "start": {
+        "year": 2026,
+        "month": 10,
+        "day": 13
+      }
+    },
+    {
+      "id": "government-SA-1448-05",
+      "revision": 1,
+      "method": "government",
+      "sourceID": "government-SA",
+      "coverage": {
+        "countries": [
+          "SA"
+        ],
+        "polygons": []
+      },
+      "month": {
+        "year": 1448,
+        "month": 5
+      },
+      "start": {
+        "year": 2026,
+        "month": 10,
+        "day": 13
+      }
+    }
+  ]
+}

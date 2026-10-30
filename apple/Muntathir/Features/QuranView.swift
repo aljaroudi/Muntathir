@@ -184,36 +184,8 @@ struct QuranTranslationPicker: View {
                           systemImage: symbol(for: translation.id))
                 }.accessibilityIdentifier("quran-translation-option-\(translation.id)")
             }
-            if let status = store.statuses[store.activeID] {
-                switch status {
-                case let .downloading(fraction):
-                    if let fraction {
-                        Text("Downloading \(fraction, format: .percent.precision(.fractionLength(0)))")
-                    } else {
-                        Text("Downloading…")
-                    }
-                case .failed:
-                    Text("Translation unavailable")
-                    Button("Try again") { store.retryDownload() }
-                case .installed: EmptyView()
-                }
-            }
-            let installed = QuranTranslation.catalog.filter { store.statuses[$0.id] == .installed }
-            if !installed.isEmpty {
-                Menu("Remove download") {
-                    ForEach(installed) { translation in
-                        Button(locale.localizedString(forIdentifier: translation.language) ?? translation.language, role: .destructive) {
-                            Task { await store.remove(translation) }
-                        }
-                    }
-                }
-            }
         } label: {
-            if case .downloading = store.statuses[store.activeID] {
-                Label("Downloading translation", systemImage: "arrow.down.circle")
-            } else {
-                Label("Translation", systemImage: "character.bubble")
-            }
+            Label("Translation", systemImage: "character.bubble")
         }
         .accessibilityIdentifier("quran-translation-picker")
         .accessibilityValue(QuranTranslation.catalog.first { $0.id == store.activeID }?.translator ?? String(localized: "None"))
@@ -223,12 +195,7 @@ struct QuranTranslationPicker: View {
         if store.selection == id {
             return "checkmark"
         }
-        switch store.statuses[id] {
-        case .installed: return "checkmark.circle"
-        case .downloading: return "arrow.down.circle"
-        case .failed: return "exclamationmark.circle"
-        case nil: return "icloud.and.arrow.down"
-        }
+        return "character.bubble"
     }
 }
 

@@ -68,12 +68,12 @@ struct QuranReaderTests {
     @Test func fullTextSearchRespectsTranslationSelectionAndPagination() async throws {
         let reader = QuranReader(database: database)
         #expect(try await reader.search("merciful", translationID: nil).isEmpty)
-        #expect(try await reader.search("merciful", translationID: "fr.hamidullah").isEmpty)
+        #expect(try await reader.search("merciful", translationID: "es.bornez").isEmpty)
         let translated = try await reader.search("merciful", translationID: "en.qarai")
         #expect(translated.isEmpty == false)
         #expect(translated.allSatisfy { $0.translations["en.qarai"]?.localizedCaseInsensitiveContains("merc") == true })
         #expect(try await reader.search("believing", translationID: "en.qarai").contains { $0.translations["en.qarai"]?.contains("believers") == true })
-        #expect(try await reader.search("misericordieux", translationID: "fr.hamidullah").map(\.id).contains("1:1"))
+        #expect(try await reader.search("Clementísimo", translationID: "es.bornez").map(\.id).contains("1:1"))
         #expect(try await reader.search("真主", translationID: "zh.jian").isEmpty == false)
         let first = try await reader.search("الله", translationID: nil, limit: 50)
         let next = try await reader.search("الله", translationID: nil, limit: 100)
@@ -108,12 +108,12 @@ struct QuranReaderTests {
         let available = try database.availableTranslations()
         #expect(QuranTranslation.preferred(in: available, locale: Locale(identifier: "en_GB"))?.id == "en.qarai")
         #expect(QuranTranslation.preferred(in: available, locale: Locale(identifier: "ar")) == nil)
-        #expect(QuranTranslation.preferred(in: available, locale: Locale(identifier: "fr"))?.id == "fr.hamidullah")
+        #expect(QuranTranslation.preferred(in: available, locale: Locale(identifier: "es"))?.id == "es.bornez")
         #expect(QuranTranslation.preferred(in: QuranTranslation.catalog, locale: Locale(identifier: "zh_Hant_TW"))?.id == "zh.majian")
         let url = try #require(Bundle.main.url(forResource: "quran", withExtension: "db"))
-        let selected = QuranDatabase(url: url, translationURLs: { ["fr.hamidullah": QuranTestResources.translationURLs["fr.hamidullah"]!] })
+        let selected = QuranDatabase(url: url, translationURLs: { ["es.bornez": QuranTestResources.translationURLs["es.bornez"]!] })
         let ayah = try #require(selected.verses(ids: [1])[1])
-        #expect(ayah.translations.keys.sorted() == ["fr.hamidullah"])
+        #expect(ayah.translations.keys.sorted() == ["es.bornez"])
         #expect(ayah.selectedTranslationText != nil)
     }
 
@@ -132,12 +132,12 @@ struct QuranReaderTests {
         })
         #expect(try database.availableTranslations().isEmpty)
         #expect(database.verses(ids: [1])[1]?.text == "نص")
-        try create("fr.hamidullah.db", text: "texte")
+        try create("es.bornez.db", text: "texte")
         try create("en.qarai.db", text: " ")
         let ayah = try #require(database.verses(ids: [1])[1])
-        #expect(ayah.translations == ["fr.hamidullah": "texte"])
+        #expect(ayah.translations == ["es.bornez": "texte"])
         #expect(ayah.selectedTranslationText == "texte")
-        #expect(try database.availableTranslations().map(\.id) == ["en.qarai", "fr.hamidullah"])
+        #expect(try database.availableTranslations().map(\.id) == ["en.qarai", "es.bornez"])
     }
 
     @Test func databaseFailureIsNotAnEmptySearchAndCancellationIsRespected() async throws {

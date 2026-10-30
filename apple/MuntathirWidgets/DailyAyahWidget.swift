@@ -42,35 +42,14 @@ struct DailyAyahWidgetView: View {
     var body: some View {
         Group {
             if let ayah = entry.ayah {
-                VStack(alignment: .leading, spacing: isAccessory ? 2 : 8) {
-                    if !isAccessory {
-                        Label("Daily ayah", systemImage: "book.closed")
-                            .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
-                    }
-                    Text(ayah.text)
-                        .font(.custom("KFGQPCHAFSUthmanicScript-Regula", size: isAccessory ? 17 : 28, relativeTo: isAccessory ? .body : .title2))
-                        .lineSpacing(isAccessory ? 0 : 2)
-                        .multilineTextAlignment(.center)
-                        .environment(\.layoutDirection, .rightToLeft)
-                        .lineLimit(2)
-                        .minimumScaleFactor(isAccessory ? 0.8 : 0.7)
-                        .truncationMode(.tail)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .layoutPriority(1)
-                    if !isAccessory, let translation = entry.translation, let text = ayah.translations[translation.id] {
-                        Text(text)
-                            .font(.caption)
-                            .multilineTextAlignment(.leading)
-                            .environment(\.layoutDirection, Locale(identifier: translation.language).language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight)
-                            .lineLimit(3)
-                    }
-                    if !isAccessory {
-                        Text(ayah.id)
-                            .font(.caption.monospacedDigit())
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                    }
+                ViewThatFits(in: .vertical) {
+                    ayahContent(ayah, heading: !isAccessory, translation: !isAccessory, lines: 2)
+                        .fixedSize(horizontal: false, vertical: true)
+                    ayahContent(ayah, heading: false, translation: !isAccessory, lines: 2)
+                        .fixedSize(horizontal: false, vertical: true)
+                    ayahContent(ayah, heading: false, translation: false, lines: 2)
+                        .fixedSize(horizontal: false, vertical: true)
+                    ayahContent(ayah, heading: false, translation: false, lines: 1)
                 }
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text([ayah.text, isAccessory ? nil : entry.translation.flatMap { ayah.translations[$0.id] }, ayah.id].compactMap(\.self).joined(separator: " ")))
@@ -87,6 +66,36 @@ struct DailyAyahWidgetView: View {
                         RoundedRectangle(cornerRadius: 28)
                             .strokeBorder(Color.accentColor.opacity(0.15), lineWidth: 1)
                     }
+            }
+        }
+    }
+
+    private func ayahContent(_ ayah: Ayah, heading: Bool, translation: Bool, lines: Int) -> some View {
+        VStack(alignment: .leading, spacing: isAccessory ? 2 : 6) {
+            if heading {
+                Label("Daily ayah", systemImage: "book.closed")
+                    .font(.subheadline.weight(.medium)).lineLimit(1)
+            }
+            Text(ayah.text)
+                .font(.custom("KFGQPCHAFSUthmanicScript-Regula", size: isAccessory ? 17 : 28, relativeTo: isAccessory ? .body : .title2))
+                .lineSpacing(isAccessory ? 0 : 2)
+                .multilineTextAlignment(.center)
+                .environment(\.layoutDirection, .rightToLeft)
+                .lineLimit(lines)
+                .truncationMode(.tail)
+                .frame(maxWidth: .infinity)
+            if translation, let selected = entry.translation, let text = ayah.translations[selected.id] {
+                Text(text)
+                    .font(.caption)
+                    .environment(\.layoutDirection, Locale(identifier: selected.language).language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight)
+                    .lineLimit(3)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if !isAccessory {
+                Text(ayah.id)
+                    .font(.caption.monospacedDigit()).lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .layoutPriority(1)
             }
         }
     }
@@ -115,3 +124,20 @@ private enum AyahWidgetPreview {
 #Preview("Ayah · Medium", as: .systemMedium) {
     DailyAyahWidget()
 } timeline: { AyahWidgetPreview.short; AyahWidgetPreview.long }
+
+private struct DailyAyahWidgetTextSizePreviews: PreviewProvider {
+    static var previews: some View {
+        ForEach([WidgetFamily.systemMedium, .accessoryRectangular], id: \.self) { family in
+            ForEach([DynamicTypeSize.large, .xxxLarge, .accessibility3], id: \.self) { size in
+                ForEach(["en_US", "ar_SA"], id: \.self) { language in
+                    DailyAyahWidgetView(entry: AyahWidgetPreview.long)
+                        .environment(\.dynamicTypeSize, size)
+                        .environment(\.locale, Locale(identifier: language))
+                        .environment(\.layoutDirection, language == "ar_SA" ? .rightToLeft : .leftToRight)
+                        .previewContext(WidgetPreviewContext(family: family))
+                        .previewDisplayName("\(language) · \(size)")
+                }
+            }
+        }
+    }
+}

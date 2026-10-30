@@ -66,9 +66,6 @@ platform :ios do
     UI.user_error!("Muntathir not found in App Store Connect") unless app
     UI.user_error!("Unexpected App Store app ID") unless app.id == "6824304362"
     live = app.get_live_app_store_version(platform: "IOS")
-    # First App Store packs are reviewed with the app; external beta approval is separate.
-    MuntathirRelease.validate_asset_packs!(release: MuntathirRelease.app_store_asset_gate?(options[:release], live),
-                                           review: options[:release] && live.nil?) unless options[:build_only]
     edit = app.get_edit_app_store_version(platform: "IOS")
     config = MuntathirRelease.review_config
     # Resolve store requirements against existing fields and explicitly managed local values.

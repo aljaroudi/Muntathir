@@ -11,11 +11,5 @@
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.widgetkit-extension</string>
 	</dict>
-	<key>BAAppGroupID</key>
-	<string>group.com.aljaroudi.Muntathir</string>
-	<key>BAHasManagedAssetPacks</key>
-	<true/>
-	<key>BAUsesAppleHosting</key>
-	<true/>
 </dict>
 </plist>

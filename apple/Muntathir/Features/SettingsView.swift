@@ -5,6 +5,14 @@ struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale
+    private var settingsDate: Date {
+        #if DEBUG
+            CaptureClock()?.start ?? .now
+        #else
+            .now
+        #endif
+    }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -78,20 +86,18 @@ struct SettingsView: View {
                     case .nakedEye:
                         LabeledContent { Text("Middle East") } label: { Text("Region") }
                     case .government:
-                        Picker("Country", selection: Binding(
-                            get: { String((model.preferences.selectedSourceID ?? "government-SA").suffix(2)) },
-                            set: { country in model.update { $0.selectedSourceID = "government-" + country } }
-                        )) {
-                            ForEach(CalendarSource.countries, id: \.self) { country in
-                                Text(locale.localizedString(forRegionCode: country) ?? country).tag(country)
-                            }
-                        }
-                        .accessibilityIdentifier("calendar-country")
+                        LabeledContent("Country", value: locale.localizedString(forRegionCode: "SA") ?? "SA")
+                            .accessibilityIdentifier("calendar-country")
                     }
+                    NavigationLink("Month adjustments") {
+                        let month = model.engine.resolve(settingsDate).month
+                        MonthAdjustmentsView(month: month, offset: model.preferences.monthOffsets.first { $0.month == month }?.days ?? 0)
+                    }
+                    .accessibilityIdentifier("month-adjustments")
                 } header: {
                     Text("Calendar corrections")
                 } footer: {
-                    Text("Without a published announcement, dates use the system calendar. Adjust individual months in Calendar.")
+                    Text("Without a published announcement, dates use the system calendar. Adjust individual months in Month adjustments.")
                     if let error = model.error {
                         Text(error).foregroundStyle(.red)
                     }
@@ -231,7 +237,7 @@ struct LicensesView: View {
     var body: some View {
         List {
             Section {
-                NavigationLink("Adhan Swift 1.5.0") {
+                NavigationLink {
                     ScrollView {
                         Text(license("Adhan-LICENSE"))
                             .environment(\.layoutDirection, .leftToRight)
@@ -241,6 +247,8 @@ struct LicensesView: View {
                             .padding()
                     }
                     .navigationTitle("Adhan license")
+                } label: {
+                    Text(verbatim: "Adhan Swift 1.5.0")
                 }
             } header: {
                 Text("Calculations")
@@ -326,29 +334,28 @@ struct PrayerNotificationSettings: View {
                 Text("Allow Time Sensitive alerts in Settings and Focus. Sound follows Silent mode and your Ringtone and Alerts volume.")
             }
             Section {
-                ForEach(PrayerName.allCases) { prayer in
-                    VStack(alignment: .leading) {
-                        Toggle(prayer.title, isOn: Binding(get: { model.preferences.enabledPrayers.contains(prayer) }, set: { enabled in
-                            Task { await model.setPrayer(prayer, enabled: enabled) }
-                        }))
-                        if model.preferences.enabledPrayers.contains(prayer) {
-                            Picker("Sound", selection: Binding(get: { model.preferences.sound(for: prayer) }, set: { sound in
-                                model.update { $0.prayerSounds[prayer.rawValue] = sound }
-                                preview(sound)
-                            })) {
-                                ForEach(PrayerAlertSound.allCases) { sound in
-                                    Text(sound.title).tag(sound)
-                                }
-                            }
-                            Button("Preview sound", systemImage: "speaker.wave.2") { preview(model.preferences.sound(for: prayer)) }
-                                .disabled(model.preferences.sound(for: prayer) == .silent)
-                        }
+                Picker("Sound", selection: Binding(get: { model.preferences.notificationSound }, set: { sound in
+                    model.update { $0.notificationSound = sound }
+                    preview(sound)
+                })) {
+                    ForEach(PrayerAlertSound.allCases) { sound in
+                        Text(sound.title).tag(sound)
                     }
+                }
+                Button("Preview sound", systemImage: "speaker.wave.2") { preview(model.preferences.notificationSound) }
+                    .disabled(model.preferences.notificationSound == .silent)
+            }
+            Section {
+                ForEach(PrayerName.allCases) { prayer in
+                    Toggle(prayer.title, isOn: Binding(get: { model.preferences.enabledPrayers.contains(prayer) }, set: { enabled in
+                        Task { await model.setPrayer(prayer, enabled: enabled) }
+                    }))
                 }
             } footer: {
                 Text("Alerts are scheduled for up to 10 days. Open the app regularly to refresh them.")
             }
         }.navigationTitle("Notifications")
+            .onDisappear { model.notifications.stopPreview() }
             .task {
                 if !model.preferences.enabledPrayers.isEmpty {
                     if await model.notifications.authorize() {
@@ -362,8 +369,8 @@ struct PrayerNotificationSettings: View {
 
     private func preview(_ sound: PrayerAlertSound) {
         Task {
-            do { try await model.notifications.preview(sound: sound, timeSensitive: model.preferences.timeSensitiveNotifications) }
-            catch { model.error = String(localized: "Could not preview this alert. Check system notification settings.") }
+            do { try await model.notifications.preview(sound: sound) }
+            catch { model.error = error.localizedDescription }
         }
     }
 }

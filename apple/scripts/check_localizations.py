@@ -24,8 +24,11 @@ def main():
     catalog = json.loads((APPLE / "Muntathir/Localizable.xcstrings").read_text())["strings"]
     for key, entry in catalog.items():
         localized = entry.get("localizations", {})
-        assert LOCALES <= localized.keys(), f"Missing locales: {key}"
-        for locale in LOCALES:
+        locales = localized.keys()
+        if entry.get("shouldTranslate", True):
+            assert LOCALES <= localized.keys(), f"Missing locales: {key}"
+            locales = LOCALES
+        for locale in locales:
             values = list(strings(localized[locale]))
             assert values, f"Missing text: {locale}: {key}"
             for value in values:

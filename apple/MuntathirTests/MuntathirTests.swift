@@ -4,6 +4,43 @@ import Testing
 
 struct CalendarTests {
     let zone = TimeZone(identifier: "Asia/Riyadh")!
+    @Test func nextEventUsesCorrectedCivilDays() throws {
+        let content = ContentLibrary()
+        for zoneID in ["Asia/Riyadh", "America/New_York"] {
+            let zone = TimeZone(identifier: zoneID)!
+            let month = HijriMonth(year: 1448, month: 1)
+            let engine = try CalendarEngine(timeZone: zone, offsets: [.init(month: month, days: 1)])
+            let eventDates = (0 ... 13).flatMap { engine.days(in: month.advanced($0)) }
+                .filter { !content.events(on: engine.resolve($0)).isEmpty }
+            for date in eventDates.prefix(20) {
+                let noon = engine.gregorian.date(byAdding: .hour, value: 12, to: date)!
+                #expect(content.nextEventDate(onOrAfter: noon, engine: engine) == date)
+                let tomorrow = engine.addingDays(1, to: date)
+                let expected = eventDates.first { $0 >= tomorrow }
+                if let expected {
+                    #expect(content.nextEventDate(onOrAfter: tomorrow, engine: engine) == expected)
+                }
+                let before = engine.addingDays(-2, to: date)
+                if content.nextEventDate(onOrAfter: before, engine: engine) == date {
+                    #expect(engine.distance(before, date) == 2)
+                }
+            }
+        }
+    }
+
+    @MainActor @Test func nextEventCrossesYearBoundaryAndFormatsDayCounts() throws {
+        let engine = try CalendarEngine(timeZone: zone)
+        let content = ContentLibrary()
+        let lastDay = engine.days(in: HijriMonth(year: 1448, month: 12)).last!
+        let today = engine.gregorian.startOfDay(for: lastDay)
+        let next = try #require(content.nextEventDate(onOrAfter: engine.addingDays(1, to: today), engine: engine))
+        #expect(engine.resolve(next).month.year == 1449)
+        for days in [1, 2] {
+            let text = CalendarScreen.countdownText(days: days, locale: Locale(identifier: "en_US"))
+            #expect(text == (days == 1 ? "in 1 day" : "in 2 days"))
+        }
+    }
+
     @Test func baselineAndManualPrecedence() throws {
         let month = HijriMonth(year: 1448, month: 1)
         let base = try CalendarEngine(timeZone: zone)
@@ -316,6 +353,31 @@ extension CalendarTests {
         #expect(restored.preferences.monthOffsets.isEmpty)
         #expect(restored.engine.start(of: month) == restored.engine.baselineStart(month))
         #expect(try String(decoding: JSONEncoder().encode(restored.preferences), as: UTF8.self).contains("overrides") == false)
+    }
+
+    @Test func governmentSourceIsSaudiOnly() {
+        #expect(CalendarSource.countries == ["SA"])
+        #expect(CalendarSource.method(for: "government-SA") == .government)
+        for country in ["KW", "BH", "OM", "AE", "QA"] {
+            #expect(CalendarSource.sightingMethod(for: "government-" + country) == nil)
+        }
+    }
+
+    @Test func productionAnnouncementsResolveConfirmedMonth() throws {
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let data = try Data(contentsOf: root.appendingPathComponent("web/public/calendar/corrections-v1.json"))
+        let feed = try CorrectionsFeed.decode(data)
+        #expect(feed.announcements.count == 2)
+        let location = SavedLocation(latitude: 21.4, longitude: 39.8, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh")
+        let month = HijriMonth(year: 1448, month: 5)
+        let start = CivilDate(year: 2026, month: 10, day: 13)
+        for source in [CalendarSource.middleEast, "government-SA"] {
+            let rows = try feed.matching(location: location, sourceID: source)
+            #expect(rows.count == 1)
+            let engine = try CalendarEngine(timeZone: zone, confirmed: rows.map(\.correction))
+            #expect(CivilDate(engine.start(of: month), in: zone) == start)
+            #expect(engine.resolve(try #require(start.date(in: zone))).provenance == .confirmed)
+        }
     }
 
     @Test func knownSourcesApplyWorldwideAndRequireMatchingMethod() throws {

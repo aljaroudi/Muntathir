@@ -6,6 +6,8 @@ struct TodayView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.locale) private var locale
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     @State private var weather: CurrentWeatherStore = {
         #if DEBUG
@@ -49,7 +51,7 @@ struct TodayView: View {
                                        imsakMinutes: model.preferences.imsakMinutes)
                     .filter { model.preferences.isVisible($0.name) }
             } ?? []
-            Page(transparentBackground: sun != nil) {
+            TodayPage(transparentBackground: sun != nil) {
                 if let location = model.location {
                     let tomorrow = engine.addingDays(1, to: now)
                     let next =
@@ -138,8 +140,10 @@ struct TodayView: View {
                 }
                 if let dailyAyah {
                     DailyAyahCard(ayah: dailyAyah, skyBackground: sun != nil)
+                        .layoutValue(key: TodayColumnKey.self, value: 1)
                 }
                 TodayInfoCards(date: now, skyBackground: sun != nil, weather: weather, sun: sun, moon: moon)
+                    .layoutValue(key: TodayColumnKey.self, value: 1)
             }
             .safeAreaInset(edge: .top, spacing: 0) {
                 if sun != nil {
@@ -149,7 +153,8 @@ struct TodayView: View {
                             .font(.largeTitle.bold())
                             .foregroundStyle(.white)
                             .shadow(color: .black.opacity(0.45), radius: 4, y: 1)
-                            .frame(maxWidth: 760, alignment: .leading)
+                            .frame(maxWidth: horizontalSizeClass == .regular && !typeSize.isAccessibilitySize ? 1120 : 760,
+                                   alignment: .leading)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 6)
                             .frame(maxWidth: .infinity, alignment: .center)

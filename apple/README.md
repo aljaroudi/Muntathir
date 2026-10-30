@@ -18,13 +18,15 @@ From repository root: `make apple-format`, `make apple-build`, and `make apple-t
 
 Core Swift sources live in `Muntathir/Core` and are reused directly by Apple targets. Adhan 1.5.0 is pinned in the Xcode project's package resolution file. There is no separate prayer engine. Shared fixtures are reference data; test copies are bundle resources.
 
+Apple Weather marks in `Muntathir/Resources/WeatherAttribution.xcassets` are original 3× PNGs downloaded on 2026-10-28 from `https://weatherkit.apple.com/attribution/{language}` using its `logoLight@3x` and `logoDark@3x` URLs. Both app and widget bundle them. The 13 artwork languages match the app languages except Persian and Urdu, which use English because Apple returns generic marks for those codes. Simplified and Traditional Chinese use Apple's `zh-CN` and `zh-TW` artwork. Keep original artwork and filenames when updating; appearance variants use black on light backgrounds and white on dark backgrounds.
+
 `AppIcon.icon` is the shared Icon Composer source for iPhone/iPad and Watch in Debug and Release. Widget extensions use their containing app's identity. Quran Arabic text must never be edited. `QPCHafs.woff2` is registered through `UIAppFonts` with PostScript name `KFGQPCHAFSUthmanicScript-Regula`.
 
 ## Release checks
 
 Validate real-device compass/calibration, notifications/background delivery, paired Watch synchronization and complications, CarPlay layouts, signed App Group provisioning, two-device iCloud sync, VoiceOver, and accessibility sizes. Review event dates and Arabic titles editorially.
 
-The app refreshes the version-one calendar feed from https://منتظر.com/calendar/corrections-v1.json on launch/foreground, source changes, and scheduled background refresh. The website publishes an empty feed until real announcements are supplied. Push delivery remains unconfigured. Simulator tests cannot prove hardware behavior or deployed feed delivery.
+The app refreshes the version-one calendar feed from https://منتظر.com/calendar/corrections-v1.json on launch/foreground, source changes, and scheduled background refresh. The website publishes confirmed starts for 1448-05 on 2026-10-13 for Middle East naked-eye sightings and Saudi government announcements. Push delivery remains unconfigured. Simulator tests cannot prove hardware behavior or deployed feed delivery.
 
 ## Fastlane
 

@@ -2,7 +2,7 @@ import Foundation
 import UserNotifications
 
 enum PrayerAlertSound: String, Codable, CaseIterable, Identifiable, Sendable {
-    case system, chime, bell, silent
+    case system, chime, bell, alhalwachi, aliMulla, alsarraf, silent
     var id: Self {
         self
     }
@@ -12,19 +12,17 @@ enum PrayerAlertSound: String, Codable, CaseIterable, Identifiable, Sendable {
         case .system: String(localized: "System sound")
         case .chime: String(localized: "Chime")
         case .bell: String(localized: "Bell")
+        case .alhalwachi: String(localized: "Alhalwachi")
+        case .aliMulla: String(localized: "Ali Mulla")
+        case .alsarraf: String(localized: "Al-Sarraf")
         case .silent: String(localized: "Silent")
         }
     }
 
-    init(from decoder: any Decoder) throws {
-        let value = try decoder.singleValueContainer().decode(String.self)
-        self = Self(rawValue: value) ?? .chime
-    }
-
     var audioURL: URL? {
         switch self {
-        case .chime, .bell: Bundle.main.url(forResource: rawValue, withExtension: "wav")
-        default: nil
+        case .system: nil
+        default: Bundle.main.url(forResource: rawValue, withExtension: "wav")
         }
     }
 

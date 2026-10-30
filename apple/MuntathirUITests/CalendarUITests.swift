@@ -1,14 +1,57 @@
 import XCTest
 
 final class CalendarUITests: XCTestCase {
-    @MainActor func testOnlyTodayIsSelectedAndMonthTitleReturnsToToday() throws {
+    @MainActor private func openAdjustments(_ app: XCUIApplication) {
+        app.buttons["settings"].firstMatch.tap()
+        let link = app.buttons["month-adjustments"]
+        if !link.isHittable { app.swipeUp() }
+        link.tap()
+    }
+
+    @MainActor func testSettingsMonthAdjustmentSaveResetAndDiscard() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        openAdjustments(app)
+        let stepper = app.steppers["month-offset"]
+        let original = stepper.label
+        stepper.buttons.element(boundBy: 0).tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.buttons["month-adjustments"].tap()
+        XCTAssertEqual(stepper.label, original)
+        app.buttons["Next month"].tap()
+        app.buttons["Previous month"].tap()
+        XCTAssertEqual(stepper.label, original)
+        stepper.buttons.element(boundBy: 0).tap()
+        let changed = stepper.label
+        app.buttons["Save"].tap()
+        app.buttons["month-adjustments"].tap()
+        XCTAssertEqual(stepper.label, changed)
+        app.buttons["Reset adjustment"].tap()
+        app.buttons["month-adjustments"].tap()
+        XCTAssertEqual(stepper.label, original)
+    }
+
+    @MainActor func testCalendarCollapseSelectionAndEventDates() throws {
+        try checkCalendar(accessibilityText: false)
+    }
+
+    @MainActor func testCalendarEventDatesAtAccessibilityTextSize() throws {
+        try checkCalendar(accessibilityText: true)
+    }
+
+    @MainActor private func checkCalendar(accessibilityText: Bool) throws {
         for language in ["en", "ar"] {
+            let locale = Locale(identifier: language == "ar" ? "ar_SA" : "en_US")
             var calendar = Calendar(identifier: .islamicUmmAlQura)
             calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Riyadh"))
             let today = try XCTUnwrap(calendar.date(from: DateComponents(year: 1448, month: 9, day: 21, hour: 12)))
+            let firstDay = try XCTUnwrap(calendar.date(from: DateComponents(year: 1448, month: 9, day: 1)))
             let app = XCUIApplication()
             app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "--sky-date", today.ISO8601Format(),
-                                   "-AppleLanguages", "(\(language))", "-AppleLocale", language == "ar" ? "ar_SA" : "en_US"]
+                                   "-AppleLanguages", "(\(language))", "-AppleLocale", locale.identifier]
+            app.launchArguments += ["-UIPreferredContentSizeCategoryName",
+                                    accessibilityText ? "UICTContentSizeCategoryAccessibilityXXXL" : "UICTContentSizeCategoryL"]
             app.launch()
             let calendarTitle = language == "ar" ? "التقويم" : "Calendar"
             app.descendants(matching: .any).matching(identifier: calendarTitle).firstMatch.tap()
@@ -16,34 +59,80 @@ final class CalendarUITests: XCTestCase {
             XCTAssertTrue(title.waitForExistence(timeout: 5))
             let currentMonth = title.label
             let todayButton = app.buttons["calendar-day-21"]
-            XCTAssertTrue(todayButton.isSelected)
-            let eventDay = app.buttons["calendar-day-1"]
-            eventDay.tap()
-            XCTAssertFalse(eventDay.isSelected)
-            XCTAssertTrue(todayButton.isSelected)
-            todayButton.tap()
-            eventDay.tap()
-            XCTAssertTrue(app.buttons[language == "ar" ? "بداية شهر رمضان" : "Beginning of Ramadan"].isHittable)
-            let emptyDay = app.buttons["calendar-day-2"]
-            emptyDay.tap()
-            XCTAssertFalse(emptyDay.isSelected)
-            XCTAssertTrue(todayButton.isSelected)
-            XCTAssertFalse(app.descendants(matching: .any)["calendar-events-2"].exists)
-            XCTAssertFalse(app.staticTexts["No observances today"].exists)
-            XCTAssertFalse(app.staticTexts["لا مناسبات اليوم"].exists)
+            XCTAssertFalse(todayButton.exists)
+            XCTAssertEqual(title.value as? String, language == "ar" ? "مطوي" : "Collapsed")
             let previous = language == "ar" ? "الشهر السابق" : "Previous month"
+            let next = language == "ar" ? "الشهر التالي" : "Next month"
             app.buttons[previous].tap()
             XCTAssertNotEqual(title.label, currentMonth)
-            XCTAssertFalse(app.buttons["calendar-day-21"].isSelected)
-            title.tap()
+            XCTAssertFalse(todayButton.exists)
+            app.buttons[next].tap()
             XCTAssertEqual(title.label, currentMonth)
-            XCTAssertTrue(app.buttons["calendar-day-21"].isSelected)
+            title.tap()
+            XCTAssertEqual(title.value as? String, language == "ar" ? "موسّع" : "Expanded")
+            if !accessibilityText {
+                XCTAssertTrue(todayButton.isSelected)
+            }
+            title.tap()
+            XCTAssertFalse(todayButton.exists)
+            title.tap()
+            let eventDay = app.buttons["calendar-day-1"]
+            XCTAssertTrue(eventDay.waitForExistence(timeout: 5))
+            eventDay.tap()
+            XCTAssertFalse(eventDay.isSelected)
+            if !accessibilityText {
+                XCTAssertTrue(todayButton.isSelected)
+            }
+            title.tap()
+            assertEventDates(app, calendar: calendar, locale: locale, date: firstDay)
+
+            openAdjustments(app)
+            let stepper = app.steppers["month-offset"]
+            XCTAssertTrue(stepper.waitForExistence(timeout: 5))
+            stepper.buttons.element(boundBy: 1).tap()
+            app.buttons[language == "ar" ? "حفظ" : "Save"].tap()
+            app.buttons[language == "ar" ? "تم" : "Done"].tap()
+            XCTAssertTrue(title.waitForExistence(timeout: 5))
+            title.tap()
+            eventDay.tap()
+            title.tap()
+            let correctedFirstDay = try XCTUnwrap(calendar.date(byAdding: .day, value: -1, to: firstDay))
+            assertEventDates(app, calendar: calendar, locale: locale, date: correctedFirstDay)
+            XCTAssertFalse(app.descendants(matching: .any)["calendar-events-2"].exists)
             let screenshot = XCTAttachment(screenshot: app.screenshot())
-            screenshot.name = "Calendar \(language)"
+            screenshot.name = "Calendar \(language)\(accessibilityText ? " large text" : "")"
             screenshot.lifetime = .keepAlways
             add(screenshot)
             app.terminate()
         }
+    }
+
+    @MainActor private func assertEventDates(_ app: XCUIApplication, calendar: Calendar, locale: Locale, date: Date,
+                                             file: StaticString = #filePath, line: UInt = #line)
+    {
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.calendar = calendar
+        formatter.timeZone = calendar.timeZone
+        formatter.dateFormat = "MMMM"
+        let firstDay = calendar.date(from: DateComponents(year: 1448, month: 9, day: 1))!
+        let row = app.staticTexts.matching(identifier: "calendar-events-1")
+        let historicalYear = locale.language.languageCode?.identifier == "ar" ? "٢٠٠ هـ" : "200 AH"
+        let expectedHijri = "\(1.formatted(.number.locale(locale))) \(formatter.string(from: firstDay)) \(historicalYear)"
+        let hijri = row.matching(NSPredicate(format: "label CONTAINS %@", formatter.string(from: firstDay))).firstMatch
+        XCTAssertTrue(hijri.waitForExistence(timeout: 5), file: file, line: line)
+        let hijriLabel = hijri.label.replacingOccurrences(of: "\u{2068}", with: "").replacingOccurrences(of: "\u{2069}", with: "")
+        XCTAssertEqual(hijriLabel, expectedHijri, file: file, line: line)
+        XCTAssertTrue(hijri.isHittable, file: file, line: line)
+        var gregorian = Calendar(identifier: .gregorian)
+        gregorian.timeZone = calendar.timeZone
+        formatter.calendar = gregorian
+        formatter.setLocalizedDateFormatFromTemplate("d MMMM")
+        let civil = row.matching(NSPredicate(format: "label == %@", formatter.string(from: date))).firstMatch
+        XCTAssertEqual(civil.label, formatter.string(from: date), file: file, line: line)
+        XCTAssertTrue(civil.isHittable, file: file, line: line)
+        formatter.setLocalizedDateFormatFromTemplate("EEE")
+        XCTAssertTrue(row.matching(NSPredicate(format: "label == %@", formatter.string(from: date))).firstMatch.exists, file: file, line: line)
     }
 }
 
@@ -66,16 +155,16 @@ extension CalendarUITests {
             ("zh-Hans", "日历", "调整本月", "调整月份"),
             ("zh-Hant", "行事曆", "調整本月", "調整月份"),
         ]
-        for (language, calendar, adjust, title) in languages {
+        for (language, calendar, _, title) in languages {
             let app = XCUIApplication()
             app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(\(language))", "-AppleLocale", language]
             app.launch()
             let tab = app.descendants(matching: .any).matching(identifier: calendar).firstMatch
             XCTAssertTrue(tab.waitForExistence(timeout: 10), language)
             tab.tap()
-            app.buttons[adjust].tap()
+            openAdjustments(app)
             XCTAssertTrue(app.navigationBars[title].waitForExistence(timeout: 5), language)
-            XCTAssertTrue(app.buttons["month-offset"].exists, language)
+            XCTAssertTrue(app.steppers["month-offset"].exists, language)
             let attachment = XCTAttachment(screenshot: app.screenshot())
             attachment.name = "Month adjustment \(language)"
             attachment.lifetime = .keepAlways
@@ -84,7 +173,7 @@ extension CalendarUITests {
         }
     }
 
-    @MainActor func testCalendarMethodAndLocalizedCountries() throws {
+    @MainActor func testCalendarMethodAndLocalizedSaudiCountry() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
@@ -97,14 +186,10 @@ extension CalendarUITests {
         XCTAssertFalse(app.buttons["calendar-country"].exists)
         method.tap()
         app.buttons["Government announcement"].tap()
-        let country = app.buttons["calendar-country"]
-        country.tap()
-        for code in ["SA", "KW", "BH", "OM", "AE", "QA"] {
-            let name = try XCTUnwrap(Locale(identifier: "en_US").localizedString(forRegionCode: code))
-            XCTAssertTrue(app.buttons[name].exists)
-        }
-        app.buttons["Qatar"].tap()
-        XCTAssertTrue(country.label.contains("Qatar"))
+        let country = app.descendants(matching: .any).matching(identifier: "calendar-country").firstMatch
+        XCTAssertTrue(country.waitForExistence(timeout: 5))
+        XCTAssertTrue(country.label.contains("Saudi Arabia"))
+        XCTAssertFalse(app.buttons["calendar-country"].exists)
         method.tap()
         app.buttons["System calendar"].tap()
         XCTAssertFalse(app.buttons["calendar-country"].exists)
@@ -113,7 +198,7 @@ extension CalendarUITests {
 
 extension CalendarUITests {
     @MainActor func testMonthAdjustmentAtAccessibilityTextSize() {
-        for (language, calendar, adjust, save) in [
+        for (language, calendar, _, save) in [
             ("de", "Kalender", "Diesen Monat anpassen", "Sichern"),
             ("ur", "تقویم", "یہ مہینہ درست کریں", "محفوظ کریں"),
         ] {
@@ -124,15 +209,15 @@ extension CalendarUITests {
             let tab = app.descendants(matching: .any).matching(identifier: calendar).firstMatch
             XCTAssertTrue(tab.waitForExistence(timeout: 10))
             tab.tap()
-            app.buttons[adjust].tap()
-            XCTAssertTrue(app.buttons["month-offset"].waitForExistence(timeout: 5))
-            XCTAssertTrue(app.buttons["month-offset"].isHittable)
+            openAdjustments(app)
+            XCTAssertTrue(app.steppers["month-offset"].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.steppers["month-offset"].isHittable)
             let attachment = XCTAttachment(screenshot: app.screenshot())
             attachment.name = "Month adjustment large text \(language)"
             attachment.lifetime = .keepAlways
             add(attachment)
             app.buttons[save].tap()
-            XCTAssertTrue(app.navigationBars[calendar].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.buttons["month-adjustments"].waitForExistence(timeout: 5))
             app.terminate()
         }
     }

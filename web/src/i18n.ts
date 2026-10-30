@@ -55,7 +55,7 @@ const en = {
       },
       {
         q: "Which calendar verification methods are supported?",
-        a: "Choose the system calendar, local naked-eye sighting for the Middle East, or government announcements from Saudi Arabia, Kuwait, Bahrain, Oman, the UAE, or Qatar. Adjust individual months by up to two days.",
+        a: "Choose the system calendar, local naked-eye sighting for the Middle East, or government announcements from Saudi Arabia. Adjust individual months by up to two days.",
       },
       {
         q: "How does the Hijri calendar stay accurate?",
@@ -120,7 +120,7 @@ const ar: typeof en = {
       },
       {
         q: "ما طرق التحقق من بداية الشهر المدعومة؟",
-        a: "يمكنك اختيار تقويم النظام، أو الرؤية بالعين المجردة لمنطقة الشرق الأوسط، أو الإعلانات الرسمية للسعودية والكويت والبحرين وعُمان والإمارات وقطر. ويمكنك تعديل كل شهر بما يصل إلى يومين.",
+        a: "يمكنك اختيار تقويم النظام، أو الرؤية بالعين المجردة لمنطقة الشرق الأوسط، أو الإعلانات الرسمية للسعودية. ويمكنك تعديل كل شهر بما يصل إلى يومين.",
       },
       {
         q: "كيف يحافظ التطبيق على دقة التقويم الهجري؟",
