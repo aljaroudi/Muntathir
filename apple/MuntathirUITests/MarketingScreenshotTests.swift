@@ -25,7 +25,7 @@ import XCTest
 @MainActor private func selectMarketingTranslation(in app: XCUIApplication) throws {
     let locale = Locale(identifier: Snapshot.deviceLanguage.isEmpty ? "en-US" : Snapshot.deviceLanguage)
     let language = locale.language.languageCode?.identifier ?? "en"
-    let id = ["en": "en.qarai", "ja": "en.qarai", "fr": "fr.hamidullah", "de": "de.bubenheim", "id": "id.indonesian", "it": "it.piccardo", "ms": "ms.basmeih", "ru": "ru.kuliev", "es": "es.bornez", "tr": "tr.vakfi", "ur": "ur.jawadi", "zh": locale.language.script?.identifier == "Hant" ? "zh.majian" : "zh.jian"][language]
+    let id = language == "ar" ? nil : (["de": "de.bubenheim", "ru": "ru.kuliev", "es": "es.bornez", "zh": locale.language.script?.identifier == "Hant" ? "zh.majian" : "zh.jian"][language] ?? "en.qarai")
     app.buttons["quran-translation-picker"].tap()
     app.buttons[id.map { "quran-translation-option-\($0)" } ?? "quran-translation-none"].tap()
 }
@@ -52,6 +52,10 @@ final class MarketingScreenshotTests: XCTestCase {
         snapshot("01-Today", timeWaitingForIdle: 2)
         app.buttons[labels[0]].firstMatch.tap()
         XCTAssertTrue(app.buttons[labels[1]].waitForExistence(timeout: 5))
+        // The fixed capture date is 1448-05; show Sha'ban for the store listing.
+        for _ in 0 ..< 3 {
+            app.buttons[labels[1]].tap()
+        }
         snapshot("02-Calendar", timeWaitingForIdle: 2)
         app.buttons[labels[2]].firstMatch.tap()
         app.buttons["qibla"].tap()
