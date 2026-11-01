@@ -1,0 +1,6 @@
+CREATE TABLE quran (
+  "index" INTEGER PRIMARY KEY,
+  sura INTEGER NOT NULL,
+  aya INTEGER NOT NULL,
+  text TEXT NOT NULL
+);

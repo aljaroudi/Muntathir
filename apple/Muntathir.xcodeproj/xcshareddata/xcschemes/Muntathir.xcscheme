@@ -71,6 +71,9 @@
             ReferencedContainer = "container:Muntathir.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <BackgroundAssetPacksFolderResolver
+         identifier = "container:build/AssetPacks/archives">
+      </BackgroundAssetPacksFolderResolver>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

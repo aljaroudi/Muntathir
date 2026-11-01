@@ -4,6 +4,7 @@ struct ContentView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
     @State private var settings = false
+    @State private var hadithAssets = HadithAssetStore()
     var body: some View {
         TabView {
             Tab("Today", systemImage: "sun.max") {
@@ -22,6 +23,12 @@ struct ContentView: View {
                         }
                         .accessibilityIdentifier("holy-quran")
                         NavigationLink {
+                            HadithLibraryView(assets: hadithAssets)
+                        } label: {
+                            Label("Hadith", systemImage: "text.book.closed")
+                        }
+                        .accessibilityIdentifier("hadith")
+                        NavigationLink {
                             QiblaView().toolbar { settingsToolbar }
                         } label: {
                             Label("Qibla", systemImage: "location.north.circle")
@@ -35,6 +42,8 @@ struct ContentView: View {
         .tint(.accentColor)
         .sheet(isPresented: $settings) { SettingsView() }
         .task { model.reschedule() }
+        .task { await hadithAssets.monitor() }
+        .task { await hadithAssets.refresh() }
         .onChange(of: model.locationService.current) { _, location in
             if model.liveLocation != nil, let location {
                 model.applyLive(location)
@@ -43,6 +52,7 @@ struct ContentView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 model.reschedule()
+                Task { await hadithAssets.refresh() }
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in model.reschedule() }

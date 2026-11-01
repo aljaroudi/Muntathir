@@ -31,3 +31,18 @@ The app refreshes the version-one calendar feed from https://منتظر.com/cale
 ## Fastlane
 
 See [release automation](fastlane/SETUP.md) for local commands, bilingual store metadata, styled screenshots, sunrise-to-sunset previews, and the dedicated GitHub Actions runner.
+
+## Local Hadith development
+
+Tools → Hadith searches Arabic and English, browses collections and chapters, and opens full narrations. Number lookup uses source numbering; repeated numbers show chapter/volume references. Al-Kafi and Uyun Akhbar al-Rida volumes share catalog entries without changing source IDs or text.
+
+Place the extracted hadith `app/data` contents in `temp/hadith-data/`, then run `uv run build/hadith/build.py --sittah --four`. The generated database is delivered through one on-demand Apple-hosted pack; see [asset delivery](AssetPacks/). The app and widget do not bundle Hadith. Unit tests include the generated database as a fixture. Generated databases and source corpora are ignored by Git.
+
+Hadith schema v6 stores all assessments in `hadith_grading`, joined to `grader` by its optional stable ID. Each record retains Arabic/English judgments and references plus original source text; `hadith.grade` no longer exists. `status` distinguishes judgments, “not included” coverage, and unparsed source values. The importer merges verified spelling aliases and duplicate assessments, preserves distinct judgments/references from the same scholar, and reports unparsed inputs. It does not assign broad authenticity categories. Rebuild the database whenever updating this schema; older asset databases are incompatible with the reader.
+
+
+The reader keeps 50 previews at a time and pages by source ID. It prepares Markdown and match-centered previews one narration at a time off the main thread, retaining full text only for the open narration. Arabic highlights preserve source diacritics; English highlights use the FTS Porter stem matches, including narrator matches. Production asset packs and selective book downloads are deferred; the current development bundle adds roughly 376 MB before packaging compression.
+
+Arabic book and author names are loaded from `build/hadith/data/books-and-authors.json`. Blank translations retain source values. Rebuild after editing that file.
+
+Hadith search appends Arabic substring matches after phrase/prefix or ordered-fallback results, with phase-aware pagination. Root/lemma mappings are excluded unless the builder receives `--experimental-morphology`; enabling the flag does not change app search. Rijal is not built or delivered.

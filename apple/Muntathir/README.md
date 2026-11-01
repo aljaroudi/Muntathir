@@ -28,7 +28,7 @@ Onboarding introduces the app, offers an app-language step that opens iOS Settin
 
 Completion is stored on this device and does not sync through iCloud. Existing saved locations do not bypass setup. Interrupted setup resumes at the current step and retains saved choices, including when changing the app language restarts the app. The app-language link is also available in Settings. After completion, launch opens Today.
 
-Quran translations use [Apple-hosted on-demand packs](../AssetPacks/). Only Arabic is bundled. Auto matches preferred languages; explicit selection and None persist and also control daily ayah and widgets. Downloads never block Arabic reading.
+Quran Arabic and the shipping translations are bundled; Hadith uses one [Apple-hosted on-demand pack](../AssetPacks/). Auto matches preferred languages; explicit selection and None persist and also control daily ayah and widgets. Hadith downloads never block Quran reading.
 
 ## Calendar sources and month offsets
 

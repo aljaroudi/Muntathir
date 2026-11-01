@@ -1,0 +1,16 @@
+{
+  "assetPackID": "hadith",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "build/hadith/dist/hadith.db",
+      "fileDestination": "Hadith/hadith.db"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ],
+  "sourceRoot": "../../.."
+}
