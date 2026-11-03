@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>StringsTable</key>
+	<string>Root</string>
+	<key>PreferenceSpecifiers</key>
+	<array>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Calculations</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSChildPaneSpecifier</string>
+			<key>Title</key>
+			<string>Adhan Swift 1.5.0</string>
+			<key>File</key>
+			<string>Adhan</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Quran Translations</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>马坚</string>
+			<key>FooterText</key>
+			<string>https://tanzil.net/trans/zh.jian</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>马坚</string>
+			<key>FooterText</key>
+			<string>https://tanzil.net/trans/zh.majian</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Ali Quli Qara’i</string>
+			<key>FooterText</key>
+			<string>https://tanzil.net/trans/en.qarai</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Bubenheim &amp; Elyas</string>
+			<key>FooterText</key>
+			<string>https://tanzil.net/trans/de.bubenheim</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Кулиев</string>
+			<key>FooterText</key>
+			<string>https://tanzil.net/trans/ru.kuliev</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Bornez</string>
+			<key>FooterText</key>
+			<string>https://tanzil.net/trans/es.bornez</string>
+		</dict>
+	</array>
+</dict>
+</plist>

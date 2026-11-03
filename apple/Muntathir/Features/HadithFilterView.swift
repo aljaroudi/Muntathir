@@ -26,7 +26,7 @@ struct HadithFilterView: View {
                             $0.title(locale: locale).compare($1.title(locale: locale), options: .numeric, locale: locale) == .orderedAscending
                         }
                         if !matches.isEmpty {
-                            Section(LocalizedStringKey(group.rawValue)) {
+                            Section(group.title) {
                                 ForEach(matches) { book in
                                     Button(book.title(locale: locale)) { select(book.id, nil) }
                                         .foregroundStyle(.primary)

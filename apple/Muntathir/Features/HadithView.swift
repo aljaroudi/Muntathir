@@ -75,7 +75,7 @@ struct HadithView: View {
                             $0.title(locale: locale).compare($1.title(locale: locale), options: .numeric, locale: locale) == .orderedAscending
                         }
                         if !books.isEmpty {
-                            Section(LocalizedStringKey(group.rawValue)) {
+                            Section(group.title) {
                                 ForEach(books) { book in
                                     Button { chooseBook(book.id, clearQuery: true) } label: {
                                         VStack(alignment: .leading, spacing: 6) {

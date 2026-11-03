@@ -161,15 +161,8 @@ struct SettingsView: View {
                 } footer: {
                     Text("Silent reminders at sunset for observances beginning this evening.")
                 }
-                Section {
-                    NavigationLink("Sources and licenses") { LicensesView() }
-                        .accessibilityIdentifier("sources-and-licenses")
-                } header: {
-                    Text("About")
-                } footer: {
-                    Text(
-                        "Settings sync through iCloud when available. Live GPS and notification permissions stay on this device."
-                    )
+                Section {} footer: {
+                    Text("Settings sync through iCloud when available. Live GPS and notification permissions stay on this device.")
                 }
             }.navigationTitle("Settings").toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -242,70 +235,6 @@ struct LocationPicker: View {
                 try await Task.sleep(for: .milliseconds(350))
                 await model.locationService.search(query)
             } catch {}
-        }
-    }
-}
-
-struct LicensesView: View {
-    @Environment(\.locale) private var locale
-
-    var body: some View {
-        List {
-            Section {
-                NavigationLink {
-                    ScrollView {
-                        Text(license("Adhan-LICENSE"))
-                            .environment(\.layoutDirection, .leftToRight)
-                            .font(.footnote)
-                            .textSelection(.enabled)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding()
-                    }
-                    .navigationTitle("Adhan license")
-                } label: {
-                    Text(verbatim: "Adhan Swift 1.5.0")
-                }
-            } header: {
-                Text("Calculations")
-            }
-            Section("Quran Translations") {
-                ForEach(sortedQuranTranslations, id: \.id) { item in
-                    quranTranslationCredit(item)
-                        .accessibilityIdentifier(item.id)
-                }
-            }
-        }.navigationTitle("Sources and licenses")
-    }
-
-    private var sortedQuranTranslations: [QuranTranslation] {
-        QuranTranslation.catalog.sorted {
-            languageName($0.language).compare(
-                languageName($1.language),
-                options: [.caseInsensitive, .diacriticInsensitive],
-                locale: locale
-            ) == .orderedAscending
-        }
-    }
-
-    private func license(_ name: String) -> String {
-        Bundle.main.url(forResource: name, withExtension: "txt").flatMap {
-            try? String(contentsOf: $0, encoding: .utf8)
-        } ?? ""
-    }
-
-    private func languageName(_ language: String) -> String {
-        locale.localizedString(forLanguageCode: language)
-            ?? locale.localizedString(forIdentifier: language)
-            ?? language
-    }
-
-    private func quranTranslationCredit(_ item: QuranTranslation) -> some View {
-        LabeledContent {
-            Link(destination: URL(string: "https://tanzil.net/trans/\(item.id)")!) {
-                Text(verbatim: item.translator)
-            }
-        } label: {
-            Text(verbatim: languageName(item.language))
         }
     }
 }

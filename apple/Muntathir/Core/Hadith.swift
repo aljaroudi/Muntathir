@@ -120,10 +120,16 @@ struct HadithGrading: Identifiable, Hashable, Sendable {
     }
 }
 
-enum HadithBookGroup: String, CaseIterable, Identifiable {
-    case four = "The Four"
-    case six = "The Six"
-    case other = "Other books"
+enum HadithBookGroup: CaseIterable, Identifiable {
+    case four, six, other
+
+    var title: LocalizedStringResource {
+        switch self {
+        case .four: "The Four"
+        case .six: "The Six"
+        case .other: "Other books"
+        }
+    }
 
     var id: Self {
         self
