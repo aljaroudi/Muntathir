@@ -2,6 +2,8 @@ import SwiftUI
 
 struct VerseNoteEditor: View {
     let verseID: String
+    var isHadith = false
+    var reference: String?
     @Environment(\.quranUserStore) private var store
     @Environment(\.dismiss) private var dismiss
     // A draft is seeded once when the editor opens; incoming sync never replaces unsaved typing.
@@ -11,8 +13,10 @@ struct VerseNoteEditor: View {
     @State private var deleting = false
     @State private var failed = false
 
-    init(verseID: String, initialNote: String) {
+    init(verseID: String, initialNote: String, isHadith: Bool = false, reference: String? = nil) {
         self.verseID = verseID
+        self.isHadith = isHadith
+        self.reference = reference
         _draft = State(initialValue: initialNote)
         _original = State(initialValue: initialNote)
     }
@@ -23,14 +27,14 @@ struct VerseNoteEditor: View {
                 Section {
                     TextEditor(text: $draft)
                         .frame(minHeight: 240)
-                        .accessibilityLabel("Verse note")
+                        .accessibilityLabel(isHadith ? Text("Hadith note") : Text("Verse note"))
                         .accessibilityIdentifier("verse-note-editor")
-                } header: { Text(verseID) }
+                } header: { Text(reference ?? verseID) }
                 if !original.isEmpty {
                     Button("Delete note", role: .destructive) { deleting = true }
                 }
             }
-            .navigationTitle("Verse note")
+            .navigationTitle(isHadith ? Text("Hadith note") : Text("Verse note"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -66,7 +70,11 @@ struct VerseNoteEditor: View {
     private func save(_ text: String) {
         do {
             guard let store else { throw QuranUserStoreError.unavailable }
-            try store.setNote(text, for: verseID)
+            if isHadith {
+                try store.setHadithNote(text, for: verseID)
+            } else {
+                try store.setNote(text, for: verseID)
+            }
             original = text
             dismiss()
         } catch { failed = true }

@@ -22,6 +22,13 @@ struct AppleHadithAssets: HadithAssetBackend {
     static let packID = "hadith"
 
     @concurrent func localURL() async throws -> URL? {
+        #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
+               ProcessInfo.processInfo.arguments.contains("--ui-testing-hadith-fixture")
+            {
+                return try HadithUITestFixture.url()
+            }
+        #endif
         // Resolving a local URL requires no network, including on iOS 26.0.
         do {
             let url = try AssetPackManager.shared.url(for: "Hadith/hadith.db")
@@ -94,3 +101,50 @@ struct AppleHadithAssets: HadithAssetBackend {
         }
     }
 }
+
+#if DEBUG
+    import SQLite3
+
+    /// Isolated, deterministic data for UI tests; never substitutes for hosted assets in normal launches.
+    enum HadithUITestFixture {
+        static func url() throws -> URL {
+            let url = URL.applicationSupportDirectory.appending(path: "hadith-ui-fixture.db")
+            if FileManager.default.fileExists(atPath: url.path) {
+                return url
+            }
+            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            var handle: OpaquePointer?
+            guard sqlite3_open(url.path, &handle) == SQLITE_OK, let handle else { throw HadithDatabaseError.unavailable }
+            defer { sqlite3_close(handle) }
+            let sql = """
+            PRAGMA application_id = 1230262606;
+            PRAGMA user_version = 6;
+            CREATE TABLE collection(id TEXT PRIMARY KEY, name_ar TEXT, name_en TEXT, sort_order INTEGER);
+            CREATE TABLE book(id TEXT PRIMARY KEY, collection_id TEXT, name_ar TEXT, name_en TEXT, sort_order INTEGER, author TEXT, author_ar TEXT);
+            CREATE TABLE chapter(id INTEGER PRIMARY KEY, book_id TEXT, chapter_idx INTEGER, file_name TEXT, name_ar TEXT, name_en TEXT);
+            CREATE TABLE hadith(id INTEGER PRIMARY KEY, book_id TEXT, chapter_id INTEGER, id_in_book INTEGER, source_id INTEGER, arabic TEXT, english_narrator TEXT, english_text TEXT);
+            CREATE TABLE grader(id TEXT PRIMARY KEY, name_ar TEXT, name_en TEXT);
+            CREATE TABLE hadith_grading(id INTEGER PRIMARY KEY, hadith_id INTEGER, grader_id TEXT, grade_ar TEXT, grade_en TEXT, reference_ar TEXT, reference_en TEXT, status TEXT, original_text TEXT);
+            CREATE VIRTUAL TABLE hadith_words USING fts5(text, root, lemma, content='', prefix='2 3');
+            CREATE VIRTUAL TABLE hadith_fts USING fts5(text, content='', tokenize='trigram');
+            CREATE VIEW hadith_english_content AS SELECT id, trim(english_narrator || ' ' || english_text) AS text FROM hadith;
+            CREATE VIRTUAL TABLE hadith_en USING fts5(text, content='hadith_english_content', content_rowid='id', tokenize='porter unicode61');
+            INSERT INTO collection VALUES ('bukhari','كتاب الاختبار','Test book',0);
+            INSERT INTO book VALUES ('bukhari','bukhari','كتاب الاختبار','Test book',0,'Test author','مؤلف الاختبار');
+            INSERT INTO chapter VALUES (1,'bukhari',0,'1.json','باب الاختبار','Test chapter');
+            WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x < 105)
+            INSERT INTO hadith SELECT x,'bukhari',1,x,x,
+              '\(String(repeating: "نص تجريبي لاختبار عرض الحديث وحفظ موضع القراءة. ", count: 35))',
+              'Test narrator','\(String(repeating: "Sample text for testing reading position and image sharing. ", count: 35))' FROM n;
+            INSERT INTO hadith_words(rowid,text) SELECT id,arabic FROM hadith;
+            INSERT INTO hadith_fts(rowid,text) SELECT id,arabic FROM hadith;
+            INSERT INTO hadith_en(rowid,text) SELECT id,text FROM hadith_english_content;
+            """
+            guard sqlite3_exec(handle, sql, nil, nil, nil) == SQLITE_OK else {
+                try? FileManager.default.removeItem(at: url)
+                throw HadithDatabaseError.unavailable
+            }
+            return url
+        }
+    }
+#endif

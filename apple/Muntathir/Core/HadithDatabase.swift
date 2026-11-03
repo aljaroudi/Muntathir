@@ -12,20 +12,22 @@ struct HadithDatabase: Sendable {
         guard let url else { throw HadithDatabaseError.unavailable }
         return try HadithConnection(url: url)
     }
-    func validate() throws {
+
+    func validate(full: Bool = true) throws {
         let db = try connection()
         let identity = try db.query("PRAGMA application_id") { sqlite3_column_int($0, 0) }.first
         let version = try db.query("PRAGMA user_version") { sqlite3_column_int($0, 0) }.first
-        guard identity == 1230262606, version == 6 else { throw HadithDatabaseError.incompatible }
-        guard try db.query("PRAGMA quick_check", row: { QuranConnection.text($0, 0) }) == ["ok"] else {
-            throw HadithDatabaseError.unavailable
+        guard identity == 1_230_262_606, version == 6 else { throw HadithDatabaseError.incompatible }
+        if full {
+            guard try db.query("PRAGMA quick_check", row: { QuranConnection.text($0, 0) }) == ["ok"] else {
+                throw HadithDatabaseError.unavailable
+            }
         }
-        _ = try db.query("SELECT h.id, g.grade_ar FROM hadith h LEFT JOIN hadith_grading g ON g.hadith_id = h.id LIMIT 1") { sqlite3_column_int($0, 0) }
+        _ = try db.query("SELECT h.id, h.source_id, c.file_name, g.grade_ar FROM hadith h JOIN chapter c ON c.id = h.chapter_id LEFT JOIN hadith_grading g ON g.hadith_id = h.id LIMIT 1") { sqlite3_column_int($0, 0) }
         for table in ["hadith_words", "hadith_fts", "hadith_en"] {
             _ = try db.query("SELECT rowid FROM \(table) WHERE \(table) MATCH ? LIMIT 1", parameters: ["test"]) { sqlite3_column_int($0, 0) }
         }
     }
-
 }
 
 enum HadithDatabaseError: Error {

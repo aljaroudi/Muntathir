@@ -200,3 +200,23 @@ final class MuntathirUITests: XCTestCase {
         add(attachment)
     }
 }
+
+extension MuntathirUITests {
+    @MainActor func testPrayerContextMenuPreservesRequiredVisibility() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let fajr = app.descendants(matching: .any)["prayer-fajr"].firstMatch
+        XCTAssertTrue(fajr.waitForExistence(timeout: 10))
+        fajr.press(forDuration: 1)
+        XCTAssertTrue(app.buttons["Mute"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["Hide"].exists)
+        app.buttons["Mute"].tap()
+        let asr = app.descendants(matching: .any)["prayer-asr"].firstMatch
+        asr.press(forDuration: 1)
+        XCTAssertTrue(app.buttons["Alert"].waitForExistence(timeout: 5))
+        app.buttons["Hide"].tap()
+        XCTAssertFalse(asr.exists)
+        XCTAssertTrue(fajr.exists)
+    }
+}

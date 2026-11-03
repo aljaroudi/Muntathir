@@ -1,3 +1,5 @@
 "CFBundleDisplayName" = "Muntathir";
 "NSLocationWhenInUseUsageDescription" = "Your location calculates prayer times and Qibla on this device.";
 "QiblaPreciseLocation" = "Your precise location shows your position and the direction to the Kaaba on the map.";
+
+"NSPhotoLibraryAddUsageDescription" = "Save shared Quran and Hadith images to your photo library.";

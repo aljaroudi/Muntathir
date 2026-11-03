@@ -5,6 +5,7 @@ import SwiftData
 @MainActor @Observable final class QuranUserStore {
     private(set) var container: ModelContainer?
     private(set) var states: [String: QuranVerseState] = [:]
+    private(set) var hadithStates: [String: QuranVerseState] = [:]
     private(set) var unavailable = false
     @ObservationIgnored private let configuration: ModelConfiguration
     @ObservationIgnored private var installationID: String
@@ -18,7 +19,7 @@ import SwiftData
     }
 
     static func makeContainer(configuration: ModelConfiguration) throws -> ModelContainer {
-        try ModelContainer(for: Schema(versionedSchema: QuranUserSchemaV1.self), migrationPlan: QuranUserMigrationPlan.self, configurations: [configuration])
+        try ModelContainer(for: Schema(versionedSchema: QuranUserSchemaV2.self), migrationPlan: QuranUserMigrationPlan.self, configurations: [configuration])
     }
 
     static func application() -> QuranUserStore {
@@ -30,7 +31,7 @@ import SwiftData
         if testing {
             defaults.set(installationID, forKey: "quranInstallationID")
         }
-        let schema = Schema(versionedSchema: QuranUserSchemaV1.self)
+        let schema = Schema(versionedSchema: QuranUserSchemaV2.self)
         if testing {
             let directory = URL.applicationSupportDirectory.appending(path: "QuranUITests", directoryHint: .isDirectory)
             // Only an explicitly requested UI-test reset removes this isolated test store.
@@ -80,6 +81,7 @@ import SwiftData
             let rows = try opened.mainContext.fetch(FetchDescriptor<QuranAnnotation>())
             container = opened
             receive(rows.map(QuranAnnotationSnapshot.init))
+            try receiveHadith(opened.mainContext.fetch(FetchDescriptor<HadithAnnotation>()).map(QuranAnnotationSnapshot.init))
             unavailable = false
         } catch {
             container = nil
@@ -136,6 +138,59 @@ import SwiftData
         } catch {
             context.rollback()
             _ = try? refresh(verseID, in: context)
+            throw error
+        }
+    }
+
+    func receiveHadith(_ rows: [QuranAnnotationSnapshot]) {
+        hadithStates = QuranVerseState.resolve(rows)
+    }
+
+    func hadithState(for verseID: String) -> QuranVerseState {
+        hadithStates[verseID] ?? QuranVerseState(id: verseID)
+    }
+
+    func setHadithFavorite(_ value: Bool, for verseID: String, now: Date = .now) throws {
+        try updateHadith(verseID: verseID) { row in
+            row.isFavorite = value
+            row.favoriteModifiedAt = max(now, hadithState(for: verseID).favoriteModifiedAt.addingTimeInterval(0.001))
+        }
+    }
+
+    func setHadithNote(_ value: String, for verseID: String, now: Date = .now) throws {
+        try updateHadith(verseID: verseID) { row in
+            row.note = value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "" : value
+            row.noteModifiedAt = max(now, hadithState(for: verseID).noteModifiedAt.addingTimeInterval(0.001))
+        }
+    }
+
+    private func refreshHadith(_ verseID: String, in context: ModelContext) throws -> [HadithAnnotation] {
+        let rows = try context.fetch(FetchDescriptor<HadithAnnotation>(predicate: #Predicate { $0.verseID == verseID }))
+        hadithStates[verseID] = QuranVerseState.resolve(rows.map(QuranAnnotationSnapshot.init))[verseID]
+        return rows
+    }
+
+    private func updateHadith(verseID: String, mutation: (HadithAnnotation) -> Void) throws {
+        guard let context = container?.mainContext else { throw QuranUserStoreError.unavailable }
+        let installation = installationID
+        do {
+            // Imported state may have changed since the menu or editor opened.
+            let rows = try refreshHadith(verseID, in: context)
+            let local = rows.filter { $0.verseID == verseID && $0.installationID == installation }
+                .sorted { $0.recordID < $1.recordID }
+            let row: HadithAnnotation
+            if let existing = local.first {
+                row = existing
+            } else {
+                row = HadithAnnotation(verseID: verseID, installationID: installation)
+                context.insert(row)
+            }
+            mutation(row)
+            try saveContext(context)
+            _ = try refreshHadith(verseID, in: context)
+        } catch {
+            context.rollback()
+            _ = try? refreshHadith(verseID, in: context)
             throw error
         }
     }

@@ -29,15 +29,44 @@ enum QuranUserSchemaV1: VersionedSchema {
     }
 }
 
+enum QuranUserSchemaV2: VersionedSchema {
+    static var versionIdentifier: Schema.Version {
+        .init(2, 0, 0)
+    }
+
+    static var models: [any PersistentModel.Type] {
+        [QuranUserSchemaV1.Annotation.self, HadithAnnotation.self]
+    }
+
+    @Model final class HadithAnnotation {
+        #Index<HadithAnnotation>([\.verseID])
+
+        var recordID: String = UUID().uuidString
+        var verseID: String = ""
+        var installationID: String = ""
+        var isFavorite: Bool = false
+        var favoriteModifiedAt: Date = Date(timeIntervalSince1970: 0)
+        var note: String = ""
+        var noteModifiedAt: Date = Date(timeIntervalSince1970: 0)
+
+        init(verseID: String, installationID: String) {
+            self.verseID = verseID
+            self.installationID = installationID
+        }
+    }
+}
+
 enum QuranUserMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [QuranUserSchemaV1.self]
+        [QuranUserSchemaV1.self, QuranUserSchemaV2.self]
     }
 
     static var stages: [MigrationStage] {
-        []
+        [.lightweight(fromVersion: QuranUserSchemaV1.self, toVersion: QuranUserSchemaV2.self)]
     }
 }
+
+typealias HadithAnnotation = QuranUserSchemaV2.HadithAnnotation
 
 typealias QuranAnnotation = QuranUserSchemaV1.Annotation
 
@@ -50,6 +79,15 @@ struct QuranAnnotationSnapshot: Equatable, Sendable {
     let noteModifiedAt: Date
 
     @MainActor init(_ annotation: QuranAnnotation) {
+        recordID = annotation.recordID
+        verseID = annotation.verseID
+        isFavorite = annotation.isFavorite
+        favoriteModifiedAt = annotation.favoriteModifiedAt
+        note = annotation.note
+        noteModifiedAt = annotation.noteModifiedAt
+    }
+
+    @MainActor init(_ annotation: HadithAnnotation) {
         recordID = annotation.recordID
         verseID = annotation.verseID
         isFavorite = annotation.isFavorite

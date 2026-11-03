@@ -162,8 +162,8 @@ struct DailyVerseScheduleTests {
         let widgetDB = try #require(widget.url(forResource: "quran", withExtension: "db"))
         #expect(try Data(contentsOf: appDB) == Data(contentsOf: widgetDB))
         for translation in QuranTranslation.catalog {
-            #expect(Bundle.main.url(forResource: translation.id, withExtension: "db") == nil)
-            #expect(widget.url(forResource: translation.id, withExtension: "db") == nil)
+            #expect(Bundle.main.url(forResource: translation.id, withExtension: "db") != nil)
+            #expect(widget.url(forResource: translation.id, withExtension: "db") != nil)
         }
     }
 

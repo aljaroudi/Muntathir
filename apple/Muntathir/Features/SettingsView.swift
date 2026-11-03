@@ -147,6 +147,20 @@ struct SettingsView: View {
                     )
                 }
                 Section {
+                    Toggle("Calendar events", isOn: Binding(get: { model.preferences.calendarEventNotifications }, set: { enabled in
+                        Task {
+                            let allowed = enabled ? await model.notifications.authorize() : true
+                            if allowed {
+                                model.update { $0.calendarEventNotifications = enabled }
+                            } else {
+                                model.error = String(localized: "Notifications are disabled. Enable them in system Settings.")
+                            }
+                        }
+                    }))
+                } footer: {
+                    Text("Silent reminders at sunset for observances beginning this evening.")
+                }
+                Section {
                     NavigationLink("Sources and licenses") { LicensesView() }
                         .accessibilityIdentifier("sources-and-licenses")
                 } header: {
@@ -334,16 +348,9 @@ struct PrayerNotificationSettings: View {
                 Text("Allow Time Sensitive alerts in Settings and Focus. Sound follows Silent mode and your Ringtone and Alerts volume.")
             }
             Section {
-                Picker("Sound", selection: Binding(get: { model.preferences.notificationSound }, set: { sound in
-                    model.update { $0.notificationSound = sound }
-                    preview(sound)
-                })) {
-                    ForEach(PrayerAlertSound.allCases) { sound in
-                        Text(sound.title).tag(sound)
-                    }
-                }
-                Button("Preview sound", systemImage: "speaker.wave.2") { preview(model.preferences.notificationSound) }
-                    .disabled(model.preferences.notificationSound == .silent)
+                soundPicker("Prayers", keyPath: \.notificationSound)
+                soundPicker("Sunset", keyPath: \.sunsetSound)
+                soundPicker("Other Times", keyPath: \.otherTimesSound)
             }
             Section {
                 ForEach(PrayerName.allCases) { prayer in
@@ -365,6 +372,19 @@ struct PrayerNotificationSettings: View {
                     }
                 }
             }
+    }
+
+    private func soundPicker(_ title: LocalizedStringKey, keyPath: WritableKeyPath<Preferences, PrayerAlertSound>) -> some View {
+        VStack(alignment: .leading) {
+            Picker(title, selection: Binding(get: { model.preferences[keyPath: keyPath] }, set: { sound in
+                model.update { $0[keyPath: keyPath] = sound }
+                preview(sound)
+            })) {
+                ForEach(PrayerAlertSound.allCases) { sound in Text(sound.title).tag(sound) }
+            }
+            Button("Preview sound", systemImage: "speaker.wave.2") { preview(model.preferences[keyPath: keyPath]) }
+                .disabled(model.preferences[keyPath: keyPath] == .silent)
+        }
     }
 
     private func preview(_ sound: PrayerAlertSound) {

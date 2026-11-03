@@ -7,7 +7,7 @@ struct HadithCollection: Identifiable, Hashable, Sendable {
     let count: Int
 
     var group: HadithBookGroup {
-		.init(collectionID: id)
+        .init(collectionID: id)
     }
 
     func title(locale: Locale) -> String {
@@ -52,6 +52,7 @@ struct Hadith: Identifiable, Hashable, Sendable {
     let arabic: String
     let englishNarrator: String
     let english: String
+    var source: HadithSource?
     var arabicDisplay: AttributedString = .init()
     var englishDisplay: AttributedString = .init()
     var narratorDisplay: AttributedString = .init()
@@ -72,12 +73,13 @@ struct HadithDetail: Sendable {
     func authorName(locale: Locale) -> String {
         locale.language.languageCode?.identifier == "ar" && !authorArabic.isEmpty ? authorArabic : author
     }
+
     let gradings: [HadithGrading]
     let previousID: Int?
     let nextID: Int?
 }
 
-struct HadithRequest: Equatable, Sendable {
+struct HadithRequest: Codable, Equatable, Sendable {
     var query = ""
     var collectionID: String?
     var chapterID: Int?
@@ -110,21 +112,22 @@ struct HadithGrading: Identifiable, Hashable, Sendable {
     }
 
     private func localized(arabic: String, english: String, locale: Locale) -> String {
-        return if locale.language.languageCode?.identifier == "ar" {
+        if locale.language.languageCode?.identifier == "ar" {
             arabic.isEmpty ? english : arabic
         } else {
-			english.isEmpty ? arabic : english
-		}
+            english.isEmpty ? arabic : english
+        }
     }
 }
 
-
 enum HadithBookGroup: String, CaseIterable, Identifiable {
-	case four = "The Four"
+    case four = "The Four"
     case six = "The Six"
     case other = "Other books"
 
-    var id: Self { self }
+    var id: Self {
+        self
+    }
 
     init(collectionID: String) {
         self = switch collectionID {
@@ -139,8 +142,31 @@ enum HadithBookGroup: String, CaseIterable, Identifiable {
     }
 }
 
-struct HadithCursor: Equatable, Sendable {
-    enum Phase: Int, Sendable { case words, substring }
+struct HadithCursor: Codable, Equatable, Sendable {
+    enum Phase: Int, Codable, Sendable { case words, substring }
     var phase: Phase = .words
     var afterID = 0
+}
+
+/// Source identity survives generated SQLite row renumbering.
+struct HadithSource: Codable, Hashable, Sendable {
+    let book: String
+    let chapterFile: String
+    let number: Int
+    let sourceID: Int?
+
+    var key: String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        return (try? encoder.encode(self).base64EncodedString()) ?? ""
+    }
+
+    init(book: String, chapterFile: String, number: Int, sourceID: Int?) {
+        self.book = book; self.chapterFile = chapterFile; self.number = number; self.sourceID = sourceID
+    }
+
+    init?(key: String) {
+        guard let data = Data(base64Encoded: key), let value = try? JSONDecoder().decode(Self.self, from: data) else { return nil }
+        self = value
+    }
 }

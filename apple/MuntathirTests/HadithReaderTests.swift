@@ -22,7 +22,7 @@ struct HadithReaderTests {
         #expect(narration.chapter.chapterTitle(locale: arabic) == "كتاب الحجة")
         let detail = try await reader.detail(id: narration.id)
         #expect(detail.narration.chapter == narration.chapter)
-        for unresolved in chapters.filter({ $0.arabic.isEmpty }) {
+        for unresolved in chapters.filter(\.arabic.isEmpty) {
             #expect(unresolved.chapterTitle(locale: arabic) == unresolved.english)
         }
         let arabicOnly = HadithChapter(id: 0, arabic: "كتاب الحجة", english: "", bookArabic: "الكافي", bookEnglish: "Al-Kafi")
@@ -226,17 +226,17 @@ struct HadithReaderTests {
         let reader = HadithReader(database: HadithDatabase(url: fixture.url))
         var request = HadithRequest(query: "صلاة", chapterID: 1)
         let first = try await reader.page(request)
-        #expect(first.rows.map(\.id) == Array(200001...200050))
+        #expect(first.rows.map(\.id) == Array(200_001 ... 200_050))
         #expect(first.nextCursor?.phase == .substring)
         request.cursor = try #require(first.nextCursor)
         let second = try await reader.page(request)
-        #expect(second.rows.map(\.id) == Array(200051...200075))
+        #expect(second.rows.map(\.id) == Array(200_051 ... 200_075))
         #expect(!second.hasMore)
         #expect(second.rows.allSatisfy { $0.arabicDisplay.runs.contains { $0.backgroundColor != nil } })
-        let detail = try await reader.detail(id: 200051, query: "صلاة")
+        let detail = try await reader.detail(id: 200_051, query: "صلاة")
         #expect(detail.narration.arabicDisplay.runs.contains { $0.backgroundColor != nil })
         let filtered = try await reader.page(HadithRequest(query: "صلاة", chapterID: 2))
-        #expect(filtered.rows.map(\.id) == [300000])
+        #expect(filtered.rows.map(\.id) == [300_000])
         // Short queries do not fall through to substring matching.
         #expect(try await reader.page(HadithRequest(query: "صل", chapterID: 2)).rows.isEmpty)
     }
@@ -300,6 +300,9 @@ struct HadithFixture: Sendable {
         INSERT INTO hadith_fts(rowid,text) SELECT id,arabic FROM hadith;
         INSERT INTO hadith_en(rowid,text) SELECT id,text FROM hadith_english_content;
         INSERT INTO hadith VALUES (100001,'other',3,1,'نص عربي','','');
+        ALTER TABLE chapter ADD COLUMN file_name TEXT NOT NULL DEFAULT '1.json';
+        ALTER TABLE hadith ADD COLUMN source_id INTEGER;
+        UPDATE hadith SET source_id = id_in_book;
         """
         guard sqlite3_exec(handle, sql, nil, nil, nil) == SQLITE_OK else { throw HadithDatabaseError.unavailable }
     }
@@ -310,3 +313,20 @@ struct HadithFixture: Sendable {
 }
 
 private final class HadithTestBundle: NSObject {}
+
+extension HadithReaderTests {
+    @Test func sourceReferencesSurviveGeneratedRowChanges() async throws {
+        let fixture = try HadithFixture(count: 2)
+        defer { fixture.remove() }
+        let reader = HadithReader(database: HadithDatabase(url: fixture.url))
+        let source = try #require(try await reader.detail(id: 1).narration.source)
+        #expect(HadithSource(key: source.key) == source)
+        #expect(try await reader.resolve(source) == 1)
+        var handle: OpaquePointer?
+        #expect(sqlite3_open(fixture.url.path, &handle) == SQLITE_OK)
+        defer { sqlite3_close(handle) }
+        #expect(sqlite3_exec(handle, "UPDATE hadith SET id = 123456 WHERE id = 1", nil, nil, nil) == SQLITE_OK)
+        #expect(try await reader.resolve(source) == 123_456)
+        #expect(try await reader.resolve(HadithSource(book: "missing", chapterFile: "1.json", number: 1, sourceID: 1)) == nil)
+    }
+}

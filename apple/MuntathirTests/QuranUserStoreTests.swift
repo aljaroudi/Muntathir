@@ -5,7 +5,7 @@ import Testing
 
 @MainActor struct QuranUserStoreTests {
     private func configuration(url: URL? = nil) -> ModelConfiguration {
-        let schema = Schema(versionedSchema: QuranUserSchemaV1.self)
+        let schema = Schema(versionedSchema: QuranUserSchemaV2.self)
         if let url {
             return ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)
         }
@@ -111,7 +111,7 @@ import Testing
         let config = configuration(url: directory.appending(path: "v1.store"))
         // Generate using the frozen V1 schema, independent of future current-schema aliases.
         do {
-            let container = try ModelContainer(for: Schema(versionedSchema: QuranUserSchemaV1.self), configurations: [config])
+            let container = try ModelContainer(for: Schema(versionedSchema: QuranUserSchemaV1.self), configurations: [ModelConfiguration(schema: Schema(versionedSchema: QuranUserSchemaV1.self), url: directory.appending(path: "v1.store"), cloudKitDatabase: .none)])
             let row = QuranUserSchemaV1.Annotation(verseID: "2:255", installationID: "fixture")
             row.isFavorite = true
             row.favoriteModifiedAt = Date(timeIntervalSince1970: 10)
@@ -125,9 +125,13 @@ import Testing
         #expect(reopened.state(for: "2:255").isFavorite)
         #expect(reopened.state(for: "2:255").note == "V1 note")
         try reopened.setNote("Updated note", for: "2:255")
+        try reopened.setHadithNote("Hadith note", for: "stable-source")
+        try reopened.setHadithFavorite(true, for: "stable-source")
         let again = QuranUserStore(configuration: config, installationID: "new-installation")
         #expect(again.state(for: "2:255").note == "Updated note")
         #expect(again.state(for: "2:255").isFavorite)
+        #expect(again.hadithState(for: "stable-source").note == "Hadith note")
+        #expect(again.hadithState(for: "stable-source").isFavorite)
     }
 
     @Test func invalidStoreIsNotErasedOrReplacedWithMemory() throws {
@@ -142,5 +146,34 @@ import Testing
         #expect(store.unavailable)
         #expect(try Data(contentsOf: url) == original)
         #expect(throws: QuranUserStoreError.self) { try store.setNote("draft", for: "1:1") }
+    }
+}
+
+extension QuranUserStoreTests {
+    @Test func hadithAnnotationsResolveAndRollbackWithoutChangingQuran() throws {
+        var fail = false
+        let store = QuranUserStore(configuration: configuration(), installationID: "A") { context in
+            if fail {
+                throw QuranUserStoreError.unavailable
+            }
+            try context.save()
+        }
+        try store.setNote("Quran", for: "1:1")
+        try store.setHadithNote("Hadith", for: "1:1")
+        try store.setHadithFavorite(true, for: "1:1")
+        fail = true
+        #expect(throws: QuranUserStoreError.self) { try store.setHadithNote("unsaved", for: "1:1") }
+        #expect(store.hadithState(for: "1:1").note == "Hadith")
+        #expect(store.state(for: "1:1").note == "Quran")
+        let remote = HadithAnnotation(verseID: "1:1", installationID: "B")
+        remote.note = "Remote"
+        remote.noteModifiedAt = .distantFuture
+        let context = try #require(store.container?.mainContext)
+        context.insert(remote)
+        fail = false
+        try context.save()
+        try store.setHadithFavorite(false, for: "1:1")
+        #expect(store.hadithState(for: "1:1").note == "Remote")
+        #expect(!store.hadithState(for: "1:1").isFavorite)
     }
 }

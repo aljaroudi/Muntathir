@@ -82,7 +82,6 @@ struct AyahShareArtwork: View {
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .environment(\.layoutDirection, Locale(identifier: translation.language).language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight)
-                Text(translation.translator).font(.caption).foregroundStyle(.secondary)
             }
             Text(VerseShareContent(ayah: ayah, translation: translation, locale: locale).reference)
                 .font(.subheadline.monospacedDigit())
@@ -119,9 +118,17 @@ struct SharedAyah: Identifiable {
 }
 
 struct AyahShareSheet: UIViewControllerRepresentable {
-    let image: UIImage
+    let items: [Any]
+    init(image: UIImage) {
+        items = [image]
+    }
+
+    init(files: [URL]) {
+        items = files
+    }
+
     func makeUIViewController(context _: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: [image], applicationActivities: nil)
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
     }
 
     func updateUIViewController(_: UIActivityViewController, context _: Context) {}

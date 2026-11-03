@@ -1,3 +1,5 @@
 "CFBundleDisplayName" = "Muntathir";
 "NSLocationWhenInUseUsageDescription" = "Ваша геопозиция используется на этом устройстве для расчёта времени намаза и киблы.";
 "QiblaPreciseLocation" = "Ваша точная геопозиция показывает ваше положение и направление к Каабе на карте.";
+
+"NSPhotoLibraryAddUsageDescription" = "Сохранение изображений Корана и хадисов в вашу медиатеку.";

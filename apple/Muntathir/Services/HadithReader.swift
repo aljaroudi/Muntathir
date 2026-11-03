@@ -9,12 +9,12 @@ actor HadithReader {
         self.database = database
     }
 
-    // Actor serialization drains an active synchronous query before replacing/removing its file.
-    func install(_ url: URL?) throws {
+    /// Actor serialization drains an active synchronous query before replacing/removing its file.
+    func install(_ url: URL?, fullValidation: Bool = true) throws {
         database = HadithDatabase(url: nil)
         guard let url else { return }
         let candidate = HadithDatabase(url: url)
-        try candidate.validate()
+        try candidate.validate(full: fullValidation)
         database = candidate
     }
 
@@ -43,7 +43,9 @@ actor HadithReader {
         if !request.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, terms.isEmpty {
             return HadithPage(rows: [], hasMore: false)
         }
-        if let number = request.number, number <= 0 { throw HadithDatabaseError.invalidReference }
+        if let number = request.number, number <= 0 {
+            throw HadithDatabaseError.invalidReference
+        }
         var conditions = ["1 = 1"]
         var scopeParameters: [String] = []
         if let collectionID = request.collectionID {
@@ -95,7 +97,7 @@ actor HadithReader {
             }
             selected = try connection.query(sql, parameters: parameters) { (Int(sqlite3_column_int($0, 0)), .words) }
         }
-        if selected.count < 51, !terms.isEmpty, terms.allSatisfy({ $0.count >= 3 && $0.unicodeScalars.contains { (0x0600...0x06FF).contains($0.value) } }) {
+        if selected.count < 51, !terms.isEmpty, terms.allSatisfy({ $0.count >= 3 && $0.unicodeScalars.contains { (0x0600 ... 0x06FF).contains($0.value) } }) {
             let after = request.cursor.phase == .substring ? request.cursor.afterID : 0
             let substring = terms.map { "\"\($0)\"" }.joined(separator: " AND ")
             let sql = """
@@ -123,7 +125,7 @@ actor HadithReader {
             return Hadith(id: narration.id, collectionID: narration.collectionID, number: narration.number,
                           chapter: narration.chapter, arabic: String(narration.arabicDisplay.characters), englishNarrator: "",
                           english: String(narration.englishDisplay.characters),
-                          arabicDisplay: narration.arabicDisplay, englishDisplay: narration.englishDisplay)
+                          source: narration.source, arabicDisplay: narration.arabicDisplay, englishDisplay: narration.englishDisplay)
         }
         let byID = Dictionary(uniqueKeysWithValues: values.map { ($0.id, $0) })
         let hasMore = selected.count > Self.pageSize
@@ -191,12 +193,43 @@ actor HadithReader {
                                 previousID: adjacent("<", order: "DESC"), nextID: adjacent(">", order: "ASC"))
     }
 
+    func source(id: Int) throws -> HadithSource? {
+        try database.connection().query("SELECT b.id, c.file_name, h.id_in_book, h.source_id \(Self.joins) WHERE h.id = CAST(? AS INTEGER)", parameters: [String(id)]) {
+            HadithSource(book: QuranConnection.text($0, 0), chapterFile: QuranConnection.text($0, 1),
+                         number: Int(sqlite3_column_int($0, 2)), sourceID: sqlite3_column_type($0, 3) == SQLITE_NULL ? nil : Int(sqlite3_column_int($0, 3)))
+        }.first
+    }
+
+    func chapterSource(id: Int?) throws -> HadithSource? {
+        guard let id else { return nil }
+        return try database.connection().query("SELECT book_id, file_name FROM chapter WHERE id = CAST(? AS INTEGER)", parameters: [String(id)]) {
+            HadithSource(book: QuranConnection.text($0, 0), chapterFile: QuranConnection.text($0, 1), number: 0, sourceID: nil)
+        }.first
+    }
+
+    func chapterID(for source: HadithSource) throws -> Int? {
+        try database.connection().query("SELECT id FROM chapter WHERE book_id = ? AND file_name = ?", parameters: [source.book, source.chapterFile]) {
+            Int(sqlite3_column_int($0, 0))
+        }.first
+    }
+
+    func resolve(_ source: HadithSource) throws -> Int? {
+        let matches = try database.connection().query("""
+        SELECT h.id \(Self.joins) WHERE b.id = ? AND c.file_name = ?
+        AND h.id_in_book = CAST(? AS INTEGER)
+        AND (h.source_id = CAST(? AS INTEGER) OR (h.source_id IS NULL AND ? = '')) LIMIT 2
+        """, parameters: [source.book, source.chapterFile, String(source.number), source.sourceID.map(String.init) ?? "", source.sourceID.map(String.init) ?? ""]) {
+            Int(sqlite3_column_int($0, 0))
+        }
+        return matches.count == 1 ? matches.first : nil
+    }
+
     private static let joins = "FROM hadith h JOIN book b ON b.id = h.book_id JOIN chapter c ON c.id = h.chapter_id"
 
     private static func columns(search: Bool) -> String {
         // English FTS supplies exact Porter-stem spans, including matches in the narrator.
         let english = search ? "COALESCE((SELECT highlight(hadith_en, 0, char(57344), char(57345)) FROM hadith_en WHERE hadith_en MATCH ? AND rowid = h.id), h.english_text)" : "h.english_text"
-        return "h.id, b.collection_id, h.id_in_book, c.id, c.name_ar, c.name_en, b.name_ar, b.name_en, h.arabic, h.english_narrator, \(english)"
+        return "h.id, b.collection_id, h.id_in_book, c.id, c.name_ar, c.name_en, b.name_ar, b.name_en, h.arabic, h.english_narrator, \(english), b.id, c.file_name, h.source_id"
     }
 
     private static func chapter(_ row: OpaquePointer, offset: Int32) -> HadithChapter {
@@ -209,6 +242,9 @@ actor HadithReader {
         Hadith(id: Int(sqlite3_column_int(row, 0)), collectionID: QuranConnection.text(row, 1),
                number: Int(sqlite3_column_int(row, 2)), chapter: chapter(row, offset: 3),
                arabic: QuranConnection.text(row, 8), englishNarrator: QuranConnection.text(row, 9),
-               english: QuranConnection.text(row, 10))
+               english: QuranConnection.text(row, 10),
+               source: HadithSource(book: QuranConnection.text(row, 11), chapterFile: QuranConnection.text(row, 12),
+                                    number: Int(sqlite3_column_int(row, 2)),
+                                    sourceID: sqlite3_column_type(row, 13) == SQLITE_NULL ? nil : Int(sqlite3_column_int(row, 13))))
     }
 }

@@ -1,6 +1,13 @@
 import SwiftUI
 
 struct HadithView: View {
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.hadithAssets) private var assets
+    @Environment(\.hadithSession) private var session
+    @State private var toolbarWidth: CGFloat = 0
+    @State private var restored = false
+    @State private var scrollPosition = ScrollPosition()
+    @State private var listOffset: Double = 0
     @Environment(\.locale) private var locale
     @FocusState private var searchFocused: Bool
     let reader: HadithReader
@@ -45,8 +52,8 @@ struct HadithView: View {
     }
 
     var body: some View {
-        ScrollViewReader { proxy in
-            List {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 20) {
                 Section {
                     Button { filter = .books } label: {
                         LabeledContent("Book", value: selectedBook?.title(locale: locale) ?? String(localized: "All books"))
@@ -77,12 +84,15 @@ struct HadithView: View {
                                             if locale.language.languageCode?.identifier != "ar" {
                                                 Text(book.arabic).environment(\.layoutDirection, .rightToLeft)
                                             }
-											Text("\(book.count, format: .number) narrations").font(.caption).foregroundStyle(.secondary)
+                                            Text("\(book.count, format: .number) narrations").font(.caption).foregroundStyle(.secondary)
                                         }
                                         .foregroundStyle(.primary)
                                     }
                                     .accessibilityIdentifier("hadith-book-\(book.id)")
-                                    .listRowBackground(HadithBookStyle.background(for: book.id))
+                                    .buttonStyle(.plain)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(14)
+                                    .background(HadithBookStyle.background(for: book.id), in: .rect(cornerRadius: 14))
                                 }
                             }
                         }
@@ -101,7 +111,8 @@ struct HadithView: View {
                                 HadithPreviewRow(narration: narration)
                             }
                             .buttonStyle(.plain)
-                            .listRowBackground(HadithBookStyle.background(for: narration.collectionID))
+                            .padding(.horizontal, 14)
+                            .background(HadithBookStyle.background(for: narration.collectionID), in: .rect(cornerRadius: 14))
                             .accessibilityIdentifier("hadith-result-\(narration.id)")
                         }
                     }
@@ -109,18 +120,34 @@ struct HadithView: View {
                 if loading {
                     ProgressView("Loading Hadith…").frame(maxWidth: .infinity)
                 } else if failed {
-                    HadithLoadError { retry += 1 }
+                    HadithLoadError { Task { await assets?.refresh(); retry += 1 } }
                 } else if !browsingCatalog, page.rows.isEmpty {
                     ContentUnavailableView.search(text: request.number.map(String.init) ?? request.query)
                 }
             }
-            .onChange(of: page.rows.first?.id) { proxy.scrollTo("top", anchor: .top) }
+            .padding()
+        }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { toolbarWidth = $0 }
+        .scrollPosition($scrollPosition)
+        .onScrollGeometryChange(for: Double.self) { max(0, $0.contentOffset.y + $0.contentInsets.top) } action: { _, offset in
+            listOffset = offset
+        }
+        .onScrollPhaseChange { _, phase in
+            if phase == .idle, !loading, restored {
+                session?.state.listOffset = listOffset
+            }
+        }
+        .onChange(of: loading) { _, loading in
+            if !loading {
+                scrollPosition.scrollTo(y: session?.state.listOffset ?? 0)
+            }
         }
         .safeAreaInset(edge: .bottom) {
             if !browsingCatalog, !searchFocused, !history.isEmpty || page.hasMore {
                 HStack {
                     Button("Previous") {
                         guard let previous = history.popLast() else { return }
+                        session?.state.listOffset = 0
                         request.cursor = previous
                     }
                     .disabled(history.isEmpty || loading)
@@ -129,6 +156,7 @@ struct HadithView: View {
                     Button("Next") {
                         guard let next = page.nextCursor else { return }
                         history.append(request.cursor)
+                        session?.state.listOffset = 0
                         request.cursor = next
                     }
                     .disabled(!page.hasMore || loading)
@@ -148,16 +176,18 @@ struct HadithView: View {
         .scrollDismissesKeyboard(.interactively)
         .autocorrectionDisabled()
         .toolbar {
-            if let removeDownload {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Remove download", systemImage: "trash", action: removeDownload)
-                }
-            }
-            ToolbarItem(placement: .topBarTrailing) { HadithTranslationPicker() }
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Go to hadith", systemImage: "number") { jumpPresented = true }
-                    .disabled(request.collectionID == nil)
-                    .accessibilityIdentifier("hadith-jump")
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 8) { toolbarActions }
+                        .labelStyle(.iconOnly)
+                        .fixedSize(horizontal: true, vertical: false)
+                    Menu { toolbarActions } label: {
+                        Label("Hadith actions", systemImage: "ellipsis.circle")
+                    }
+                    .accessibilityIdentifier("hadith-library-menu")
+                }
+                // Reserve room for Back and the book title, including in Split View.
+                .frame(maxWidth: max(44, toolbarWidth * 0.5), alignment: .trailing)
             }
         }
         .sheet(item: $filter) { kind in
@@ -191,11 +221,50 @@ struct HadithView: View {
         .navigationDestination(item: $selected) { narration in
             HadithDetailView(initialID: narration.id, reader: reader, query: request.query, orderedFallback: page.usedOrderedFallback)
         }
-        .task(id: LoadRequest(search: request, retry: retry)) { await load() }
+        .task { await restoreSession() }
+        .task(id: LoadRequest(search: request, retry: retry)) {
+            if restored {
+                await load()
+            }
+        }
+        .onChange(of: selected) { old, value in
+            if value == nil, old != nil {
+                session?.state.selection = nil; session?.state.detailOffset = 0
+            }
+        }
+        .onDisappear {
+            if restored, !loading {
+                session?.state.listOffset = listOffset
+            }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase != .active, restored, !loading {
+                session?.state.listOffset = listOffset
+            }
+        }
+    }
+
+    @ViewBuilder private var toolbarActions: some View {
+        NavigationLink { HadithSavedView(notes: false, reader: reader) } label: { Label("Favorites", systemImage: "star") }
+            .accessibilityIdentifier("hadith-favorites")
+        NavigationLink { HadithSavedView(notes: true, reader: reader) } label: { Label("Notes", systemImage: "note.text") }
+            .accessibilityIdentifier("hadith-notes")
+        HadithTranslationPicker()
+        Button("Go to hadith", systemImage: "number") { jumpPresented = true }
+            .disabled(request.collectionID == nil)
+            .accessibilityIdentifier("hadith-jump")
+        #if DEBUG
+            if let removeDownload {
+                Menu {
+                    Button("Remove download", systemImage: "trash", role: .destructive, action: removeDownload)
+                } label: { Label { Text(verbatim: "Debug") } icon: { Image(systemName: "ladybug") } }
+            }
+        #endif
     }
 
     private func update(_ change: (inout HadithRequest) -> Void) {
         openSingleMatch = false
+        session?.state.listOffset = 0
         change(&request)
         request.cursor = HadithCursor()
         history = []
@@ -211,6 +280,77 @@ struct HadithView: View {
                 $0.query = ""
             }
         }
+    }
+
+    private func restoreSession() async {
+        guard !restored else { return }
+        if let saved = session?.state {
+            var restoredRequest = saved.request
+            var restoredHistory = saved.history
+            do {
+                if let chapter = saved.chapter {
+                    restoredRequest.chapterID = try await reader.chapterID(for: chapter)
+                }
+                let cursors = saved.history + [saved.request.cursor]
+                if saved.cursorSources.count == cursors.count {
+                    var resolved: [HadithCursor] = []
+                    for (cursor, source) in zip(cursors, saved.cursorSources) {
+                        if cursor.afterID == 0 {
+                            resolved.append(cursor)
+                        } else if let source, let id = try await reader.resolve(source) {
+                            resolved.append(HadithCursor(phase: cursor.phase, afterID: id))
+                        } else {
+                            resolved = []; break
+                        }
+                    }
+                    restoredRequest.cursor = resolved.last ?? HadithCursor()
+                    restoredHistory = Array(resolved.dropLast())
+                } else {
+                    restoredRequest.cursor = HadithCursor(); restoredHistory = []
+                }
+                let books = try await reader.catalog()
+                try Task.checkCancellation()
+                catalog = books
+                if let id = restoredRequest.collectionID, !books.contains(where: { $0.id == id }) {
+                    restoredRequest = HadithRequest()
+                    restoredHistory = []
+                    session?.state.listOffset = 0
+                }
+                request = restoredRequest
+                history = restoredHistory
+                if let source = saved.selection, let id = try await reader.resolve(source) {
+                    selected = try await reader.detail(id: id).narration
+                } else if saved.selection != nil {
+                    session?.state.selection = nil
+                    session?.state.detailOffset = 0
+                }
+            } catch is CancellationError {
+                return
+            } catch {
+                // Keep persisted state for a later retry if the asset is temporarily unavailable.
+                request.collectionID = saved.request.collectionID
+            }
+        }
+        restored = true
+        retry += 1
+    }
+
+    private func saveSession(_ current: HadithRequest) async {
+        guard let session else { return }
+        do {
+            var sources: [HadithSource?] = []
+            for cursor in history + [current.cursor] {
+                try await sources.append(cursor.afterID == 0 ? nil : reader.source(id: cursor.afterID))
+            }
+            let chapter = try await reader.chapterSource(id: current.chapterID)
+            guard !Task.isCancelled, current == request else { return }
+            var state = session.state
+            state.request = current
+            state.history = history
+            state.cursorSources = sources
+            state.chapter = chapter
+            session.state = state
+        } catch { /* Keep the previous complete session if a query fails. */ }
     }
 
     private func load() async {
@@ -246,11 +386,14 @@ struct HadithView: View {
             }
             try Task.checkCancellation()
             guard current == request else { return }
+            await saveSession(current)
+            guard !Task.isCancelled else { return }
             loading = false
         } catch is CancellationError {
             // The replacement request owns the UI state.
         } catch {
             guard !Task.isCancelled, current == request else { return }
+            assets?.invalidateValidation()
             failed = true
             loading = false
         }
@@ -266,6 +409,81 @@ struct HadithLoadError: View {
             Text("Please try again.")
         } actions: {
             Button("Try again", action: retry)
+        }
+    }
+}
+
+struct HadithSavedView: View {
+    @Environment(\.hadithAssets) private var assets
+    let notes: Bool
+    let reader: HadithReader
+    @Environment(\.quranUserStore) private var store
+    @Environment(\.locale) private var locale
+    @State private var rows: [String: Hadith] = [:]
+    @State private var loading = true
+    @State private var failed = false
+    @State private var retry = 0
+
+    private var keys: [String] {
+        (store?.hadithStates.values.filter { notes ? !$0.note.isEmpty : $0.isFavorite }.map(\.id) ?? []).sorted()
+    }
+
+    var body: some View {
+        List {
+            if store?.unavailable != false {
+                ContentUnavailableView {
+                    Label("Favorites and notes unavailable", systemImage: "exclamationmark.triangle")
+                } actions: { Button("Try again") { store?.reopen() } }
+            } else if loading {
+                ProgressView("Loading Hadith…")
+            } else if failed {
+                HadithLoadError { Task { await assets?.refresh(); retry += 1 } }
+            } else if keys.isEmpty {
+                ContentUnavailableView(notes ? "No notes yet" : "No favorites yet", systemImage: notes ? "note.text" : "star")
+            } else {
+                ForEach(keys, id: \.self) { key in
+                    VStack(alignment: .leading, spacing: 12) {
+                        if let narration = rows[key] {
+                            NavigationLink {
+                                HadithDetailView(initialID: narration.id, reader: reader, query: "", orderedFallback: false)
+                            } label: { HadithPreviewRow(narration: narration) }
+                        } else {
+                            Label("This narration is unavailable in the installed library.", systemImage: "book.closed")
+                            if let source = HadithSource(key: key) {
+                                Text("\(source.book) · \(source.number)").font(.caption)
+                            }
+                        }
+                        if notes, let note = store?.hadithState(for: key).note {
+                            Text(note).foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle(notes ? Text("Notes") : Text("Favorites"))
+        .task(id: keys.joined(separator: "|") + "-\(retry)") {
+            loading = true
+            failed = false
+            do {
+                var loaded: [String: Hadith] = [:]
+                for key in keys {
+                    guard let source = HadithSource(key: key), let id = try await reader.resolve(source) else { continue }
+                    let detail = try await reader.detail(id: id)
+                    let n = detail.narration
+                    loaded[key] = Hadith(id: id, collectionID: n.collectionID, number: n.number, chapter: n.chapter,
+                                         arabic: String(HadithText.preview(n.arabic, terms: []).characters), englishNarrator: "", english: String(HadithText.preview(n.english, terms: []).characters), source: n.source,
+                                         arabicDisplay: HadithText.preview(n.arabic, terms: []), englishDisplay: HadithText.preview(n.english, terms: []))
+                    try Task.checkCancellation()
+                }
+                rows = loaded
+                loading = false
+            } catch is CancellationError {
+            } catch {
+                if !Task.isCancelled {
+                    assets?.invalidateValidation()
+                    loading = false; failed = true
+                }
+            }
         }
     }
 }

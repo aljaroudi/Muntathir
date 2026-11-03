@@ -3,18 +3,22 @@ import SwiftUI
 struct ContentView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
+    @State private var hadithSession = HadithSession(defaults: ProcessInfo.processInfo.arguments.contains("--ui-testing") ? UserDefaults(suiteName: "Muntathir.UITests")! : .standard)
+    @State private var selectedTab = 0
+    @State private var toolsPath: [String] = []
+    @State private var restored = false
     @State private var settings = false
     @State private var hadithAssets = HadithAssetStore()
     var body: some View {
-        TabView {
-            Tab("Today", systemImage: "sun.max") {
+        TabView(selection: $selectedTab) {
+            Tab("Today", systemImage: "sun.max", value: 0) {
                 shell { TodayView(referenceDate: skyTestDate) }
             }
-            Tab("Calendar", systemImage: "calendar") {
+            Tab("Calendar", systemImage: "calendar", value: 1) {
                 shell { CalendarScreen() }
             }
-            Tab("Tools", systemImage: "square.grid.2x2") {
-                shell {
+            Tab("Tools", systemImage: "square.grid.2x2", value: 2) {
+                NavigationStack(path: $toolsPath) {
                     List {
                         NavigationLink {
                             QuranView()
@@ -22,9 +26,7 @@ struct ContentView: View {
                             Label("The Holy Quran", systemImage: "book.closed")
                         }
                         .accessibilityIdentifier("holy-quran")
-                        NavigationLink {
-                            HadithLibraryView(assets: hadithAssets)
-                        } label: {
+                        NavigationLink(value: "hadith") {
                             Label("Hadith", systemImage: "text.book.closed")
                         }
                         .accessibilityIdentifier("hadith")
@@ -36,9 +38,22 @@ struct ContentView: View {
                         .accessibilityIdentifier("qibla")
                     }
                     .navigationTitle("Tools")
+                    .toolbar { settingsToolbar }
+                    .navigationDestination(for: String.self) { _ in HadithLibraryView(assets: hadithAssets) }
                 }
             }
         }
+        .environment(\.hadithAssets, hadithAssets)
+        .environment(\.hadithSession, hadithSession)
+        .task {
+            guard !restored else { return }
+            if hadithSession.state.active {
+                selectedTab = 2; toolsPath = ["hadith"]
+            }
+            restored = true
+        }
+        .onChange(of: selectedTab) { _, _ in updateReadingRoute() }
+        .onChange(of: toolsPath) { _, _ in updateReadingRoute() }
         .tint(.accentColor)
         .sheet(isPresented: $settings) { SettingsView() }
         .task { model.reschedule() }
@@ -50,6 +65,9 @@ struct ContentView: View {
             }
         }
         .onChange(of: scenePhase) { _, phase in
+            if phase == .background {
+                hadithSession.save()
+            }
             if phase == .active {
                 model.reschedule()
                 Task { await hadithAssets.refresh() }
@@ -84,6 +102,11 @@ struct ContentView: View {
             }
         #endif
         return nil
+    }
+
+    private func updateReadingRoute() {
+        guard restored else { return }
+        hadithSession.state.active = selectedTab == 2 && toolsPath.contains("hadith")
     }
 
     private func shell(@ViewBuilder content: () -> some View) -> some View {

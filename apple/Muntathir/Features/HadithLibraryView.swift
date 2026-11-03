@@ -8,8 +8,13 @@ struct HadithLibraryView: View {
     var body: some View {
         Group {
             if assets.state == .ready {
-                HadithView(reader: assets.reader) { confirmingRemoval = true }
-                    .id(assets.revision)
+                #if DEBUG
+                    HadithView(reader: assets.reader) { confirmingRemoval = true }
+                        .id(assets.revision)
+                #else
+                    HadithView(reader: assets.reader)
+                        .id(assets.revision)
+                #endif
             } else {
                 ContentUnavailableView {
                     Label("Hadith", systemImage: "books.vertical")
@@ -64,6 +69,5 @@ struct HadithLibraryView: View {
         } message: {
             Text("You can download it again later. Quran will remain available.")
         }
-        .task { await assets.refresh() }
     }
 }

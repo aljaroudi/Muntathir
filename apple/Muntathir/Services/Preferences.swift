@@ -11,6 +11,13 @@ struct Preferences: Codable, Equatable, Sendable {
     var announcementNotifications = false
     var timeSensitiveNotifications = true
     var notificationSound: PrayerAlertSound = .chime
+    var sunsetSound: PrayerAlertSound = .system
+    var otherTimesSound: PrayerAlertSound = .system
+    var calendarEventNotifications = false
+
+    func sound(for time: PrayerName) -> PrayerAlertSound {
+        time.isPrayer ? notificationSound : (time == .sunset ? sunsetSound : otherTimesSound)
+    }
 
     var selectedSourceID: String? = CalendarSource.middleEast
     var monthOffsets: [MonthOffset] = []
@@ -20,7 +27,7 @@ struct Preferences: Codable, Equatable, Sendable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case timeSensitiveNotifications, notificationSound
+        case timeSensitiveNotifications, notificationSound, sunsetSound, otherTimesSound, calendarEventNotifications
         case showFeelsLikeTemperature, savedLocation, prayerMethod, imsakMinutes, enabledPrayers, announcementNotifications, selectedSourceID, monthOffsets, hiddenPrayers
     }
 
@@ -35,6 +42,9 @@ struct Preferences: Codable, Equatable, Sendable {
         announcementNotifications = try c.decodeIfPresent(Bool.self, forKey: .announcementNotifications) ?? false
         timeSensitiveNotifications = try c.decodeIfPresent(Bool.self, forKey: .timeSensitiveNotifications) ?? true
         notificationSound = try c.decodeIfPresent(PrayerAlertSound.self, forKey: .notificationSound) ?? .chime
+        sunsetSound = try c.decodeIfPresent(PrayerAlertSound.self, forKey: .sunsetSound) ?? .system
+        otherTimesSound = try c.decodeIfPresent(PrayerAlertSound.self, forKey: .otherTimesSound) ?? .system
+        calendarEventNotifications = try c.decodeIfPresent(Bool.self, forKey: .calendarEventNotifications) ?? false
         let sourceID = try c.decodeIfPresent(String.self, forKey: .selectedSourceID)
         selectedSourceID = CalendarSource.method(for: sourceID) == .system ? nil : sourceID
         // Absolute month-start overrides cannot be migrated to source-relative offsets.
@@ -194,10 +204,10 @@ struct Preferences: Codable, Equatable, Sendable {
         let matching = try feed.matching(location: location, sourceID: preferences.selectedSourceID)
         _ = try CalendarEngine(timeZone: zone, offsets: preferences.monthOffsets, confirmed: matching.map(\.correction))
         confirmations = matching
-        syncWidgets()
+        reschedule()
         let currentMonth = engine.resolve(Date()).month
         let relevant = matching.filter { $0.month >= currentMonth && $0.month <= currentMonth.advanced(1) }
-        await notifications.announce(relevant, enabled: preferences.announcementNotifications, sound: preferences.notificationSound)
+        await notifications.announce(relevant, enabled: preferences.announcementNotifications, sound: .system)
     }
 
     @discardableResult func refreshInBackground() async -> Bool {
@@ -246,11 +256,11 @@ struct Preferences: Codable, Equatable, Sendable {
         BackgroundRefresh.schedule()
         let previous = notificationTask
         previous?.cancel()
-        let prefs = preferences, location = location
+        let prefs = preferences, location = location, engine = engine, events = content.events
         notificationTask = Task {
             await previous?.value
             guard !Task.isCancelled else { return }
-            await notifications.rebuild(preferences: prefs, location: location)
+            await notifications.rebuild(preferences: prefs, location: location, engine: engine, events: events)
         }
     }
 

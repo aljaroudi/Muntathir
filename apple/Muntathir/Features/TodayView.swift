@@ -78,9 +78,9 @@ struct TodayView: View {
                                 }
                             }
                         }
-                        Grid(horizontalSpacing: 8, verticalSpacing: 16) {
+                        VStack(spacing: 16) {
                             ForEach(prayers) { prayer in
-                                GridRow {
+                                HStack(spacing: 8) {
                                     HStack {
                                         Label {
                                             Text(prayer.name.title)
@@ -101,7 +101,6 @@ struct TodayView: View {
                                     )
                                     .font(.system(.title3, design: .monospaced, weight: .medium))
                                     .fixedSize(horizontal: true, vertical: false)
-                                    .gridColumnAlignment(.trailing)
                                 }
                                 .foregroundStyle(
                                     prayer.name == next?.name
@@ -109,7 +108,20 @@ struct TodayView: View {
                                 )
                                 .padding(.vertical, 5)
                                 .accessibilityElement(children: .combine)
+                                .contentShape(.rect)
                                 .accessibilityIdentifier("prayer-\(prayer.name.rawValue)")
+                                .contextMenu {
+                                    Button(model.preferences.enabledPrayers.contains(prayer.name) ? "Mute" : "Alert",
+                                           systemImage: model.preferences.enabledPrayers.contains(prayer.name) ? "bell.slash" : "bell")
+                                    {
+                                        Task { await model.setPrayer(prayer.name, enabled: !model.preferences.enabledPrayers.contains(prayer.name)) }
+                                    }
+                                    if !prayer.name.isRequired {
+                                        Button("Hide", systemImage: "eye.slash") {
+                                            model.update { $0.hiddenPrayers.insert(prayer.name) }
+                                        }
+                                    }
+                                }
                                 if prayer.id != prayers.last?.id {
                                     Divider()
                                         .gridCellUnsizedAxes(.horizontal)
