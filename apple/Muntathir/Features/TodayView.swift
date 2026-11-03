@@ -91,7 +91,9 @@ struct TodayView: View {
                                             Image(systemName: prayer.name.symbol)
                                                 .frame(width: prayerSymbolWidth)
                                         }
-                                        if !typeSize.isAccessibilitySize { Spacer(minLength: 8) }
+                                        if !typeSize.isAccessibilitySize {
+                                            Spacer(minLength: 8)
+                                        }
                                         if prayer.name == next?.name, let next {
                                             Text(PrayerCountdownFormat(target: next.date, locale: locale).format(now))
                                                 .font(.caption).monospacedDigit()

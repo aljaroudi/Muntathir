@@ -1,6 +1,6 @@
 import BackgroundAssets
-import StoreKit
 import ExtensionFoundation
+import StoreKit
 
 @main
 struct AssetDownloader: StoreDownloaderExtension {

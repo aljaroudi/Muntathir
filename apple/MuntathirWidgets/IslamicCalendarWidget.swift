@@ -1,5 +1,5 @@
-import SwiftUI
 import AppIntents
+import SwiftUI
 import WeatherKit
 import WidgetKit
 
@@ -122,7 +122,8 @@ struct IslamicCalendarWidget: Widget {
 struct WeatherDateWidget: Widget {
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: "WeatherDate", intent: WeatherDateConfiguration.self,
-                               provider: WeatherDateProvider()) { entry in
+                               provider: WeatherDateProvider())
+        { entry in
             WeatherDateCard(date: entry.reading.date, settings: entry.reading.settings,
                             weather: entry.reading.currentWeather, usesHijriDate: entry.calendar == .hijri)
                 .containerBackground(.background, for: .widget)
@@ -135,21 +136,29 @@ struct WeatherDateWidget: Widget {
 
 enum WeatherDateCalendar: String, AppEnum {
     case hijri, gregorian
-    static var typeDisplayRepresentation: TypeDisplayRepresentation { "Calendar" }
+    static var typeDisplayRepresentation: TypeDisplayRepresentation {
+        "Calendar"
+    }
+
     static var caseDisplayRepresentations: [Self: DisplayRepresentation] {
         [.hijri: "Hijri", .gregorian: "Gregorian"]
     }
 }
 
 struct WeatherDateConfiguration: WidgetConfigurationIntent {
-    static var title: LocalizedStringResource { "Weather" }
+    static var title: LocalizedStringResource {
+        "Weather"
+    }
+
     @Parameter(title: "Calendar", default: .hijri) var calendar: WeatherDateCalendar
 }
 
 struct WeatherDateEntry: TimelineEntry {
     let reading: IslamicDateEntry
     var calendar: WeatherDateCalendar = .hijri
-    var date: Date { reading.date }
+    var date: Date {
+        reading.date
+    }
 }
 
 struct WeatherDateProvider: AppIntentTimelineProvider {
@@ -162,7 +171,7 @@ struct WeatherDateProvider: AppIntentTimelineProvider {
         return entry
     }
 
-    func placeholder(in context: Context) -> WeatherDateEntry {
+    func placeholder(in _: Context) -> WeatherDateEntry {
         WeatherDateEntry(reading: IslamicDateProvider.preview())
     }
 
@@ -172,7 +181,7 @@ struct WeatherDateProvider: AppIntentTimelineProvider {
         return WeatherDateEntry(reading: reading, calendar: configuration.calendar)
     }
 
-    func timeline(for configuration: WeatherDateConfiguration, in context: Context) async -> Timeline<WeatherDateEntry> {
+    func timeline(for configuration: WeatherDateConfiguration, in _: Context) async -> Timeline<WeatherDateEntry> {
         let reading = await Self.weatherEntry()
         let timeline = reading.weatherTimeline
         let entries = timeline.entries.map {
@@ -220,13 +229,15 @@ private struct IslamicCalendarWidgetTextSizePreviews: PreviewProvider {
 }
 
 struct CalendarWeatherProvider: TimelineProvider {
-    func placeholder(in _: Context) -> IslamicDateEntry { IslamicDateProvider.preview() }
+    func placeholder(in _: Context) -> IslamicDateEntry {
+        IslamicDateProvider.preview()
+    }
 
     func getSnapshot(in context: Context, completion: @escaping @Sendable (IslamicDateEntry) -> Void) {
         if context.isPreview {
             completion(IslamicDateProvider.preview())
         } else {
-            Task { completion(await WeatherDateProvider.weatherEntry()) }
+            Task { await completion(WeatherDateProvider.weatherEntry()) }
         }
     }
 

@@ -3,7 +3,7 @@ import SwiftUI
 enum HadithBookStyle {
     static func background(for collectionID: String) -> Color {
         // Tailwind orange-500 and emerald-500, blended into the adaptive surface as book identity, not status.
-        let accent: Color = switch HadithBookGroup(collectionID: collectionID) {
+        let accent = switch HadithBookGroup(collectionID: collectionID) {
         case .six:
             Color(red: 1, green: 105 / 255, blue: 0)
         default:

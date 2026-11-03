@@ -98,7 +98,9 @@ struct PrayerWidgetView: View {
             if let first = upcoming.first {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 4) {
-                        if symbols { Image(systemName: first.name.symbol).accessibilityHidden(true) }
+                        if symbols {
+                            Image(systemName: first.name.symbol).accessibilityHidden(true)
+                        }
                         Text(first.name.title)
                     }
                     .font(.subheadline.weight(.semibold)).lineLimit(1)

@@ -7,13 +7,13 @@ struct CalendarTests {
     @Test func nextEventUsesCorrectedCivilDays() throws {
         let content = ContentLibrary()
         for zoneID in ["Asia/Riyadh", "America/New_York"] {
-            let zone = TimeZone(identifier: zoneID)!
+            let zone = try #require(TimeZone(identifier: zoneID))
             let month = HijriMonth(year: 1448, month: 1)
             let engine = try CalendarEngine(timeZone: zone, offsets: [.init(month: month, days: 1)])
             let eventDates = (0 ... 13).flatMap { engine.days(in: month.advanced($0)) }
                 .filter { !content.events(on: engine.resolve($0)).isEmpty }
             for date in eventDates.prefix(20) {
-                let noon = engine.gregorian.date(byAdding: .hour, value: 12, to: date)!
+                let noon = try #require(engine.gregorian.date(byAdding: .hour, value: 12, to: date))
                 #expect(content.nextEventDate(onOrAfter: noon, engine: engine) == date)
                 let tomorrow = engine.addingDays(1, to: date)
                 let expected = eventDates.first { $0 >= tomorrow }
@@ -31,7 +31,7 @@ struct CalendarTests {
     @MainActor @Test func nextEventCrossesYearBoundaryAndFormatsDayCounts() throws {
         let engine = try CalendarEngine(timeZone: zone)
         let content = ContentLibrary()
-        let lastDay = engine.days(in: HijriMonth(year: 1448, month: 12)).last!
+        let lastDay = try #require(engine.days(in: HijriMonth(year: 1448, month: 12)).last)
         let today = engine.gregorian.startOfDay(for: lastDay)
         let next = try #require(content.nextEventDate(onOrAfter: engine.addingDays(1, to: today), engine: engine))
         #expect(engine.resolve(next).month.year == 1449)
@@ -376,7 +376,7 @@ extension CalendarTests {
             #expect(rows.count == 1)
             let engine = try CalendarEngine(timeZone: zone, confirmed: rows.map(\.correction))
             #expect(CivilDate(engine.start(of: month), in: zone) == start)
-            #expect(engine.resolve(try #require(start.date(in: zone))).provenance == .confirmed)
+            #expect(try engine.resolve(#require(start.date(in: zone))).provenance == .confirmed)
         }
     }
 
