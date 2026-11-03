@@ -24,7 +24,7 @@ struct DailyAyahCard: View {
                 .textSelection(.enabled)
             if let translation = ayah.selectedTranslationText {
                 Text(translation)
-                    .font(.body)
+                    .readingText()
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
                     .environment(\.layoutDirection, dailyTranslation.map { Locale(identifier: $0.language).language.characterDirection == .rightToLeft } == true ? .rightToLeft : .leftToRight)
@@ -36,7 +36,8 @@ struct DailyAyahCard: View {
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .trailing)
         }
-        .padding(24)
+        .readingColumn()
+        .padding(20)
         .background {
             if skyBackground {
                 SkyCardSurface()
@@ -56,10 +57,10 @@ struct DailyAyahCard: View {
 struct AyahText: View {
     let ayah: Ayah
     var alignment: TextAlignment = .leading
+    var adjustable = true
     var body: some View {
         Text(ayah.text)
-            .font(.custom("KFGQPCHAFSUthmanicScript-Regula", size: 28, relativeTo: .title2))
-            .lineSpacing(12)
+            .readingText(arabic: true, adjustable: adjustable)
             .multilineTextAlignment(alignment)
             .frame(maxWidth: .infinity, alignment: alignment == .center ? .center : .leading)
             .fixedSize(horizontal: false, vertical: true)
@@ -75,7 +76,7 @@ struct AyahShareArtwork: View {
         VStack(spacing: 28) {
             Label("The Holy Quran", systemImage: "book.closed")
                 .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
-            AyahText(ayah: ayah)
+            AyahText(ayah: ayah, adjustable: false)
                 .padding()
             if let translation, let text = ayah.translations[translation.id] {
                 Text(text)

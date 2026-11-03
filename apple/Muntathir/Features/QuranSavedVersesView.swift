@@ -26,7 +26,7 @@ struct QuranSavedVersesView: View {
         List {
             if store?.unavailable != false {
                 ContentUnavailableView {
-                    Label("Favorites and notes unavailable", systemImage: "exclamationmark.triangle")
+                    Label("Bookmarks and notes unavailable", systemImage: "exclamationmark.triangle")
                 } description: { Text("Your saved data could not be opened. Please try again.") }
                     actions: { Button("Try again") { store?.reopen() } }
             } else if loading {
@@ -37,7 +37,7 @@ struct QuranSavedVersesView: View {
                 } actions: { Button("Try again") { retry += 1 } }
             } else if verses.isEmpty {
                 if kind == .favorites {
-                    ContentUnavailableView("No favorites yet", systemImage: "star", description: Text("Use a verse’s actions to save it here."))
+                    ContentUnavailableView("No bookmarks yet", systemImage: "bookmark", description: Text("Use a verse’s actions to save it here."))
                 } else {
                     ContentUnavailableView("No notes yet", systemImage: "note.text", description: Text("Use a verse’s actions to add a note."))
                 }
@@ -58,7 +58,7 @@ struct QuranSavedVersesView: View {
                 }
             }
         }
-        .navigationTitle(kind == .favorites ? Text("Favorites") : Text("Notes"))
+        .navigationTitle(kind == .favorites ? Text("Bookmarks") : Text("Notes"))
         .task(id: Request(ids: savedIDs, retry: retry, translationRevision: translationStore.revision)) { await load() }
     }
 

@@ -42,8 +42,8 @@ struct VerseActions: View {
     var body: some View {
         HStack(spacing: 8) {
             if state.isFavorite {
-                Image(systemName: "star.fill").foregroundStyle(Color.accentColor)
-                    .accessibilityLabel("Favorite")
+                Image(systemName: "bookmark.fill").foregroundStyle(Color.accentColor)
+                    .accessibilityLabel("Bookmark")
                     .accessibilityIdentifier("verse-favorite-\(ayah.id)")
             }
             if !state.note.isEmpty {
@@ -71,9 +71,9 @@ struct VerseActions: View {
                     } catch { saveFailed = true }
                 } label: {
                     if state.isFavorite {
-                        Label("Remove favorite", systemImage: "star.slash")
+                        Label("Remove bookmark", systemImage: "bookmark.slash")
                     } else {
-                        Label("Favorite", systemImage: "star")
+                        Label("Bookmark", systemImage: "bookmark")
                     }
                 }
                 Button {
@@ -220,7 +220,6 @@ struct HadithActions: View {
     @State private var editingNote = false
     @State private var shared: SharedHadith?
     @State private var shareDirectory: URL?
-    @State private var failed = false
     @State private var shareFailed = false
     @State private var copied = false
 
@@ -250,19 +249,13 @@ struct HadithActions: View {
                 } catch { shareFailed = true }
             }
             Divider()
-            Button {
-                do {
-                    guard let store, !key.isEmpty else { throw QuranUserStoreError.unavailable }
-                    try store.setHadithFavorite(!state.isFavorite, for: key)
-                } catch { failed = true }
-            } label: {
-                Label(state.isFavorite ? "Remove favorite" : "Favorite", systemImage: state.isFavorite ? "star.slash" : "star")
-            }
+            HadithTranslationPicker()
+            ReadingSizeMenu()
             Button { editingNote = true } label: {
                 Label(state.note.isEmpty ? "Add note" : "Edit note", systemImage: "square.and.pencil")
             }.disabled(key.isEmpty)
         } label: {
-            Label("Hadith actions", systemImage: state.isFavorite ? "star.circle.fill" : (state.note.isEmpty ? "ellipsis.circle" : "note.text")).labelStyle(.iconOnly)
+            Label("Hadith actions", systemImage: "ellipsis.circle").labelStyle(.iconOnly)
                 .frame(minWidth: 44, minHeight: 44)
         }
         .accessibilityIdentifier("hadith-actions")
@@ -276,8 +269,6 @@ struct HadithActions: View {
             VerseNoteEditor(verseID: key, initialNote: state.note, isHadith: true, reference: content.reference)
         }
         .alert("Text copied", isPresented: $copied) { Button("OK", role: .cancel) {} }
-        .alert("Unable to save", isPresented: $failed) { Button("OK", role: .cancel) {} }
-        message: { Text("Your change was not saved. Please try again.") }
         .alert("Unable to create image", isPresented: $shareFailed) { Button("OK", role: .cancel) {} }
     }
 }

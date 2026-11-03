@@ -24,7 +24,7 @@ final class VerseActionsUITests: XCTestCase {
         let app = launch()
         openFirstVerse(app)
         app.buttons["verse-actions-1:1"].tap()
-        app.buttons["Favorite"].tap()
+        app.buttons["Bookmark"].tap()
         XCTAssertTrue(app.images["verse-favorite-1:1"].waitForExistence(timeout: 5))
         app.buttons["verse-actions-1:1"].tap()
         app.buttons["Add note"].tap()
@@ -47,7 +47,7 @@ final class VerseActionsUITests: XCTestCase {
         XCTAssertTrue(app.buttons["saved-verse-1:1"].waitForExistence(timeout: 5))
         app.buttons["saved-verse-1:1"].tap()
         app.buttons["verse-actions-1:1"].tap()
-        app.buttons["Remove favorite"].tap()
+        app.buttons["Remove bookmark"].tap()
         XCTAssertTrue(app.images["verse-has-note-1:1"].exists)
         XCTAssertFalse(app.images["verse-favorite-1:1"].exists)
     }

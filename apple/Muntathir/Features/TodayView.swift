@@ -80,15 +80,18 @@ struct TodayView: View {
                         }
                         VStack(spacing: 16) {
                             ForEach(prayers) { prayer in
-                                HStack(spacing: 8) {
-                                    HStack {
+                                let rowLayout = typeSize.isAccessibilitySize
+                                    ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+                                    : AnyLayout(HStackLayout(spacing: 8))
+                                rowLayout {
+                                    rowLayout {
                                         Label {
                                             Text(prayer.name.title)
                                         } icon: {
                                             Image(systemName: prayer.name.symbol)
                                                 .frame(width: prayerSymbolWidth)
                                         }
-                                        Spacer(minLength: 8)
+                                        if !typeSize.isAccessibilitySize { Spacer(minLength: 8) }
                                         if prayer.name == next?.name, let next {
                                             Text(PrayerCountdownFormat(target: next.date, locale: locale).format(now))
                                                 .font(.caption).monospacedDigit()

@@ -153,6 +153,7 @@ final class HadithUITests: XCTestCase {
             app.swipeUp()
         }
         XCTAssertTrue(english.waitForExistence(timeout: 5))
+        app.buttons["hadith-actions"].tap()
         app.buttons["hadith-translation-picker"].tap()
         app.descendants(matching: .any)["hadith-translation-english"].firstMatch.tap()
         expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: english)
@@ -162,6 +163,7 @@ final class HadithUITests: XCTestCase {
         row.tap()
         XCTAssertTrue(app.descendants(matching: .any)["hadith-detail-number"].waitForExistence(timeout: 5))
         XCTAssertFalse(english.exists)
+        app.buttons["hadith-actions"].tap()
         app.buttons["hadith-translation-picker"].tap()
         app.descendants(matching: .any)["hadith-translation-english"].firstMatch.tap()
         if !english.exists {
@@ -217,8 +219,7 @@ extension HadithUITests {
         XCTAssertTrue(row.waitForExistence(timeout: 10))
         row.tap()
         XCTAssertTrue(app.buttons["hadith-actions"].waitForExistence(timeout: 10))
-        app.buttons["hadith-actions"].tap()
-        app.buttons["Favorite"].tap()
+        app.buttons["hadith-bookmark"].tap()
         app.buttons["hadith-actions"].tap()
         app.buttons["Add note"].tap()
         let editor = app.textViews["verse-note-editor"]
@@ -236,8 +237,8 @@ extension HadithUITests {
         let arabic = app.descendants(matching: .any)["hadith-full-arabic"].firstMatch
         XCTAssertTrue(arabic.waitForExistence(timeout: 5))
         XCTAssertEqual(arabic.frame.minY, before, accuracy: 30)
+        XCTAssertEqual(app.buttons["hadith-bookmark"].label, "Remove bookmark")
         app.buttons["hadith-actions"].tap()
-        XCTAssertTrue(app.buttons["Remove favorite"].waitForExistence(timeout: 5))
         app.buttons["Edit note"].tap()
         XCTAssertEqual(app.textViews["verse-note-editor"].value as? String, "Saved Hadith note")
         app.buttons["Cancel"].tap()

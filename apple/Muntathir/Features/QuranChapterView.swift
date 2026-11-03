@@ -58,7 +58,12 @@ struct QuranChapterView: View {
                     .accessibilityIdentifier("quran-jump")
             }
             ToolbarItem(placement: .topBarTrailing) {
-                QuranTranslationPicker()
+                Menu {
+                    QuranTranslationPicker()
+                    ReadingSizeMenu()
+                } label: {
+                    Label("Reading options", systemImage: "textformat")
+                }.accessibilityIdentifier("quran-reading-options")
             }
         }
         .alert("Go to verse", isPresented: $jumpPresented) {

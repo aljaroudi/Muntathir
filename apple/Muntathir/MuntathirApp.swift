@@ -45,6 +45,7 @@ struct MuntathirApp: App {
                     OnboardingView()
                 }
             }
+            .defaultAppStorage(ProcessInfo.processInfo.arguments.contains("--ui-testing") ? UserDefaults(suiteName: "Muntathir.UITests")! : .standard)
             .environment(model)
             .task(id: "\(scenePhase)-\(locale.identifier)") {
                 guard scenePhase == .active else { return }

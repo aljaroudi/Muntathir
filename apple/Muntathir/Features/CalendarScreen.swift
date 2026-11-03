@@ -29,7 +29,7 @@ struct CalendarScreen: View {
             VStack(spacing: 0) {
                 HStack {
                     Button("Previous year", systemImage: "chevron.backward") { selectedYear = year - 1 }
-                        .labelStyle(.iconOnly).disabled(year <= 1300)
+                        .labelStyle(.iconOnly).frame(minWidth: 44, minHeight: 44).disabled(year <= 1300)
                     Spacer()
                     Menu {
                         ForEach(months, id: \.self) { month in
@@ -48,7 +48,7 @@ struct CalendarScreen: View {
                     .accessibilityIdentifier("calendar-year")
                     Spacer()
                     Button("Next year", systemImage: "chevron.forward") { selectedYear = year + 1 }
-                        .labelStyle(.iconOnly).disabled(year >= 1600)
+                        .labelStyle(.iconOnly).frame(minWidth: 44, minHeight: 44).disabled(year >= 1600)
                 }.padding(.horizontal, 20).padding(.vertical, 8)
                 List {
                     ForEach(months, id: \.self) { month in

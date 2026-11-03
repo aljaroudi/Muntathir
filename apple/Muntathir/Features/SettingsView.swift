@@ -17,6 +17,7 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section { AppLanguageLink() }
+                Section { ReadingSizeMenu() }
                 Section {
                     NavigationLink {
                         LocationPicker()

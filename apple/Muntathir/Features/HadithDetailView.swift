@@ -12,6 +12,7 @@ struct HadithDetailView: View {
     let orderedFallback: Bool
     @AppStorage("hadithEnglishEnabled") private var showEnglish = true
     @Environment(\.locale) private var locale
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var currentID: Int?
     @State private var detail: HadithDetail?
     @State private var loading = true
@@ -29,34 +30,32 @@ struct HadithDetailView: View {
                     let narration = detail.narration
                     Section {
                         if !detail.authorName(locale: locale).isEmpty {
-                            LabeledContent("Author", value: detail.authorName(locale: locale))
+                            metadata("Author", value: detail.authorName(locale: locale))
                                 .accessibilityIdentifier("hadith-detail-author")
                         }
-                        LabeledContent("Book", value: narration.chapter.bookTitle(locale: locale))
+                        metadata("Book", value: narration.chapter.bookTitle(locale: locale))
                             .accessibilityIdentifier("hadith-detail-book")
                         if !narration.chapter.chapterTitle(locale: locale).isEmpty {
-                            LabeledContent("Chapter", value: narration.chapter.chapterTitle(locale: locale))
+                            metadata("Chapter", value: narration.chapter.chapterTitle(locale: locale))
                                 .accessibilityIdentifier("hadith-detail-chapter")
                         }
-                        LabeledContent("Hadith number", value: narration.number, format: .number.grouping(.never))
+                        metadata("Hadith number", value: narration.number.formatted(.number.grouping(.never)))
                             .id("top")
                             .accessibilityIdentifier("hadith-detail-number")
                     }
                     .listRowBackground(HadithBookStyle.background(for: narration.collectionID))
                     Section {
                         if !narration.arabic.isEmpty {
-                            HadithMarkdownView(text: narration.arabicDisplay)
-                                .font(.title3)
+                            HadithMarkdownView(text: narration.arabicDisplay, arabic: true)
                                 .frame(maxWidth: .infinity, alignment: .trailing)
                                 .environment(\.layoutDirection, .rightToLeft)
                                 .accessibilityIdentifier("hadith-full-arabic")
                         }
                         if showEnglish, !narration.englishNarrator.isEmpty {
-                            LabeledContent {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Narrator").font(.subheadline).foregroundStyle(.secondary)
                                 HadithMarkdownView(text: narration.narratorDisplay)
                                     .environment(\.layoutDirection, .leftToRight)
-                            } label: {
-                                Text("Narrator")
                             }
                             .accessibilityIdentifier("hadith-detail-narrator")
                         }
@@ -105,7 +104,9 @@ struct HadithDetailView: View {
                     }
                 }
             }
-            .padding()
+            .readingColumn()
+            .padding(.horizontal, 20)
+            .padding(.vertical)
         }
         .background {
             if let detail {
@@ -128,7 +129,11 @@ struct HadithDetailView: View {
         .navigationTitle("Hadith")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) { HadithTranslationPicker() }
+            ToolbarItem(placement: .topBarTrailing) {
+                if let detail {
+                    HadithBookmarkButton(narration: detail.narration)
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 if let detail {
                     HadithActions(narration: detail.narration)
@@ -165,6 +170,19 @@ struct HadithDetailView: View {
                 failed = true
                 loading = false
             }
+        }
+    }
+
+    @ViewBuilder private func metadata(_ title: LocalizedStringKey, value: String) -> some View {
+        if typeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title).font(.subheadline).foregroundStyle(.secondary)
+                Text(value)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement(children: .combine)
+        } else {
+            LabeledContent(title, value: value)
         }
     }
 }

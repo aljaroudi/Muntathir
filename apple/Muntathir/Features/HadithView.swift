@@ -236,7 +236,7 @@ struct HadithView: View {
     }
 
     @ViewBuilder private var toolbarActions: some View {
-        NavigationLink { HadithSavedView(notes: false, reader: reader) } label: { Label("Favorites", systemImage: "star") }
+        NavigationLink { HadithSavedView(notes: false, reader: reader) } label: { Label("Bookmarks", systemImage: "bookmark") }
             .accessibilityIdentifier("hadith-favorites")
         NavigationLink { HadithSavedView(notes: true, reader: reader) } label: { Label("Notes", systemImage: "note.text") }
             .accessibilityIdentifier("hadith-notes")
@@ -423,14 +423,14 @@ struct HadithSavedView: View {
         List {
             if store?.unavailable != false {
                 ContentUnavailableView {
-                    Label("Favorites and notes unavailable", systemImage: "exclamationmark.triangle")
+                    Label("Bookmarks and notes unavailable", systemImage: "exclamationmark.triangle")
                 } actions: { Button("Try again") { store?.reopen() } }
             } else if loading {
                 ProgressView("Loading Hadith…")
             } else if failed {
                 HadithLoadError { Task { await assets?.refresh(); retry += 1 } }
             } else if keys.isEmpty {
-                ContentUnavailableView(notes ? "No notes yet" : "No favorites yet", systemImage: notes ? "note.text" : "star")
+                ContentUnavailableView(notes ? "No notes yet" : "No bookmarks yet", systemImage: notes ? "note.text" : "bookmark")
             } else {
                 ForEach(keys, id: \.self) { key in
                     VStack(alignment: .leading, spacing: 12) {
@@ -451,7 +451,7 @@ struct HadithSavedView: View {
                 }
             }
         }
-        .navigationTitle(notes ? Text("Notes") : Text("Favorites"))
+        .navigationTitle(notes ? Text("Notes") : Text("Bookmarks"))
         .task(id: keys.joined(separator: "|") + "-\(retry)") {
             loading = true
             failed = false

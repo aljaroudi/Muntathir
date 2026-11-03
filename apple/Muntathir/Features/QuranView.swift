@@ -39,7 +39,7 @@ struct QuranView: View {
                 Section {
                     NavigationLink {
                         QuranSavedVersesView(kind: .favorites, reader: reader, surahs: surahs)
-                    } label: { Label("Favorites", systemImage: "star") }
+                    } label: { Label("Bookmarks", systemImage: "bookmark") }
                         .accessibilityIdentifier("quran-favorites")
                     NavigationLink {
                         QuranSavedVersesView(kind: .notes, reader: reader, surahs: surahs)
@@ -216,6 +216,7 @@ struct QuranVerseRow: View {
                 .lineLimit(preview ? 3 : nil)
             if let translation, let text = ayah.translations[translation.id] {
                 Text(text)
+                    .readingText()
                     .lineLimit(preview ? 3 : nil)
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -223,7 +224,9 @@ struct QuranVerseRow: View {
                     .accessibilityIdentifier("quran-translation-\(ayah.id)")
             }
         }
+        .readingColumn()
         .padding(.vertical, 12)
+        .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
         .textSelection(.enabled)
         .accessibilityElement(children: .contain)
     }

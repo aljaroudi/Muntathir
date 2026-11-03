@@ -17,18 +17,21 @@ struct HadithPreviewRow: View {
                 .font(.headline)
             if !narration.arabic.isEmpty {
                 Text(narration.arabicDisplay)
+                    .readingText(arabic: true)
                     .lineLimit(5)
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .environment(\.layoutDirection, .rightToLeft)
             }
             if showEnglish, !narration.english.isEmpty {
                 Text(narration.englishDisplay)
+                    .readingText()
                     .lineLimit(5)
                     .accessibilityIdentifier("hadith-preview-english-\(narration.id)")
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .environment(\.layoutDirection, .leftToRight)
             }
         }
+        .readingColumn()
         .padding(.vertical, 8)
         .contentShape(.rect)
         .accessibilityElement(children: .combine)
