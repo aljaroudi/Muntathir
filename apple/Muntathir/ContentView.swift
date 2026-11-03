@@ -29,7 +29,7 @@ struct ContentView: View {
                         }
                         .accessibilityIdentifier("hadith")
                         NavigationLink {
-                            QiblaView().toolbar { settingsToolbar }
+                            QiblaView(isCovered: settings).toolbar { settingsToolbar }
                         } label: {
                             Label("Qibla", systemImage: "location.north.circle")
                         }

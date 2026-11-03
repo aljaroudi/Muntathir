@@ -110,10 +110,11 @@ struct HadithGrading: Identifiable, Hashable, Sendable {
     }
 
     private func localized(arabic: String, english: String, locale: Locale) -> String {
-        if locale.language.languageCode?.identifier == "ar" {
-            return arabic.isEmpty ? english : arabic
-        }
-        return english.isEmpty ? arabic : english
+        return if locale.language.languageCode?.identifier == "ar" {
+            arabic.isEmpty ? english : arabic
+        } else {
+			english.isEmpty ? arabic : english
+		}
     }
 }
 

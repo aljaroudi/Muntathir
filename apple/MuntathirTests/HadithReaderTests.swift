@@ -5,6 +5,30 @@ import SwiftUI
 import Testing
 
 struct HadithReaderTests {
+    @Test func kafiOriginalChapterNamesFollowAppLocale() async throws {
+        let reader = HadithReader(database: HadithDatabase(url: Bundle(for: HadithTestBundle.self).url(forResource: "hadith", withExtension: "db")))
+        let chapters = try await reader.chapters(collectionID: "alkafi")
+        #expect(chapters.count == 34)
+        #expect(chapters.filter { $0.arabic.isEmpty == false }.count == 31)
+        let chapter = try #require(chapters.first { $0.english == "The Book about people with Divine Authority" })
+        let arabic = Locale(identifier: "ar_SA")
+        let english = Locale(identifier: "en_US")
+        #expect(chapter.chapterTitle(locale: arabic) == "كتاب الحجة")
+        #expect(chapter.chapterTitle(locale: english) == chapter.english)
+        #expect(chapter.chapterTitle(locale: Locale(identifier: "fa")) == chapter.english)
+        #expect(chapter.title(locale: arabic).contains("كتاب الحجة"))
+        let page = try await reader.page(HadithRequest(collectionID: "alkafi", chapterID: chapter.id))
+        let narration = try #require(page.rows.first)
+        #expect(narration.chapter.chapterTitle(locale: arabic) == "كتاب الحجة")
+        let detail = try await reader.detail(id: narration.id)
+        #expect(detail.narration.chapter == narration.chapter)
+        for unresolved in chapters.filter({ $0.arabic.isEmpty }) {
+            #expect(unresolved.chapterTitle(locale: arabic) == unresolved.english)
+        }
+        let arabicOnly = HadithChapter(id: 0, arabic: "كتاب الحجة", english: "", bookArabic: "الكافي", bookEnglish: "Al-Kafi")
+        #expect(arabicOnly.chapterTitle(locale: english) == "كتاب الحجة")
+    }
+
     @Test func structuredGradingsPreserveDetailsAndLocaleFallback() async throws {
         let fixture = try HadithFixture(count: 1, searchRows: """
         INSERT INTO grader VALUES ('majlisi','المجلسي','al-Majlisi');

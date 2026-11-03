@@ -1,2 +1,3 @@
 "CFBundleDisplayName" = "Muntathir";
 "NSLocationWhenInUseUsageDescription" = "このデバイス上で礼拝時刻とキブラを計算するために位置情報を使用します。";
+"QiblaPreciseLocation" = "正確な位置情報を使用して、地図上に現在地とカアバの方向を表示します。";

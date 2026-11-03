@@ -18,9 +18,15 @@ The daily ayah uses a fine-grained emerald-to-ivory background with soft lightin
 
 See [widgets](../MuntathirWidgets/), [calendar and content](../Shared/), and [Apple setup](../).
 
-## Qibla accuracy
+## Qibla map
 
-Open **Tools → Qibla**. The compass stays blurred with a warning unless a valid true heading has a reported error of 10° or less. Missing, invalid, and nonfinite readings never enable arrow guidance. The calculated bearing from true north remains available separately. Validate interference and recovery on a physical device.
+Open **Tools → Qibla**. A full-screen, locked north-up hybrid map stays centered on your current location at approximately 150-meter scale. A geodesic line points to the Kaaba. The native location marker shows a system direction glyph only when true-heading error is at most 10° and the reading is fresh.
+
+A compact turn cue guides alignment. Within 60°, haptic pulses grow stronger and faster as the heading approaches Qibla. Within 5°, a green ring, line, and checkmark confirm alignment with one success haptic. Alignment persists until the error exceeds 8° to prevent jitter. Pulses stop while aligned, when readings are unavailable, and when the screen is inactive. Haptics require supported hardware.
+
+Qibla requests its own foreground location session; saved prayer cities and cached fixes never enable it. Precise Location permission, horizontal accuracy of at most 20 meters, and a fix received since opening (at most 15 seconds old) are required. The map disappears when the fix expires or access changes. Retry and Settings actions handle unavailable GPS or permissions. Returning from the background starts a fresh session; leaving stops updates. This session never saves coordinates or changes prayer settings.
+
+Validate permission prompts, heading recovery, indoor/outdoor accuracy, and hybrid imagery on a physical device. Imagery detail depends on Apple Maps coverage. UI tests use explicit debug-only location fixtures; production never uses them.
 
 ## First-run setup
 

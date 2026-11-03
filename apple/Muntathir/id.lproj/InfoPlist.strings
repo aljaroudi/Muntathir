@@ -1,2 +1,3 @@
 "CFBundleDisplayName" = "Muntathir";
 "NSLocationWhenInUseUsageDescription" = "Lokasi Anda digunakan untuk menghitung waktu salat dan kiblat di perangkat ini.";
+"QiblaPreciseLocation" = "Lokasi presisi Anda menunjukkan posisi Anda dan arah menuju Kaabah pada peta.";

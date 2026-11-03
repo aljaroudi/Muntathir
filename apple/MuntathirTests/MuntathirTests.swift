@@ -421,3 +421,44 @@ extension CalendarTests {
         }
     }
 }
+
+extension CalendarTests {
+    @MainActor @Test func futureCalendarDatesRequireMatchingConfirmation() throws {
+        for zoneID in ["Asia/Riyadh", "America/New_York"] {
+            let zone = try #require(TimeZone(identifier: zoneID))
+            let base = try CalendarEngine(timeZone: zone)
+            let month = HijriMonth(year: 1449, month: 1)
+            let now = base.addingDays(-2, to: base.start(of: month))
+            let confirmation = MonthCorrection(month: month, start: CivilDate(base.start(of: month), in: zone), provenance: .confirmed, sourceID: "example")
+            #expect(CalendarScreen.isExpected(month, now: now, engine: base, confirmations: []))
+            let confirmed = try CalendarEngine(timeZone: zone, confirmed: [confirmation])
+            #expect(CalendarScreen.isExpected(month, now: now, engine: confirmed, confirmations: [confirmation]) == false)
+            let manual = try CalendarEngine(timeZone: zone, offsets: [.init(month: month, days: 1)], confirmed: [confirmation])
+            #expect(CalendarScreen.isExpected(month, now: now, engine: manual, confirmations: [confirmation]))
+            #expect(CalendarScreen.isExpected(month, now: now, engine: manual, confirmations: []))
+            #expect(CalendarScreen.isExpected(month, now: manual.start(of: month), engine: manual, confirmations: []) == false)
+            #expect(CalendarScreen.isExpected(month.advanced(-1), now: now, engine: base, confirmations: []) == false)
+        }
+    }
+
+    @MainActor @Test func calendarInitialPositionStaysInsideSelectedYear() {
+        let month = HijriMonth(year: 1448, month: 12)
+        let next = ResolvedDay(month: month, day: 18, provenance: .calculated, sourceID: nil)
+        let nextYear = ResolvedDay(month: month.advanced(1), day: 2, provenance: .calculated, sourceID: nil)
+        #expect(CalendarScreen.initialTarget(year: 1448, currentMonth: month, nextDay: next) == "calendar-events-1448-12-18")
+        #expect(CalendarScreen.initialTarget(year: 1448, currentMonth: month, nextDay: nextYear) == "calendar-month-1448-12")
+        #expect(CalendarScreen.initialTarget(year: 1448, currentMonth: month, nextDay: nil) == "calendar-month-1448-12")
+        #expect(CalendarScreen.initialTarget(year: 1447, currentMonth: month, nextDay: next) == "calendar-month-1447-1")
+    }
+
+    @MainActor @Test func calendarJumpUsesNextEventOrMonthHeading() throws {
+        let engine = try CalendarEngine(timeZone: zone)
+        let month = HijriMonth(year: 1448, month: 9)
+        let day = ResolvedDay(month: month, day: 2, provenance: .calculated, sourceID: nil)
+        #expect(CalendarScreen.jumpTarget(day, eventDays: [1, 10, 5], engine: engine) == "calendar-events-1448-9-5")
+        #expect(CalendarScreen.jumpTarget(day, eventDays: [1, 2, 5], engine: engine) == "calendar-events-1448-9-2")
+        #expect(CalendarScreen.jumpTarget(day, eventDays: [1, 31], engine: engine) == "calendar-month-1448-9")
+        #expect(CalendarScreen.jumpTarget(day, eventDays: [], engine: engine) == "calendar-month-1448-9")
+        #expect(CalendarScreen.dayID(month, 1) != CalendarScreen.dayID(month.advanced(1), 1))
+    }
+}

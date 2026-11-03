@@ -1,2 +1,3 @@
 "CFBundleDisplayName" = "منتظِر";
 "NSLocationWhenInUseUsageDescription" = "يُستخدم موقعك لحساب أوقات الصلاة والقبلة على جهازك.";
+"QiblaPreciseLocation" = "يُستخدم موقعك الدقيق لإظهار موضعك والاتجاه نحو الكعبة على الخريطة.";

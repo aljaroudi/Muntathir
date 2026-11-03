@@ -4,6 +4,8 @@ import sqlite3
 import tempfile
 import unittest
 from unittest.mock import Mock
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -13,6 +15,40 @@ spec.loader.exec_module(builder)
 
 
 class AdditionalBooksTests(unittest.TestCase):
+    def test_kafi_original_names_require_matching_source_boundaries(self):
+        mapping = json.loads((HERE / 'data/kafi-chapters.json').read_text())['books']
+        self.assertEqual(sum(len(chapters) for chapters in mapping.values()), 34)
+        self.assertEqual(sum(bool(row['name_ar']) for chapters in mapping.values() for row in chapters.values()), 31)
+        with sqlite3.connect(':memory:') as db:
+            builder.apply_schema(db, HERE / 'schema.sql')
+            db.execute("INSERT INTO collection VALUES ('alkafi', 'الكافي', 'Al-Kafi', 0)")
+            chapter_id = 0
+            for book_id, chapters in mapping.items():
+                db.execute("INSERT INTO book (id,collection_id,sect,book_group,name_ar,name_en) VALUES (?,'alkafi','shia','shia','الكافي','Al-Kafi')", (book_id,))
+                for index, (file_name, row) in enumerate(chapters.items()):
+                    chapter_id += 1
+                    db.execute('INSERT INTO chapter(id,book_id,chapter_idx,file_name,name_en) VALUES (?,?,?,?,?)',
+                               (chapter_id, book_id, index, file_name, row['name_en']))
+                    for number, url in enumerate((row['first_url'], row['last_url']), 1):
+                        db.execute('INSERT INTO hadith(id,book_id,chapter_id,chapter_idx,id_in_book,url) VALUES (?,?,?,?,?,?)',
+                                   (chapter_id * 2 + number, book_id, chapter_id, index, number, url))
+            before = db.execute('SELECT * FROM hadith ORDER BY id').fetchall()
+            output = StringIO()
+            with redirect_stdout(output):
+                builder.localize_kafi_chapters(db)
+            self.assertEqual(output.getvalue().count('unresolved Arabic chapter'), 3)
+            self.assertEqual(db.execute('SELECT count(*) FROM chapter WHERE name_ar <> ? ', ('',)).fetchone()[0], 31)
+            self.assertEqual(db.execute('SELECT * FROM hadith ORDER BY id').fetchall(), before)
+            self.assertEqual(db.execute("SELECT name_ar FROM chapter WHERE book_id='alkafi-1' AND file_name='5.json'").fetchone()[0], 'كتاب الحجة')
+            # A new upstream Arabic name wins; changed English or boundary metadata stays unresolved.
+            db.execute("UPDATE chapter SET name_ar = 'اسم المصدر' WHERE id = 1")
+            db.execute("UPDATE chapter SET name_ar = '', name_en = 'Changed' WHERE id = 2")
+            db.execute("UPDATE chapter SET name_ar = '' WHERE id = 3")
+            db.execute("UPDATE hadith SET url = 'changed' WHERE chapter_id = 3")
+            with redirect_stdout(StringIO()):
+                builder.localize_kafi_chapters(db)
+            self.assertEqual(db.execute('SELECT name_ar FROM chapter WHERE id <= 3 ORDER BY id').fetchall(), [('اسم المصدر',), ('',), ('',)])
+
     def test_localization_preserves_collection_titles_and_volume_names(self):
         with sqlite3.connect(":memory:") as db:
             builder.apply_schema(db, HERE / "schema.sql")
@@ -53,7 +89,8 @@ class AdditionalBooksTests(unittest.TestCase):
             self.assertEqual(db.execute('SELECT count(*) FROM collection').fetchone()[0], 2)
             self.assertEqual(db.execute('SELECT count(*) FROM hadith').fetchone()[0], 2)
             self.assertEqual(db.execute('SELECT english_text FROM hadith LIMIT 1').fetchone()[0], rows[0]['englishText'])
-            self.assertEqual(db.execute('SELECT grade_ar FROM hadith_grading LIMIT 1').fetchone()[0], 'صحيح')
+            self.assertEqual(db.execute('SELECT count(*) FROM hadith_grading').fetchone()[0], 0)
+            self.assertEqual(db.execute('SELECT count(*) FROM grader').fetchone()[0], 0)
             self.assertEqual(db.execute('SELECT hadith_count FROM chapter').fetchall(), [(1,), (1,)])
             db.executemany('INSERT INTO hadith_en(rowid,text) VALUES (?,?)', db.execute('SELECT id,text FROM hadith_english_content').fetchall())
             highlighted = db.execute("SELECT highlight(hadith_en,0,'[',']') FROM hadith_en WHERE hadith_en MATCH 'passages'").fetchone()[0]
@@ -74,6 +111,37 @@ class AdditionalBooksTests(unittest.TestCase):
                     source, db, builder.RefResolver(), sittah=sittah, four=True)
                 expected = {"bukhari", "alkafi-1"} | (set() if sittah else {"malik"})
                 self.assertEqual({r[0] for r in db.execute("SELECT id FROM book")}, expected)
+
+    def test_only_six_books_import_gradings(self):
+        with sqlite3.connect(":memory:") as db:
+            builder.apply_schema(db, HERE / "schema.sql")
+            books = [*sorted(builder.SITTAH_BOOKS), "malik", "alkafi-1"]
+            metadata = dict(sunni=dict(the_9_books=[dict(id=b, graded=True) for b in books[:-1]],
+                                       forties=[], other_books=[]),
+                            shia=[dict(id="alkafi-1", graded=True)])
+            source = Mock()
+            source.exists.return_value = True
+
+            def read(path):
+                if path == "books.json":
+                    return metadata
+                if path.endswith("index.json"):
+                    return [dict(file="1.json")]
+                if path.endswith("grades.json"):
+                    return {"1": "Sahih"}
+                return [dict(id=1, idInBook=1, grade="Sahih",
+                             gradingsFull=[dict(grade_ar="صحيح")])]
+
+            source.read_json.side_effect = read
+            builder.load_books_chapters_hadiths(source, db, builder.RefResolver())
+            self.assertEqual({r[0] for r in db.execute(
+                "SELECT DISTINCT h.book_id FROM hadith_grading g JOIN hadith h ON h.id=g.hadith_id")},
+                builder.SITTAH_BOOKS)
+            self.assertEqual({r[0] for r in db.execute("SELECT id FROM book WHERE graded=1")},
+                             builder.SITTAH_BOOKS)
+            grade_files = [call.args[0] for call in source.read_json.call_args_list
+                           if call.args[0].endswith("grades.json")]
+            self.assertEqual(len(grade_files), 6)
 
     def test_four_keeps_volumes_and_nahj_only(self):
         sources = ["Al-Kafi-Volume-1-Kulayni", "Man-La-Yahduruh-al-Faqih-Volume-2-Saduq",

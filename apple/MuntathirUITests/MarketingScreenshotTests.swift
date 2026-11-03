@@ -35,7 +35,7 @@ final class MarketingScreenshotTests: XCTestCase {
         let app = XCUIApplication()
         setupSnapshot(app)
         let labels = try marketingLabels()
-        app.launchArguments += ["--ui-testing", "--ui-testing-mecca", "--marketing-capture", "--marketing-local-translations", "--screenshot-verse", "--marketing-heading", "--sky-date", "2026-10-23T06:00:00Z",
+        app.launchArguments += ["--ui-testing", "--ui-testing-mecca", "--marketing-capture", "--marketing-local-translations", "--screenshot-verse", "--qibla-ready", "--sky-date", "2026-10-23T06:00:00Z",
                                 "--ui-testing-weather", "--weather-condition", "clear", "-AppleInterfaceStyle", "Light"]
         app.launch()
         XCTAssertTrue(app.descendants(matching: .any)["prayer-fajr"].waitForExistence(timeout: 15))
@@ -51,15 +51,17 @@ final class MarketingScreenshotTests: XCTestCase {
         XCTAssertEqual(verse.label, "إِنَّ مَعَ العُسرِ يُسرًا")
         snapshot("01-Today", timeWaitingForIdle: 2)
         app.buttons[labels[0]].firstMatch.tap()
-        XCTAssertTrue(app.buttons[labels[1]].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["calendar-jump"].waitForExistence(timeout: 5))
+        app.buttons["calendar-jump"].tap()
         // The fixed capture date is 1448-05; show Sha'ban for the store listing.
         for _ in 0 ..< 3 {
             app.buttons[labels[1]].tap()
         }
+        app.buttons["calendar-day-1448-8-1"].tap()
         snapshot("02-Calendar", timeWaitingForIdle: 2)
         app.buttons[labels[2]].firstMatch.tap()
         app.buttons["qibla"].tap()
-        XCTAssertTrue(app.descendants(matching: .any)["qibla-compass-ready"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["qibla-map-ready"].waitForExistence(timeout: 5))
         snapshot("04-Qibla", timeWaitingForIdle: 2)
         app.terminate()
         app.launch()

@@ -1,2 +1,3 @@
 "CFBundleDisplayName" = "Muntathir";
 "NSLocationWhenInUseUsageDescription" = "您的位置用於在此裝置上計算禮拜時間和禮拜朝向。";
+"QiblaPreciseLocation" = "您的精確位置用於在地圖上顯示您所在的位置和克爾白方向。";

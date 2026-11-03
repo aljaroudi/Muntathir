@@ -1,2 +1,3 @@
 "CFBundleDisplayName" = "Muntathir";
 "NSLocationWhenInUseUsageDescription" = "La tua posizione viene usata su questo dispositivo per calcolare gli orari di preghiera e la Qibla.";
+"QiblaPreciseLocation" = "La tua posizione precisa mostra dove ti trovi e la direzione della Kaaba sulla mappa.";

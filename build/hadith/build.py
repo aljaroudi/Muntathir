@@ -34,7 +34,7 @@ DIST = HERE / "dist"
 DATA_PATH = ROOT / "temp/hadith-data"
 ADDITIONAL_PATH = ROOT / "temp/additional-books"
 
-# The Six Books (الكتب الستة). Used only when --sittah is passed.
+# The Six Books (الكتب الستة): the only books whose gradings are imported.
 SITTAH_BOOKS = frozenset(
     {"bukhari", "muslim", "abudawud", "tirmidhi", "nasai", "ibnmajah"}
 )
@@ -440,7 +440,7 @@ def load_books_chapters_hadiths(
                 meta.get("name_en") or "",
                 meta.get("author"),
                 meta.get("died"),
-                1 if meta.get("graded") else 0,
+                1 if meta["id"] in SITTAH_BOOKS and meta.get("graded") else 0,
                 meta.get("volume"),
                 ALL_BOOK_ABBR.get(meta["id"]),
                 sort_order,
@@ -489,7 +489,7 @@ def load_books_chapters_hadiths(
         # Retain each source assessment and its identifiable attribution.
         grade_map: dict[str, list] = defaultdict(list)
         rel_g = f"{sect}/{book_id}/grades.json"
-        if z.exists(rel_g):
+        if book_id in SITTAH_BOOKS and z.exists(rel_g):
             raw = z.read_json(rel_g)
             if isinstance(raw, dict):
                 for key, value in raw.items():
@@ -548,7 +548,8 @@ def load_books_chapters_hadiths(
                     sunni_count += 1
                 else:
                     shia_count += 1
-                grading_rows.append((hadith_id, h, grade_map.get(str(iib), [])))
+                if book_id in SITTAH_BOOKS:
+                    grading_rows.append((hadith_id, h, grade_map.get(str(iib), [])))
 
     if chapter_rows:
         db.executemany(
@@ -652,7 +653,6 @@ def load_additional_books(folder: Path, db: sqlite3.Connection, *, four: bool = 
     cid = db.execute("SELECT coalesce(max(id), 0) FROM chapter").fetchone()[0]
     order = db.execute("SELECT coalesce(max(sort_order), -1) + 1 FROM book").fetchone()[0]
     imported = skipped = 0
-    grading_importer = GradingImporter(db)
     seen_books: set[str] = set()
     for path in files:
         rows = json.loads(path.read_bytes())
@@ -707,15 +707,33 @@ def load_additional_books(folder: Path, db: sqlite3.Connection, *, four: bool = 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (hid, book_id, chapter_id, chapter_idx, number, number,
                  row.get("arabicText") or "", row.get("englishText") or "", row.get("URL") or ""))
-            grading_importer.add(hid, row)
             imported += 1
         db.execute("UPDATE chapter SET hadith_count = (SELECT count(*) FROM hadith WHERE chapter_id = chapter.id) WHERE book_id = ?", (book_id,))
     missing = set(metadata) - seen_books
     if missing:
         raise ValueError(f"Missing numbered exports for: {sorted(missing)}")
-    grading_importer.report()
     print(f"  additional: imported={imported}, kept existing editions={skipped}, numbered exports={len(files)}")
     return imported
+
+
+def localize_kafi_chapters(db: sqlite3.Connection) -> None:
+    books = json.loads((DATA / "kafi-chapters.json").read_text())["books"]
+    for book_id, chapters in books.items():
+        for file_name, title in chapters.items():
+            chapter = db.execute("SELECT id, name_en FROM chapter WHERE book_id = ? AND file_name = ?",
+                                 (book_id, file_name)).fetchone()
+            if chapter is None:
+                continue
+            if not title["name_ar"]:
+                print(f"  unresolved Arabic chapter {book_id}/{file_name}: {title['unresolved']}")
+                continue
+            urls = db.execute("SELECT url FROM hadith WHERE chapter_id = ? ORDER BY id", (chapter[0],)).fetchall()
+            # Source indexes can mislabel sections; do not attach names to changed boundaries.
+            if chapter[1] != title["name_en"] or not urls or (urls[0][0], urls[-1][0]) != (title["first_url"], title["last_url"]):
+                print(f"  unresolved Arabic chapter {book_id}/{file_name}: source title or boundaries changed")
+                continue
+            db.execute("UPDATE chapter SET name_ar = ? WHERE id = ? AND coalesce(name_ar, '') = ''",
+                       (title["name_ar"], chapter[0]))
 
 
 def localize_books(db: sqlite3.Connection) -> None:
@@ -1385,6 +1403,7 @@ def main(argv: list[str] | None = None) -> int:
         load_relations_freq_chord(z, hdb, resolver)
     shia_count += load_additional_books(ADDITIONAL_PATH, hdb, four=args.four)
     localize_books(hdb)
+    localize_kafi_chapters(hdb)
     hdb.commit()
 
     print("Building FTS…")
