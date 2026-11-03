@@ -322,6 +322,11 @@ extension HadithUITests {
         XCTAssertFalse(app.buttons["Remove download"].exists)
         let compact = app.buttons["hadith-library-menu"]
         if compact.exists {
+            XCTAssertLessThanOrEqual(compact.frame.width, 60, "The collapsed toolbar must fit one button, without an empty wide pill.")
+            let compactScreenshot = XCTAttachment(screenshot: app.screenshot())
+            compactScreenshot.name = "Compact Hadith toolbar"
+            compactScreenshot.lifetime = .keepAlways
+            add(compactScreenshot)
             compact.tap()
         }
         XCTAssertTrue(app.buttons["hadith-favorites"].waitForExistence(timeout: 5))

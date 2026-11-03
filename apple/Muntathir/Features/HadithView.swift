@@ -4,7 +4,6 @@ struct HadithView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.hadithAssets) private var assets
     @Environment(\.hadithSession) private var session
-    @State private var toolbarWidth: CGFloat = 0
     @State private var restored = false
     @State private var scrollPosition = ScrollPosition()
     @State private var listOffset: Double = 0
@@ -127,7 +126,6 @@ struct HadithView: View {
             }
             .padding()
         }
-        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { toolbarWidth = $0 }
         .scrollPosition($scrollPosition)
         .onScrollGeometryChange(for: Double.self) { max(0, $0.contentOffset.y + $0.contentInsets.top) } action: { _, offset in
             listOffset = offset
@@ -177,17 +175,10 @@ struct HadithView: View {
         .autocorrectionDisabled()
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                ViewThatFits(in: .horizontal) {
-                    HStack(spacing: 8) { toolbarActions }
-                        .labelStyle(.iconOnly)
-                        .fixedSize(horizontal: true, vertical: false)
-                    Menu { toolbarActions } label: {
-                        Label("Hadith actions", systemImage: "ellipsis.circle")
-                    }
-                    .accessibilityIdentifier("hadith-library-menu")
+                Menu { toolbarActions } label: {
+                    Label("Hadith actions", systemImage: "ellipsis.circle")
                 }
-                // Reserve room for Back and the book title, including in Split View.
-                .frame(maxWidth: max(44, toolbarWidth * 0.5), alignment: .trailing)
+                .accessibilityIdentifier("hadith-library-menu")
             }
         }
         .sheet(item: $filter) { kind in
