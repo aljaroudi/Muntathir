@@ -24,6 +24,12 @@ struct AppleHadithAssets: HadithAssetBackend {
     @concurrent func localURL() async throws -> URL? {
         #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
+               ProcessInfo.processInfo.arguments.contains("--marketing-capture"),
+               let url = Bundle.main.url(forResource: "hadith", withExtension: "db", subdirectory: "Hadith")
+            {
+                return url
+            }
+            if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
                ProcessInfo.processInfo.arguments.contains("--ui-testing-hadith-fixture")
             {
                 return try HadithUITestFixture.url()
@@ -76,7 +82,16 @@ struct AppleHadithAssets: HadithAssetBackend {
     }
 
     func updates() -> AsyncStream<HadithAssetEvent> {
-        AsyncStream { continuation in
+        #if DEBUG
+            // Capture/test databases have no hosted download events or hosting entitlements.
+            let arguments = ProcessInfo.processInfo.arguments
+            if arguments.contains("--ui-testing"),
+               arguments.contains("--marketing-capture") || arguments.contains("--ui-testing-hadith-fixture")
+            {
+                return AsyncStream { $0.finish() }
+            }
+        #endif
+        return AsyncStream { continuation in
             let task = Task {
                 for await update in AssetPackManager.shared.statusUpdates(forAssetPackWithID: Self.packID) {
                     guard !Task.isCancelled else { break }

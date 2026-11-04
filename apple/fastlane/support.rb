@@ -100,6 +100,13 @@ module MuntathirRelease
     parts.join(".")
   end
 
+  def self.project_version
+    # Xcode 27 JSON projects are not readable by Fastlane's xcodeproj dependency.
+    settings = JSON.parse(run!("xcodebuild", "-project", File.join(ROOT, "Muntathir.xcodeproj"), "-scheme", "Muntathir", "-configuration", "Release",
+                               "-destination", "generic/platform=iOS", "-showBuildSettings", "-json"))
+    settings.find { |target| target["target"] == "Muntathir" }.fetch("buildSettings").fetch("MARKETING_VERSION")
+  end
+
   def self.run!(*command)
     output, status = Open3.capture2e(*command.map(&:to_s))
     raise "#{command.first} failed: #{output.lines.last(12).join}" unless status.success?

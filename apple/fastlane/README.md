@@ -103,6 +103,14 @@ Test, archive, upload and submit Public external Beta App Review
 
 Retry TestFlight upload of an already tested and signed IPA
 
+### ios public_beta
+
+```sh
+[bundle exec] fastlane ios public_beta
+```
+
+Distribute an already uploaded build to Public without uploading the binary again
+
 ### ios assets
 
 ```sh
@@ -133,7 +141,7 @@ Upload an approved local archive and replace media without changing the existing
 [bundle exec] fastlane ios release
 ```
 
-Test, generate media, archive and submit App Review with manual release
+Test, generate media, archive and submit App Review (manual release by default)
 
 ----
 

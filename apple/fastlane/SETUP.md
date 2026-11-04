@@ -23,15 +23,15 @@ bundle exec fastlane marketing
 - `beta`: test, archive, upload, wait for processing and submit external Beta App Review for Public.
 - `upload_beta ipa:/absolute/path.ipa`: retry upload of an already tested signed archive without rebuilding.
 - `assets`: upload existing metadata and supported media without submitting review.
-- `prepare build:NUMBER`: upload metadata/media and select a processed TestFlight build, leaving review submission pending.
+- `prepare build:NUMBER replace_screenshots:true`: replace screenshots, preserve existing previews and select a processed build without submitting review. Pass `automatic_release:true` only for a release approved for automatic publication.
 - `upload_prepared ipa:/absolute/path.ipa`: upload an approved archive and replace media, preserving the review draft.
-- `release`: test, generate media, archive, upload and submit App Review. Publication stays manual after approval.
+- `release`: test, generate media, archive, upload and submit App Review. Publication is manual unless `automatic_release:true` is passed.
 
 ## Capture settings and outputs
 
 Captures use a clean isolated test preferences suite, Mecca, 23 October 2026, light appearance and local weather data. Fajr, Dhuhr and Maghrib are visible, with sunset enabled; all other optional times are hidden. This fixture is Debug-only and leaves normal app preferences unchanged. Quran source text is never modified. Screenshot captures read 94:6 from the bundled Quran database. Video captures and SwiftUI previews retain `exampleAyah` from `DailyAyahCard.swift`; each reference matches its text.
 
-Screenshot captures use ayah 94:6 (index 6096). Quran uses each locale’s translation, with English for Japanese and Arabic alone for Arabic. The capture runner stages unchanged asset-pack database inputs in its Debug bundle, guarded by marketing-only launch arguments; Simulator pack delivery otherwise needs a TLS mock server and developer override. Release builds continue using real asset packs.
+Screenshot captures use ayah 94:6 (index 6096). Quran uses bundled translations, with English where no bundled translation matches and Arabic alone in Arabic. The capture runner stages the production Hadith database in its Debug bundle under the marketing launch flag; Release uses the hosted Hadith pack.
 
 Standard devices use `SCREENSHOT_IOS_VERSION` (default 27.0), with iPhone and iPad captured concurrently for each locale. Duo uses iOS 27.1 in a separate snapshot pass without deleting the standard captures. Keep these passes sequential: Snapshot shares locale/launch-argument caches and shuts down booted simulators when preparing a pass. Install the runtimes in Xcode. Current snapshot captures use the native 1398 × 2034 Duo output; validation also accepts 2007 × 2853 and both landscape equivalents. Duo video recording explicitly selects the outer `primary` display; the simulator default can target the blank inner display. QA rejects blank frames. Capturing a single display does not establish layout correctness across folding transitions.
 
@@ -44,7 +44,7 @@ Generated files live under ignored `build/marketing/`:
 - `watch/`: native Watch captures required for the embedded companion.
 - `raw/`: original screenshots and snapshot HTML summary.
 - `frames/`: intermediate bezel images.
-- `store/`: styled store screenshots, 182 files across iPhone, iPad, Duo and Apple Watch in 14 locales.
+- `store/`: styled store screenshots, 224 files across iPhone, iPad, Duo and Apple Watch in 14 locales.
 - `previews/`: 15-second standard iPhone/iPad videos and start/middle/end QA frames.
 - `duo-previews/`: 15-second Duo videos at 886 × 1920, with QA frames. Duo keeps the native screen proportions inside a neutral frame and background on Apple’s required 886 × 1920 canvas.
 
@@ -76,14 +76,16 @@ References: [Fastlane 2.241.1](https://github.com/fastlane/fastlane/releases/tag
 
 Apple requires 15–30 seconds for App Store previews. The capture clock advances the full Sun movement over 15 seconds. Today and daily ayah share one screenshot and headline. Duo screenshots clip to rounded corners inside a dark bezel.
 
-The Quran capture opens Al-Ikhlas with translation set to None, so all localized interfaces can be captured offline without depending on asset-pack downloads. Screenshot validation reads the required screen names from `marketing/headlines.json`.
+Screenshot validation reads the required screen names from `marketing/headlines.json`. Capture builds have their own cache under `build/marketing/`, separate from regression tests.
 
-Snapshot builds use `build/marketing/DerivedData` so they do not share a build cache with regression tests.
+## Replacement submission (November 2026)
 
-## Reviewed local submission
+Current release target: reuse editable version 1.0 and archive once with the next build number. Xcode 27 JSON projects require native `xcodebuild archive` and `-exportArchive`; Fastlane’s project parser cannot read them. The build lane reads the version through Xcode build settings.
 
-The four app screenshots are Today, Calendar, Quran, and Qibla. Marketing screenshots use Quran 94:6 and the October 2026 calendar. The sunrise-to-sunset preview keeps its original verse and sequence. Run screenshots, watch_screenshots, style, previews, tests, and build locally; inspect and approve the generated media before running `upload_prepared ipa:build/Muntathir.ipa`. This lane reuses the editable version, replaces screenshots and previews, and uploads the archive. After processing, select the uploaded build and submit the existing draft through App Store Connect, keeping release manual. Fastlane refuses drafts containing existing asset-pack items, so use the web UI for this final step. It does not regenerate approved media. Existing Ready for Review drafts are reused.
+Quran databases ship in the app and widget. Only `hadith` needs hosted delivery. Upload its validated archive with `bundle exec ruby fastlane/asset_pack_delivery.rb --upload`, attach the processed version to the same App Review draft, and submit it separately for external Beta App Review. Do not submit obsolete Quran packs merely to satisfy old automation assumptions.
 
-For a first App Store submission, packs must have processed iOS versions; external TestFlight approval is a separate gate. Existing published apps still require live App Store packs. During this update, GitHub's Apple deployment workflow is disabled remotely until the owner merges and re-enables it. Do not push or create a PR as part of the local submission.
+`beta_notes/<locale>.txt` contains What to Test, separate from public release notes. After uploading the signed IPA once, run `public_beta build:NUMBER` to distribute that existing build to Public without uploading again.
 
-For this submission, defer `quran-ms-basmeih`, `quran-ur-jawadi`, and `quran-zh-majian` (Malay, Urdu, Traditional Chinese). Keep the other ten packs with the app submission. Submit the deferred packs after app approval and before manually releasing the app.
+Screenshots stage the unchanged production Hadith database in the Debug capture bundle only. Marketing launches bypass hosted download events; Release excludes both the staged database and the capture override. Capture all five screens in each supported locale and device. Keep previews only after validating their formats and reviewing their content.
+
+The requested publication policy is automatic after approval. Existing pre-order configuration may lock Apple’s release-type field; verify the actual remote setting before submission rather than assuming a lane option changed it.

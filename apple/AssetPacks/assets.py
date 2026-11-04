@@ -81,6 +81,8 @@ def check_bundle(path):
                 return plistlib.loads(archive.read(name))
         return plistlib.loads((path / relative).read_bytes())
     info = metadata('Info.plist')
+    downloader = metadata('Extensions/MuntathirAssetDownloader.appex/Info.plist')
+    assert downloader.get('CFBundleDisplayName'), 'Missing downloader display name required by App Store validation'
     assert info.get('BAHasManagedAssetPacks') is True
     assert info.get('BAUsesAppleHosting') is True
     assert info.get('BAAppGroupID') == 'group.com.aljaroudi.Muntathir'

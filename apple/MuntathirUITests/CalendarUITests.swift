@@ -267,8 +267,15 @@ extension CalendarUITests {
             XCTAssertTrue(tab.waitForExistence(timeout: 10))
             tab.tap()
             openAdjustments(app)
-            XCTAssertTrue(app.steppers["month-offset"].waitForExistence(timeout: 5))
-            XCTAssertTrue(app.steppers["month-offset"].isHittable)
+            let adjustment = app.steppers["month-offset"]
+            XCTAssertTrue(adjustment.waitForExistence(timeout: 5))
+            let button = adjustment.buttons.element(boundBy: 0)
+            for _ in 0 ..< 5 {
+                if button.isHittable { break }
+                app.swipeUp()
+            }
+            XCTAssertTrue(button.isHittable)
+            button.tap()
             let attachment = XCTAttachment(screenshot: app.screenshot())
             attachment.name = "Month adjustment large text \(language)"
             attachment.lifetime = .keepAlways

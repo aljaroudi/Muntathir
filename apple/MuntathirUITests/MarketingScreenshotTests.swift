@@ -35,7 +35,7 @@ final class MarketingScreenshotTests: XCTestCase {
         let app = XCUIApplication()
         setupSnapshot(app)
         let labels = try marketingLabels()
-        app.launchArguments += ["--ui-testing", "--ui-testing-mecca", "--marketing-capture", "--marketing-local-translations", "--screenshot-verse", "--qibla-ready", "--sky-date", "2026-10-23T06:00:00Z",
+        app.launchArguments += ["--ui-testing", "--ui-testing-mecca", "--marketing-capture", "--marketing-local-translations", "--screenshot-verse", "--qibla-ready", "--qibla-heading", "--qibla-aligned", "--sky-date", "2026-10-23T06:00:00Z",
                                 "--ui-testing-weather", "--weather-condition", "clear", "-AppleInterfaceStyle", "Light"]
         app.launch()
         XCTAssertTrue(app.descendants(matching: .any)["prayer-fajr"].waitForExistence(timeout: 15))
@@ -52,16 +52,26 @@ final class MarketingScreenshotTests: XCTestCase {
         snapshot("01-Today", timeWaitingForIdle: 2)
         app.buttons[labels[0]].firstMatch.tap()
         XCTAssertTrue(app.buttons["calendar-jump"].waitForExistence(timeout: 5))
-        app.buttons["calendar-jump"].tap()
         // The fixed capture date is 1448-05; show Sha'ban for the store listing.
-        for _ in 0 ..< 3 {
-            app.buttons[labels[1]].tap()
+        let month = app.buttons["calendar-month-1448-8"]
+        for _ in 0 ..< 8 {
+            if month.exists, month.isHittable { break }
+            app.swipeUp()
         }
-        app.buttons["calendar-day-1448-8-1"].tap()
+        XCTAssertTrue(month.isHittable)
+        month.tap()
+        let day = app.buttons["calendar-day-1448-8-1"]
+        for _ in 0 ..< 6 {
+            if day.exists, day.isHittable { break }
+            app.swipeUp()
+        }
+        XCTAssertTrue(day.isHittable)
+        day.tap()
         snapshot("02-Calendar", timeWaitingForIdle: 2)
         app.buttons[labels[2]].firstMatch.tap()
         app.buttons["qibla"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["qibla-map-ready"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["qibla-heading-indicator"].waitForExistence(timeout: 5))
         snapshot("04-Qibla", timeWaitingForIdle: 2)
         app.terminate()
         app.launch()
@@ -80,6 +90,15 @@ final class MarketingScreenshotTests: XCTestCase {
             XCTAssertTrue(app.staticTexts["quran-translation-94:6"].waitForExistence(timeout: 10))
         }
         snapshot("03-Quran", timeWaitingForIdle: 2)
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(app.buttons[labels[2]].firstMatch.waitForExistence(timeout: 15))
+        app.buttons[labels[2]].firstMatch.tap()
+        app.buttons["hadith"].tap()
+        XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 15))
+        app.buttons["hadith-book-bukhari"].tap()
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "hadith-result-")).firstMatch.waitForExistence(timeout: 10))
+        snapshot("05-Hadith", timeWaitingForIdle: 2)
     }
 }
 

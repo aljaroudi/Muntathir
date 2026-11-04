@@ -17,8 +17,8 @@ module MuntathirRelease
       page.fetch("included", []).each { |version| versions[version.fetch("id")] = version }
       path = page.dig("links", "next")
     end
-    expected = Dir[File.join(__dir__, "../AssetPacks/manifests/*.json")].map { |file| JSON.parse(File.read(file)).fetch("assetPackID") }
-    raise "Expected 13 Quran asset packs" unless expected.size == 13
+    # Quran is bundled; only Hadith depends on Apple's hosted delivery.
+    expected = ["hadith"]
     missing = expected.reject do |identifier|
       asset = assets.find { |item| item.dig("attributes", "assetPackIdentifier") == identifier && !item.dig("attributes", "archived") }
       if review
@@ -33,7 +33,7 @@ module MuntathirRelease
       end
     end
     unless missing.empty?
-      raise "Quran packs unavailable for #{review ? 'App Store review' : (release ? 'App Store' : 'external TestFlight')}: #{missing.join(', ')}. " \
+      raise "Hadith pack unavailable for #{review ? 'App Store review' : (release ? 'App Store' : 'external TestFlight')}: #{missing.join(', ')}. " \
             "Upload missing packs or submit their processed versions for review in App Store Connect."
     end
     true

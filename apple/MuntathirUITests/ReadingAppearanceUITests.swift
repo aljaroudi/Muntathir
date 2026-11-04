@@ -24,7 +24,7 @@ final class ReadingAppearanceUITests: XCTestCase {
         app.buttons["hadith-actions"].tap()
         XCTAssertTrue(app.buttons["hadith-translation-picker"].waitForExistence(timeout: 5))
         app.buttons["reading-size"].tap()
-        app.buttons["reading-size-130"].tap()
+        app.buttons["130%"].tap()
         app.terminate()
         app.launchArguments.append("--ui-testing-preserve-state")
         app.launch()
@@ -33,7 +33,7 @@ final class ReadingAppearanceUITests: XCTestCase {
         app.buttons["hadith-actions"].tap()
         XCTAssertTrue(app.buttons["reading-size"].label.contains("130%"))
         app.buttons["reading-size"].tap()
-        app.buttons["reading-size-130"].tap()
+        app.buttons["130%"].tap()
         for _ in 0 ..< 4 {
             if app.buttons["holy-quran"].exists {
                 break
@@ -46,7 +46,7 @@ final class ReadingAppearanceUITests: XCTestCase {
         app.buttons["quran-reading-options"].tap()
         XCTAssertTrue(app.buttons["reading-size"].label.contains("130%"))
         app.buttons["reading-size"].tap()
-        app.buttons["reading-size-reset"].tap()
+        app.buttons["Reset"].tap()
         app.buttons["quran-reading-options"].tap()
         XCTAssertTrue(app.buttons["reading-size"].label.contains("100%"))
     }

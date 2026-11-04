@@ -9,6 +9,7 @@ final class MuntathirUITests: XCTestCase {
     }
 
     @MainActor func testNotificationCustomization() {
+        continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         addUIInterruptionMonitor(withDescription: "Notification permission") { alert in
@@ -25,12 +26,13 @@ final class MuntathirUITests: XCTestCase {
         }
         XCTAssertTrue(link.waitForExistence(timeout: 5))
         link.tap()
-        XCTAssertTrue(app.switches["Time Sensitive"].waitForExistence(timeout: 5))
         let allow = XCUIApplication(bundleIdentifier: "com.apple.springboard").buttons["Allow"]
         if allow.waitForExistence(timeout: 2) {
             allow.tap()
         }
-        let sensitive = app.switches["Time Sensitive"]
+        XCTAssertTrue(app.navigationBars["Notifications"].waitForExistence(timeout: 5))
+        let sensitive = app.descendants(matching: .any).matching(identifier: "Time Sensitive").firstMatch
+        XCTAssertTrue(sensitive.waitForExistence(timeout: 5))
         sensitive.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
         XCTAssertTrue(NSPredicate(format: "value == %@", "0").evaluate(with: sensitive))
         XCTAssertTrue(app.buttons["System notification settings"].exists)
@@ -167,16 +169,28 @@ final class MuntathirUITests: XCTestCase {
         app.launch()
         XCTAssertTrue(app.buttons["Today"].firstMatch.waitForExistence(timeout: 10))
         app.descendants(matching: .any).matching(identifier: "Calendar").firstMatch.tap()
-        app.buttons["Adjust this month"].tap()
+        XCTAssertTrue(app.navigationBars["Calendar"].waitForExistence(timeout: 5))
+        app.buttons["Settings"].tap()
+        let adjustment = app.buttons["month-adjustments"]
+        for _ in 0 ..< 8 where !adjustment.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(adjustment.isHittable)
+        adjustment.tap()
         XCTAssertTrue(app.navigationBars["Adjust month"].waitForExistence(timeout: 5))
         app.buttons["Save"].tap()
-        XCTAssertTrue(app.navigationBars["Calendar"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
+        app.navigationBars["Settings"].buttons["Done"].tap()
         app.buttons["Tools"].firstMatch.tap()
         app.buttons["Qibla"].tap()
         XCTAssertTrue(app.staticTexts["Precise location required"].waitForExistence(timeout: 5))
         app.buttons["Settings"].tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
-        app.buttons["Location, Not selected"].tap()
+        let location = app.buttons["Location, Not selected"]
+        for _ in 0 ..< 5 where !location.isHittable {
+            app.swipeDown()
+        }
+        location.tap()
         XCTAssertTrue(app.searchFields["Search for a city"].waitForExistence(timeout: 5))
     }
 
