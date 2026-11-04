@@ -29,16 +29,18 @@ actor HadithReader {
         }
     }
 
-    func chapters(collectionID: String) throws -> [HadithChapter] {
+    func chapters(collectionID: String? = nil) throws -> [HadithChapter] {
         try database.connection().query("""
-        SELECT c.id, c.name_ar, c.name_en, b.name_ar, b.name_en, b.id, c.hadith_count
+        SELECT c.id, c.name_ar, c.name_en, b.name_ar, b.name_en, b.id, c.hadith_count, b.collection_id, c.chapter_idx
         FROM chapter c JOIN book b ON b.id = c.book_id
-        WHERE b.collection_id = ?
+        \(collectionID == nil ? "" : "WHERE b.collection_id = ?")
         ORDER BY b.sort_order, c.chapter_idx, c.id
-        """, parameters: [collectionID]) { row in
+        """, parameters: collectionID.map { [$0] } ?? []) { row in
             var chapter = Self.chapter(row, offset: 0)
             chapter.bookID = QuranConnection.text(row, 5)
             chapter.count = Int(sqlite3_column_int(row, 6))
+            chapter.collectionID = QuranConnection.text(row, 7)
+            chapter.index = Int(sqlite3_column_int(row, 8))
             return chapter
         }
     }

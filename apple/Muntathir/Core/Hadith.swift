@@ -28,6 +28,8 @@ struct HadithChapter: Identifiable, Hashable, Sendable {
     let bookArabic: String
     let bookEnglish: String
 
+    var collectionID = ""
+    var index = 0
     var bookID = ""
     var count = 0
 
@@ -203,5 +205,28 @@ struct HadithContentsGroup: Identifiable {
             }
         }
         return groups
+    }
+}
+
+enum HadithSearch {
+    static func number(_ query: String) -> Int? {
+        let digits = query.filter { !$0.isWhitespace }
+        guard digits.unicodeScalars.allSatisfy({ CharacterSet.decimalDigits.contains($0) }),
+              let number = QuranSearchText.number(digits), number > 0 else { return nil }
+        return number
+    }
+
+    static func chapter(_ query: String) -> Int? {
+        let text = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let digits: Substring
+        if text.hasPrefix("ch") {
+            digits = text.dropFirst(2)
+        } else if text.hasPrefix("ج") {
+            digits = text.dropFirst()
+        } else {
+            return nil
+        }
+        guard !digits.contains(where: \.isWhitespace) else { return nil }
+        return number(String(digits))
     }
 }

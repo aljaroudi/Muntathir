@@ -152,8 +152,12 @@ struct SharedAyah: Identifiable {
 
 struct AyahShareSheet: UIViewControllerRepresentable {
     let items: [Any]
+    init(items: [Any]) {
+        self.items = items
+    }
+
     init(image: UIImage) {
-        items = [image]
+        self.init(items: [image])
     }
 
     func makeUIViewController(context _: Context) -> UIActivityViewController {

@@ -4,6 +4,21 @@ import Testing
 import UIKit
 
 struct HadithContentsTests {
+    @Test func parsesOnlyStandaloneReferences() {
+        for query in ["123", " ١ ٢ ٣ ", "۱۲۳"] {
+            #expect(HadithSearch.number(query) == 123)
+        }
+        for query in ["0", "-1", "1.2", "²", "123 prayer"] {
+            #expect(HadithSearch.number(query) == nil)
+        }
+        for query in ["ch3", "CH٣", " ج۳ "] {
+            #expect(HadithSearch.chapter(query) == 3)
+        }
+        for query in ["ch3 prayer", "ج ٣", "ch0", "chapter 3"] {
+            #expect(HadithSearch.chapter(query) == nil)
+        }
+    }
+
     @Test func groupsUseSourceIdentityAndKeepOrder() {
         let chapters = [
             HadithChapter(id: 9, arabic: "الإيمان", english: "Faith", bookArabic: "كتاب", bookEnglish: "Book", bookID: "second", count: 12),
@@ -25,6 +40,8 @@ struct HadithContentsTests {
         let chapters = try await HadithReader(database: HadithDatabase(url: fixture.url)).chapters(collectionID: "merged")
         #expect(chapters.map(\.bookID) == ["v1", "v2"])
         #expect(chapters.map(\.count) == [3, 0])
+        #expect(chapters.map(\.index) == [0, 0])
+        #expect(chapters.map(\.collectionID) == ["merged", "merged"])
     }
 
     @Test func oldSessionsDecodeWithoutNavigationFields() throws {

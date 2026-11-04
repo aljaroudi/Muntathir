@@ -134,8 +134,12 @@ struct HadithActions: View {
     let narration: Hadith
     @Environment(\.locale) private var locale
     @AppStorage("hadithEnglishEnabled") private var showEnglish = true
-    @State private var shared: SharedAyah?
-    @State private var shareFailed = false
+    private struct ShareItem: Identifiable {
+        let id = UUID()
+        let items: [Any]
+    }
+
+    @State private var shared: ShareItem?
     @State private var copied = false
     @State private var editing: ReadingHighlight?
     @Environment(\.quranUserStore) private var store
@@ -151,14 +155,14 @@ struct HadithActions: View {
                 UIPasteboard.general.string = content.text
                 copied = true
             }
-            Button("Share as image", systemImage: "square.and.arrow.up") {
-                if let image = HadithImageRenderer.image(for: content) {
-                    shared = SharedAyah(image: image)
+            let shareTitle: LocalizedStringKey = canShare ? "Share as image" : "Share"
+            Button(shareTitle, systemImage: "square.and.arrow.up") {
+                if canShare, let image = HadithImageRenderer.image(for: content) {
+                    shared = ShareItem(items: [image])
                 } else {
-                    shareFailed = true
+                    shared = ShareItem(items: [content.text])
                 }
             }
-            .disabled(!canShare)
             Divider()
             HadithTranslationPicker()
             ReadingSizeMenu(isPresented: $textSizePresented)
@@ -168,11 +172,10 @@ struct HadithActions: View {
                 .frame(minWidth: 44, minHeight: 44)
         }
         .accessibilityIdentifier("hadith-actions")
-        .sheet(item: $shared) { AyahShareSheet(image: $0.image) }
+        .sheet(item: $shared) { AyahShareSheet(items: $0.items) }
         .sheet(item: $editing) { value in
             HighlightEditor(highlight: value, existing: store?.highlights.contains { $0.id == value.id } == true)
         }
         .alert("Text copied", isPresented: $copied) { Button("OK", role: .cancel) {} }
-        .alert("Unable to create image", isPresented: $shareFailed) { Button("OK", role: .cancel) {} }
     }
 }
