@@ -10,6 +10,10 @@ struct HadithView: View {
     @Environment(\.locale) private var locale
     @FocusState private var searchFocused: Bool
     let reader: HadithReader
+    var initialRequest: HadithRequest?
+    var restoredState: HadithSessionState?
+    @State private var collection: HadithCollection?
+    @State private var collectionRestoration: HadithSessionState?
     @State private var catalog: [HadithCollection] = []
     @State private var chapters: [HadithChapter] = []
     @State private var request = HadithRequest()
@@ -18,19 +22,11 @@ struct HadithView: View {
     @State private var loading = true
     @State private var failed = false
     @State private var retry = 0
-    @State private var filter: Filter?
     @State private var jumpPresented = false
     @State private var jumpText = ""
     @State private var invalidNumber = false
     @State private var selected: Hadith?
     @State private var openSingleMatch = false
-
-    private enum Filter: String, Identifiable {
-        case books, chapters
-        var id: String {
-            rawValue
-        }
-    }
 
     private struct LoadRequest: Equatable {
         let search: HadithRequest
@@ -49,25 +45,22 @@ struct HadithView: View {
         catalog.first { $0.id == request.collectionID }
     }
 
+    private var navigationTitle: String {
+        if let chapter = chapters.first(where: { $0.id == request.chapterID }) {
+            let title = chapter.chapterTitle(locale: locale)
+            if !title.isEmpty {
+                return title
+            }
+        }
+        return selectedBook?.title(locale: locale) ?? String(localized: "Hadith")
+    }
+
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 20) {
-                Section {
-                    Button { filter = .books } label: {
-                        LabeledContent("Book", value: selectedBook?.title(locale: locale) ?? String(localized: "All books"))
-                    }
-                    .accessibilityIdentifier("hadith-book-filter")
-                    if request.collectionID != nil {
-                        Button { filter = .chapters } label: {
-                            LabeledContent("Chapter", value: chapters.first { $0.id == request.chapterID }?.title(locale: locale) ?? String(localized: "All chapters"))
-                        }
-                        .accessibilityIdentifier("hadith-chapter-filter")
-                    }
-                    if request.number != nil {
-                        Button("Clear number filter") { update { $0.number = nil } }
-                    }
+                if request.number != nil {
+                    Button("Clear number filter") { update { $0.number = nil } }
                 }
-                .id("top")
                 if request.collectionID == nil, request.number == nil, !matchingBooks.isEmpty {
                     ForEach(HadithBookGroup.allCases) { group in
                         let books = matchingBooks.filter { $0.group == group }.sorted {
@@ -76,7 +69,7 @@ struct HadithView: View {
                         if !books.isEmpty {
                             Section(group.title) {
                                 ForEach(books) { book in
-                                    Button { chooseBook(book.id, clearQuery: true) } label: {
+                                    Button { searchFocused = false; collectionRestoration = nil; collection = book } label: {
                                         VStack(alignment: .leading, spacing: 6) {
                                             Text(book.title(locale: locale)).font(.headline)
                                             if locale.language.languageCode?.identifier != "ar" {
@@ -121,22 +114,25 @@ struct HadithView: View {
                     HadithLoadError { Task { await assets?.refresh(); retry += 1 } }
                 } else if !browsingCatalog, page.rows.isEmpty {
                     ContentUnavailableView.search(text: request.number.map(String.init) ?? request.query)
+                        .accessibilityIdentifier("hadith-empty-results")
                 }
             }
             .padding()
         }
         .scrollPosition($scrollPosition)
         .onScrollGeometryChange(for: Double.self) { max(0, $0.contentOffset.y + $0.contentInsets.top) } action: { _, offset in
-            listOffset = offset
+            if !loading {
+                listOffset = offset
+            }
         }
         .onScrollPhaseChange { _, phase in
-            if phase == .idle, !loading, restored {
+            if phase == .idle, !loading, restored, collection == nil {
                 session?.state.listOffset = listOffset
             }
         }
         .onChange(of: loading) { _, loading in
             if !loading {
-                scrollPosition.scrollTo(y: session?.state.listOffset ?? 0)
+                scrollPosition.scrollTo(y: listOffset)
             }
         }
         .safeAreaInset(edge: .bottom) {
@@ -144,6 +140,7 @@ struct HadithView: View {
                 HStack {
                     Button("Previous") {
                         guard let previous = history.popLast() else { return }
+                        listOffset = 0
                         session?.state.listOffset = 0
                         request.cursor = previous
                     }
@@ -153,6 +150,7 @@ struct HadithView: View {
                     Button("Next") {
                         guard let next = page.nextCursor else { return }
                         history.append(request.cursor)
+                        listOffset = 0
                         session?.state.listOffset = 0
                         request.cursor = next
                     }
@@ -163,11 +161,11 @@ struct HadithView: View {
                 .background(.bar)
             }
         }
-        .navigationTitle(selectedBook?.title(locale: locale) ?? String(localized: "Hadith"))
+        .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: Binding(get: { request.query }, set: { value in
             update { $0.query = value; $0.number = nil }
-        }), placement: .navigationBarDrawer(displayMode: .always), prompt: "Book or narration text")
+        }), placement: .navigationBarDrawer(displayMode: .always), prompt: initialRequest == nil ? "Book or narration text" : "Search narrations")
         .searchFocused($searchFocused)
         .onSubmit(of: .search) { searchFocused = false }
         .scrollDismissesKeyboard(.interactively)
@@ -180,14 +178,12 @@ struct HadithView: View {
                 .accessibilityIdentifier("hadith-library-menu")
             }
         }
-        .sheet(item: $filter) { kind in
-            HadithFilterView(books: kind == .books ? catalog : nil, chapters: chapters) { bookID, chapterID in
-                if kind == .books {
-                    chooseBook(bookID)
-                } else {
-                    update { $0.chapterID = chapterID }
-                }
-                filter = nil
+        .navigationDestination(item: $collection) { book in
+            HadithContentsView(book: book, reader: reader, restoredState: collectionRestoration)
+        }
+        .onChange(of: collection) { old, value in
+            if old != nil, value == nil {
+                Task { await saveSession(request) }
             }
         }
         .alert("Go to hadith", isPresented: $jumpPresented) {
@@ -211,7 +207,7 @@ struct HadithView: View {
         .navigationDestination(item: $selected) { narration in
             HadithDetailView(initialID: narration.id, reader: reader, query: request.query, orderedFallback: page.usedOrderedFallback)
         }
-        .task { await restoreSession() }
+        .task(id: retry) { await restoreSession() }
         .task(id: LoadRequest(search: request, retry: retry)) {
             if restored {
                 await load()
@@ -223,12 +219,12 @@ struct HadithView: View {
             }
         }
         .onDisappear {
-            if restored, !loading {
+            if restored, !loading, collection == nil {
                 session?.state.listOffset = listOffset
             }
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase != .active, restored, !loading {
+            if phase != .active, restored, !loading, collection == nil {
                 session?.state.listOffset = listOffset
             }
         }
@@ -245,27 +241,38 @@ struct HadithView: View {
 
     private func update(_ change: (inout HadithRequest) -> Void) {
         openSingleMatch = false
+        listOffset = 0
         session?.state.listOffset = 0
         change(&request)
         request.cursor = HadithCursor()
         history = []
     }
 
-    private func chooseBook(_ id: String?, clearQuery: Bool = false) {
-        chapters = []
-        update {
-            $0.collectionID = id
-            $0.chapterID = nil
-            $0.number = nil
-            if clearQuery {
-                $0.query = ""
-            }
-        }
-    }
-
     private func restoreSession() async {
         guard !restored else { return }
-        if let saved = session?.state {
+        if let initialRequest {
+            request = initialRequest
+        }
+        if initialRequest == nil, let saved = session?.state, let id = saved.request.collectionID {
+            do {
+                catalog = try await reader.catalog()
+                try Task.checkCancellation()
+                if let book = catalog.first(where: { $0.id == id }) {
+                    collectionRestoration = saved
+                    collection = book
+                }
+            } catch is CancellationError { return }
+            catch {
+                failed = true
+                loading = false
+                return
+            }
+            restored = true
+            retry += 1
+            return
+        }
+        if let saved = restoredState ?? (initialRequest == nil ? session?.state : nil) {
+            listOffset = saved.listOffset
             var restoredRequest = saved.request
             var restoredHistory = saved.history
             do {
@@ -312,20 +319,25 @@ struct HadithView: View {
                 request.collectionID = saved.request.collectionID
             }
         }
+        if initialRequest?.number != nil, restoredState == nil {
+            openSingleMatch = true
+        }
         restored = true
         retry += 1
     }
 
     private func saveSession(_ current: HadithRequest) async {
-        guard let session else { return }
+        guard let session, collection == nil else { return }
         do {
             var sources: [HadithSource?] = []
             for cursor in history + [current.cursor] {
                 try await sources.append(cursor.afterID == 0 ? nil : reader.source(id: cursor.afterID))
             }
             let chapter = try await reader.chapterSource(id: current.chapterID)
-            guard !Task.isCancelled, current == request else { return }
+            guard !Task.isCancelled, current == request, collection == nil else { return }
             var state = session.state
+            state.screen = "results"
+            state.listOffset = listOffset
             state.request = current
             state.history = history
             state.cursorSources = sources

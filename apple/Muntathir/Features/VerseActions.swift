@@ -58,9 +58,6 @@ struct VerseActions: View {
                 }
             }
             .disabled(!canShare)
-            if !canShare {
-                Text("Text is too long to share as an image.")
-            }
             Divider()
             HighlightActions(source: ayah.id, isHadith: false, excerpt: ayah.text, reference: ayah.id, editing: $editing)
         } label: {
@@ -133,6 +130,7 @@ struct HadithShareArtwork: View {
 }
 
 struct HadithActions: View {
+    @Binding var textSizePresented: Bool
     let narration: Hadith
     @Environment(\.locale) private var locale
     @AppStorage("hadithEnglishEnabled") private var showEnglish = true
@@ -161,12 +159,9 @@ struct HadithActions: View {
                 }
             }
             .disabled(!canShare)
-            if !canShare {
-                Text("Text is too long to share as an image.")
-            }
             Divider()
             HadithTranslationPicker()
-            ReadingSizeMenu()
+            ReadingSizeMenu(isPresented: $textSizePresented)
             HighlightActions(source: narration.source?.key ?? "", isHadith: true, excerpt: content.body, reference: content.reference, editing: $editing)
         } label: {
             Label("Hadith actions", systemImage: "ellipsis.circle").labelStyle(.iconOnly)

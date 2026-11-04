@@ -19,7 +19,7 @@ final class ReleaseLayoutUITests: XCTestCase {
         XCTAssertTrue(app.buttons["settings"].waitForExistence(timeout: 10))
         capture(app, "Today")
         app.buttons["settings"].tap()
-        XCTAssertTrue(app.buttons["reading-size"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["reading-size-increase"].waitForExistence(timeout: 5))
         capture(app, "Settings")
         app.buttons[arabic ? "تم" : "Done"].tap()
         app.buttons[arabic ? "التقويم" : "Calendar"].firstMatch.tap()

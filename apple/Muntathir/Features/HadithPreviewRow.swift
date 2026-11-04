@@ -17,7 +17,7 @@ struct HadithPreviewRow: View {
                 .font(.headline)
             if !narration.arabic.isEmpty {
                 Text(narration.arabicDisplay)
-                    .readingText(arabic: true)
+                    .readingText(arabic: true, hadith: true)
                     .lineLimit(5)
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .environment(\.layoutDirection, .rightToLeft)

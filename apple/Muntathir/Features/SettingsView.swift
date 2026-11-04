@@ -17,7 +17,7 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section { AppLanguageLink() }
-                Section { ReadingSizeMenu() }
+                Section { ReadingSizeControls() }
                 Section {
                     NavigationLink("Downloads") { DownloadsSettingsView() }
                         .accessibilityIdentifier("settings-downloads")

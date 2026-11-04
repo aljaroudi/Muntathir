@@ -31,10 +31,16 @@ actor HadithReader {
 
     func chapters(collectionID: String) throws -> [HadithChapter] {
         try database.connection().query("""
-        SELECT c.id, c.name_ar, c.name_en, b.name_ar, b.name_en
+        SELECT c.id, c.name_ar, c.name_en, b.name_ar, b.name_en, b.id, c.hadith_count
         FROM chapter c JOIN book b ON b.id = c.book_id
-        WHERE b.collection_id = ? ORDER BY b.sort_order, c.chapter_idx, c.id
-        """, parameters: [collectionID]) { Self.chapter($0, offset: 0) }
+        WHERE b.collection_id = ?
+        ORDER BY b.sort_order, c.chapter_idx, c.id
+        """, parameters: [collectionID]) { row in
+            var chapter = Self.chapter(row, offset: 0)
+            chapter.bookID = QuranConnection.text(row, 5)
+            chapter.count = Int(sqlite3_column_int(row, 6))
+            return chapter
+        }
     }
 
     func page(_ request: HadithRequest) throws -> HadithPage {

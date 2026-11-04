@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct QuranChapterView: View {
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    @State private var textSizePresented = false
     let surah: QuranSurah
     var initialVerse = 1
     let reader: QuranReader
@@ -66,10 +68,11 @@ struct QuranChapterView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     QuranTranslationPicker()
-                    ReadingSizeMenu()
+                    ReadingSizeMenu(isPresented: $textSizePresented)
                 } label: {
                     Label("Reading options", systemImage: "textformat")
                 }.accessibilityIdentifier("quran-reading-options")
+                    .readingSizePresentation(isPresented: $textSizePresented, compact: sizeClass != .regular)
             }
         }
         .alert("Go to verse", isPresented: $jumpPresented) {

@@ -125,7 +125,7 @@ struct AppleAssetPackBackend: AssetPackBackend {
     /// Isolated, deterministic data for UI tests; never substitutes for hosted assets in normal launches.
     enum HadithUITestFixture {
         static func url() throws -> URL {
-            let url = URL.applicationSupportDirectory.appending(path: "hadith-ui-fixture.db")
+            let url = URL.applicationSupportDirectory.appending(path: "hadith-ui-fixture-v2.db")
             if FileManager.default.fileExists(atPath: url.path) {
                 return url
             }
@@ -149,6 +149,7 @@ struct AppleAssetPackBackend: AssetPackBackend {
             INSERT INTO collection VALUES ('bukhari','كتاب الاختبار','Test book',0);
             INSERT INTO book VALUES ('bukhari','bukhari','كتاب الاختبار','Test book',0,'Test author','مؤلف الاختبار');
             INSERT INTO chapter VALUES (1,'bukhari',0,'1.json','باب الاختبار','Test chapter');
+            ALTER TABLE chapter ADD COLUMN hadith_count INTEGER NOT NULL DEFAULT 105;
             WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x < 105)
             INSERT INTO hadith SELECT x,'bukhari',1,x,x,
               '\(String(repeating: "نص تجريبي لاختبار عرض الحديث وحفظ موضع القراءة. ", count: 35))',

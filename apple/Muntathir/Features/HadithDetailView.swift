@@ -1,9 +1,11 @@
 import SwiftUI
 
 struct HadithDetailView: View {
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.hadithAssets) private var assets
     @Environment(\.hadithSession) private var session
+    @State private var textSizePresented = false
     @State private var scrollPosition = ScrollPosition()
     @State private var offset: Double = 0
     let initialID: Int
@@ -138,7 +140,8 @@ struct HadithDetailView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 if let detail {
-                    HadithActions(narration: detail.narration)
+                    HadithActions(textSizePresented: $textSizePresented, narration: detail.narration)
+                        .readingSizePresentation(isPresented: $textSizePresented, compact: sizeClass != .regular)
                 }
             }
         }

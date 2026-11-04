@@ -101,6 +101,7 @@ final class MarketingScreenshotTests: XCTestCase {
         app.buttons["hadith"].tap()
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 15))
         app.buttons["hadith-book-bukhari"].tap()
+        app.openFirstHadithChapter()
         XCTAssertTrue(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "hadith-result-")).firstMatch.waitForExistence(timeout: 10))
         snapshot("05-Hadith", timeWaitingForIdle: 2)
     }

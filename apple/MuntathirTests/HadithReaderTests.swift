@@ -8,8 +8,8 @@ struct HadithReaderTests {
     @Test func kafiOriginalChapterNamesFollowAppLocale() async throws {
         let reader = HadithReader(database: HadithDatabase(url: Bundle(for: HadithTestBundle.self).url(forResource: "hadith", withExtension: "db")))
         let chapters = try await reader.chapters(collectionID: "alkafi")
-        #expect(chapters.count == 34)
-        #expect(chapters.filter { $0.arabic.isEmpty == false }.count == 31)
+        #expect(chapters.count == 36)
+        #expect(chapters.allSatisfy { !$0.arabic.isEmpty })
         let chapter = try #require(chapters.first { $0.english == "The Book about people with Divine Authority" })
         let arabic = Locale(identifier: "ar_SA")
         let english = Locale(identifier: "en_US")
@@ -22,9 +22,6 @@ struct HadithReaderTests {
         #expect(narration.chapter.chapterTitle(locale: arabic) == "كتاب الحجة")
         let detail = try await reader.detail(id: narration.id)
         #expect(detail.narration.chapter == narration.chapter)
-        for unresolved in chapters.filter(\.arabic.isEmpty) {
-            #expect(unresolved.chapterTitle(locale: arabic) == unresolved.english)
-        }
         let arabicOnly = HadithChapter(id: 0, arabic: "كتاب الحجة", english: "", bookArabic: "الكافي", bookEnglish: "Al-Kafi")
         #expect(arabicOnly.chapterTitle(locale: english) == "كتاب الحجة")
     }
@@ -300,6 +297,8 @@ struct HadithFixture: Sendable {
         INSERT INTO hadith_fts(rowid,text) SELECT id,arabic FROM hadith;
         INSERT INTO hadith_en(rowid,text) SELECT id,text FROM hadith_english_content;
         INSERT INTO hadith VALUES (100001,'other',3,1,'نص عربي','','');
+        ALTER TABLE chapter ADD COLUMN hadith_count INTEGER NOT NULL DEFAULT 0;
+        UPDATE chapter SET hadith_count = (SELECT count(*) FROM hadith WHERE chapter_id = chapter.id);
         ALTER TABLE chapter ADD COLUMN file_name TEXT NOT NULL DEFAULT '1.json';
         ALTER TABLE hadith ADD COLUMN source_id INTEGER;
         UPDATE hadith SET source_id = id_in_book;

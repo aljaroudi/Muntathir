@@ -28,6 +28,15 @@ struct HadithChapter: Identifiable, Hashable, Sendable {
     let bookArabic: String
     let bookEnglish: String
 
+    var bookID = ""
+    var count = 0
+
+    func matches(_ query: String) -> Bool {
+        let terms = QuranSearchText.terms(query)
+        let text = QuranSearchText.normalize(arabic + " " + english + " " + bookArabic + " " + bookEnglish).lowercased()
+        return query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || (!terms.isEmpty && terms.allSatisfy { text.contains($0) })
+    }
+
     func title(locale: Locale) -> String {
         let book = bookTitle(locale: locale)
         let chapter = chapterTitle(locale: locale)
@@ -79,7 +88,7 @@ struct HadithDetail: Sendable {
     let nextID: Int?
 }
 
-struct HadithRequest: Codable, Equatable, Sendable {
+struct HadithRequest: Codable, Hashable, Sendable {
     var query = ""
     var collectionID: String?
     var chapterID: Int?
@@ -148,7 +157,7 @@ enum HadithBookGroup: CaseIterable, Identifiable {
     }
 }
 
-struct HadithCursor: Codable, Equatable, Sendable {
+struct HadithCursor: Codable, Hashable, Sendable {
     enum Phase: Int, Codable, Sendable { case words, substring }
     var phase: Phase = .words
     var afterID = 0
@@ -174,5 +183,25 @@ struct HadithSource: Codable, Hashable, Sendable {
     init?(key: String) {
         guard let data = Data(base64Encoded: key), let value = try? JSONDecoder().decode(Self.self, from: data) else { return nil }
         self = value
+    }
+}
+
+/// Groups by source identity, retaining the database's book and chapter order.
+struct HadithContentsGroup: Identifiable {
+    let id: String
+    var chapters: [HadithChapter]
+
+    static func groups(_ chapters: [HadithChapter], matching query: String = "") -> [Self] {
+        var groups: [Self] = []
+        var indices: [String: Int] = [:]
+        for chapter in chapters where chapter.matches(query) {
+            if let index = indices[chapter.bookID] {
+                groups[index].chapters.append(chapter)
+            } else {
+                indices[chapter.bookID] = groups.count
+                groups.append(Self(id: chapter.bookID, chapters: [chapter]))
+            }
+        }
+        return groups
     }
 }

@@ -3,6 +3,7 @@ import UIKit
 
 struct ReadingTextStyle: ViewModifier {
     var arabic = false
+    var hadith = false
     var heading: Int?
     var adjustable = true
     @AppStorage("readingSizePercent") private var percent = 100
@@ -13,7 +14,7 @@ struct ReadingTextStyle: ViewModifier {
         let scale = adjustable ? Double(min(160, max(80, percent))) / 100 : 1
         let size = (arabic ? arabicSize : bodySize) * scale * (heading.map { $0 <= 2 ? 1.3 : 1.1 } ?? 1)
         let font = arabic
-            ? UIFont(name: "KFGQPCHAFSUthmanicScript-Regula", size: size) ?? UIFont.systemFont(ofSize: size)
+            ? UIFont(name: hadith ? "Lateef-Light" : "KFGQPCHAFSUthmanicScript-Regula", size: size) ?? UIFont.systemFont(ofSize: size)
             : UIFont.systemFont(ofSize: size, weight: heading == nil ? .regular : .semibold)
         content
             .font(Font(font))
@@ -23,8 +24,8 @@ struct ReadingTextStyle: ViewModifier {
 }
 
 extension View {
-    func readingText(arabic: Bool = false, heading: Int? = nil, adjustable: Bool = true) -> some View {
-        modifier(ReadingTextStyle(arabic: arabic, heading: heading, adjustable: adjustable))
+    func readingText(arabic: Bool = false, hadith: Bool = false, heading: Int? = nil, adjustable: Bool = true) -> some View {
+        modifier(ReadingTextStyle(arabic: arabic, hadith: hadith, heading: heading, adjustable: adjustable))
     }
 
     func readingColumn() -> some View {

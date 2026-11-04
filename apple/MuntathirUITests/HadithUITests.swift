@@ -41,6 +41,7 @@ final class HadithUITests: XCTestCase {
         }
         XCTAssertTrue(book.isHittable)
         book.tap()
+        app.openFirstHadithChapter()
         let row = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "hadith-result-")).firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 10))
         row.tap()
@@ -62,6 +63,7 @@ final class HadithUITests: XCTestCase {
     @MainActor func testBrowseJumpReadAndPage() throws {
         let app = try openHadith()
         app.buttons["hadith-book-abudawud"].tap()
+        app.openFirstHadithChapter()
         let rows = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "hadith-result-"))
         XCTAssertTrue(rows.firstMatch.waitForExistence(timeout: 10))
         let first = rows.firstMatch.identifier
@@ -72,25 +74,20 @@ final class HadithUITests: XCTestCase {
         XCTAssertNotEqual(rows.firstMatch.identifier, first)
         app.buttons["hadith-previous-page"].tap()
         XCTAssertTrue(app.buttons[first].waitForExistence(timeout: 10))
+        app.buttons["hadith-library-menu"].tap()
         app.buttons["hadith-jump"].tap()
         app.alerts.textFields.firstMatch.tap()
         app.alerts.textFields.firstMatch.typeText("1")
         app.alerts.buttons["Go"].tap()
-        XCTAssertTrue(rows.firstMatch.waitForExistence(timeout: 10))
-        rows.firstMatch.tap()
         XCTAssertTrue(app.descendants(matching: .any)["hadith-full-arabic"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.descendants(matching: .any)["hadith-full-english"].exists)
     }
 
-    @MainActor func testChapterFilterAndUniqueJumpReturn() throws {
+    @MainActor func testChapterNavigationAndUniqueJumpReturn() throws {
         let app = try openHadith()
         app.buttons["hadith-book-abudawud"].tap()
-        let chapterFilter = app.buttons["hadith-chapter-filter"]
-        XCTAssertTrue(chapterFilter.waitForExistence(timeout: 10))
-        chapterFilter.tap()
-        let chapter = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Purification")).firstMatch
-        XCTAssertTrue(chapter.waitForExistence(timeout: 10))
-        chapter.tap()
+        app.openFirstHadithChapter()
+        app.buttons["hadith-library-menu"].tap()
         app.buttons["hadith-jump"].tap()
         app.alerts.textFields.firstMatch.tap()
         app.alerts.textFields.firstMatch.typeText("١")
@@ -141,6 +138,7 @@ final class HadithUITests: XCTestCase {
     @MainActor func testTranslationToggleAndLabeledDetail() throws {
         let app = try openHadith()
         app.buttons["hadith-book-abudawud"].tap()
+        app.openFirstHadithChapter()
         let row = app.buttons["hadith-result-14646"]
         XCTAssertTrue(row.waitForExistence(timeout: 10))
         row.tap()
@@ -176,6 +174,7 @@ final class HadithUITests: XCTestCase {
     @MainActor func testArabicAtAccessibilitySize() throws {
         let app = try openHadith(arabic: true)
         app.buttons["hadith-book-bukhari"].tap()
+        app.openFirstHadithChapter()
         let row = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "hadith-result-")).firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 10))
         let viewport = CGRect(x: 0, y: app.frame.height * 0.3, width: app.frame.width, height: app.frame.height * 0.4)
@@ -213,6 +212,7 @@ extension HadithUITests {
         app.buttons["hadith"].tap()
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 15))
         app.buttons["hadith-book-bukhari"].tap()
+        app.openFirstHadithChapter()
         XCTAssertTrue(app.buttons["hadith-next-page"].waitForExistence(timeout: 10))
         app.buttons["hadith-next-page"].tap()
         let row = app.buttons["hadith-result-51"]
@@ -257,6 +257,7 @@ extension HadithUITests {
         app.buttons["hadith"].tap()
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 15))
         app.buttons["hadith-book-bukhari"].tap()
+        app.openFirstHadithChapter()
         XCTAssertTrue(app.buttons["hadith-result-1"].waitForExistence(timeout: 10))
         app.buttons["hadith-result-1"].tap()
         XCTAssertTrue(app.buttons["hadith-actions"].waitForExistence(timeout: 10))
@@ -280,6 +281,7 @@ extension HadithUITests {
         app.buttons["hadith"].tap()
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 10))
         app.buttons["hadith-book-bukhari"].tap()
+        app.openFirstHadithChapter()
         let row = app.buttons["hadith-result-1"]
         XCTAssertTrue(row.waitForExistence(timeout: 10))
         let viewport = CGRect(x: 0, y: app.frame.height * 0.3, width: app.frame.width, height: app.frame.height * 0.4)
@@ -340,6 +342,7 @@ extension HadithUITests {
         app.buttons["hadith"].tap()
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 10))
         app.buttons["hadith-book-bukhari"].tap()
+        app.openFirstHadithChapter()
         app.buttons["hadith-result-1"].tap()
         XCTAssertTrue(app.buttons["hadith-actions"].waitForExistence(timeout: 10))
         app.swipeUp()
@@ -371,5 +374,72 @@ extension HadithUITests {
         screenshot.name = "Saved hadith passage"
         screenshot.lifetime = .keepAlways
         add(screenshot)
+    }
+}
+
+extension XCUIApplication {
+    @MainActor func openFirstHadithChapter() {
+        let chapter = buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "hadith-chapter-")).firstMatch
+        XCTAssertTrue(chapter.waitForExistence(timeout: 10))
+        chapter.tap()
+    }
+}
+
+extension HadithUITests {
+    @MainActor func testContentsSearchBackNavigationAndNumberJump() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.buttons["Tools"].firstMatch.tap()
+        app.buttons["hadith"].tap()
+        XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["hadith-book-filter"].exists)
+        let globalSearch = app.searchFields.firstMatch
+        globalSearch.tap()
+        globalSearch.typeText("Sample")
+        XCTAssertTrue(app.buttons["hadith-result-1"].waitForExistence(timeout: 10))
+        globalSearch.buttons.firstMatch.tap()
+        app.buttons["hadith-book-bukhari"].tap()
+        let chapter = app.buttons["hadith-chapter-1"]
+        XCTAssertTrue(chapter.waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["hadith-result-1"].exists)
+        let contents = app.searchFields.firstMatch
+        contents.tap()
+        contents.typeText("missing")
+        XCTAssertFalse(chapter.exists)
+        contents.buttons.firstMatch.tap()
+        contents.typeText("Test chapter")
+        XCTAssertTrue(chapter.waitForExistence(timeout: 5))
+        chapter.tap()
+        XCTAssertTrue(app.buttons["hadith-result-1"].waitForExistence(timeout: 10))
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(chapter.waitForExistence(timeout: 5))
+        XCTAssertEqual(app.searchFields.firstMatch.value as? String, "Test chapter")
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "Searchable Hadith contents"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+        app.terminate()
+        app.launchArguments.append("--ui-testing-preserve-state")
+        app.launch()
+        XCTAssertTrue(chapter.waitForExistence(timeout: 15))
+        XCTAssertEqual(app.searchFields.firstMatch.value as? String, "Test chapter")
+        app.buttons["hadith-search-narrations"].tap()
+        XCTAssertTrue(app.buttons["hadith-result-1"].waitForExistence(timeout: 10))
+        app.searchFields.firstMatch.tap()
+        app.searchFields.firstMatch.typeText("missing\n")
+        XCTAssertTrue(app.descendants(matching: .any)["hadith-empty-results"].firstMatch.waitForExistence(timeout: 5))
+        if app.navigationBars.buttons["Close"].exists {
+            app.navigationBars.buttons["Close"].tap()
+        }
+        app.navigationBars.buttons["BackButton"].tap()
+        app.buttons["hadith-jump"].tap()
+        app.alerts.textFields.firstMatch.typeText("١")
+        app.alerts.buttons["Go"].tap()
+        XCTAssertTrue(app.buttons["hadith-actions"].waitForExistence(timeout: 10))
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.buttons["hadith-result-1"].waitForExistence(timeout: 5))
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(chapter.waitForExistence(timeout: 5))
     }
 }

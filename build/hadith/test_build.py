@@ -15,10 +15,15 @@ spec.loader.exec_module(builder)
 
 
 class AdditionalBooksTests(unittest.TestCase):
+    def test_edition_number_is_the_index_and_not_part_of_the_text(self):
+        for label in ("3 وَ- مَتْنُ الْحَدِيثِ", "4 - مَتْنُ الْحَدِيثِ", "3ـ مَتْنُ الْحَدِيثِ", "14ـ 5ـ مَتْنُ الْحَدِيثِ"):
+            self.assertEqual(builder.strip_narration_label(label), "مَتْنُ الْحَدِيثِ")
+        self.assertEqual(builder.strip_narration_label("مَتْنٌ بِلَا رَقْمٍ"), "مَتْنٌ بِلَا رَقْمٍ")
+
     def test_kafi_original_names_require_matching_source_boundaries(self):
         mapping = json.loads((HERE / 'data/kafi-chapters.json').read_text())['books']
-        self.assertEqual(sum(len(chapters) for chapters in mapping.values()), 34)
-        self.assertEqual(sum(bool(row['name_ar']) for chapters in mapping.values() for row in chapters.values()), 31)
+        self.assertEqual(sum(len(chapters) for chapters in mapping.values()), 37)
+        self.assertEqual(sum(bool(row['name_ar']) for chapters in mapping.values() for row in chapters.values()), 37)
         with sqlite3.connect(':memory:') as db:
             builder.apply_schema(db, HERE / 'schema.sql')
             db.execute("INSERT INTO collection VALUES ('alkafi', 'الكافي', 'Al-Kafi', 0)")
@@ -36,8 +41,8 @@ class AdditionalBooksTests(unittest.TestCase):
             output = StringIO()
             with redirect_stdout(output):
                 builder.localize_kafi_chapters(db)
-            self.assertEqual(output.getvalue().count('unresolved Arabic chapter'), 3)
-            self.assertEqual(db.execute('SELECT count(*) FROM chapter WHERE name_ar <> ? ', ('',)).fetchone()[0], 31)
+            self.assertEqual(output.getvalue().count('unresolved Arabic chapter'), 0)
+            self.assertEqual(db.execute('SELECT count(*) FROM chapter WHERE name_ar <> ? ', ('',)).fetchone()[0], 37)
             self.assertEqual(db.execute('SELECT * FROM hadith ORDER BY id').fetchall(), before)
             self.assertEqual(db.execute("SELECT name_ar FROM chapter WHERE book_id='alkafi-1' AND file_name='5.json'").fetchone()[0], 'كتاب الحجة')
             # A new upstream Arabic name wins; changed English or boundary metadata stays unresolved.
@@ -64,10 +69,10 @@ class AdditionalBooksTests(unittest.TestCase):
             self.assertEqual(titles['bukhari'], db.execute("SELECT name_ar FROM book WHERE id = 'bukhari'").fetchone()[0])
             rows = db.execute("SELECT id, collection_id, name_ar FROM book WHERE id IN ('alkafi-1', 'alkafi-2', 'uyun-rida-1', 'uyun-rida-2') ORDER BY id").fetchall()
             self.assertEqual(rows, [
-                ('alkafi-1', 'alkafi', 'الكافي — الجزء الأول'),
-                ('alkafi-2', 'alkafi', 'الكافي — الجزء الثاني'),
-                ('uyun-rida-1', 'uyun-rida', 'عيون أخبار الرضا ١'),
-                ('uyun-rida-2', 'uyun-rida', 'عيون أخبار الرضا ٢')])
+                ('alkafi-1', 'alkafi', 'الجزء ١'),
+                ('alkafi-2', 'alkafi', 'الجزء ٢'),
+                ('uyun-rida-1', 'uyun-rida', 'الجزء ١'),
+                ('uyun-rida-2', 'uyun-rida', 'الجزء ٢')])
 
     def test_partition_precedence_overlap_volumes_and_verbatim_text(self):
         with tempfile.TemporaryDirectory() as directory:

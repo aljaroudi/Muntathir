@@ -27,8 +27,8 @@ enum HighlightTextContent {
         return rendered
     }
 
-    static func attributed(text: String, markdown: AttributedString?, arabic: Bool, size: CGFloat, alignment: NSTextAlignment) -> NSMutableAttributedString {
-        let font = arabic ? UIFont(name: "KFGQPCHAFSUthmanicScript-Regula", size: size) ?? .systemFont(ofSize: size) : .systemFont(ofSize: size)
+    static func attributed(text: String, markdown: AttributedString?, arabic: Bool, hadith: Bool = false, size: CGFloat, alignment: NSTextAlignment) -> NSMutableAttributedString {
+        let font = arabic ? UIFont(name: hadith ? "Lateef-Light" : "KFGQPCHAFSUthmanicScript-Regula", size: size) ?? .systemFont(ofSize: size) : .systemFont(ofSize: size)
         let style = NSMutableParagraphStyle()
         style.alignment = alignment
         style.baseWritingDirection = arabic ? .rightToLeft : .natural
@@ -93,7 +93,7 @@ struct HighlightText: View {
         let size = (arabic ? arabicSize : bodySize) * CGFloat(min(160, max(80, percent))) / 100
         let highlights = store?.highlights(for: source, isHadith: isHadith) ?? []
         SelectableHighlightText(
-            attributed: HighlightTextContent.attributed(text: text, markdown: markdown, arabic: arabic, size: size, alignment: centered ? .center : .natural),
+            attributed: HighlightTextContent.attributed(text: text, markdown: markdown, arabic: arabic, hadith: isHadith, size: size, alignment: centered ? .center : .natural),
             highlights: highlights, block: block, focused: focused?.source == source && focused?.isHadith == isHadith && (focused?.block != nil || block == "arabic" || focusWholeItem) ? focused : nil,
             differentiate: differentiate, select: { ranges in
                 let saved = ranges.compactMap { HighlightRange($0, in: text) }

@@ -10,13 +10,13 @@ struct HadithMarkdownView: View {
             ForEach(HadithText.paragraphs(text)) { paragraph in
                 HStack(alignment: .top, spacing: 8) {
                     if let marker = paragraph.marker {
-                        Text(marker).readingText(arabic: arabic, heading: paragraph.heading, adjustable: adjustable)
+                        Text(marker).readingText(arabic: arabic, hadith: true, heading: paragraph.heading, adjustable: adjustable)
                     }
                     if paragraph.quoted {
                         Rectangle().fill(.secondary).frame(width: 3)
                     }
                     Text(paragraph.text)
-                        .readingText(arabic: arabic, heading: paragraph.heading, adjustable: adjustable)
+                        .readingText(arabic: arabic, hadith: true, heading: paragraph.heading, adjustable: adjustable)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .fixedSize(horizontal: false, vertical: true)

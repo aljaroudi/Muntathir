@@ -310,6 +310,10 @@ struct HadithSessionState: Codable, Equatable {
     var detailOffset: Double = 0
     var chapter: HadithSource?
     var cursorSources: [HadithSource?] = []
+    // Optional fields keep sessions saved before contents navigation decodable.
+    var screen: String?
+    var contentsQuery: String?
+    var contentsOffset: Double?
 }
 
 @MainActor @Observable final class HadithSession {

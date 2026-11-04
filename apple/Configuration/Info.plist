@@ -12,6 +12,7 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>QPCHafs.woff2</string>
+		<string>Lateef-Light.ttf</string>
 	</array>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>

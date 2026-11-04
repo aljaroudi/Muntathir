@@ -409,6 +409,47 @@ class GradingImporter:
             print(f'    unparsed ({count}): {text[:180]!r}')
 
 
+def volume_title(volume) -> tuple[str, str]:
+    digits = str(int(volume)).translate(str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩"))
+    return f"الجزء {digits}", f"Volume {volume}"
+
+
+# A leading "3ـ" or "4 -" is the print's bab number, not the narration.
+_NARRATION_LABEL = re.compile(r"^(?:\d+\s*(?:و[\u064B-\u0652]*)?\s*[-ـ–—]\s*)+")
+
+
+def strip_narration_label(arabic: str) -> str:
+    return _NARRATION_LABEL.sub("", arabic)
+
+
+def with_restored_kafi(book_id: str, chapters: list) -> list:
+    """Dar al-Kutub kitābs absent from the Thaqalayn files, in print order."""
+    path = DATA / "kafi-restored.json"
+    if book_id not in {"alkafi-6", "alkafi-7"} or not path.exists():
+        return chapters
+    restored = json.loads(path.read_text())
+    specs = {
+        "alkafi-6": [("2.json", "itq", "كتاب العتق والتدبير والمكاتبة")],
+        "alkafi-7": [
+            ("2.json", "hudud", "كتاب الحدود"),
+            ("hudud.json", "diyat", "كتاب الديات"),
+        ],
+    }
+    chapters = list(chapters)
+    for after, key, name_ar in specs[book_id]:
+        hadiths = [{**row, "arabic": strip_narration_label(row.get("arabic") or "")} for row in restored[key]]
+        insert = {
+            "file": f"{key}.json",
+            "name_ar": name_ar,
+            "name_en": "",
+            "count": len(hadiths),
+            "hadiths": hadiths,
+        }
+        index = next(i for i, chapter in enumerate(chapters) if chapter.get("file") == after)
+        chapters.insert(index + 1, insert)
+    return chapters
+
+
 def load_books_chapters_hadiths(
     z: HadithDirectory,
     db: sqlite3.Connection,
@@ -485,7 +526,7 @@ def load_books_chapters_hadiths(
         if not z.exists(rel_index):
             print(f"  missing index: {rel_index}")
             continue
-        chapters = z.read_json(rel_index)
+        chapters = with_restored_kafi(book_id, z.read_json(rel_index))
         # Retain each source assessment and its identifiable attribution.
         grade_map: dict[str, list] = defaultdict(list)
         rel_g = f"{sect}/{book_id}/grades.json"
@@ -497,6 +538,9 @@ def load_books_chapters_hadiths(
 
         for ch_idx, ch in enumerate(chapters):
             file_name = ch.get("file") or f"{ch_idx + 1}.json"
+            # The source counts the author's introduction as hadith 1. It is not part of the index.
+            if book_id == "alkafi-1" and file_name == "1.json":
+                continue
             chapter_id += 1
             chapter_rows.append(
                 (
@@ -510,10 +554,13 @@ def load_books_chapters_hadiths(
                 )
             )
             rel = f"{sect}/{book_id}/{file_name}"
-            if not z.exists(rel):
+            if ch.get("hadiths") is not None:
+                hadiths = ch["hadiths"]
+            elif not z.exists(rel):
                 print(f"  missing chapter: {rel}")
                 continue
-            hadiths = z.read_json(rel)
+            else:
+                hadiths = z.read_json(rel)
             for h in hadiths:
                 iib = h.get("idInBook")
                 if iib is None:
@@ -523,11 +570,15 @@ def load_books_chapters_hadiths(
                 if iib is None:
                     continue
                 iib = int(iib)
+                if book_id == "alkafi-1":
+                    iib -= 1
                 source_id = h.get("id")
                 if source_id is None:
                     source_id = h.get("hadithNumber")
                 narrator, text = english_parts(h.get("english"))
                 arabic = h.get("arabic") or ""
+                if str(book_id).startswith("alkafi-"):
+                    arabic = strip_narration_label(arabic)
                 hadith_id += 1
                 hadith_rows.append(
                     (
@@ -646,6 +697,7 @@ ADDITIONAL_ARABIC_TITLES = {
 def load_additional_books(folder: Path, db: sqlite3.Connection, *, four: bool = False) -> int:
     """Numbered exports supersede allBooks.json; existing corpus editions remain authoritative."""
     metadata = {m["bookId"]: m for m in json.loads((folder / "BookNames.json").read_bytes())}
+    tahdhib = json.loads((DATA / "tahdhib-chapters.json").read_text())
     files = sorted((p for p in folder.glob("*.json") if p.stem.isdecimal()), key=lambda p: int(p.stem))
     if not files:
         raise ValueError(f"No numbered book exports in {folder}")
@@ -679,11 +731,14 @@ def load_additional_books(folder: Path, db: sqlite3.Connection, *, four: bool = 
         multi_volume = "-Volume-" in source_book
         db.execute("INSERT OR IGNORE INTO collection VALUES (?, ?, ?, ?)",
                    (collection_id, name_ar, name_en, order))
+        if multi_volume and volume is None:
+            found = re.search(r"-Volume-(\d+)", source_book)
+            volume = int(found.group(1)) if found else None
+        book_ar, book_en = (volume_title(volume) if multi_volume and volume else (name_ar, name_en))
         db.execute("""INSERT INTO book
             (id, collection_id, sect, book_group, name_ar, name_en, author, volume, sort_order)
             VALUES (?, ?, 'shia', 'shia', ?, ?, ?, ?, ?)""",
-            (book_id, collection_id, f"{name_ar} — {volume}" if multi_volume else name_ar,
-             f"{name_en} — {volume}" if multi_volume else name_en, meta.get("author"), volume, order))
+            (book_id, collection_id, book_ar, book_en, meta.get("author"), volume, order))
         order += 1
         chapters: dict[tuple, tuple[int, int]] = {}
         source_ids: set[int] = set()
@@ -697,9 +752,16 @@ def load_additional_books(folder: Path, db: sqlite3.Connection, *, four: bool = 
                 cid += 1
                 chapter_idx = len(chapters)
                 chapters[key] = cid, chapter_idx
-                title = " · ".join(dict.fromkeys(x for x in (row.get("category"), row.get("chapter")) if x))
-                db.execute("INSERT INTO chapter (id, book_id, chapter_idx, file_name, name_en) VALUES (?, ?, ?, ?, ?)",
-                           (cid, book_id, chapter_idx, path.name, title))
+                chapter_name = (row.get("chapter") or "").strip()
+                category_name = (row.get("category") or "").strip()
+                # The section title is the specific chapter. The parent kitāb is not repeated on every row.
+                title = chapter_name or category_name
+                printed = tahdhib.get(source_book)
+                heading = printed[chapter_idx] if printed and chapter_idx < len(printed) else ""
+                if not title or title == "Content":
+                    _, title = volume_title(volume) if volume else (name_ar, name_en)
+                db.execute("INSERT INTO chapter (id, book_id, chapter_idx, file_name, name_ar, name_en) VALUES (?, ?, ?, ?, ?, ?)",
+                           (cid, book_id, chapter_idx, path.name, heading, title))
             chapter_id, chapter_idx = chapters[key]
             hid += 1
             db.execute("""INSERT INTO hadith
@@ -734,6 +796,8 @@ def localize_kafi_chapters(db: sqlite3.Connection) -> None:
                 continue
             db.execute("UPDATE chapter SET name_ar = ? WHERE id = ? AND coalesce(name_ar, '') = ''",
                        (title["name_ar"], chapter[0]))
+            if title.get("clear_english"):
+                db.execute("UPDATE chapter SET name_en = '' WHERE id = ?", (chapter[0],))
 
 
 def localize_books(db: sqlite3.Connection) -> None:
@@ -752,7 +816,7 @@ def localize_books(db: sqlite3.Connection) -> None:
             continue
         book = db.execute("SELECT name_ar FROM book WHERE collection_id = ? ORDER BY sort_order LIMIT 1",
                           (collection_id,)).fetchone()
-        if book:
+        if book and not book[0].startswith("الجزء"):
             db.execute("UPDATE collection SET name_ar = ? WHERE id = ?",
                        (re.sub(r"\s*[—–]\s*\d+$", "", book[0]), collection_id))
 
