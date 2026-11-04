@@ -14,7 +14,7 @@ struct QuranUserDataView<Content: View>: View {
     var body: some View {
         Group {
             if let container = store.container {
-                QuranAnnotationObserver(store: store) { content }
+                HighlightObserver(store: store) { content }
                     .modelContainer(container)
             } else {
                 content
@@ -24,18 +24,14 @@ struct QuranUserDataView<Content: View>: View {
     }
 }
 
-private struct QuranAnnotationObserver<Content: View>: View {
+private struct HighlightObserver<Content: View>: View {
     let store: QuranUserStore
     @ViewBuilder let content: Content
-    @Query private var annotations: [QuranAnnotation]
-    @Query private var hadithAnnotations: [HadithAnnotation]
+    @Query private var annotations: [HighlightRecord]
 
     var body: some View {
-        content.onChange(of: annotations.map(QuranAnnotationSnapshot.init), initial: true) { _, rows in
+        content.onChange(of: annotations.map(HighlightSnapshot.init), initial: true) { _, rows in
             store.receive(rows)
-        }
-        .onChange(of: hadithAnnotations.map(QuranAnnotationSnapshot.init), initial: true) { _, rows in
-            store.receiveHadith(rows)
         }
     }
 }

@@ -10,7 +10,7 @@ final class TodayInfoCardsUITests: XCTestCase {
             app.launch()
             try XCTSkipIf(app.frame.width < 700, "Run on a regular-width display to verify two columns.")
             let prayers = app.descendants(matching: .any)["prayer-fajr"].firstMatch
-            let ayah = app.staticTexts["daily-ayah-text"]
+            let ayah = app.descendants(matching: .any)["daily-ayah-text"].firstMatch
             XCTAssertTrue(prayers.waitForExistence(timeout: 10))
             XCTAssertTrue(ayah.waitForExistence(timeout: 10))
             XCTAssertTrue(prayers.isHittable)

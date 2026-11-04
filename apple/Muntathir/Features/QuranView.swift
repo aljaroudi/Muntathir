@@ -38,13 +38,9 @@ struct QuranView: View {
             if request.query.isEmpty {
                 Section {
                     NavigationLink {
-                        QuranSavedVersesView(kind: .favorites, reader: reader, surahs: surahs)
-                    } label: { Label("Bookmarks", systemImage: "bookmark") }
-                        .accessibilityIdentifier("quran-favorites")
-                    NavigationLink {
-                        QuranSavedVersesView(kind: .notes, reader: reader, surahs: surahs)
-                    } label: { Label("Notes", systemImage: "note.text") }
-                        .accessibilityIdentifier("quran-notes")
+                        QuranSavedVersesView(reader: reader, surahs: surahs)
+                    } label: { Label("Highlights", systemImage: "highlighter") }
+                        .accessibilityIdentifier("quran-highlights")
                 }
             }
             if !matchingSurahs.isEmpty {
@@ -212,16 +208,24 @@ struct QuranVerseRow: View {
                 Spacer()
                 VerseActions(ayah: ayah, translation: translation)
             }
-            AyahText(ayah: ayah)
-                .lineLimit(preview ? 3 : nil)
+            if preview {
+                AyahText(ayah: ayah).lineLimit(3)
+            } else {
+                HighlightText(text: ayah.text, source: ayah.id, block: "arabic", arabic: true)
+                    .accessibilityIdentifier("quran-arabic-\(ayah.id)")
+            }
             if let translation, let text = ayah.translations[translation.id] {
-                Text(text)
-                    .readingText()
-                    .lineLimit(preview ? 3 : nil)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .environment(\.layoutDirection, Locale(identifier: translation.language).language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight)
-                    .accessibilityIdentifier("quran-translation-\(ayah.id)")
+                Group {
+                    if preview {
+                        Text(text).readingText().lineLimit(3)
+                    } else {
+                        HighlightText(text: text, source: ayah.id, block: translation.id)
+                    }
+                }
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .environment(\.layoutDirection, Locale(identifier: translation.language).language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight)
+                .accessibilityIdentifier("quran-translation-\(ayah.id)")
             }
         }
         .readingColumn()

@@ -18,7 +18,7 @@ struct ReadingTextStyle: ViewModifier {
         content
             .font(Font(font))
             // Subtract native leading; never compress the font’s diacritics below its natural line height.
-            .lineSpacing(adjustable ? max(0, size * 1.5 - font.lineHeight) : 12)
+            .lineSpacing(adjustable ? max(0, size * 1.5 - font.lineHeight) : (arabic ? 12 : 0))
     }
 }
 

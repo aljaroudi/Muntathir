@@ -46,9 +46,9 @@ final class MarketingScreenshotTests: XCTestCase {
         for name in ["imsak", "sunrise", "asr", "isha", "midnight"] + (compact ? ["sunset"] : []) {
             XCTAssertFalse(app.descendants(matching: .any)["prayer-\(name)"].exists)
         }
-        let verse = app.staticTexts["daily-ayah-text"]
+        let verse = app.descendants(matching: .any)["daily-ayah-text"].firstMatch
         XCTAssertTrue(verse.waitForExistence(timeout: 5))
-        XCTAssertEqual(verse.label, "إِنَّ مَعَ العُسرِ يُسرًا")
+        XCTAssertEqual(verse.value as? String ?? verse.label, "إِنَّ مَعَ العُسرِ يُسرًا")
         snapshot("01-Today", timeWaitingForIdle: 2)
         app.buttons[labels[0]].firstMatch.tap()
         XCTAssertTrue(app.buttons["calendar-jump"].waitForExistence(timeout: 5))
@@ -87,7 +87,7 @@ final class MarketingScreenshotTests: XCTestCase {
         app.buttons["quran-result-94:6"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-verse-94:6"].waitForExistence(timeout: 10))
         if Locale(identifier: Snapshot.deviceLanguage).language.languageCode?.identifier != "ar" {
-            XCTAssertTrue(app.staticTexts["quran-translation-94:6"].waitForExistence(timeout: 10))
+            XCTAssertTrue(app.descendants(matching: .any)["quran-translation-94:6"].firstMatch.waitForExistence(timeout: 10))
         }
         snapshot("03-Quran", timeWaitingForIdle: 2)
         app.terminate()
@@ -122,7 +122,7 @@ final class QuranScreenshotRefreshTests: XCTestCase {
         app.buttons["quran-result-94:6"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-verse-94:6"].waitForExistence(timeout: 10))
         if Locale(identifier: Snapshot.deviceLanguage).language.languageCode?.identifier != "ar" {
-            XCTAssertTrue(app.staticTexts["quran-translation-94:6"].waitForExistence(timeout: 10))
+            XCTAssertTrue(app.descendants(matching: .any)["quran-translation-94:6"].firstMatch.waitForExistence(timeout: 10))
         }
         snapshot("03-Quran", timeWaitingForIdle: 2)
     }

@@ -236,10 +236,8 @@ struct HadithView: View {
     }
 
     @ViewBuilder private var toolbarActions: some View {
-        NavigationLink { HadithSavedView(notes: false, reader: reader) } label: { Label("Bookmarks", systemImage: "bookmark") }
-            .accessibilityIdentifier("hadith-favorites")
-        NavigationLink { HadithSavedView(notes: true, reader: reader) } label: { Label("Notes", systemImage: "note.text") }
-            .accessibilityIdentifier("hadith-notes")
+        NavigationLink { HadithSavedView(reader: reader) } label: { Label("Highlights", systemImage: "highlighter") }
+            .accessibilityIdentifier("hadith-highlights")
         HadithTranslationPicker()
         Button("Go to hadith", systemImage: "number") { jumpPresented = true }
             .disabled(request.collectionID == nil)
@@ -406,67 +404,81 @@ struct HadithLoadError: View {
 
 struct HadithSavedView: View {
     @Environment(\.hadithAssets) private var assets
-    let notes: Bool
     let reader: HadithReader
     @Environment(\.quranUserStore) private var store
-    @Environment(\.locale) private var locale
-    @State private var rows: [String: Hadith] = [:]
+    @State private var rows: [String: Int] = [:]
+    @State private var availableHighlights: Set<String> = []
     @State private var loading = true
     @State private var failed = false
     @State private var retry = 0
+    @State private var editing: ReadingHighlight?
+
+    private var highlights: [ReadingHighlight] {
+        store?.highlights.filter(\.isHadith) ?? []
+    }
 
     private var keys: [String] {
-        (store?.hadithStates.values.filter { notes ? !$0.note.isEmpty : $0.isFavorite }.map(\.id) ?? []).sorted()
+        Array(Set(highlights.map(\.source))).sorted()
     }
 
     var body: some View {
         List {
             if store?.unavailable != false {
                 ContentUnavailableView {
-                    Label("Bookmarks and notes unavailable", systemImage: "exclamationmark.triangle")
+                    Label("Highlights unavailable", systemImage: "exclamationmark.triangle")
                 } actions: { Button("Try again") { store?.reopen() } }
             } else if loading {
                 ProgressView("Loading Hadith…")
             } else if failed {
                 HadithLoadError { Task { await assets?.refresh(); retry += 1 } }
-            } else if keys.isEmpty {
-                ContentUnavailableView(notes ? "No notes yet" : "No bookmarks yet", systemImage: notes ? "note.text" : "bookmark")
+            } else if highlights.isEmpty {
+                ContentUnavailableView("No highlights yet", systemImage: "highlighter")
             } else {
-                ForEach(keys, id: \.self) { key in
-                    VStack(alignment: .leading, spacing: 12) {
-                        if let narration = rows[key] {
+                ForEach(highlights) { highlight in
+                    Group {
+                        if let id = rows[highlight.source] {
                             NavigationLink {
-                                HadithDetailView(initialID: narration.id, reader: reader, query: "", orderedFallback: false)
-                            } label: { HadithPreviewRow(narration: narration) }
+                                HadithDetailView(initialID: id, reader: reader, query: "", orderedFallback: false, highlight: highlight)
+                            } label: { HighlightSummary(highlight: highlight, available: availableHighlights.contains(highlight.id)) }
+                                .accessibilityIdentifier("saved-hadith-\(highlight.source)")
                         } else {
-                            Label("This narration is unavailable in the installed library.", systemImage: "book.closed")
-                            if let source = HadithSource(key: key) {
-                                Text("\(source.book) · \(source.number)").font(.caption)
+                            Button { editing = highlight } label: {
+                                HighlightSummary(highlight: highlight, available: false)
                             }
+                            .tint(.primary)
                         }
-                        if notes, let note = store?.hadithState(for: key).note {
-                            Text(note).foregroundStyle(.secondary)
-                        }
+                    }
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button("Edit highlight", systemImage: "pencil") { editing = highlight }
+                            .tint(.accentColor)
+                    }
+                    .contextMenu {
+                        Button("Edit highlight", systemImage: "pencil") { editing = highlight }
                     }
                 }
             }
         }
-        .navigationTitle(notes ? Text("Notes") : Text("Bookmarks"))
-        .task(id: keys.joined(separator: "|") + "-\(retry)") {
+        .listStyle(.insetGrouped)
+        .navigationTitle("Highlights")
+        .sheet(item: $editing) { HighlightEditor(highlight: $0, existing: true) }
+        .task(id: highlights.map { $0.id + String($0.modifiedAt.timeIntervalSince1970) }.joined(separator: "|") + "-\(retry)") {
             loading = true
             failed = false
             do {
-                var loaded: [String: Hadith] = [:]
+                var loaded: [String: Int] = [:]
+                var available: Set<String> = []
                 for key in keys {
                     guard let source = HadithSource(key: key), let id = try await reader.resolve(source) else { continue }
-                    let detail = try await reader.detail(id: id)
-                    let n = detail.narration
-                    loaded[key] = Hadith(id: id, collectionID: n.collectionID, number: n.number, chapter: n.chapter,
-                                         arabic: String(HadithText.preview(n.arabic, terms: []).characters), englishNarrator: "", english: String(HadithText.preview(n.english, terms: []).characters), source: n.source,
-                                         arabicDisplay: HadithText.preview(n.arabic, terms: []), englishDisplay: HadithText.preview(n.english, terms: []))
+                    let narration = try await reader.detail(id: id).narration
+                    loaded[key] = id
+                    let blocks = narration.highlightBlocks
+                    for highlight in highlights where highlight.source == key && highlight.isAvailable(in: blocks) {
+                        available.insert(highlight.id)
+                    }
                     try Task.checkCancellation()
                 }
                 rows = loaded
+                availableHighlights = available
                 loading = false
             } catch is CancellationError {
             } catch {
@@ -476,5 +488,13 @@ struct HadithSavedView: View {
                 }
             }
         }
+    }
+}
+
+extension Hadith {
+    var highlightBlocks: [String: String] {
+        ["arabic": HighlightTextContent.canonical(arabicDisplay),
+         "english": HighlightTextContent.canonical(englishDisplay),
+         "englishNarrator": HighlightTextContent.canonical(narratorDisplay)]
     }
 }

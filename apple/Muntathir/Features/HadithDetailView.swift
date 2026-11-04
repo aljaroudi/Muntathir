@@ -10,6 +10,7 @@ struct HadithDetailView: View {
     let reader: HadithReader
     let query: String
     let orderedFallback: Bool
+    var highlight: ReadingHighlight?
     @AppStorage("hadithEnglishEnabled") private var showEnglish = true
     @Environment(\.locale) private var locale
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -46,7 +47,7 @@ struct HadithDetailView: View {
                     .listRowBackground(HadithBookStyle.background(for: narration.collectionID))
                     Section {
                         if !narration.arabic.isEmpty {
-                            HadithMarkdownView(text: narration.arabicDisplay, arabic: true)
+                            highlighted(narration.arabicDisplay, block: "arabic", narration: narration, arabic: true)
                                 .frame(maxWidth: .infinity, alignment: .trailing)
                                 .environment(\.layoutDirection, .rightToLeft)
                                 .accessibilityIdentifier("hadith-full-arabic")
@@ -54,13 +55,13 @@ struct HadithDetailView: View {
                         if showEnglish, !narration.englishNarrator.isEmpty {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Narrator").font(.subheadline).foregroundStyle(.secondary)
-                                HadithMarkdownView(text: narration.narratorDisplay)
+                                highlighted(narration.narratorDisplay, block: "englishNarrator", narration: narration)
                                     .environment(\.layoutDirection, .leftToRight)
                             }
                             .accessibilityIdentifier("hadith-detail-narrator")
                         }
                         if showEnglish, !narration.english.isEmpty {
-                            HadithMarkdownView(text: narration.englishDisplay)
+                            highlighted(narration.englishDisplay, block: "english", narration: narration)
                                 .environment(\.layoutDirection, .leftToRight)
                                 .accessibilityIdentifier("hadith-full-english")
                         }
@@ -114,6 +115,7 @@ struct HadithDetailView: View {
             }
         }
         .textSelection(.enabled)
+        .environment(\.focusedHighlight, highlight)
         .scrollPosition($scrollPosition)
         .onScrollGeometryChange(for: Double.self) { max(0, $0.contentOffset.y + $0.contentInsets.top) } action: { _, value in offset = value }
         .onScrollPhaseChange { _, phase in
@@ -122,7 +124,7 @@ struct HadithDetailView: View {
             }
         }
         .onChange(of: loading) { _, loading in
-            if !loading {
+            if !loading, highlight == nil {
                 scrollPosition.scrollTo(y: session?.state.detailOffset ?? 0)
             }
         }
@@ -131,7 +133,7 @@ struct HadithDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if let detail {
-                    HadithBookmarkButton(narration: detail.narration)
+                    HadithHighlightButton(narration: detail.narration)
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
@@ -151,6 +153,9 @@ struct HadithDetailView: View {
             }
         }
         .task(id: "\(currentID ?? initialID)-\(retry)") {
+            if highlight?.block == "english" || highlight?.block == "englishNarrator" {
+                showEnglish = true
+            }
             loading = true
             failed = false
             detail = nil
@@ -171,6 +176,12 @@ struct HadithDetailView: View {
                 loading = false
             }
         }
+    }
+
+    private func highlighted(_ text: AttributedString, block: String, narration: Hadith, arabic: Bool = false) -> some View {
+        HighlightText(text: HighlightTextContent.canonical(text), source: narration.source?.key ?? "", block: block,
+                      isHadith: true, reference: HadithShareContent(narration: narration, showEnglish: showEnglish, locale: locale).reference,
+                      arabic: arabic, markdown: text, focusWholeItem: narration.arabic.isEmpty && (block == "englishNarrator" || narration.englishNarrator.isEmpty))
     }
 
     @ViewBuilder private func metadata(_ title: LocalizedStringKey, value: String) -> some View {

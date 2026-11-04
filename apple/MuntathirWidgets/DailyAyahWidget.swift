@@ -91,12 +91,6 @@ struct DailyAyahWidgetView: View {
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            if !isAccessory {
-                Text(ayah.id)
-                    .font(.caption.monospacedDigit()).lineLimit(1)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .layoutPriority(1)
-            }
         }
     }
 }
