@@ -332,13 +332,7 @@ private struct CalendarMonthSection: View {
                     .accessibilityIdentifier("calendar-countdown")
             }
             ForEach(model.content.events(on: day)) { event in
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(event.title(locale: locale)).font(.body)
-                    if let year = event.yearText(locale: locale) {
-                        Text(verbatim: year)
-                            .font(.caption2).foregroundStyle(.secondary)
-                    }
-                }
+                FigureObservanceRow(event: event)
             }
         }
         .fixedSize(horizontal: false, vertical: true)

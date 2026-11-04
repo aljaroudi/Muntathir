@@ -5,7 +5,7 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var hadithSession = HadithSession(defaults: ProcessInfo.processInfo.arguments.contains("--ui-testing") ? UserDefaults(suiteName: "Muntathir.UITests")! : .standard)
     @State private var selectedTab = 0
-    @State private var toolsPath: [String] = []
+    @State private var toolsPath: [FigureRoute] = []
     @State private var restored = false
     @State private var settings = false
     @State private var hadithAssets = HadithAssetStore()
@@ -16,7 +16,7 @@ struct ContentView: View {
                 shell { TodayView(referenceDate: skyTestDate) }
             }
             Tab("Calendar", systemImage: "calendar", value: 1) {
-                shell { CalendarScreen() }
+                shell { CalendarScreen().figureDestinations() }
             }
             Tab("Tools", systemImage: "square.grid.2x2", value: 2) {
                 NavigationStack(path: $toolsPath) {
@@ -27,10 +27,14 @@ struct ContentView: View {
                             Label("The Holy Quran", systemImage: "book.closed")
                         }
                         .accessibilityIdentifier("holy-quran")
-                        NavigationLink(value: "hadith") {
+                        NavigationLink(value: FigureRoute.hadith) {
                             Label("Hadith", systemImage: "text.book.closed")
                         }
                         .accessibilityIdentifier("hadith")
+                        NavigationLink(value: FigureRoute.browser) {
+                            Label("Figures", systemImage: "person.2")
+                        }
+                        .accessibilityIdentifier("figures")
                         NavigationLink {
                             QiblaView(isCovered: settings).toolbar { settingsToolbar }
                         } label: {
@@ -39,8 +43,8 @@ struct ContentView: View {
                         .accessibilityIdentifier("qibla")
                     }
                     .navigationTitle("Tools")
+                    .figureDestinations(hadithAssets: hadithAssets)
                     .toolbar { settingsToolbar }
-                    .navigationDestination(for: String.self) { _ in HadithLibraryView(assets: hadithAssets) }
                 }
             }
         }
@@ -49,7 +53,7 @@ struct ContentView: View {
         .task {
             guard !restored else { return }
             if hadithSession.state.active {
-                selectedTab = 2; toolsPath = ["hadith"]
+                selectedTab = 2; toolsPath = [.hadith]
             }
             restored = true
         }
@@ -116,7 +120,7 @@ struct ContentView: View {
 
     private func updateReadingRoute() {
         guard restored else { return }
-        hadithSession.state.active = selectedTab == 2 && toolsPath.contains("hadith")
+        hadithSession.state.active = selectedTab == 2 && toolsPath.contains(.hadith)
     }
 
     private func shell(@ViewBuilder content: () -> some View) -> some View {

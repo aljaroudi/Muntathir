@@ -119,6 +119,14 @@ test("skips nonexistent month days and validates events and titles", () => {
   ).toThrow()
 })
 
+test("figure links do not change exported observances", () => {
+  const { figure_ids, ...event } = events[0]
+  expect(figure_ids).toEqual(["husayn-ibn-ali"])
+  expect(generateCalendar([event], empty, "en", now)).toBe(
+    generateCalendar([events[0]], empty, "en", now)
+  )
+})
+
 test("missing Arabic title falls back to English", () => {
   const output = unfold(
     generateCalendar(

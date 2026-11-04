@@ -36,9 +36,16 @@ def main():
                 assert arguments(key) == arguments(value), f"Placeholder mismatch: {locale}: {key}"
                 assert "{apple}" not in value and "{events}" not in value, f"Unresolved link: {locale}: {key}"
     events = json.loads((APPLE.parent / "shared/events.json").read_text())
+    figures = json.loads((APPLE.parent / "shared/figures/figures.json").read_text())
+    figure_ids = {person["id"] for person in figures["people"]}
     for event in events:
         assert {"id", "month", "day", "title"} <= set(event), f"Missing event fields: {event.get('id')}"
-        assert set(event) <= {"id", "month", "day", "year", "title"}, f"Unexpected event details: {event['id']}"
+        assert set(event) <= {"id", "month", "day", "year", "title", "figure_ids"}, f"Unexpected event details: {event['id']}"
+        links = event.get("figure_ids", [])
+        assert isinstance(links, list) and all(isinstance(link, str) and link in figure_ids for link in links), (
+            f"Invalid figure links: {event['id']}"
+        )
+        assert len(links) == len(set(links)), f"Duplicate figure links: {event['id']}"
         titles = event["title"]
         assert isinstance(titles, dict) and "en" in titles, f"Missing English event title: {event['id']}"
         for locale, title in titles.items():

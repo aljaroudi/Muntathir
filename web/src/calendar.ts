@@ -234,7 +234,7 @@ export function generateCalendar(
       id = text(event.id)
     assert(/^[a-z0-9-]+$/.test(id) && !ids.has(id), "Invalid or duplicate event ID")
     assert(
-      Object.keys(event).every(key => ["id", "month", "day", "year", "title"].includes(key)),
+      Object.keys(event).every(key => ["id", "month", "day", "year", "title", "figure_ids"].includes(key)),
       "Unexpected event field"
     )
     ids.add(id)

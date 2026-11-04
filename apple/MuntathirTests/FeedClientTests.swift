@@ -194,3 +194,39 @@ extension FeedClientTests {
         #expect(model.error != nil)
     }
 }
+
+extension FeedClientTests {
+    @Test func figuresCacheOnlyValidatedDownloadsAndRecoverOffline() async throws {
+        let good = Data(#"{"schema_version":1,"people":[],"parentages":[],"unions":[],"sources":[]}"#.utf8)
+        let broken = Data("broken".utf8)
+        FeedURLProtocol.state.withLock {
+            $0 = .init(statuses: [503, 200, 200, 503], bodies: [Data(), good, broken, Data()])
+        }
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [FeedURLProtocol.self]
+        let session = URLSession(configuration: config)
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {
+            try? FileManager.default.removeItem(at: folder)
+            session.invalidateAndCancel()
+        }
+        let cache = folder.appendingPathComponent("figures.json")
+        let url = try #require(URL(string: "https://example.invalid/figures.json"))
+
+        let initial = FigureFeed(url: url, cacheURL: cache, session: session)
+        guard case .failure = await initial.load() else {
+            Issue.record("An empty cache should not satisfy the first failed download.")
+            return
+        }
+        #expect(!FileManager.default.fileExists(atPath: cache.path))
+        _ = try await initial.load().get()
+        #expect(try Data(contentsOf: cache) == good)
+
+        let malformed = FigureFeed(url: url, cacheURL: cache, session: session)
+        _ = try await malformed.load().get()
+        #expect(try Data(contentsOf: cache) == good)
+
+        let offline = FigureFeed(url: url, cacheURL: cache, session: session)
+        _ = try await offline.load().get()
+    }
+}
