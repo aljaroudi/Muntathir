@@ -1,0 +1,60 @@
+{
+  "assetPackID": "quran-translations",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/de.bubenheim.db",
+      "fileDestination": "Quran/de.bubenheim.db"
+    },
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/es.bornez.db",
+      "fileDestination": "Quran/es.bornez.db"
+    },
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/fa.fooladvand.db",
+      "fileDestination": "Quran/fa.fooladvand.db"
+    },
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/fr.hamidullah.db",
+      "fileDestination": "Quran/fr.hamidullah.db"
+    },
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/id.indonesian.db",
+      "fileDestination": "Quran/id.indonesian.db"
+    },
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/it.piccardo.db",
+      "fileDestination": "Quran/it.piccardo.db"
+    },
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/ms.basmeih.db",
+      "fileDestination": "Quran/ms.basmeih.db"
+    },
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/ru.kuliev.db",
+      "fileDestination": "Quran/ru.kuliev.db"
+    },
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/tr.vakfi.db",
+      "fileDestination": "Quran/tr.vakfi.db"
+    },
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/ur.jawadi.db",
+      "fileDestination": "Quran/ur.jawadi.db"
+    },
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/zh.jian.db",
+      "fileDestination": "Quran/zh.jian.db"
+    },
+    {
+      "fileSource": "apple/Muntathir/Resources/Quran/zh.majian.db",
+      "fileDestination": "Quran/zh.majian.db"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ],
+  "sourceRoot": "../../.."
+}

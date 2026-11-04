@@ -9,6 +9,7 @@ struct ContentView: View {
     @State private var restored = false
     @State private var settings = false
     @State private var hadithAssets = HadithAssetStore()
+    @State private var translations = QuranTranslationStore.shared
     var body: some View {
         TabView(selection: $selectedTab) {
             Tab("Today", systemImage: "sun.max", value: 0) {
@@ -55,9 +56,18 @@ struct ContentView: View {
         .onChange(of: selectedTab) { _, _ in updateReadingRoute() }
         .onChange(of: toolsPath) { _, _ in updateReadingRoute() }
         .tint(.accentColor)
-        .sheet(isPresented: $settings) { SettingsView() }
+        .sheet(isPresented: $settings) {
+            SettingsView()
+                .environment(\.hadithAssets, hadithAssets)
+                .environment(\.hadithSession, hadithSession)
+        }
+        .sheet(item: $translations.downloadRequest) { translation in
+            QuranDownloadView(requested: translation.id)
+        }
         .task { model.reschedule() }
         .task { await hadithAssets.monitor() }
+        .task { await QuranTranslationStore.shared.monitor() }
+        .task { await QuranTranslationStore.shared.refresh() }
         .task { await hadithAssets.refresh() }
         .onChange(of: model.locationService.current) { _, location in
             if model.liveLocation != nil, let location {
@@ -70,7 +80,7 @@ struct ContentView: View {
             }
             if phase == .active {
                 model.reschedule()
-                Task { await hadithAssets.refresh() }
+                Task { await hadithAssets.refresh(); await QuranTranslationStore.shared.refresh() }
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in model.reschedule() }

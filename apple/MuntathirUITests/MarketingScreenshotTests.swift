@@ -55,14 +55,18 @@ final class MarketingScreenshotTests: XCTestCase {
         // The fixed capture date is 1448-05; show Sha'ban for the store listing.
         let month = app.buttons["calendar-month-1448-8"]
         for _ in 0 ..< 8 {
-            if month.exists, month.isHittable { break }
+            if month.exists, month.isHittable {
+                break
+            }
             app.swipeUp()
         }
         XCTAssertTrue(month.isHittable)
         month.tap()
         let day = app.buttons["calendar-day-1448-8-1"]
         for _ in 0 ..< 6 {
-            if day.exists, day.isHittable { break }
+            if day.exists, day.isHittable {
+                break
+            }
             app.swipeUp()
         }
         XCTAssertTrue(day.isHittable)

@@ -4,9 +4,14 @@ import Testing
 
 @MainActor struct QuranTranslationStoreTests {
     @Test func bundledTranslationsAreValid() throws {
-        #expect(Set(QuranTranslation.catalog.map(\.id)) == ["en.qarai", "es.bornez", "de.bubenheim", "ru.kuliev", "zh.jian", "zh.majian"])
-        for translation in QuranTranslation.catalog {
-            try QuranDatabase.validateTranslation(at: QuranTranslationPreferences.url(for: translation))
+        #expect(QuranTranslation.catalog.count == 13)
+        #expect(QuranTranslation.downloadable.count == 12)
+        let english = try #require(QuranTranslation.catalog.first { $0.id == QuranTranslation.bundledID })
+        try QuranDatabase.validateTranslation(at: QuranTranslationPreferences.url(for: english))
+        for translation in QuranTranslation.downloadable {
+            #expect(Bundle.main.url(forResource: translation.id, withExtension: "db") == nil)
+            let url = try #require(QuranTestResources.translationURLs[translation.id])
+            try QuranDatabase.validateTranslation(at: url)
         }
     }
 
@@ -26,7 +31,7 @@ private final class QuranTestBundleMarker: NSObject {}
 enum QuranTestResources {
     static var translationURLs: [String: URL] {
         let bundle = Bundle(for: QuranTestBundleMarker.self)
-        return Dictionary(uniqueKeysWithValues: ["en.qarai", "es.bornez", "de.bubenheim", "ru.kuliev", "zh.jian", "zh.majian", "fr.hamidullah"].compactMap { id in
+        return Dictionary(uniqueKeysWithValues: QuranTranslation.catalog.map(\.id).compactMap { id in
             bundle.url(forResource: id, withExtension: "db", subdirectory: "Quran").map { (id, $0) }
         })
     }

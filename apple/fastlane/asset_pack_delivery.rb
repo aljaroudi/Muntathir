@@ -12,9 +12,9 @@ key_path = File.expand_path(ENV.fetch("ASC_KEY_PATH"))
 abort "Configured App Store Connect key file is missing" unless File.file?(key_path)
 auth = ["--api-key", ENV.fetch("ASC_KEY_ID"), "--api-issuer", ENV.fetch("ASC_ISSUER_ID"), "--p8-file-path", key_path]
 if mode == "--upload"
-  abort "Asset manifest validation failed" unless system("python3", File.join(root, "AssetPacks/assets.py"), "validate")
-  archives = [File.join(root, "build/AssetPacks/archives/hadith.aar")]
-  abort "Run python3 apple/AssetPacks/assets.py package apple/build/AssetPacks/archives --content hadith first" unless archives.all? { |file| File.file?(file) }
+  abort "Asset manifest validation failed" unless system("python3", File.join(root, "AssetPacks/assets.py"), "validate", "--content", "all")
+  archives = %w[hadith quran-translations].map { |id| File.join(root, "build/AssetPacks/archives/#{id}.aar") }
+  abort "Run python3 apple/AssetPacks/assets.py package apple/build/AssetPacks/archives --content all first" unless archives.all? { |file| File.file?(file) }
   archives.each do |file|
     puts "Uploading #{File.basename(file)} to Muntathir (6824304362)"
     abort "Upload failed; inspect the preceding Apple error before retrying" unless system(altool, "--upload-asset-pack", file, "--apple-id", "6824304362", *auth)

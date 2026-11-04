@@ -14,6 +14,8 @@ import OSLog
         downloadProgress?.fractionCompleted ?? 0
     }
 
+    private(set) var installedBytes: Int64 = 0
+    private(set) var hasLocalAsset = false
     private(set) var revision = 0
     private(set) var busy = false
     private(set) var fullValidationCount = 0
@@ -22,7 +24,7 @@ import OSLog
     private let validateIntegrity: @Sendable (URL) async throws -> Void
     private let defaults: UserDefaults
     private let validationKey = "hadith.validated.v1"
-    private let backend: any HadithAssetBackend
+    private let backend: any AssetPackBackend
     private var installedSignature: String?
     private var refreshPending = false
     private var downloadGeneration = 0
@@ -31,7 +33,7 @@ import OSLog
     private var progressSample: (date: Date, fraction: Double)?
     private var transferFinishedAt: Date?
 
-    init(backend: any HadithAssetBackend = AppleHadithAssets(), reader: HadithReader = HadithReader(), defaults: UserDefaults = .standard,
+    init(backend: any AssetPackBackend = AppleAssetPackBackend(), reader: HadithReader = HadithReader(), defaults: UserDefaults = .standard,
          validateIntegrity: @escaping @Sendable (URL) async throws -> Void = { try HadithDatabase(url: $0).validate() })
     {
         self.validateIntegrity = validateIntegrity
@@ -62,6 +64,8 @@ import OSLog
             Logger(subsystem: "com.aljaroudi.Muntathir", category: "HadithAssets")
                 .debug("Hadith local URL lookup: \(lookupStarted.duration(to: .now))")
             guard let url = localURL else {
+                hasLocalAsset = false
+                installedBytes = 0
                 integrityWorker?.cancel()
                 try await reader.install(nil)
                 installedSignature = nil
@@ -70,7 +74,9 @@ import OSLog
                 state = downloading || pendingDownload != nil ? .downloading : .missing
                 return
             }
+            hasLocalAsset = true
             let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
+            installedBytes = (attributes[.size] as? NSNumber)?.int64Value ?? 0
             let modified = (attributes[.modificationDate] as? Date)?.timeIntervalSinceReferenceDate ?? 0
             let signature = "validation-1|\(url.path)|\(attributes[.systemFileNumber] ?? "")|\(attributes[.size] ?? "")|\(modified)"
             if signature != installedSignature {
@@ -196,6 +202,8 @@ import OSLog
             try await backend.remove()
             installedSignature = nil
             defaults.removeObject(forKey: validationKey)
+            hasLocalAsset = false
+            installedBytes = 0
             state = .missing
         } catch {
             await resolve()
@@ -214,7 +222,7 @@ import OSLog
         busy = false
     }
 
-    func receive(_ event: HadithAssetEvent) async {
+    func receive(_ event: AssetPackEvent) async {
         switch event {
         case .began:
             if state != .ready {

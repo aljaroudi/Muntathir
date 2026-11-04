@@ -3,33 +3,35 @@ import Foundation
 import OSLog
 import System
 
-protocol HadithAssetBackend: Sendable {
+protocol AssetPackBackend: Sendable {
     func localURL() async throws -> URL?
     func isDownloading() async -> Bool
     func download() async throws
     func remove() async throws
-    func updates() -> AsyncStream<HadithAssetEvent>
+    func updates() -> AsyncStream<AssetPackEvent>
 }
 
-enum HadithAssetEvent: Sendable {
+enum AssetPackEvent: Sendable {
     case began
     case progress(Progress)
     case finished
     case failed
 }
 
-struct AppleHadithAssets: HadithAssetBackend {
+struct AppleAssetPackBackend: AssetPackBackend {
     static let packID = "hadith"
+    var identifier = Self.packID
+    var resourcePath = "Hadith/hadith.db"
 
     @concurrent func localURL() async throws -> URL? {
         #if DEBUG
-            if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
+            if identifier == Self.packID, ProcessInfo.processInfo.arguments.contains("--ui-testing"),
                ProcessInfo.processInfo.arguments.contains("--marketing-capture"),
                let url = Bundle.main.url(forResource: "hadith", withExtension: "db", subdirectory: "Hadith")
             {
                 return url
             }
-            if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
+            if identifier == Self.packID, ProcessInfo.processInfo.arguments.contains("--ui-testing"),
                ProcessInfo.processInfo.arguments.contains("--ui-testing-hadith-fixture")
             {
                 return try HadithUITestFixture.url()
@@ -37,11 +39,11 @@ struct AppleHadithAssets: HadithAssetBackend {
         #endif
         // Resolving a local URL requires no network, including on iOS 26.0.
         do {
-            let url = try AssetPackManager.shared.url(for: "Hadith/hadith.db")
+            let url = try AssetPackManager.shared.url(for: FilePath(resourcePath))
             return FileManager.default.fileExists(atPath: url.path) ? url : nil
         } catch {
-            Logger(subsystem: "com.aljaroudi.Muntathir", category: "HadithAssets")
-                .debug("Managed Hadith file is unavailable: \(String(describing: error), privacy: .public)")
+            Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
+                .debug("Managed asset file is unavailable: \(String(describing: error), privacy: .public)")
             return nil
         }
     }
@@ -51,41 +53,41 @@ struct AppleHadithAssets: HadithAssetBackend {
         // Inspect the local queue without fetching a manifest or starting a download.
         guard let downloads = try? await BADownloadManager.shared.currentDownloads else { return false }
         return downloads.contains {
-            $0.identifier == Self.packID && ($0.state == .waiting || $0.state == .downloading)
+            $0.identifier == identifier && ($0.state == .waiting || $0.state == .downloading)
         }
     }
 
     func download() async throws {
-        let log = Logger(subsystem: "com.aljaroudi.Muntathir", category: "HadithAssets")
+        let log = Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
         let manager = AssetPackManager.shared
-        log.notice("Requesting Hadith asset manifest.")
+        log.notice("Requesting asset manifest: \(identifier, privacy: .public).")
         let pack: AssetPack
         if #available(iOS 27, *) {
-            guard let value = try await manager.manifest.assetPack(withID: Self.packID) else {
+            guard let value = try await manager.manifest.assetPack(withID: identifier) else {
                 throw HadithDatabaseError.unavailable
             }
             pack = value
         } else {
-            pack = try await manager.assetPack(withID: Self.packID)
+            pack = try await manager.assetPack(withID: identifier)
         }
-        log.notice("Hadith manifest resolved; requesting local availability.")
+        log.notice("Manifest resolved; requesting local availability.")
         if #available(iOS 26.4, *) {
             try await manager.ensureLocalAvailability(of: pack, requireLatestVersion: true)
         } else {
             try await manager.ensureLocalAvailability(of: pack)
         }
-        log.notice("Hadith local availability confirmed.")
+        log.notice("Asset local availability confirmed.")
     }
 
     func remove() async throws {
-        try await AssetPackManager.shared.remove(assetPackWithID: Self.packID)
+        try await AssetPackManager.shared.remove(assetPackWithID: identifier)
     }
 
-    func updates() -> AsyncStream<HadithAssetEvent> {
+    func updates() -> AsyncStream<AssetPackEvent> {
         #if DEBUG
             // Capture/test databases have no hosted download events or hosting entitlements.
             let arguments = ProcessInfo.processInfo.arguments
-            if arguments.contains("--ui-testing"),
+            if identifier == Self.packID, arguments.contains("--ui-testing"),
                arguments.contains("--marketing-capture") || arguments.contains("--ui-testing-hadith-fixture")
             {
                 return AsyncStream { $0.finish() }
@@ -93,18 +95,18 @@ struct AppleHadithAssets: HadithAssetBackend {
         #endif
         return AsyncStream { continuation in
             let task = Task {
-                for await update in AssetPackManager.shared.statusUpdates(forAssetPackWithID: Self.packID) {
+                for await update in AssetPackManager.shared.statusUpdates(forAssetPackWithID: identifier) {
                     guard !Task.isCancelled else { break }
                     switch update {
                     case .began: continuation.yield(.began)
                     case let .downloading(_, progress): continuation.yield(.progress(progress))
                     case .finished:
-                        Logger(subsystem: "com.aljaroudi.Muntathir", category: "HadithAssets")
-                            .notice("Hadith asset installation finished.")
+                        Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
+                            .notice("Asset installation finished.")
                         continuation.yield(.finished)
                     case let .failed(_, error):
-                        Logger(subsystem: "com.aljaroudi.Muntathir", category: "HadithAssets")
-                            .error("Hadith asset download failed: \(String(describing: error), privacy: .public)")
+                        Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
+                            .error("Asset download failed: \(String(describing: error), privacy: .public)")
                         continuation.yield(.failed)
                     case .paused: break
                     @unknown default: break

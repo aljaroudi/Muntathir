@@ -10,7 +10,6 @@ struct HadithView: View {
     @Environment(\.locale) private var locale
     @FocusState private var searchFocused: Bool
     let reader: HadithReader
-    var removeDownload: (() -> Void)?
     @State private var catalog: [HadithCollection] = []
     @State private var chapters: [HadithChapter] = []
     @State private var request = HadithRequest()
@@ -242,13 +241,6 @@ struct HadithView: View {
         Button("Go to hadith", systemImage: "number") { jumpPresented = true }
             .disabled(request.collectionID == nil)
             .accessibilityIdentifier("hadith-jump")
-        #if DEBUG
-            if let removeDownload {
-                Menu {
-                    Button("Remove download", systemImage: "trash", role: .destructive, action: removeDownload)
-                } label: { Label { Text(verbatim: "Debug") } icon: { Image(systemName: "ladybug") } }
-            }
-        #endif
     }
 
     private func update(_ change: (inout HadithRequest) -> Void) {

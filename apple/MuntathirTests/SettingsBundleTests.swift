@@ -1,5 +1,5 @@
-@testable import Muntathir
 import Foundation
+@testable import Muntathir
 import Testing
 
 struct SettingsBundleTests {
@@ -14,10 +14,14 @@ struct SettingsBundleTests {
         #expect(root.contains { $0["File"] as? String == "Credits" })
         let credits = try specifiers("Credits")
         #expect(credits.contains { $0["File"] as? String == "Adhan" })
+        #expect(credits.contains {
+            $0["Type"] as? String == "PSGroupSpecifier" && $0["Title"] as? String == "Quran Translations"
+        })
         for translation in QuranTranslation.catalog {
             #expect(credits.contains {
-                $0["Title"] as? String == translation.translator
-                    && $0["FooterText"] as? String == "https://tanzil.net/trans/\(translation.id)"
+                $0["Type"] as? String == "PSTitleValueSpecifier"
+                    && $0["Title"] as? String == translation.translator
+                    && $0["DefaultValue"] as? String == "https://tanzil.net/trans/\(translation.id)"
             })
         }
         let licenseURL = try #require(Bundle.main.url(forResource: "Adhan-LICENSE", withExtension: "txt"))

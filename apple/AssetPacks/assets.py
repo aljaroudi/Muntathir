@@ -14,25 +14,25 @@ MANIFESTS = Path(__file__).parent / 'manifests'
 
 def validate_quran():
     sources = ROOT / 'apple/Muntathir/Resources/Quran'
-    expected = {p.stem for p in sources.glob('*.db') if p.stem != 'quran'}
+    expected = {p.stem for p in sources.glob('*.db') if p.stem not in {'quran', 'en.qarai'}}
+    path = MANIFESTS / 'quran-translations.json'
+    pack = json.loads(path.read_text())
+    assert pack['assetPackID'] == 'quran-translations'
+    assert pack['downloadPolicy'] == {'onDemand': {}} and 'language' not in pack
+    assert pack['platforms'] == ['iOS']
     found = set()
-    for path in sorted(MANIFESTS.glob('quran-*.json')):
-        pack = json.loads(path.read_text())
-        selector, = pack['fileSelectors']
+    for selector in pack['fileSelectors']:
         source = (path.parent / pack['sourceRoot'] / selector['fileSource']).resolve()
         translation = source.stem
-        assert translation in expected and translation not in found, f'Unexpected/duplicate translation: {path}'
-        assert pack['assetPackID'] == 'quran-' + translation.replace('.', '-')
-        assert pack['downloadPolicy'] == {'onDemand': {}} and 'language' not in pack
-        assert pack['platforms'] == ['iOS']
+        assert translation in expected and translation not in found, f'Unexpected/duplicate translation: {translation}'
         assert source == sources / f'{translation}.db'
         assert selector['fileDestination'] == f'Quran/{translation}.db'
         with sqlite3.connect(source.as_uri() + '?mode=ro', uri=True) as db:
             assert db.execute('PRAGMA quick_check').fetchone() == ('ok',), source
             assert db.execute('SELECT count(*), min("index"), max("index") FROM quran WHERE trim(text) != ""').fetchone() == (6236, 1, 6236), source
         found.add(translation)
-    assert found == expected and len(found) == 13, 'Expected exactly 13 translation manifests'
-    return sorted(MANIFESTS.glob('quran-*.json'))
+    assert found == expected and len(found) == 12, 'Expected exactly 12 downloadable translations'
+    return [path]
 
 
 def validate_hadith():
@@ -67,8 +67,7 @@ def check_bundle(path):
     else:
         assert path.is_dir() and path.suffix == '.app', 'Expected an .app directory or .ipa'
         files = [str(f.relative_to(path)) for f in path.rglob('*') if f.is_file()]
-    expected = {'quran.db', 'en.qarai.db', 'es.bornez.db', 'de.bubenheim.db',
-                'ru.kuliev.db', 'zh.jian.db', 'zh.majian.db'}
+    expected = {'quran.db', 'en.qarai.db'}
     app_databases = {Path(f).name for f in files if f.endswith('.db') and '.appex/' not in f and '.xctest/' not in f and '/Watch/' not in f}
     widget_databases = {Path(f).name for f in files if f.endswith('.db') and 'MuntathirWidgets.appex/' in f}
     assert app_databases == expected, f'Unexpected app databases: {app_databases}'
@@ -80,6 +79,13 @@ def check_bundle(path):
                 name, = [f for f in files if f.endswith('.app/' + relative) and '/Watch/' not in f and '.appex/' not in f.split('/' + relative)[0]]
                 return plistlib.loads(archive.read(name))
         return plistlib.loads((path / relative).read_bytes())
+    if path.suffix == '.ipa':
+        with zipfile.ZipFile(path) as archive:
+            size_file, = [f for f in files if f.endswith('.app/AssetDownloadSizes.json') and '/Watch/' not in f]
+            sizes = json.loads(archive.read(size_file))
+    else:
+        sizes = json.loads((path / 'AssetDownloadSizes.json').read_text())
+    assert all(isinstance(sizes.get(pack), int) and sizes[pack] > 0 for pack in ('hadith', 'quran-translations')), 'Missing download size estimates'
     info = metadata('Info.plist')
     downloader = metadata('Extensions/MuntathirAssetDownloader.appex/Info.plist')
     assert downloader.get('CFBundleDisplayName'), 'Missing downloader display name required by App Store validation'
@@ -88,7 +94,7 @@ def check_bundle(path):
     assert info.get('BAAppGroupID') == 'group.com.aljaroudi.Muntathir'
 
     assert not any(Path(f).name in {'hadith.db', 'rijal.db'} for f in files if '.xctest/' not in f), 'Content DB bundled unexpectedly'
-    print('Verified bundled Quran translations in app and widget')
+    print('Verified only Arabic and English are bundled in app and widget')
 
 
 def main():
@@ -104,10 +110,20 @@ def main():
     if args.command == 'package':
         output = Path(args.path).resolve() if args.path else ROOT / 'apple/build/AssetPacks'
         output.mkdir(parents=True, exist_ok=True)
+        if args.content in ('quran', 'all'):
+            # Old per-language archives would collide with the new pack in Xcode local testing.
+            for obsolete in output.glob('quran-*.aar'):
+                if obsolete.name != 'quran-translations.aar': obsolete.unlink()
         for manifest in manifests:
             archive = output / (manifest.stem + '.aar')
             archive.unlink(missing_ok=True)
             subprocess.run(['xcrun', 'ba-package', 'package', str(manifest), '--output-path', str(archive)], check=True)
+        # The UI uses archive byte counts, never rounded MB constants treated as bytes.
+        metadata_path = ROOT / 'apple/Muntathir/Resources/AssetDownloadSizes.json'
+        sizes = json.loads(metadata_path.read_text()) if metadata_path.exists() else {}
+        for manifest in manifests:
+            sizes[manifest.stem] = (output / (manifest.stem + '.aar')).stat().st_size
+        metadata_path.write_text(json.dumps(sizes, indent=2) + '\n')
         print(f'Packaged {len(manifests)} asset packs in {output}')
     elif args.command == 'check-bundle':
         assert args.path, 'Provide an .app or .ipa path'

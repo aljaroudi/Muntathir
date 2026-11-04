@@ -3,7 +3,7 @@ import XCTest
 final class QuranUITests: XCTestCase {
     @MainActor private func openQuran(arabic: Bool = false, largeText: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-testing", "-AppleLanguages", arabic ? "(ar)" : "(en)", "-AppleLocale", arabic ? "ar_SA" : "en_US"]
+        app.launchArguments = ["--ui-testing", "-quranTranslationSelection", "auto", "-AppleLanguages", arabic ? "(ar)" : "(en)", "-AppleLocale", arabic ? "ar_SA" : "en_US"]
         if largeText {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         }
@@ -44,19 +44,53 @@ final class QuranUITests: XCTestCase {
         add(screenshot)
     }
 
-    @MainActor func testBundledTranslationAndNone() {
+    @MainActor func testBundledEnglishAndNone() {
         let app = openQuran()
         app.buttons["quran-surah-1"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-verse-1:1"].waitForExistence(timeout: 10))
         app.buttons["quran-reading-options"].tap()
         app.buttons["quran-translation-picker"].tap()
-        app.buttons["Spanish"].tap()
+        app.buttons["English"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-verse-1:1"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.descendants(matching: .any)["quran-translation-1:1"].firstMatch.exists)
         app.buttons["quran-reading-options"].tap()
         app.buttons["quran-translation-picker"].tap()
         app.buttons["None"].tap()
         XCTAssertFalse(app.descendants(matching: .any)["quran-translation-1:1"].firstMatch.exists)
+    }
+
+
+    @MainActor func testMissingTranslationOffersExplicitDownload() {
+        let app = openQuran()
+        app.buttons["quran-surah-1"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["quran-verse-1:1"].waitForExistence(timeout: 10))
+        app.buttons["quran-reading-options"].tap()
+        app.buttons["quran-translation-picker"].tap()
+        app.buttons["Spanish"].tap()
+        XCTAssertTrue(app.buttons["quran-download"].waitForExistence(timeout: 5))
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "Quran translation download"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+        app.buttons["Done"].tap()
+        XCTAssertFalse(app.descendants(matching: .any)["quran-translation-1:1"].firstMatch.exists)
+        XCTAssertTrue(app.descendants(matching: .any)["quran-verse-1:1"].exists)
+    }
+
+    @MainActor func testSettingsOffersDownloadManagement() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.buttons["settings"].firstMatch.tap()
+        app.buttons["settings-downloads"].tap()
+        XCTAssertTrue(app.buttons["downloads-remove-hadith"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.descendants(matching: .any)["downloads-bundled-ar"].firstMatch.exists)
+        XCTAssertTrue(app.descendants(matching: .any)["downloads-bundled-en"].firstMatch.exists)
+        XCTAssertTrue(app.buttons["downloads-get-de.bubenheim"].exists)
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "Downloads settings"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
     }
 
     @MainActor func testSearchReferenceAndNavigateToVerse() {

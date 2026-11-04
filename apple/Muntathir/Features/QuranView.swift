@@ -167,7 +167,12 @@ struct QuranTranslationPicker: View {
 
     var body: some View {
         Menu {
-            Button { store.select("auto") } label: {
+            Button {
+                store.select("auto")
+                if !store.activeID.isEmpty, !store.isInstalled(store.activeID) {
+                    store.downloadRequest = QuranTranslation.catalog.first { $0.id == store.activeID }
+                }
+            } label: {
                 Label("Auto", systemImage: store.selection == "auto" ? "checkmark" : "globe")
             }
             Button { store.select("") } label: {
@@ -175,7 +180,12 @@ struct QuranTranslationPicker: View {
             }
             .accessibilityIdentifier("quran-translation-none")
             ForEach(QuranTranslation.catalog) { translation in
-                Button { store.select(translation.id) } label: {
+                Button {
+                    store.select(translation.id)
+                    if !store.isInstalled(translation.id) {
+                        store.downloadRequest = translation
+                    }
+                } label: {
                     Label(locale.localizedString(forIdentifier: translation.language) ?? translation.language,
                           systemImage: symbol(for: translation.id))
                 }.accessibilityIdentifier("quran-translation-option-\(translation.id)")
@@ -188,6 +198,7 @@ struct QuranTranslationPicker: View {
     }
 
     private func symbol(for id: String) -> String {
+        if !store.isInstalled(id) { return "arrow.down.circle" }
         if store.selection == id {
             return "checkmark"
         }

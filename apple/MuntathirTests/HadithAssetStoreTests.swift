@@ -167,7 +167,7 @@ import Testing
     }
 }
 
-private actor TestHadithAssets: HadithAssetBackend {
+private actor TestHadithAssets: AssetPackBackend {
     let url: URL
     var installed = false
     var downloads = 0
@@ -236,7 +236,7 @@ private actor TestHadithAssets: HadithAssetBackend {
         installed = false
     }
 
-    nonisolated func updates() -> AsyncStream<HadithAssetEvent> {
+    nonisolated func updates() -> AsyncStream<AssetPackEvent> {
         AsyncStream { $0.finish() }
     }
 }
@@ -372,7 +372,7 @@ extension HadithAssetStoreTests {
 
     @Test func actualAssetLocatorTiming() async throws {
         let started = ContinuousClock.now
-        let local = try await AppleHadithAssets().localURL()
+        let local = try await AppleAssetPackBackend().localURL()
         let report = "Apple asset locator: \(started.duration(to: .now)); installed=\(local != nil)"
         print(report)
         Attachment.record(report, named: "Apple asset locator timing")

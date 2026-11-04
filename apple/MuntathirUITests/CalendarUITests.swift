@@ -271,7 +271,9 @@ extension CalendarUITests {
             XCTAssertTrue(adjustment.waitForExistence(timeout: 5))
             let button = adjustment.buttons.element(boundBy: 0)
             for _ in 0 ..< 5 {
-                if button.isHittable { break }
+                if button.isHittable {
+                    break
+                }
                 app.swipeUp()
             }
             XCTAssertTrue(button.isHittable)

@@ -10,7 +10,7 @@ capture_started = Time.now
 derived_data = ENV.fetch("MUNTATHIR_SCREENSHOT_DERIVED_DATA", "./build/marketing/TranslationDerivedData")
 buildlog_path = ENV.fetch("MUNTATHIR_SCREENSHOT_BUILDLOGS", "./build/logs/localized-snapshot")
 
-# Simulator asset-pack delivery requires a separate TLS server and developer override.
+# Capture runs stage local assets without depending on hosted delivery.
 # Stage identical pack inputs in this Debug capture build; Release excludes these files.
 MuntathirRelease.run!("xcodebuild", "build-for-testing", "-project", "./Muntathir.xcodeproj", "-scheme", "Muntathir",
                      "-destination", "generic/platform=iOS Simulator", "-derivedDataPath", derived_data, "CODE_SIGNING_ALLOWED=NO")
@@ -19,9 +19,13 @@ app = File.join(products, "Debug-iphonesimulator/Muntathir.app")
 raise "Missing capture app" unless File.directory?(app)
 # Snapshot runs only UI tests. Avoid installing the second full corpus in the unit-test bundle.
 FileUtils.rm_rf(File.join(app, "PlugIns/MuntathirTests.xctest"))
-MuntathirRelease.run!("python3", "AssetPacks/assets.py", "validate", "--content", "hadith")
+MuntathirRelease.run!("python3", "AssetPacks/assets.py", "validate", "--content", "all")
 FileUtils.mkdir_p(File.join(app, "Hadith"))
 FileUtils.cp("../build/hadith/dist/hadith.db", File.join(app, "Hadith/hadith.db"))
+FileUtils.mkdir_p(File.join(app, "MarketingQuran"))
+Dir.glob("Muntathir/Resources/Quran/*.db").reject { |path| %w[quran.db en.qarai.db].include?(File.basename(path)) }.each do |path|
+  FileUtils.cp(path, File.join(app, "MarketingQuran", File.basename(path)))
+end
 
 def capture(devices, locales, os, derived_data, buildlog_path, compact = false)
   options = {

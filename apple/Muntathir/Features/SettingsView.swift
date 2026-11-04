@@ -19,6 +19,10 @@ struct SettingsView: View {
                 Section { AppLanguageLink() }
                 Section { ReadingSizeMenu() }
                 Section {
+                    NavigationLink("Downloads") { DownloadsSettingsView() }
+                        .accessibilityIdentifier("settings-downloads")
+                }
+                Section {
                     NavigationLink {
                         LocationPicker()
                     } label: {

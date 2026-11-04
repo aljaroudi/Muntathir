@@ -5,6 +5,6 @@ import StoreKit
 @main
 struct AssetDownloader: StoreDownloaderExtension {
     func shouldDownload(_ assetPack: AssetPack) -> Bool {
-        assetPack.id == "hadith"
+        ["hadith", "quran-translations"].contains(assetPack.id)
     }
 }
