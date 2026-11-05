@@ -141,7 +141,7 @@ Upload an approved local archive and replace media without changing the existing
 [bundle exec] fastlane ios release
 ```
 
-Test, generate media, archive and submit App Review (manual release by default)
+Generate media and submit App Review using a processed build or a new archive
 
 ----
 

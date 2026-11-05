@@ -32,7 +32,7 @@ def capture(devices, locales, os, derived_data, buildlog_path, compact = false)
     project: "./Muntathir.xcodeproj", scheme: "Muntathir", configuration: "Debug", devices: devices, languages: locales, ios_version: os,
     only_testing: ["MuntathirUITests/MarketingScreenshotTests"], output_directory: "./build/marketing/raw", buildlog_path: buildlog_path,
     derived_data_path: derived_data, test_without_building: true, skip_open_summary: true, concurrent_simulators: true,
-    xcargs: "-parallel-testing-enabled NO -collect-test-diagnostics never", number_of_retries: 0, stop_after_first_error: true,
+    xcargs: "-parallel-testing-enabled NO -collect-test-diagnostics never", number_of_retries: 1, stop_after_first_error: true,
     clear_previous_screenshots: false, reinstall_app: false, app_identifier: "com.aljaroudi.Muntathir", override_status_bar: true,
     override_status_bar_arguments: "--time 9:41 --dataNetwork wifi --wifiMode active --wifiBars 3 --batteryState charged --batteryLevel 100",
     launch_arguments: compact ? ["--marketing-compact"] : [""],
@@ -46,8 +46,8 @@ capture(standard, locales, ENV.fetch("SCREENSHOT_IOS_VERSION", "27.0"), derived_
 if devices.include?("iPhone Duo")
   compact = locales & %w[ja ru ur-PK]
   regular = locales - compact
-  capture(["iPhone Duo"], regular, "27.1", derived_data, buildlog_path) unless regular.empty?
-  capture(["iPhone Duo"], compact, "27.1", derived_data, buildlog_path, true) unless compact.empty?
+  capture(["iPhone Duo"], regular, ENV.fetch("SCREENSHOT_DUO_IOS_VERSION", "27.2"), derived_data, buildlog_path) unless regular.empty?
+  capture(["iPhone Duo"], compact, ENV.fetch("SCREENSHOT_DUO_IOS_VERSION", "27.2"), derived_data, buildlog_path, true) unless compact.empty?
 end
 screens = JSON.parse(File.read("fastlane/marketing/headlines.json")).fetch("en-US").keys
 missing = devices.product(locales, screens).reject do |device, locale, screen|

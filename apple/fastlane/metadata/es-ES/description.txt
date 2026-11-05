@@ -15,3 +15,5 @@ Lee el Corán con las traducciones incluidas, busca aleyas y guarda tu posición
 
 HADICES
 Descarga la biblioteca de hadices, explora colecciones y capítulos, busca en árabe e inglés y lee sin conexión. Guarda favoritos, añade notas y comparte narraciones como texto o imágenes.
+
+Resalta pasajes del Corán y de los hadices y vuelve a ellos en Resaltados.

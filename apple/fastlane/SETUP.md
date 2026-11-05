@@ -25,7 +25,7 @@ bundle exec fastlane marketing
 - `assets`: upload existing metadata and supported media without submitting review.
 - `prepare build:NUMBER replace_screenshots:true`: replace screenshots, preserve existing previews and select a processed build without submitting review. Pass `automatic_release:true` only for a release approved for automatic publication.
 - `upload_prepared ipa:/absolute/path.ipa`: upload an approved archive and replace media, preserving the review draft.
-- `release`: test, generate media, archive, upload and submit App Review. Publication is manual unless `automatic_release:true` is passed.
+- `release`: test, generate media, archive, upload and submit App Review. Pass `build:NUMBER` to reuse a processed TestFlight build and generate fresh media. Publication is manual unless `automatic_release:true` is passed.
 
 ## Capture settings and outputs
 
@@ -33,7 +33,7 @@ Captures use a clean isolated test preferences suite, Mecca, 23 October 2026, li
 
 Screenshot captures use ayah 94:6 (index 6096). Quran capture builds stage downloaded translations locally, with English where no capture translation matches and Arabic alone in Arabic. Release bundles only Arabic and English. The capture runner stages the production Hadith database in its Debug bundle under the marketing launch flag; Release uses the hosted Hadith pack.
 
-Standard devices use `SCREENSHOT_IOS_VERSION` (default 27.0), with iPhone and iPad captured concurrently for each locale. Duo uses iOS 27.1 in a separate snapshot pass without deleting the standard captures. Keep these passes sequential: Snapshot shares locale/launch-argument caches and shuts down booted simulators when preparing a pass. Install the runtimes in Xcode. Current snapshot captures use the native 1398 × 2034 Duo output; validation also accepts 2007 × 2853 and both landscape equivalents. Duo video recording explicitly selects the outer `primary` display; the simulator default can target the blank inner display. QA rejects blank frames. Capturing a single display does not establish layout correctness across folding transitions.
+Standard devices use `SCREENSHOT_IOS_VERSION` (default 27.0), with iPhone and iPad captured concurrently for each locale. Duo uses `SCREENSHOT_DUO_IOS_VERSION` (default 27.2) in a separate snapshot pass without deleting the standard captures. Keep these passes sequential: Snapshot shares locale/launch-argument caches and shuts down booted simulators when preparing a pass. Install the runtimes in Xcode. Current snapshot captures use the native 1398 × 2034 Duo output; validation also accepts 2007 × 2853 and both landscape equivalents. Duo video recording explicitly selects the outer `primary` display; the simulator default can target the blank inner display. QA rejects blank frames. Capturing a single display does not establish layout correctness across folding transitions.
 
 Screenshot headlines live in `marketing/headlines.json`. Standard iPhone bezels sit closer to headlines. Frameit provides standard phone/tablet bezels; Duo uses a neutral native bezel because frameit has no Duo bezel. The iPad capture fits the available 12.9-inch bezel without stretching and exports on the accepted 13-inch canvas. ImageMagick is required (`brew install imagemagick`). AppKit draws localized text, and final images are flattened with no alpha channel.
 
@@ -82,7 +82,7 @@ Screenshot validation reads the required screen names from `marketing/headlines.
 
 Current release target: reuse editable version 1.0 and archive once with the next build number. Xcode 27 JSON projects require native `xcodebuild archive` and `-exportArchive`; Fastlane’s project parser cannot read them. The build lane reads the version through Xcode build settings.
 
-Quran databases ship in the app and widget. Only `hadith` needs hosted delivery. Upload its validated archive with `bundle exec ruby fastlane/asset_pack_delivery.rb --upload`, attach the processed version to the same App Review draft, and submit it separately for external Beta App Review. Do not submit obsolete Quran packs merely to satisfy old automation assumptions.
+Arabic and English Quran databases ship in the app and widget. The other translations use the hosted `quran-translations` pack, and Hadith uses `hadith`. Upload the validated archives with `bundle exec ruby fastlane/asset_pack_delivery.rb --upload`. The release lane attaches processed versions of required packs that are unavailable on the App Store. Submit new packs separately for external Beta App Review in App Store Connect after submitting the beta build.
 
 `beta_notes/<locale>.txt` contains What to Test, separate from public release notes. After uploading the signed IPA once, run `public_beta build:NUMBER` to distribute that existing build to Public without uploading again.
 

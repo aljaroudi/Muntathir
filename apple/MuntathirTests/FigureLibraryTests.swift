@@ -69,7 +69,7 @@ struct FigureLibraryTests {
     }
 
     private func exampleData() throws -> Data {
-        let url = try #require(Bundle(for: BundleToken.self).url(forResource: "example", withExtension: "json"))
+        let url = try #require(Bundle(for: BundleToken.self).url(forResource: "figure-example", withExtension: "json"))
         return try Data(contentsOf: url)
     }
 

@@ -15,3 +15,5 @@ Leggi il Corano con le traduzioni incluse, cerca i versetti e salva la posizione
 
 HADITH
 Scarica la biblioteca di hadith, esplora raccolte e capitoli, cerca in arabo e inglese e leggi offline. Salva i preferiti, aggiungi note e condividi le narrazioni come testo o immagini.
+
+Evidenzia brani del Corano e degli hadith e ritrovali nella sezione Evidenziazioni.

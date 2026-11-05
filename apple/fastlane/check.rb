@@ -49,7 +49,7 @@ assert(!MuntathirRelease.app_store_asset_gate?(true, nil), "First submission can
 assert(MuntathirRelease.app_store_asset_gate?(true, Object.new), "Existing App Store release must require live packs")
 assert(!MuntathirRelease.app_store_asset_gate?(false, Object.new), "Beta must use beta pack availability")
 # The release gate must reject missing packs and accept only active iOS versions.
-pack_ids = ["hadith"]
+pack_ids = %w[hadith quran-translations]
 page = { "data" => pack_ids.map { |id| { "attributes" => { "assetPackIdentifier" => id }, "relationships" => { "externalBetaVersion" => { "data" => { "id" => id } }, "appStoreVersion" => { "data" => { "id" => id } } } } },
          "included" => pack_ids.map { |id| { "id" => id, "attributes" => { "platforms" => ["IOS"] } } } }
 assert(MuntathirRelease.validate_asset_packs!(get: ->(_) { page }), "Ready beta packs rejected")
@@ -63,6 +63,11 @@ review_get = lambda do |path|
   identifier ? { "data" => review_page["included"].select { |v| v["id"] == identifier } } : review_page
 end
 assert(MuntathirRelease.validate_asset_packs!(review: true, get: review_get), "Processed packs must not require external beta approval for first App Store review")
+review_page["included"].each { |version| version["attributes"]["version"] = "1" }
+review_page["data"][0]["relationships"].delete("appStoreVersion")
+attached = []
+MuntathirRelease.attach_unreleased_asset_packs!("draft", get: review_get, post: ->(*args) { attached << args })
+assert(attached == [["draft", "hadith"]], "App Review must include the required pack that is not yet live")
 review_page["included"][0]["attributes"]["state"] = "PROCESSING"
 rejects("Unprocessed pack accepted for App Store review") { MuntathirRelease.validate_asset_packs!(review: true, get: review_get) }
 
@@ -184,7 +189,7 @@ check.define_singleton_method(:store) { |**_| { app: beta_app, version: "1.0.1",
 Dir.mktmpdir { |dir| rejects("Missing media accepted") { MuntathirRelease.validate_media!(dir) } }
 rejects("Unconfirmed compliance accepted") { MuntathirRelease.compliance!({}) }
 assert(MuntathirRelease.compliance!(config) == false, "Confirmed exemption lost")
-MuntathirRelease.define_singleton_method(:validate_media!) {}
+MuntathirRelease.define_singleton_method(:validate_media!) { |**_| }
 MuntathirRelease.define_singleton_method(:review_config) { config }
 check.define_singleton_method(:check) {}
 check.define_singleton_method(:tests) {}
@@ -211,6 +216,10 @@ check.release
 release = check.calls.reverse.find { |name, _| name == :upload_to_app_store }.last
 assert(release[:submit_for_review] && release[:automatic_release] == false, "Default release must submit with manual publication")
 assert(release[:overwrite_screenshots] == false && release[:overwrite_preview_videos] == false, "Existing assets must not be deleted")
+check.define_singleton_method(:processed_build) { |**_| Struct.new(:version).new("10") }
+check.release(build: "10")
+reused = check.calls.reverse.find { |name, _| name == :upload_to_app_store }.last
+assert(reused[:skip_binary_upload] && reused[:build_number] == "10" && !reused.key?(:ipa), "Review should reuse the specified processed build")
 replacement = check.store_options(app: beta_app, replace_media: true)
 assert(replacement[:overwrite_screenshots] && replacement[:overwrite_preview_videos], "Approved replacement must overwrite existing media")
 manual_app = Object.new

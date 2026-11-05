@@ -109,7 +109,7 @@ final class VerseActionsUITests: XCTestCase {
         openFirstVerse(app)
         app.buttons["quran-reading-options"].tap()
         app.buttons["quran-translation-picker"].tap()
-        app.buttons["quran-translation-option-en.qarai"].tap()
+        app.buttons["English"].tap()
         let text = app.textViews["quran-translation-1:1"]
         XCTAssertTrue(text.waitForExistence(timeout: 5))
         text.press(forDuration: 1.2)
@@ -138,7 +138,7 @@ final class VerseActionsUITests: XCTestCase {
         openFirstVerse(app)
         app.buttons["quran-reading-options"].tap()
         app.buttons["quran-translation-picker"].tap()
-        app.buttons["quran-translation-option-en.qarai"].tap()
+        app.buttons["English"].tap()
         addHighlight(app, note: "Read this here")
         let text = app.textViews["quran-translation-1:1"]
         XCTAssertTrue(text.waitForExistence(timeout: 5))
@@ -160,7 +160,7 @@ final class VerseActionsUITests: XCTestCase {
         openFirstVerse(app)
         app.buttons["quran-reading-options"].tap()
         app.buttons["quran-translation-picker"].tap()
-        app.buttons["quran-translation-option-en.qarai"].tap()
+        app.buttons["English"].tap()
         addHighlight(app, note: "First note")
         addHighlight(app, note: "Second note")
         app.textViews["quran-translation-1:1"].coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.25)).tap()

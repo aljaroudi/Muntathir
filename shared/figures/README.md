@@ -2,11 +2,10 @@
 
 Use JSON as the editable source format, matching `shared/events.json`. The web build serves the published subset of the canonical dataset at `/figures/figures.json` and its schema at `/figures/schema.json`. The app downloads figures on first use and keeps the last valid download for offline use.
 
-The web route’s `publishedIDs` list controls which records are served. Add IDs after review. The source stays valid JSON, so editors and the schema validator can still check all records.
+The web route’s `publishedIDs` list controls which records are served. Add IDs after review. The source stays valid JSON, so editors with JSON Schema support can still check all records.
 
 - `figures.json`: production dataset, starting with the Prophet Muhammad and his family.
 - `schema.json`: JSON Schema (Draft 2020-12) describing the format.
-- `example.json`: fictional family demonstrating two marriages, full siblings, half-siblings, and alternative birth dates. Do not import it as historical data.
 
 ## Adding people
 
@@ -50,10 +49,4 @@ Parentages, unions, and date claims carry `status` (`accepted`, `disputed`, or `
 
 An empty citations array is allowed while collecting data. Keep unsourced entries `unreviewed`. Record differing traditions and interpretations in notes and preserve their respective citations.
 
-Validate both version 1 datasets and calendar references from the repository root. The validator checks Draft 2020-12 shape and formats, then checks links, ancestry, and historical date bounds.
-
-```sh
-python3 -m venv /tmp/muntathir-figures-venv
-/tmp/muntathir-figures-venv/bin/python -m pip install "jsonschema[format]>=4.18,<5"
-/tmp/muntathir-figures-venv/bin/python shared/figures/validate.py
-```
+Open `figures.json` in an editor with JSON Schema support. Its `$schema` points to the adjacent schema. Review cross-record references and historical date ranges when editing.

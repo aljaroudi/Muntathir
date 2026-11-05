@@ -11,7 +11,13 @@ struct QuranTranslationFiles: Sendable {
 
     let root: URL
     static var sharedRoot: URL? {
-        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: QuranTranslationPreferences.groupID)?
+        #if DEBUG
+            let arguments = ProcessInfo.processInfo.arguments
+            if arguments.contains("--ui-testing"), arguments.contains("--marketing-capture") {
+                return URL.applicationSupportDirectory.appending(path: "MarketingQuranTranslations", directoryHint: .isDirectory)
+            }
+        #endif
+        return FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: QuranTranslationPreferences.groupID)?
             .appending(path: "Library/Application Support/QuranTranslations", directoryHint: .isDirectory)
     }
 

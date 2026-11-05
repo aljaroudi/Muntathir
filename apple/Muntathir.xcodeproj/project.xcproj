@@ -35,7 +35,6 @@
   ],
   "files": [
     { "path": "<PROJECT>/../shared/figures/figures.json", "target-membership": [ "MuntathirTests/resources", "MuntathirUITests/resources" ] },
-    { "path": "<PROJECT>/../shared/figures/example.json", "target-membership": [ "MuntathirTests/resources" ] },
     {
       "path": "<PROJECT>/../shared/events.json",
       "target-membership": [

@@ -697,7 +697,9 @@ ADDITIONAL_ARABIC_TITLES = {
 def load_additional_books(folder: Path, db: sqlite3.Connection, *, four: bool = False) -> int:
     """Numbered exports supersede allBooks.json; existing corpus editions remain authoritative."""
     metadata = {m["bookId"]: m for m in json.loads((folder / "BookNames.json").read_bytes())}
-    tahdhib = json.loads((DATA / "tahdhib-chapters.json").read_text())
+    printed_chapters = {}
+    for name in ("tahdhib-chapters.json", "faqih-chapters.json"):
+        printed_chapters.update(json.loads((DATA / name).read_text()))
     files = sorted((p for p in folder.glob("*.json") if p.stem.isdecimal()), key=lambda p: int(p.stem))
     if not files:
         raise ValueError(f"No numbered book exports in {folder}")
@@ -756,7 +758,7 @@ def load_additional_books(folder: Path, db: sqlite3.Connection, *, four: bool = 
                 category_name = (row.get("category") or "").strip()
                 # The section title is the specific chapter. The parent kitāb is not repeated on every row.
                 title = chapter_name or category_name
-                printed = tahdhib.get(source_book)
+                printed = printed_chapters.get(source_book)
                 heading = printed[chapter_idx] if printed and chapter_idx < len(printed) else ""
                 if not title or title == "Content":
                     _, title = volume_title(volume) if volume else (name_ar, name_en)

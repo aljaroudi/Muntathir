@@ -267,6 +267,8 @@ struct PrayerVisibilitySettings: View {
 struct PrayerNotificationSettings: View {
     @Environment(AppModel.self) private var model
     @Environment(\.openURL) private var openURL
+    @State private var permissionDenied = false
+
     var body: some View {
         Form {
             Section {
@@ -279,6 +281,9 @@ struct PrayerNotificationSettings: View {
                     }
                 }
             } footer: {
+                if permissionDenied {
+                    Text("Notifications are disabled. Enable them in system Settings.")
+                }
                 Text("Allow Time Sensitive alerts in Settings and Focus. Sound follows Silent mode and your Ringtone and Alerts volume.")
             }
             Section {
@@ -299,10 +304,10 @@ struct PrayerNotificationSettings: View {
             .onDisappear { model.notifications.stopPreview() }
             .task {
                 if !model.preferences.enabledPrayers.isEmpty {
-                    if await model.notifications.authorize() {
+                    let authorized = await model.notifications.authorize()
+                    permissionDenied = !authorized
+                    if authorized {
                         model.reschedule()
-                    } else {
-                        model.error = String(localized: "Notifications are disabled. Enable them in system Settings.")
                     }
                 }
             }

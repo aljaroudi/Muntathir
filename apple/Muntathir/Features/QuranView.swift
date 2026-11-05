@@ -6,7 +6,7 @@ struct QuranView: View {
     @State private var reader = QuranReader()
     @State private var surahs: [QuranSurah] = []
     @State private var counts: [Int: Int] = [:]
-    @State private var query = ""
+    @State private var query = Self.initialQuery
     @State private var results: [Ayah] = []
     @State private var limit = 50
     @State private var loading = true
@@ -16,6 +16,18 @@ struct QuranView: View {
     @State private var retry = 0
     @State private var resultQuery = ""
     @State private var resultTranslationID = ""
+
+    private static var initialQuery: String {
+        #if DEBUG
+            let arguments = ProcessInfo.processInfo.arguments
+            if arguments.contains("--ui-testing"), arguments.contains("--marketing-capture"),
+               arguments.contains("--screenshot-verse")
+            {
+                return "94:6"
+            }
+        #endif
+        return ""
+    }
 
     private struct Request: Equatable {
         let query: String
@@ -198,7 +210,9 @@ struct QuranTranslationPicker: View {
     }
 
     private func symbol(for id: String) -> String {
-        if !store.isInstalled(id) { return "arrow.down.circle" }
+        if !store.isInstalled(id) {
+            return "arrow.down.circle"
+        }
         if store.selection == id {
             return "checkmark"
         }

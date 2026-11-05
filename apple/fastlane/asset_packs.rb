@@ -2,6 +2,43 @@ require "json"
 require "net/http"
 
 module MuntathirRelease
+  REQUIRED_ASSET_PACKS = %w[hadith quran-translations].freeze
+
+  module ReviewAssetPacks
+    def submit_for_review(client: nil)
+      MuntathirRelease.attach_unreleased_asset_packs!(id)
+      super
+    end
+  end
+
+  def self.attach_unreleased_asset_packs!(submission_id, get: method(:asset_pack_request), post: method(:post_review_item))
+    assets = get.call("/v1/apps/6824304362/backgroundAssets?include=appStoreVersion&limit=200").fetch("data")
+    versions = REQUIRED_ASSET_PACKS.filter_map do |identifier|
+      asset = assets.find { |item| item.dig("attributes", "assetPackIdentifier") == identifier && !item.dig("attributes", "archived") }
+      raise "Missing required asset pack: #{identifier}" unless asset
+      next if asset.dig("relationships", "appStoreVersion", "data", "id")
+      candidates = get.call("/v1/backgroundAssets/#{asset.fetch('id')}/versions?limit=200").fetch("data")
+      version = candidates.select do |candidate|
+        candidate.dig("attributes", "state") == "COMPLETE" && candidate.dig("attributes", "platforms")&.include?("IOS")
+      end.max_by { |candidate| Gem::Version.new(candidate.dig("attributes", "version")) }
+      raise "Missing processed iOS version for #{identifier}" unless version
+      version.fetch("id")
+    end
+    versions.each { |version_id| post.call(submission_id, version_id) }
+  end
+
+  def self.post_review_item(submission_id, version_id)
+    Spaceship::ConnectAPI.tunes_request_client.post("v1/reviewSubmissionItems", {
+      data: {
+        type: "reviewSubmissionItems",
+        relationships: {
+          reviewSubmission: { data: { type: "reviewSubmissions", id: submission_id } },
+          backgroundAssetVersion: { data: { type: "backgroundAssetVersions", id: version_id } }
+        }
+      }
+    })
+  end
+
   def self.app_store_asset_gate?(release, live_version)
     (release == true || release == "true") && !live_version.nil?
   end
@@ -18,8 +55,7 @@ module MuntathirRelease
       path = page.dig("links", "next")
     end
     # Both libraries use Apple-hosted on-demand delivery.
-    expected = ["hadith", "quran-translations"]
-    missing = expected.reject do |identifier|
+    missing = REQUIRED_ASSET_PACKS.reject do |identifier|
       asset = assets.find { |item| item.dig("attributes", "assetPackIdentifier") == identifier && !item.dig("attributes", "archived") }
       if review
         candidates = asset ? get.call("/v1/backgroundAssets/#{asset.fetch('id')}/versions?limit=200").fetch("data") : []

@@ -15,3 +15,5 @@ Baca Al-Quran dengan terjemahan bawaan, cari ayat, dan simpan posisi membaca.
 
 HADIS
 Unduh pustaka hadis, lalu telusuri koleksi dan bab, cari dalam bahasa Arab dan Inggris, dan baca secara luring. Simpan favorit, tambahkan catatan, dan bagikan riwayat sebagai teks atau gambar.
+
+Sorot ayat Al-Qur’an dan kutipan hadis, lalu buka kembali di Sorotan.

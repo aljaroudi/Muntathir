@@ -15,3 +15,5 @@ Lesen Sie den Koran mit enthaltenen Übersetzungen, suchen Sie Verse und speiche
 
 HADITHE
 Laden Sie die Hadith-Bibliothek herunter. Durchstöbern Sie Sammlungen und Kapitel, suchen Sie auf Arabisch und Englisch und lesen Sie offline. Speichern Sie Favoriten, ergänzen Sie Notizen und teilen Sie Überlieferungen als Text oder Bild.
+
+Markiere Passagen im Koran und in Hadithen und finde sie unter Markierungen wieder.

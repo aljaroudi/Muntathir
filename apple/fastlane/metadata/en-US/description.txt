@@ -22,3 +22,5 @@ Read the Quran with bundled translations, search verses, and save your reading p
 
 HADITH
 Download the Hadith library, then browse collections and chapters, search Arabic and English, and read offline. Save favorites, add notes, and share narrations as text or images.
+
+Highlight Quran and Hadith passages and revisit them in Highlights.

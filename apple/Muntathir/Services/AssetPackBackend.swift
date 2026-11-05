@@ -87,8 +87,9 @@ struct AppleAssetPackBackend: AssetPackBackend {
         #if DEBUG
             // Capture/test databases have no hosted download events or hosting entitlements.
             let arguments = ProcessInfo.processInfo.arguments
-            if identifier == Self.packID, arguments.contains("--ui-testing"),
-               arguments.contains("--marketing-capture") || arguments.contains("--ui-testing-hadith-fixture")
+            if arguments.contains("--ui-testing"),
+               arguments.contains("--marketing-capture") ||
+               (identifier == Self.packID && arguments.contains("--ui-testing-hadith-fixture"))
             {
                 return AsyncStream { $0.finish() }
             }

@@ -218,12 +218,16 @@ platform :ios do
 
   private_lane :store_options do |context|
     config = MuntathirRelease.review_config
-    MuntathirRelease.validate_media!
+    MuntathirRelease.validate_media!(screenshots_only: context[:screenshots_only] == true)
     automatic = context[:automatic_release] == true || context[:automatic_release] == "true"
     options = { metadata_path: "./fastlane/metadata", screenshots_path: "./build/marketing/store",
                 app_previews_path: "./build/marketing/previews", preview_frame_time_code: "00:00:05:00",
                 overwrite_screenshots: context[:replace_media] == true, overwrite_preview_videos: context[:replace_media] == true,
                 automatic_release: automatic, force: true, precheck_include_in_app_purchases: false }
+    if context[:screenshots_only]
+      options.delete(:app_previews_path)
+      options[:overwrite_screenshots] = true
+    end
     # Apple rejects a redundant releaseType write on some initial-version listings.
     existing = context[:app]&.get_edit_app_store_version(platform: "IOS")
     options[:automatic_release] = nil if existing&.release_type == (automatic ? "AFTER_APPROVAL" : "MANUAL")
@@ -245,15 +249,24 @@ platform :ios do
     UI.success("Approved archive and media uploaded; select the processed build and submit the existing review draft in App Store Connect.")
   end
 
-  desc "Test, generate media, archive and submit App Review (manual release by default)"
+  desc "Generate media and submit App Review using a processed build or a new archive"
   lane :release do |options|
     check
     context = store(release: true)
-    tests
-    marketing
-    artifact = archive(version: context.fetch(:version))
-    UI.header("Uploading binary, metadata and media; then submitting App Review")
-    upload_to_app_store(**store_options(app: context.fetch(:app), automatic_release: options[:automatic_release]), ipa: artifact.fetch(:ipa), app_version: context.fetch(:version), submit_for_review: true)
+    if options[:build]
+      build = processed_build(context: context, number: options[:build])
+      binary = { build_number: build.version, skip_binary_upload: true }
+    else
+      tests
+    end
+    screenshots_only = options[:use_generated_screenshots] == true || options[:use_generated_screenshots] == "true"
+    marketing unless screenshots_only
+    binary ||= { ipa: archive(version: context.fetch(:version)).fetch(:ipa) }
+    require "spaceship"
+    Spaceship::ConnectAPI::ReviewSubmission.prepend(MuntathirRelease::ReviewAssetPacks)
+    UI.header("Uploading metadata and media; then submitting App Review")
+    upload_to_app_store(**store_options(app: context.fetch(:app), automatic_release: options[:automatic_release], screenshots_only: screenshots_only),
+                        **binary, app_version: context.fetch(:version), submit_for_review: true)
     UI.success("App Review submitted.")
   end
 end

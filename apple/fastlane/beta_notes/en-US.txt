@@ -1,1 +1,3 @@
+Highlight Quran and Hadith passages and revisit them in Highlights.
+
 Test the Hadith download, interruption/retry, offline reading, and removal/redownload. Browse collections and chapters; search Arabic and English. Check favorites, notes, and text/image sharing. Also check prayer times and reminders, calendar month adjustments, Quran search/reading, Qibla, widgets, and Watch sync. Report your device, iOS version, app language, and steps to reproduce.
