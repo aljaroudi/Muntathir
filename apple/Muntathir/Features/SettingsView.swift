@@ -17,6 +17,11 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section { AppLanguageLink() }
+                Section { ReadingSizeControls() }
+                Section {
+                    NavigationLink("Downloads") { DownloadsSettingsView() }
+                        .accessibilityIdentifier("settings-downloads")
+                }
                 Section {
                     NavigationLink {
                         LocationPicker()
@@ -147,14 +152,21 @@ struct SettingsView: View {
                     )
                 }
                 Section {
-                    NavigationLink("Sources and licenses") { LicensesView() }
-                        .accessibilityIdentifier("sources-and-licenses")
-                } header: {
-                    Text("About")
+                    Toggle("Calendar events", isOn: Binding(get: { model.preferences.calendarEventNotifications }, set: { enabled in
+                        Task {
+                            let allowed = enabled ? await model.notifications.authorize() : true
+                            if allowed {
+                                model.update { $0.calendarEventNotifications = enabled }
+                            } else {
+                                model.error = String(localized: "Notifications are disabled. Enable them in system Settings.")
+                            }
+                        }
+                    }))
                 } footer: {
-                    Text(
-                        "Settings sync through iCloud when available. Live GPS and notification permissions stay on this device."
-                    )
+                    Text("Silent reminders at sunset for observances beginning this evening.")
+                }
+                Section {} footer: {
+                    Text("Settings sync through iCloud when available. Live GPS and notification permissions stay on this device.")
                 }
             }.navigationTitle("Settings").toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -231,70 +243,6 @@ struct LocationPicker: View {
     }
 }
 
-struct LicensesView: View {
-    @Environment(\.locale) private var locale
-
-    var body: some View {
-        List {
-            Section {
-                NavigationLink {
-                    ScrollView {
-                        Text(license("Adhan-LICENSE"))
-                            .environment(\.layoutDirection, .leftToRight)
-                            .font(.footnote)
-                            .textSelection(.enabled)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding()
-                    }
-                    .navigationTitle("Adhan license")
-                } label: {
-                    Text(verbatim: "Adhan Swift 1.5.0")
-                }
-            } header: {
-                Text("Calculations")
-            }
-            Section("Quran Translations") {
-                ForEach(sortedQuranTranslations, id: \.id) { item in
-                    quranTranslationCredit(item)
-                        .accessibilityIdentifier(item.id)
-                }
-            }
-        }.navigationTitle("Sources and licenses")
-    }
-
-    private var sortedQuranTranslations: [QuranTranslation] {
-        QuranTranslation.catalog.sorted {
-            languageName($0.language).compare(
-                languageName($1.language),
-                options: [.caseInsensitive, .diacriticInsensitive],
-                locale: locale
-            ) == .orderedAscending
-        }
-    }
-
-    private func license(_ name: String) -> String {
-        Bundle.main.url(forResource: name, withExtension: "txt").flatMap {
-            try? String(contentsOf: $0, encoding: .utf8)
-        } ?? ""
-    }
-
-    private func languageName(_ language: String) -> String {
-        locale.localizedString(forLanguageCode: language)
-            ?? locale.localizedString(forIdentifier: language)
-            ?? language
-    }
-
-    private func quranTranslationCredit(_ item: QuranTranslation) -> some View {
-        LabeledContent {
-            Link(destination: URL(string: "https://tanzil.net/trans/\(item.id)")!) {
-                Text(verbatim: item.translator)
-            }
-        } label: {
-            Text(verbatim: languageName(item.language))
-        }
-    }
-}
-
 struct PrayerVisibilitySettings: View {
     @Environment(AppModel.self) private var model
     var body: some View {
@@ -319,6 +267,8 @@ struct PrayerVisibilitySettings: View {
 struct PrayerNotificationSettings: View {
     @Environment(AppModel.self) private var model
     @Environment(\.openURL) private var openURL
+    @State private var permissionDenied = false
+
     var body: some View {
         Form {
             Section {
@@ -331,19 +281,15 @@ struct PrayerNotificationSettings: View {
                     }
                 }
             } footer: {
+                if permissionDenied {
+                    Text("Notifications are disabled. Enable them in system Settings.")
+                }
                 Text("Allow Time Sensitive alerts in Settings and Focus. Sound follows Silent mode and your Ringtone and Alerts volume.")
             }
             Section {
-                Picker("Sound", selection: Binding(get: { model.preferences.notificationSound }, set: { sound in
-                    model.update { $0.notificationSound = sound }
-                    preview(sound)
-                })) {
-                    ForEach(PrayerAlertSound.allCases) { sound in
-                        Text(sound.title).tag(sound)
-                    }
-                }
-                Button("Preview sound", systemImage: "speaker.wave.2") { preview(model.preferences.notificationSound) }
-                    .disabled(model.preferences.notificationSound == .silent)
+                soundPicker("Prayers", keyPath: \.notificationSound)
+                soundPicker("Sunset", keyPath: \.sunsetSound)
+                soundPicker("Other Times", keyPath: \.otherTimesSound)
             }
             Section {
                 ForEach(PrayerName.allCases) { prayer in
@@ -358,13 +304,26 @@ struct PrayerNotificationSettings: View {
             .onDisappear { model.notifications.stopPreview() }
             .task {
                 if !model.preferences.enabledPrayers.isEmpty {
-                    if await model.notifications.authorize() {
+                    let authorized = await model.notifications.authorize()
+                    permissionDenied = !authorized
+                    if authorized {
                         model.reschedule()
-                    } else {
-                        model.error = String(localized: "Notifications are disabled. Enable them in system Settings.")
                     }
                 }
             }
+    }
+
+    private func soundPicker(_ title: LocalizedStringKey, keyPath: WritableKeyPath<Preferences, PrayerAlertSound>) -> some View {
+        VStack(alignment: .leading) {
+            Picker(title, selection: Binding(get: { model.preferences[keyPath: keyPath] }, set: { sound in
+                model.update { $0[keyPath: keyPath] = sound }
+                preview(sound)
+            })) {
+                ForEach(PrayerAlertSound.allCases) { sound in Text(sound.title).tag(sound) }
+            }
+            Button("Preview sound", systemImage: "speaker.wave.2") { preview(model.preferences[keyPath: keyPath]) }
+                .disabled(model.preferences[keyPath: keyPath] == .silent)
+        }
     }
 
     private func preview(_ sound: PrayerAlertSound) {

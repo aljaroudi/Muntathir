@@ -1,92 +1,98 @@
 import Foundation
 import SwiftData
 
-/// Released schemas are immutable. Add a new VersionedSchema and migration stage for future changes.
-enum QuranUserSchemaV1: VersionedSchema {
-    static var versionIdentifier: Schema.Version {
-        .init(1, 0, 0)
-    }
+@Model final class HighlightRecord {
+    #Index<HighlightRecord>([\.highlightID])
+    var recordID: String = UUID().uuidString
+    var highlightID: String = ""
+    var installationID: String = ""
+    var payload: Data = Data()
+    var modifiedAt: Date = Date(timeIntervalSince1970: 0)
+    var isTombstone: Bool = false
 
-    static var models: [any PersistentModel.Type] {
-        [Annotation.self]
-    }
-
-    @Model final class Annotation {
-        #Index<Annotation>([\.verseID])
-
-        var recordID: String = UUID().uuidString
-        var verseID: String = ""
-        var installationID: String = ""
-        var isFavorite: Bool = false
-        var favoriteModifiedAt: Date = Date(timeIntervalSince1970: 0)
-        var note: String = ""
-        var noteModifiedAt: Date = Date(timeIntervalSince1970: 0)
-
-        init(verseID: String, installationID: String) {
-            self.verseID = verseID
-            self.installationID = installationID
-        }
+    init(highlightID: String, installationID: String) {
+        self.highlightID = highlightID
+        self.installationID = installationID
     }
 }
 
-enum QuranUserMigrationPlan: SchemaMigrationPlan {
-    static var schemas: [any VersionedSchema.Type] {
-        [QuranUserSchemaV1.self]
+struct HighlightRange: Codable, Equatable, Sendable {
+    let location: Int
+    let length: Int
+    let quote: String
+
+    init?(_ range: NSRange, in text: String) {
+        guard range.length > 0, let indices = Range(range, in: text) else { return nil }
+        location = range.location
+        length = range.length
+        quote = String(text[indices])
     }
 
-    static var stages: [MigrationStage] {
-        []
-    }
-}
-
-typealias QuranAnnotation = QuranUserSchemaV1.Annotation
-
-struct QuranAnnotationSnapshot: Equatable, Sendable {
-    let recordID: String
-    let verseID: String
-    let isFavorite: Bool
-    let favoriteModifiedAt: Date
-    let note: String
-    let noteModifiedAt: Date
-
-    @MainActor init(_ annotation: QuranAnnotation) {
-        recordID = annotation.recordID
-        verseID = annotation.verseID
-        isFavorite = annotation.isFavorite
-        favoriteModifiedAt = annotation.favoriteModifiedAt
-        note = annotation.note
-        noteModifiedAt = annotation.noteModifiedAt
+    func validated(in text: String) -> NSRange? {
+        guard location >= 0, length > 0, location <= text.utf16.count,
+              length <= text.utf16.count - location else { return nil }
+        let range = NSRange(location: location, length: length)
+        guard let indices = Range(range, in: text), String(text[indices]) == quote else { return nil }
+        return range
     }
 }
 
-struct QuranVerseState: Equatable, Sendable, Identifiable {
-    let id: String
-    var isFavorite = false
+enum HighlightColor: String, Codable, CaseIterable, Sendable {
+    case yellow, green, blue, pink, purple
+}
+
+struct ReadingHighlight: Codable, Equatable, Identifiable, Sendable {
+    var id = UUID().uuidString
+    var source: String
+    var isHadith: Bool
+    // nil denotes the entire item; other values identify Arabic or a translation edition.
+    var block: String?
+    var ranges: [HighlightRange] = []
+    var excerpt: String
+    var reference: String
+    var color: HighlightColor = .yellow
     var note = ""
-    var favoriteModifiedAt = Date(timeIntervalSince1970: 0)
-    var noteModifiedAt = Date(timeIntervalSince1970: 0)
-    private var favoriteRecordID = ""
-    private var noteRecordID = ""
+    var createdAt = Date.now
+    var modifiedAt = Date.now
 
-    init(id: String) {
-        self.id = id
+    func ranges(in text: String, block: String) -> [NSRange] {
+        guard let selectedBlock = self.block else { return [NSRange(location: 0, length: text.utf16.count)] }
+        guard selectedBlock == block else { return [] }
+        let validated = ranges.compactMap { $0.validated(in: text) }
+        return validated.count == ranges.count ? validated : []
     }
 
-    static func resolve(_ rows: [QuranAnnotationSnapshot]) -> [String: QuranVerseState] {
-        var result: [String: QuranVerseState] = [:]
+    func isAvailable(in blocks: [String: String]) -> Bool {
+        guard let block else { return true }
+        guard let text = blocks[block], !ranges.isEmpty else { return false }
+        return ranges.allSatisfy { $0.validated(in: text) != nil }
+    }
+}
+
+struct HighlightSnapshot: Equatable, Sendable {
+    let recordID: String
+    let highlightID: String
+    let payload: Data
+    let modifiedAt: Date
+    let isTombstone: Bool
+
+    @MainActor init(_ row: HighlightRecord) {
+        recordID = row.recordID
+        highlightID = row.highlightID
+        payload = row.payload
+        modifiedAt = row.modifiedAt
+        isTombstone = row.isTombstone
+    }
+
+    static func winners(_ rows: [Self]) -> [String: Self] {
+        var result: [String: Self] = [:]
         for row in rows {
-            var state = result[row.verseID] ?? QuranVerseState(id: row.verseID)
-            if row.favoriteModifiedAt > state.favoriteModifiedAt || (row.favoriteModifiedAt == state.favoriteModifiedAt && row.recordID > state.favoriteRecordID) {
-                state.isFavorite = row.isFavorite
-                state.favoriteModifiedAt = row.favoriteModifiedAt
-                state.favoriteRecordID = row.recordID
+            if let old = result[row.highlightID],
+               old.modifiedAt > row.modifiedAt || (old.modifiedAt == row.modifiedAt && old.recordID > row.recordID)
+            {
+                continue
             }
-            if row.noteModifiedAt > state.noteModifiedAt || (row.noteModifiedAt == state.noteModifiedAt && row.recordID > state.noteRecordID) {
-                state.note = row.note
-                state.noteModifiedAt = row.noteModifiedAt
-                state.noteRecordID = row.recordID
-            }
-            result[row.verseID] = state
+            result[row.highlightID] = row
         }
         return result
     }

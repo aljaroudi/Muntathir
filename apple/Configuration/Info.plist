@@ -2,11 +2,17 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>QiblaPreciseLocation</key>
+		<string>Your precise location shows your position and the direction to the Kaaba on the map.</string>
+	</dict>
 	<key>UIPrefersShowingLanguageSettings</key>
 	<true/>
 	<key>UIAppFonts</key>
 	<array>
 		<string>QPCHafs.woff2</string>
+		<string>Lateef-Light.ttf</string>
 	</array>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
@@ -17,5 +23,11 @@
 		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
+	<key>BAAppGroupID</key>
+	<string>group.com.aljaroudi.Muntathir</string>
+	<key>BAHasManagedAssetPacks</key>
+	<true/>
+	<key>BAUsesAppleHosting</key>
+	<true/>
 </dict>
 </plist>

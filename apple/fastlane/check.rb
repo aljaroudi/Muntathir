@@ -27,6 +27,11 @@ assert(snapshot_options[:languages] == MuntathirRelease::LOCALES, "Screenshot lo
 headlines = JSON.parse(File.read(File.join(__dir__, "marketing/headlines.json")))
 assert(headlines.keys.sort == MuntathirRelease::LOCALES.sort, "Store headline locale mismatch")
 assert(headlines.values.all? { |screens| screens.keys == headlines.fetch("en-US").keys && screens.values.all? { |text| !text.strip.empty? } }, "Missing localized screenshot headline")
+assert(headlines.fetch("en-US").key?("05-Hadith"), "Missing Hadith screenshot")
+MuntathirRelease::LOCALES.each do |locale|
+  notes = File.read(File.join(__dir__, "beta_notes/#{locale}.txt")).strip
+  assert((1..4000).cover?(notes.length), "Missing or oversized What to Test for #{locale}")
+end
 assert(MuntathirRelease.next_version("1.0.0", nil, nil) == "1.0.0", "First version changed")
 assert(MuntathirRelease.next_version("1.0.0", "1.0.0", nil) == "1.0.1", "Patch increment failed")
 assert(MuntathirRelease.next_version("1.0.0", "1.0.0", "1.1.0") == "1.1.0", "Pending version not reused")
@@ -44,7 +49,7 @@ assert(!MuntathirRelease.app_store_asset_gate?(true, nil), "First submission can
 assert(MuntathirRelease.app_store_asset_gate?(true, Object.new), "Existing App Store release must require live packs")
 assert(!MuntathirRelease.app_store_asset_gate?(false, Object.new), "Beta must use beta pack availability")
 # The release gate must reject missing packs and accept only active iOS versions.
-pack_ids = Dir[File.join(__dir__, "../AssetPacks/manifests/*.json")].map { |file| JSON.parse(File.read(file)).fetch("assetPackID") }
+pack_ids = %w[hadith quran-translations]
 page = { "data" => pack_ids.map { |id| { "attributes" => { "assetPackIdentifier" => id }, "relationships" => { "externalBetaVersion" => { "data" => { "id" => id } }, "appStoreVersion" => { "data" => { "id" => id } } } } },
          "included" => pack_ids.map { |id| { "id" => id, "attributes" => { "platforms" => ["IOS"] } } } }
 assert(MuntathirRelease.validate_asset_packs!(get: ->(_) { page }), "Ready beta packs rejected")
@@ -58,6 +63,11 @@ review_get = lambda do |path|
   identifier ? { "data" => review_page["included"].select { |v| v["id"] == identifier } } : review_page
 end
 assert(MuntathirRelease.validate_asset_packs!(review: true, get: review_get), "Processed packs must not require external beta approval for first App Store review")
+review_page["included"].each { |version| version["attributes"]["version"] = "1" }
+review_page["data"][0]["relationships"].delete("appStoreVersion")
+attached = []
+MuntathirRelease.attach_unreleased_asset_packs!("draft", get: review_get, post: ->(*args) { attached << args })
+assert(attached == [["draft", "hadith"]], "App Review must include the required pack that is not yet live")
 review_page["included"][0]["attributes"]["state"] = "PROCESSING"
 rejects("Unprocessed pack accepted for App Store review") { MuntathirRelease.validate_asset_packs!(review: true, get: review_get) }
 
@@ -179,7 +189,7 @@ check.define_singleton_method(:store) { |**_| { app: beta_app, version: "1.0.1",
 Dir.mktmpdir { |dir| rejects("Missing media accepted") { MuntathirRelease.validate_media!(dir) } }
 rejects("Unconfirmed compliance accepted") { MuntathirRelease.compliance!({}) }
 assert(MuntathirRelease.compliance!(config) == false, "Confirmed exemption lost")
-MuntathirRelease.define_singleton_method(:validate_media!) {}
+MuntathirRelease.define_singleton_method(:validate_media!) { |**_| }
 MuntathirRelease.define_singleton_method(:review_config) { config }
 check.define_singleton_method(:check) {}
 check.define_singleton_method(:tests) {}
@@ -204,18 +214,31 @@ Dir.mktmpdir do |dir|
 end
 check.release
 release = check.calls.reverse.find { |name, _| name == :upload_to_app_store }.last
-assert(release[:submit_for_review] && release[:automatic_release] == false, "Release must submit with manual publication")
+assert(release[:submit_for_review] && release[:automatic_release] == false, "Default release must submit with manual publication")
 assert(release[:overwrite_screenshots] == false && release[:overwrite_preview_videos] == false, "Existing assets must not be deleted")
+check.define_singleton_method(:processed_build) { |**_| Struct.new(:version).new("10") }
+check.release(build: "10")
+reused = check.calls.reverse.find { |name, _| name == :upload_to_app_store }.last
+assert(reused[:skip_binary_upload] && reused[:build_number] == "10" && !reused.key?(:ipa), "Review should reuse the specified processed build")
 replacement = check.store_options(app: beta_app, replace_media: true)
 assert(replacement[:overwrite_screenshots] && replacement[:overwrite_preview_videos], "Approved replacement must overwrite existing media")
 manual_app = Object.new
 manual_app.define_singleton_method(:get_edit_app_store_version) { |**_| Struct.new(:release_type).new("MANUAL") }
 assert(check.store_options(app: manual_app)[:automatic_release].nil?, "Existing manual release must not receive a redundant write")
+assert(check.store_options(app: manual_app, automatic_release: "true")[:automatic_release] == true, "Opt-in release must switch to automatic publication")
+automatic_app = Object.new
+automatic_app.define_singleton_method(:get_edit_app_store_version) { |**_| Struct.new(:release_type).new("AFTER_APPROVAL") }
+assert(check.store_options(app: automatic_app, automatic_release: true)[:automatic_release].nil?, "Existing automatic release must not receive a redundant write")
 check.beta
 beta = check.calls.find { |name, _| name == :upload_to_testflight }.last
 assert(beta[:groups] == ["Public"] && beta[:distribute_external] && beta[:submit_beta_review], "Public beta wiring failed")
 assert(beta[:skip_waiting_for_build_processing] == false, "Beta must wait for processing")
 assert(beta[:localized_build_info].keys == MuntathirRelease::LOCALES, "Beta localization missing")
+assert(beta[:changelog] == File.read(File.join(__dir__, "beta_notes/en-US.txt")).strip, "What to Test must use testing instructions")
+check.define_singleton_method(:processed_build) { |**_| Struct.new(:version, :app_version).new("14", "1.0.1.0") }
+check.public_beta(build: 14)
+existing_beta = check.calls.reverse.find { |name, _| name == :upload_to_testflight }.last
+assert(existing_beta[:distribute_only] && existing_beta[:build_number] == "14" && existing_beta[:app_version] == "1.0.1.0", "Public distribution must reuse the uploaded build train")
 uploads_before = check.calls.count { |name, _| [:upload_to_app_store, :upload_to_testflight].include?(name) }
 check.define_singleton_method(:tests) { raise "Regression suite failed" }
 rejects("Beta ignored failing tests") { check.beta }

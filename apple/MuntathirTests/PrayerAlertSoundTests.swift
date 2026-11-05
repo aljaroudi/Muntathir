@@ -29,21 +29,19 @@ struct PrayerAlertSoundTests {
         #expect(normal.sound == nil)
         preferences.notificationSound = .bell
         for prayer in PrayerName.allCases {
-            #expect(NotificationService.content(for: prayer, preferences: preferences).sound == PrayerAlertSound.bell.notificationSound)
+            #expect(NotificationService.content(for: prayer, preferences: preferences).sound == (prayer.isPrayer ? PrayerAlertSound.bell : .system).notificationSound)
         }
         #expect(normal.interruptionLevel == .active)
         #expect(normal.threadIdentifier != silent.threadIdentifier)
     }
 
     @MainActor @Test func previewDoesNotScheduleNotification() async throws {
-        let service = NotificationService()
-        let center = UNUserNotificationCenter.current()
-        let before = await center.pendingNotificationRequests().map(\.identifier)
+        var scheduled: [UNNotificationRequest] = []
+        let service = NotificationService { scheduled.append($0) }
         defer { service.stopPreview() }
         try await service.preview(sound: .bell)
         try await service.preview(sound: .silent)
-        let after = await center.pendingNotificationRequests().map(\.identifier)
-        #expect(Set(after) == Set(before))
+        #expect(scheduled.isEmpty)
     }
 
     @Test func bundledSoundsAreNotificationCompatible() throws {
@@ -53,5 +51,28 @@ struct PrayerAlertSoundTests {
             #expect(Double(file.length) / file.fileFormat.sampleRate < 30)
             #expect(file.fileFormat.settings[AVFormatIDKey] as? UInt32 == kAudioFormatLinearPCM)
         }
+    }
+}
+
+extension PrayerAlertSoundTests {
+    @Test func legacyAdhanStaysOnPrayersOnly() throws {
+        var prefs = Preferences()
+        prefs.notificationSound = .bell
+        var json = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(prefs)) as? [String: Any])
+        json.removeValue(forKey: "sunsetSound")
+        json.removeValue(forKey: "otherTimesSound")
+        json.removeValue(forKey: "calendarEventNotifications")
+        let migrated = try JSONDecoder().decode(Preferences.self, from: JSONSerialization.data(withJSONObject: json))
+        #expect(migrated.notificationSound == .bell)
+        #expect(migrated.sunsetSound == .system)
+        #expect(migrated.otherTimesSound == .system)
+        #expect(!migrated.calendarEventNotifications)
+    }
+
+    @MainActor @Test func calendarEventsAreAlwaysSilentAndNotTimeSensitive() {
+        let content = NotificationService.eventContent([.init(id: "test", month: 1, day: 1, title: ["en": "Event"])])
+        #expect(content.sound == nil)
+        #expect(content.interruptionLevel == .active)
+        #expect(content.body == "Event")
     }
 }

@@ -1,4 +1,7 @@
-import assert from "node:assert/strict"
+// This resolver also runs in the browser; keep validation independent of Node.
+function assert(condition: unknown, message: string): asserts condition {
+  if (!condition) throw new Error(message)
+}
 import type { Locale } from "./site"
 
 const dayMs = 86_400_000
@@ -8,7 +11,7 @@ const baseline = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura-nu-latn", {
   month: "numeric",
   day: "numeric",
 })
-assert.equal(baseline.resolvedOptions().calendar, "islamic-umalqura")
+assert(baseline.resolvedOptions().calendar === "islamic-umalqura", "Unsupported calendar")
 
 export function hijri(date: Date) {
   const parts = baseline.formatToParts(date)
@@ -59,7 +62,7 @@ function text(value: unknown): string {
 }
 function monthIndex(value: unknown) {
   const row = record(value)
-  return index({ year: integer(row.year, 1300, 1600), month: integer(row.month, 1, 12) })
+  return index({ year: integer(row.year, 1350, 1500), month: integer(row.month, 1, 12) })
 }
 function civilDay(value: unknown) {
   const row = record(value)
@@ -208,14 +211,9 @@ export function generateCalendar(
   locale: Locale,
   now = new Date()
 ): string {
-  assert(Array.isArray(events), "Invalid events")
-  const ids = new Set<string>()
   const start = calendarStarts(feed)
-  let currentMonth = index(hijri(now))
-  const today = Math.floor(now.getTime() / dayMs)
-  while (today < start(currentMonth)) currentMonth--
-  while (today >= start(currentMonth + 1)) currentMonth++
-  const currentYear = Math.floor(currentMonth / 12)
+  const currentYear = Math.floor(currentMonthIndex(start, now) / 12)
+  const validated = validateEvents(events, locale)
   const timestamp = now
     .toISOString()
     .replace(/[-:]/g, "")
@@ -229,32 +227,13 @@ export function generateCalendar(
     "REFRESH-INTERVAL;VALUE=DURATION:PT12H",
     "X-PUBLISHED-TTL:PT12H",
   ]
-  for (const value of events) {
-    const event = record(value),
-      id = text(event.id)
-    assert(/^[a-z0-9-]+$/.test(id) && !ids.has(id), "Invalid or duplicate event ID")
-    assert(
-      Object.keys(event).every(key => ["id", "month", "day", "year", "title"].includes(key)),
-      "Unexpected event field"
-    )
-    ids.add(id)
-    const month = integer(event.month, 1, 12),
-      day = integer(event.day, 1, 30)
-    if (event.year !== undefined)
-      integer(event.year, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER)
-    const titles = record(event.title)
-    text(titles.en)
-    for (const value of Object.values(titles)) text(value)
-    const title = text(titles[locale] ?? titles.en)
-    for (let year = currentYear - 1; year <= currentYear + 5; year++) {
-      const occurrence = index({ year, month }),
-        first = start(occurrence)
-      if (day > start(occurrence + 1) - first) continue
-      const date = first + day - 1
+  for (let year = currentYear - 1; year <= currentYear + 5; year++) {
+    for (const event of occurrences(validated, start, year)) {
+      const { id, month, day, title, date } = event
       const description =
         locale === "ar"
-          ? `التاريخ الهجري: ${day}/${month}/${year} هـ. رؤية العين المجردة للشرق الأوسط؛ تقويم أم القرى عند غياب التأكيد. تصل تصحيحات التواريخ عند تحديث تطبيق التقويم للاشتراك.`
-          : `Hijri date: ${day}/${month}/${year} AH. Middle East naked-eye confirmations; Umm al-Qura where unconfirmed. Date corrections arrive when your calendar app refreshes.`
+          ? `التاريخ الهجري: ${day}/${month}/${year} هـ. ليست كل التواريخ مؤكدة.`
+          : `Hijri date: ${day}/${month}/${year} AH. Not all dates are verified.`
       lines.push(
         "BEGIN:VEVENT",
         `UID:${id}-${year}-${locale}@muntathir.calendar`,
@@ -263,7 +242,7 @@ export function generateCalendar(
         `DTSTART;VALUE=DATE:${dateValue(date)}`,
         `DTEND;VALUE=DATE:${dateValue(date + 1)}`,
         `SUMMARY:${escapeText(title)}`,
-        `DESCRIPTION:${escapeText(description + (event.year === undefined ? "" : locale === "ar" ? `\nالسنة التاريخية: ${event.year} هـ` : `\nHistorical year: ${event.year} AH`))}`,
+        `DESCRIPTION:${escapeText(description + (event.historicalYear === undefined ? "" : locale === "ar" ? `\nالسنة التاريخية: ${event.historicalYear} هـ` : `\nHistorical year: ${event.historicalYear} AH`))}`,
         "TRANSP:TRANSPARENT",
         "END:VEVENT"
       )
@@ -271,4 +250,103 @@ export function generateCalendar(
   }
   lines.push("END:VCALENDAR")
   return lines.map(fold).join("\r\n") + "\r\n"
+}
+
+export interface CalendarEvent {
+  id: string
+  month: number
+  day: number
+  title: string
+  historicalYear?: number
+}
+
+export function validateEvents(input: unknown, locale: Locale): CalendarEvent[] {
+  assert(Array.isArray(input), "Invalid events")
+  const ids = new Set<string>()
+  return input.map(value => {
+    const event = record(value),
+      id = text(event.id)
+    assert(/^[a-z0-9-]+$/.test(id) && !ids.has(id), "Invalid or duplicate event ID")
+    assert(
+      Object.keys(event).every(key =>
+        ["id", "month", "day", "year", "title", "figure_ids"].includes(key)
+      ),
+      "Unexpected event field"
+    )
+    ids.add(id)
+    const titles = record(event.title)
+    text(titles.en)
+    for (const value of Object.values(titles)) text(value)
+    return {
+      id,
+      month: integer(event.month, 1, 12),
+      day: integer(event.day, 1, 30),
+      title: text(titles[locale] ?? titles.en),
+      historicalYear:
+        event.year === undefined
+          ? undefined
+          : integer(event.year, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER),
+    }
+  })
+}
+
+export function currentMonthIndex(start: (month: number) => number, now = new Date()) {
+  let month = index(hijri(now))
+  const today = Math.floor(now.getTime() / dayMs)
+  while (today < start(month)) month--
+  while (today >= start(month + 1)) month++
+  return month
+}
+
+export function occurrences(
+  events: CalendarEvent[],
+  start: (month: number) => number,
+  year: number
+) {
+  return events
+    .flatMap(event => {
+      const month = index({ year, month: event.month }),
+        first = start(month)
+      return event.day > start(month + 1) - first ? [] : [{ ...event, date: first + event.day - 1 }]
+    })
+    .sort((a, b) => a.date - b.date)
+}
+
+export function calendarMonths(
+  events: CalendarEvent[],
+  start: (month: number) => number,
+  confirmed: number[],
+  year: number,
+  now = new Date()
+) {
+  const current = currentMonthIndex(start, now),
+    today = Math.floor(now.getTime() / dayMs)
+  const rows = occurrences(events, start, year)
+  const currentYear = Math.floor(current / 12)
+  const upcoming =
+    occurrences(events, start, currentYear).find(event => event.date >= today) ??
+    occurrences(events, start, currentYear + 1)[0]
+  const next = upcoming?.date
+  return Array.from({ length: 12 }, (_, i) => {
+    const month = year * 12 + i
+    const groups = new Map<number, typeof rows>()
+    for (const event of rows.filter(event => event.month === i + 1)) {
+      const group = groups.get(event.date) ?? []
+      group.push(event)
+      groups.set(event.date, group)
+    }
+    return {
+      month: i + 1,
+      start: start(month),
+      expected: month > current && !confirmed.includes(month),
+      days: [...groups].map(([date, events]) => ({
+        date,
+        day: events[0]!.day,
+        events,
+        today: date === today,
+        next: date === next,
+        distance: date - today,
+      })),
+    }
+  })
 }

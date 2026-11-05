@@ -1,0 +1,143 @@
+---
+import { Font } from "astro:assets";
+import "../styles/global.css";
+import events from "../../../shared/events.json";
+import feed from "../../public/calendar/corrections-v1.json";
+import { calendarStarts, currentMonthIndex, validateEvents } from "../calendar";
+import { calendarCopy, calendarYears, calendarPath, renderCalendar } from "../calendar-view";
+import { site, isPreview, type Locale } from "../site";
+interface Props { locale: Locale; year?: number }
+const { locale, year: requestedYear } = Astro.props;
+const t = calendarCopy[locale];
+const start = calendarStarts(feed);
+const now = new Date();
+const year = requestedYear ?? Math.max(1350, Math.min(1500, Math.floor(currentMonthIndex(start, now) / 12)));
+const confirmed = feed.announcements.filter(row => row.sourceID === "naked-eye-middle-east" && row.method === "nakedEye").map(row => row.month.year * 12 + row.month.month - 1);
+const localized = validateEvents(events, locale);
+const path = calendarPath(locale, year);
+const yearLabel = `${new Intl.NumberFormat(locale, { useGrouping: false }).format(year)} ${t.ah}`;
+const title = `${t.title} — ${yearLabel}`;
+const description = `${title}. ${t.description}`;
+---
+<!doctype html>
+<html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <Font cssVariable="--font-arabic" preload />
+    <title>{title} · {t.home}</title>
+    <meta name="description" content={description} />
+    {isPreview && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={new URL(path, site)} />
+    <link rel="alternate" hreflang="ar" href={new URL(calendarPath("ar", year), site)} />
+    <link rel="alternate" hreflang="en" href={new URL(calendarPath("en", year), site)} />
+    <link rel="alternate" hreflang="x-default" href={new URL(calendarPath("ar", year), site)} />
+    <meta property="og:title" content={`${title} · ${t.home}`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:locale" content={locale === "ar" ? "ar_SA" : "en_US"} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={`${title} · ${t.home}`} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL(`/social/${locale}.png`, site)} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={new URL(path, site)} />
+    <meta property="og:image" content={new URL(`/social/${locale}.png`, site)} />
+  </head>
+  <body class="bg-ivory text-emerald antialiased">
+    <a class="fixed inset-s-3 top-3 z-50 -translate-y-24 rounded-lg bg-emerald px-5 py-3 text-white focus:translate-y-0" href="#main">{locale === "ar" ? "انتقل إلى المحتوى" : "Skip to content"}</a>
+    <header class="mx-auto flex max-w-3xl items-center justify-between gap-4 border-b border-emerald/15 px-5 py-6">
+      <a href={locale === "ar" ? "/" : "/en/"} class="flex items-center gap-3 text-xl font-semibold"><img src="/favicon.svg" width="38" height="38" alt="" />{t.home}</a>
+      <nav aria-label={locale === "ar" ? "اختر اللغة" : "Choose language"} class="flex gap-3 text-sm">
+        <a href={calendarPath("ar", requestedYear)} lang="ar" hreflang="ar" aria-current={locale === "ar" ? "page" : undefined} class="min-h-11 content-center aria-[current=page]:underline">العربية</a>
+        <a href={calendarPath("en", requestedYear)} lang="en" hreflang="en" aria-current={locale === "en" ? "page" : undefined} class="min-h-11 content-center aria-[current=page]:underline">English</a>
+      </nav>
+    </header>
+    <main id="main" class="mx-auto max-w-3xl px-5 py-10" data-calendar data-locale={locale} data-year-value={year} data-fixed-year={requestedYear}>
+      <h1 class="text-3xl font-medium leading-relaxed">{title}</h1>
+      <p class="mt-4 text-sm leading-loose text-muted">{t.note}</p>
+      <a href={`webcal://${site.host}/calendar/${locale}.ics`} class="my-4 inline-flex min-h-11 items-center underline underline-offset-4">{t.subscribe}</a>
+      <nav aria-label={t.controls} class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 bg-ivory border-y border-emerald/15 py-4">
+        <label class="flex flex-wrap items-center gap-3 text-sm">{t.year}
+          <select data-year-select disabled class="min-h-11 max-w-full rounded-lg border border-emerald/20 bg-ivory px-3 font-semibold">
+            {calendarYears.map(value => {
+              const numbers = new Intl.NumberFormat(locale, { useGrouping: false });
+              const gregorian = new Intl.DateTimeFormat(locale, { calendar: "gregory", year: "numeric", timeZone: "UTC" });
+              const first = gregorian.format(new Date(start(value * 12) * 86400000));
+              const last = gregorian.format(new Date((start((value + 1) * 12) - 1) * 86400000));
+              return <option value={value} selected={value === year}>{numbers.format(value)} {t.ah} · {"\u2066"}{first}–{last}{"\u2069"}</option>;
+            })}
+          </select>
+        </label>
+        <p data-year aria-live="polite" aria-atomic="true" class="sr-only">{new Intl.NumberFormat(locale, { useGrouping: false }).format(year)} {t.ah}</p>
+        <button type="button" data-today disabled class="calendar-button">{t.today}</button>
+      </nav>
+      <noscript><p class="my-4 text-sm text-muted">{t.noScript}</p></noscript>
+      <div data-months set:html={renderCalendar(localized, start, confirmed, year, locale, now)} />
+      <script type="application/json" data-calendar-input set:html={JSON.stringify({ events: localized, feed, confirmed }).replace(/</g, "\\u003c")} />
+      <details class="my-8 border-t border-emerald/15 pt-5">
+        <summary class="cursor-pointer py-3 font-medium">{t.browseYears}</summary>
+        <nav aria-label={t.browseYears} class="mt-3 flex flex-wrap gap-x-5 gap-y-2">
+          {calendarYears.map(value => <a href={calendarPath(locale, value)} aria-current={value === year ? "page" : undefined} class="inline-flex min-h-11 items-center underline underline-offset-4">{new Intl.NumberFormat(locale, { useGrouping: false }).format(value)} {t.ah}</a>)}
+        </nav>
+      </details>
+      <a href="#main" class="mt-8 inline-flex min-h-11 items-center underline">{locale === "ar" ? "العودة إلى الأعلى" : "Back to top"}</a>
+    </main>
+  </body>
+</html>
+<style>
+  .calendar-button { min-height: 44px; padding: 0.5rem 0.75rem; border: 1px solid #203f3530; border-radius: 0.75rem; cursor: pointer; }
+  .calendar-button:disabled { opacity: 0.4; cursor: default; }
+</style>
+<script>
+  import { calendarStarts, currentMonthIndex, type CalendarEvent } from "../calendar";
+  import { calendarCopy, calendarPath, renderCalendar } from "../calendar-view";
+  import type { Locale } from "../site";
+  const root = document.querySelector<HTMLElement>("[data-calendar]");
+  if (root) {
+    const locale = root.dataset.locale as Locale;
+    const input: { events: CalendarEvent[]; feed: unknown; confirmed: number[] } = JSON.parse(root.querySelector("[data-calendar-input]")!.textContent!);
+    const start = calendarStarts(input.feed);
+    // Civil-day labels follow the visitor's local date, without a sunset rollover.
+    function civilNow() { const now = new Date(); return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())); }
+    function currentYear() {
+      return Math.max(1350, Math.min(1500, Math.floor(currentMonthIndex(start, civilNow()) / 12)));
+    }
+    const fixedYear = root.dataset.fixedYear ? Number(root.dataset.fixedYear) : undefined;
+    const year = fixedYear ?? currentYear();
+    const months = root.querySelector<HTMLElement>("[data-months]")!;
+    const yearSelect = root.querySelector<HTMLSelectElement>("[data-year-select]")!;
+    const today = root.querySelector<HTMLButtonElement>("[data-today]")!;
+    function scrollTo(id?: string) {
+      const target = id ? document.getElementById(id) : months.querySelector("[data-next-event]") ?? document.getElementById(`month-${currentMonthIndex(start, civilNow()) % 12 + 1}`);
+      target?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+    }
+    function render() {
+      months.innerHTML = renderCalendar(input.events, start, input.confirmed, year, locale, civilNow());
+      root!.querySelector("[data-year]")!.textContent = `${new Intl.NumberFormat(locale, { useGrouping: false }).format(year)} ${calendarCopy[locale].ah}`;
+      yearSelect.value = String(year);
+      yearSelect.disabled = false;
+      today.disabled = false;
+    }
+    yearSelect.addEventListener("change", () => {
+      window.location.assign(calendarPath(locale, Number(yearSelect.value)));
+    });
+    today.addEventListener("click", () => {
+      if (year !== currentYear()) window.location.assign(calendarPath(locale, currentYear()));
+      else { render(); scrollTo(); }
+    });
+    render();
+    requestAnimationFrame(() => { if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView(); else if (year === currentYear()) scrollTo(); });
+    let day = civilNow().getTime();
+    const refresh = () => {
+      const updated = civilNow().getTime();
+      if (day !== updated) {
+        day = updated;
+        if (fixedYear === undefined && year !== currentYear()) window.location.assign(calendarPath(locale, currentYear()));
+        else render();
+      }
+    };
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
+    window.setInterval(refresh, 60_000);
+  }
+</script>

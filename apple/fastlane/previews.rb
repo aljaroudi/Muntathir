@@ -8,7 +8,7 @@ all_devices = JSON.parse(MuntathirRelease.run!("xcrun", "simctl", "list", "devic
 names = ARGV.empty? ? MuntathirRelease::DEVICES : ARGV
 raise "Unknown capture device" unless (names - MuntathirRelease::DEVICES).empty?
 names.each do |name|
-  version = name == "iPhone Duo" ? "27.1" : ENV.fetch("SCREENSHOT_IOS_VERSION", "27.0")
+  version = name == "iPhone Duo" ? ENV.fetch("SCREENSHOT_DUO_IOS_VERSION", "27.2") : ENV.fetch("SCREENSHOT_IOS_VERSION", "27.0")
   runtime = "com.apple.CoreSimulator.SimRuntime.iOS-#{version.tr('.', '-')}"
   devices = all_devices.fetch(runtime) { raise "Install iOS #{version} in Xcode." }
   device = devices.find { |d| d["name"] == name && d["state"] == "Shutdown" } || devices.find { |d| d["name"] == name }

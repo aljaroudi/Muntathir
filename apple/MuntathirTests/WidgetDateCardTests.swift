@@ -2,21 +2,21 @@ import Foundation
 @testable import Muntathir
 import SwiftUI
 import Testing
-import WeatherKit
 import Vision
+import WeatherKit
 
 struct WidgetDateCardTests {
     @MainActor @Test(arguments: ["en_GB", "ar_SA@numbers=latn"], [158.0, 170.0])
     func combinedCalendarWeather(language: String, width: Double) throws {
         let date = Date(timeIntervalSince1970: 1_793_183_400)
         let weather = WeatherReading(temperature: .init(value: 30, unit: .celsius),
-            apparentTemperature: .init(value: 32, unit: .celsius), condition: "Rain",
-            weatherCondition: .rain, date: date, attribution: nil)
+                                     apparentTemperature: .init(value: 32, unit: .celsius), condition: "Rain",
+                                     weatherCondition: .rain, date: date, attribution: nil)
         let renderer = ImageRenderer(content: CalendarWeatherCard(date: date,
-            settings: .init(timeZoneID: "Asia/Riyadh"), weather: weather)
-            .padding(16).frame(width: width, height: width).background(.white)
-            .environment(\.locale, Locale(identifier: language))
-            .environment(\.layoutDirection, language.hasPrefix("ar") ? .rightToLeft : .leftToRight))
+                                                                  settings: .init(timeZoneID: "Asia/Riyadh"), weather: weather)
+                .padding(16).frame(width: width, height: width).background(.white)
+                .environment(\.locale, Locale(identifier: language))
+                .environment(\.layoutDirection, language.hasPrefix("ar") ? .rightToLeft : .leftToRight))
         renderer.scale = 3
         let image = try #require(renderer.uiImage)
         try Attachment.record(#require(image.pngData()), named: "combined-\(language)-\(width).png")
@@ -36,10 +36,10 @@ struct WidgetDateCardTests {
                                      apparentTemperature: .init(value: 32, unit: .celsius),
                                      condition: "Clear", weatherCondition: .clear, date: date, attribution: nil)
         let renderer = ImageRenderer(content: WeatherDateCard(date: date,
-            settings: .init(timeZoneID: "Asia/Riyadh"), weather: weather, usesHijriDate: hijri)
-            .padding(16).frame(width: 158, height: 158).background(.white)
-            .environment(\.locale, Locale(identifier: language))
-            .environment(\.layoutDirection, language.hasPrefix("ar") ? .rightToLeft : .leftToRight))
+                                                              settings: .init(timeZoneID: "Asia/Riyadh"), weather: weather, usesHijriDate: hijri)
+                .padding(16).frame(width: 158, height: 158).background(.white)
+                .environment(\.locale, Locale(identifier: language))
+                .environment(\.layoutDirection, language.hasPrefix("ar") ? .rightToLeft : .leftToRight))
         renderer.scale = 3
         let image = try #require(renderer.uiImage)
         try Attachment.record(#require(image.pngData()), named: "weather-\(language)-\(hijri).png")

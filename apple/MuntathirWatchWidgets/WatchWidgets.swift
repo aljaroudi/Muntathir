@@ -81,7 +81,9 @@ struct WatchPrayerWidgetView: View {
     private func prayerContent(_ next: PrayerMoment, time: String, remaining: String, details: Bool, symbol: Bool) -> some View {
         VStack(alignment: family == .accessoryRectangular ? .leading : .center, spacing: 3) {
             HStack(spacing: 4) {
-                if symbol { Image(systemName: next.name.symbol).accessibilityHidden(true) }
+                if symbol {
+                    Image(systemName: next.name.symbol).accessibilityHidden(true)
+                }
                 Text(next.name.title)
             }
             .font(.caption).widgetAccentable()
@@ -91,7 +93,6 @@ struct WatchPrayerWidgetView: View {
             }
         }
     }
-
 }
 
 struct WatchDateWidgetView: View {

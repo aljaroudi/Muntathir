@@ -7,13 +7,24 @@ struct IslamicEvent: Codable, Identifiable, Hashable, Sendable {
     let title: [String: String]
     /// Optional Hijri year (AH). Negative values are before the Hijra.
     let year: Int?
+    private let linkedFigureIDs: [String]?
 
-    init(id: String, month: Int, day: Int, year: Int? = nil, title: [String: String]) {
+    var figureIDs: [String] {
+        linkedFigureIDs ?? []
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, month, day, title, year
+        case linkedFigureIDs = "figure_ids"
+    }
+
+    init(id: String, month: Int, day: Int, year: Int? = nil, title: [String: String], figureIDs: [String]? = nil) {
         self.id = id
         self.month = month
         self.day = day
         self.title = title
         self.year = year
+        linkedFigureIDs = figureIDs
     }
 
     private func bundle(for locale: Locale) -> Bundle {

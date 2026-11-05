@@ -9,6 +9,7 @@ final class MuntathirUITests: XCTestCase {
     }
 
     @MainActor func testNotificationCustomization() {
+        continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         addUIInterruptionMonitor(withDescription: "Notification permission") { alert in
@@ -25,12 +26,13 @@ final class MuntathirUITests: XCTestCase {
         }
         XCTAssertTrue(link.waitForExistence(timeout: 5))
         link.tap()
-        XCTAssertTrue(app.switches["Time Sensitive"].waitForExistence(timeout: 5))
         let allow = XCUIApplication(bundleIdentifier: "com.apple.springboard").buttons["Allow"]
         if allow.waitForExistence(timeout: 2) {
             allow.tap()
         }
-        let sensitive = app.switches["Time Sensitive"]
+        XCTAssertTrue(app.navigationBars["Notifications"].waitForExistence(timeout: 5))
+        let sensitive = app.descendants(matching: .any).matching(identifier: "Time Sensitive").firstMatch
+        XCTAssertTrue(sensitive.waitForExistence(timeout: 5))
         sensitive.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
         XCTAssertTrue(NSPredicate(format: "value == %@", "0").evaluate(with: sensitive))
         XCTAssertTrue(app.buttons["System notification settings"].exists)
@@ -50,16 +52,63 @@ final class MuntathirUITests: XCTestCase {
         XCTAssertFalse(app.tabBars.buttons["Prayer counter"].exists)
     }
 
-    @MainActor func testQiblaWithoutHeadingBlocksArrowGuidance() {
+    @MainActor func testQiblaSavedCityDoesNotEnableMap() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
         app.buttons["Tools"].firstMatch.tap()
         app.buttons["Qibla"].tap()
-        XCTAssertTrue(app.staticTexts["Compass unavailable"].waitForExistence(timeout: 5))
-        capture("Blocked compass", in: app)
-        XCTAssertFalse(app.staticTexts["Keep your device flat and follow the arrow."].exists)
-        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "from true north")).firstMatch.exists)
+        XCTAssertTrue(app.staticTexts["Precise location required"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.descendants(matching: .any)["qibla-map-ready"].exists)
+        XCTAssertTrue(app.buttons["Open Settings"].exists)
+    }
+
+    @MainActor func testQiblaMapWithoutHeading() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--qibla-ready", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.buttons["Tools"].firstMatch.tap()
+        app.buttons["Qibla"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["qibla-map-ready"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Precise location required"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["qibla-heading-indicator"].exists)
+        XCTAssertTrue(app.staticTexts["Compass unavailable"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["qibla-aligned"].exists)
+        capture("Qibla map", in: app)
+    }
+
+    @MainActor func testQiblaMapWithHeading() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--qibla-ready", "--qibla-heading", "-AppleLanguages", "(ar)", "-AppleLocale", "ar_SA"]
+        app.launch()
+        app.buttons["الأدوات"].firstMatch.tap()
+        app.buttons["القبلة"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["qibla-map-ready"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["qibla-heading-indicator"].exists)
+        capture("Qibla map with heading", in: app)
+    }
+
+    @MainActor func testQiblaAligned() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--qibla-ready", "--qibla-heading", "--qibla-aligned", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.buttons["Tools"].firstMatch.tap()
+        app.buttons["Qibla"].tap()
+        XCTAssertTrue(app.staticTexts["Aligned with Kaaba"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Turn left"].exists)
+        XCTAssertFalse(app.staticTexts["Turn right"].exists)
+        let map = app.descendants(matching: .any)["qibla-map-ready"]
+        XCTAssertGreaterThan(map.frame.height, app.frame.height * 0.85)
+        capture("Qibla aligned", in: app)
+        XCUIDevice.shared.orientation = .landscapeLeft
+        defer { XCUIDevice.shared.orientation = .portrait }
+        XCTAssertTrue(app.staticTexts["Aligned with Kaaba"].waitForExistence(timeout: 5))
+        capture("Qibla aligned landscape", in: app)
+        app.buttons["Settings"].tap()
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.descendants(matching: .any)["qibla-map-ready"].exists)
+        app.buttons["Done"].tap()
+        XCTAssertTrue(app.staticTexts["Aligned with Kaaba"].waitForExistence(timeout: 5))
     }
 
     @MainActor private func verifyPrayerVisibility(in app: XCUIApplication) {
@@ -120,16 +169,28 @@ final class MuntathirUITests: XCTestCase {
         app.launch()
         XCTAssertTrue(app.buttons["Today"].firstMatch.waitForExistence(timeout: 10))
         app.descendants(matching: .any).matching(identifier: "Calendar").firstMatch.tap()
-        app.buttons["Adjust this month"].tap()
+        XCTAssertTrue(app.navigationBars["Calendar"].waitForExistence(timeout: 5))
+        app.buttons["Settings"].tap()
+        let adjustment = app.buttons["month-adjustments"]
+        for _ in 0 ..< 8 where !adjustment.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(adjustment.isHittable)
+        adjustment.tap()
         XCTAssertTrue(app.navigationBars["Adjust month"].waitForExistence(timeout: 5))
         app.buttons["Save"].tap()
-        XCTAssertTrue(app.navigationBars["Calendar"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
+        app.navigationBars["Settings"].buttons["Done"].tap()
         app.buttons["Tools"].firstMatch.tap()
         app.buttons["Qibla"].tap()
-        XCTAssertTrue(app.staticTexts["Choose a location"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Precise location required"].waitForExistence(timeout: 5))
         app.buttons["Settings"].tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
-        app.buttons["Location, Not selected"].tap()
+        let location = app.buttons["Location, Not selected"]
+        for _ in 0 ..< 5 where !location.isHittable {
+            app.swipeDown()
+        }
+        location.tap()
         XCTAssertTrue(app.searchFields["Search for a city"].waitForExistence(timeout: 5))
     }
 
@@ -142,7 +203,7 @@ final class MuntathirUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["التقويم"].exists)
         app.buttons["الأدوات"].firstMatch.tap()
         app.buttons["القبلة"].tap()
-        XCTAssertTrue(app.staticTexts["اختر موقعًا"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["الموقع الدقيق مطلوب"].waitForExistence(timeout: 5))
         app.navigationBars.buttons["الأدوات"].tap()
     }
 
@@ -151,5 +212,25 @@ final class MuntathirUITests: XCTestCase {
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+}
+
+extension MuntathirUITests {
+    @MainActor func testPrayerContextMenuPreservesRequiredVisibility() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let fajr = app.descendants(matching: .any)["prayer-fajr"].firstMatch
+        XCTAssertTrue(fajr.waitForExistence(timeout: 10))
+        fajr.press(forDuration: 1)
+        XCTAssertTrue(app.buttons["Mute"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["Hide"].exists)
+        app.buttons["Mute"].tap()
+        let asr = app.descendants(matching: .any)["prayer-asr"].firstMatch
+        asr.press(forDuration: 1)
+        XCTAssertTrue(app.buttons["Alert"].waitForExistence(timeout: 5))
+        app.buttons["Hide"].tap()
+        XCTAssertFalse(asr.exists)
+        XCTAssertTrue(fajr.exists)
     }
 }

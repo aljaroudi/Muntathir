@@ -20,7 +20,10 @@
       "ur": "امام حسین کا کربلا پہنچنا",
       "zh-Hans": "伊玛目侯赛因抵达卡尔巴拉",
       "zh-Hant": "伊瑪目侯賽因抵達卡爾巴拉"
-    }
+    },
+    "figure_ids": [
+      "husayn-ibn-ali"
+    ]
   },
   {
     "id": "husayn-water-cut",
@@ -43,7 +46,10 @@
       "ur": "امام حسین پر پانی بند ہونا",
       "zh-Hans": "切断伊玛目侯赛因的水源",
       "zh-Hant": "切斷伊瑪目侯賽因的水源"
-    }
+    },
+    "figure_ids": [
+      "husayn-ibn-ali"
+    ]
   },
   {
     "id": "husayn-death",
@@ -66,7 +72,10 @@
       "ur": "شہادتِ امام حسین",
       "zh-Hans": "伊玛目侯赛因殉道",
       "zh-Hant": "伊瑪目侯賽因殉道"
-    }
+    },
+    "figure_ids": [
+      "husayn-ibn-ali"
+    ]
   },
   {
     "id": "captives-to-kufa",
@@ -158,7 +167,10 @@
       "ur": "شہادتِ امام سجاد",
       "zh-Hans": "伊玛目萨贾德殉道",
       "zh-Hant": "伊瑪目薩賈德殉道"
-    }
+    },
+    "figure_ids": [
+      "ali-zayn-al-abidin"
+    ]
   },
   {
     "id": "captives-arrive-sham",
@@ -204,7 +216,10 @@
       "ur": "شہادتِ رقیہ بنت الحسین",
       "zh-Hans": "鲁盖娅·宾特·侯赛因殉道",
       "zh-Hant": "魯蓋婭·賓特·侯賽因殉道"
-    }
+    },
+    "figure_ids": [
+      "ruqayya-bint-al-husayn"
+    ]
   },
   {
     "id": "hasan-death-2-7",
@@ -227,7 +242,10 @@
       "ur": "شہادتِ امام حسن",
       "zh-Hans": "伊玛目哈桑殉道",
       "zh-Hant": "伊瑪目哈桑殉道"
-    }
+    },
+    "figure_ids": [
+      "hasan-ibn-ali"
+    ]
   },
   {
     "id": "ahl-bayt-return-karbala",
@@ -273,7 +291,10 @@
       "ur": "اربعینِ امام حسین",
       "zh-Hans": "伊玛目侯赛因四十日",
       "zh-Hant": "伊瑪目侯賽因四十日"
-    }
+    },
+    "figure_ids": [
+      "husayn-ibn-ali"
+    ]
   },
   {
     "id": "jabir-ziyarah",
@@ -296,7 +317,10 @@
       "ur": "جابر کی قبرِ حسین کی زیارت",
       "zh-Hans": "贾比尔拜谒侯赛因陵",
       "zh-Hant": "賈比爾拜謁侯賽因陵"
-    }
+    },
+    "figure_ids": [
+      "jabir-ibn-abdullah"
+    ]
   },
   {
     "id": "razziyat-yawm-al-khamis",
@@ -342,7 +366,10 @@
       "ur": "شہادتِ امام حسن",
       "zh-Hans": "伊玛目哈桑殉道",
       "zh-Hant": "伊瑪目哈桑殉道"
-    }
+    },
+    "figure_ids": [
+      "hasan-ibn-ali"
+    ]
   },
   {
     "id": "prophet-death",
@@ -350,7 +377,7 @@
     "day": 28,
     "year": 11,
     "title": {
-      "ar": "وفاة النبي",
+      "ar": "وفاة رسول الله ﷺ",
       "de": "Tod des Propheten",
       "en": "Death of the Prophet",
       "es": "Muerte de del Profeta",
@@ -365,7 +392,10 @@
       "ur": "وفاتِ نبی",
       "zh-Hans": "先知逝世",
       "zh-Hant": "先知逝世"
-    }
+    },
+    "figure_ids": [
+      "prophet-muhammad"
+    ]
   },
   {
     "id": "ridha-death",
@@ -388,7 +418,10 @@
       "ur": "شہادتِ امام رضا",
       "zh-Hans": "伊玛目里达殉道",
       "zh-Hant": "伊瑪目里達殉道"
-    }
+    },
+    "figure_ids": [
+      "ali-al-ridha"
+    ]
   },
   {
     "id": "askari-death-3-1",
@@ -411,7 +444,10 @@
       "ur": "شہادتِ امام عسکری",
       "zh-Hans": "伊玛目阿斯卡里殉道",
       "zh-Hant": "伊瑪目阿斯卡里殉道"
-    }
+    },
+    "figure_ids": [
+      "hasan-al-askari"
+    ]
   },
   {
     "id": "attack-fatima-house",
@@ -434,7 +470,10 @@
       "ur": "بیتِ زہرا پر حملہ",
       "zh-Hans": "袭击扎赫拉之家",
       "zh-Hant": "襲擊扎赫拉之家"
-    }
+    },
+    "figure_ids": [
+      "fatima-al-zahra"
+    ]
   },
   {
     "id": "laylat-al-mabit",
@@ -479,7 +518,10 @@
       "ur": "وفاتِ سکینہ بنت الحسین",
       "zh-Hans": "苏凯娜·宾特·侯赛因逝世",
       "zh-Hant": "蘇凱娜·賓特·侯賽因逝世"
-    }
+    },
+    "figure_ids": [
+      "sukayna-bint-al-husayn"
+    ]
   },
   {
     "id": "askari-death",
@@ -502,14 +544,17 @@
       "ur": "شہادتِ امام عسکری",
       "zh-Hans": "伊玛目阿斯卡里殉道",
       "zh-Hant": "伊瑪目阿斯卡里殉道"
-    }
+    },
+    "figure_ids": [
+      "hasan-al-askari"
+    ]
   },
   {
     "id": "prophet-khadija-marriage",
     "month": 3,
     "day": 10,
     "title": {
-      "ar": "زواج النبي من خديجة",
+      "ar": "زواج رسول الله ﷺ من خديجة",
       "de": "Heirat des Propheten mit Khadija",
       "en": "Marriage of the Prophet to Khadija",
       "es": "Matrimonio del Profeta con Jadiya",
@@ -524,7 +569,11 @@
       "ur": "نبی کا خدیجہ سے نکاح",
       "zh-Hans": "先知与赫蒂彻成婚",
       "zh-Hant": "先知與赫蒂徹成婚"
-    }
+    },
+    "figure_ids": [
+      "prophet-muhammad",
+      "khadija-bint-khuwaylid"
+    ]
   },
   {
     "id": "prophet-arrival-medina",
@@ -532,7 +581,7 @@
     "day": 12,
     "year": 1,
     "title": {
-      "ar": "وصول النبي إلى المدينة",
+      "ar": "وصول رسول الله ﷺ إلى المدينة",
       "de": "Ankunft des Propheten in Medina",
       "en": "Prophet arrives in Medina",
       "es": "Llegada del Profeta a Medina",
@@ -547,30 +596,10 @@
       "ur": "نبی کا مدینہ پہنچنا",
       "zh-Hans": "先知抵达麦地那",
       "zh-Hant": "先知抵達麥地那"
-    }
-  },
-  {
-    "id": "prophet-birth-3-12",
-    "month": 3,
-    "day": 12,
-    "year": -53,
-    "title": {
-      "ar": "ولادة النبي",
-      "de": "Geburt des Propheten",
-      "en": "Birth of the Prophet",
-      "es": "Nacimiento de del Profeta",
-      "fa": "ولادت پیامبر",
-      "fr": "Naissance de du Prophète",
-      "id": "Kelahiran Nabi",
-      "it": "Nascita di del Profeta",
-      "ja": "預言者の誕生日",
-      "ms": "Kelahiran Nabi",
-      "ru": "Рождение Пророка",
-      "tr": "Peygamber’nın doğumu",
-      "ur": "ولادتِ نبی",
-      "zh-Hans": "先知诞辰",
-      "zh-Hant": "先知誕辰"
-    }
+    },
+    "figure_ids": [
+      "prophet-muhammad"
+    ]
   },
   {
     "id": "yazid-death",
@@ -593,7 +622,10 @@
       "ur": "وفاتِ یزید بن معاویہ",
       "zh-Hans": "叶齐德·本·穆阿维叶逝世",
       "zh-Hant": "葉齊德·本·穆阿維葉逝世"
-    }
+    },
+    "figure_ids": [
+      "yazid-ibn-muawiya"
+    ]
   },
   {
     "id": "prophet-birth",
@@ -601,7 +633,7 @@
     "day": 17,
     "year": -53,
     "title": {
-      "ar": "ولادة النبي",
+      "ar": "ولادة رسول الله ﷺ",
       "de": "Geburt des Propheten",
       "en": "Birth of the Prophet",
       "es": "Nacimiento de del Profeta",
@@ -616,7 +648,10 @@
       "ur": "ولادتِ نبی",
       "zh-Hans": "先知诞辰",
       "zh-Hant": "先知誕辰"
-    }
+    },
+    "figure_ids": [
+      "prophet-muhammad"
+    ]
   },
   {
     "id": "sadiq-birth",
@@ -639,7 +674,10 @@
       "ur": "ولادتِ امام صادق",
       "zh-Hans": "伊玛目萨迪格诞辰",
       "zh-Hant": "伊瑪目薩迪格誕辰"
-    }
+    },
+    "figure_ids": [
+      "jafar-al-sadiq"
+    ]
   },
   {
     "id": "hasan-peace",
@@ -662,7 +700,10 @@
       "ur": "صلحِ امام حسن",
       "zh-Hans": "伊玛目哈桑议和",
       "zh-Hant": "伊瑪目哈桑議和"
-    }
+    },
+    "figure_ids": [
+      "hasan-ibn-ali"
+    ]
   },
   {
     "id": "masuma-arrival-qom",
@@ -685,7 +726,10 @@
       "ur": "سیدہ معصومہ کا قم پہنچنا",
       "zh-Hans": "玛苏玛抵达库姆",
       "zh-Hant": "瑪蘇瑪抵達庫姆"
-    }
+    },
+    "figure_ids": [
+      "fatima-al-masuma"
+    ]
   },
   {
     "id": "baqir-death-4-1",
@@ -708,7 +752,10 @@
       "ur": "شہادتِ امام باقر",
       "zh-Hans": "伊玛目巴吉尔殉道",
       "zh-Hant": "伊瑪目巴吉爾殉道"
-    }
+    },
+    "figure_ids": [
+      "muhammad-al-baqir"
+    ]
   },
   {
     "id": "askari-birth",
@@ -731,7 +778,10 @@
       "ur": "ولادتِ امام عسکری",
       "zh-Hans": "伊玛目阿斯卡里诞辰",
       "zh-Hant": "伊瑪目阿斯卡里誕辰"
-    }
+    },
+    "figure_ids": [
+      "hasan-al-askari"
+    ]
   },
   {
     "id": "hasan-birth-4-8",
@@ -754,7 +804,10 @@
       "ur": "ولادتِ امام حسن",
       "zh-Hans": "伊玛目哈桑诞辰",
       "zh-Hant": "伊瑪目哈桑誕辰"
-    }
+    },
+    "figure_ids": [
+      "hasan-ibn-ali"
+    ]
   },
   {
     "id": "masuma-death",
@@ -777,7 +830,10 @@
       "ur": "وفاتِ سیدہ معصومہ",
       "zh-Hans": "玛苏玛逝世",
       "zh-Hant": "瑪蘇瑪逝世"
-    }
+    },
+    "figure_ids": [
+      "fatima-al-masuma"
+    ]
   },
   {
     "id": "zaynab-birth",
@@ -800,7 +856,10 @@
       "ur": "ولادتِ سیدہ زینب",
       "zh-Hans": "宰奈卜诞辰",
       "zh-Hant": "宰奈卜誕辰"
-    }
+    },
+    "figure_ids": [
+      "zaynab-bint-ali"
+    ]
   },
   {
     "id": "fatima-death-5-13",
@@ -823,7 +882,10 @@
       "ur": "شہادتِ حضرت فاطمہ زہرا",
       "zh-Hans": "法蒂玛·扎赫拉殉道",
       "zh-Hant": "法蒂瑪·扎赫拉殉道"
-    }
+    },
+    "figure_ids": [
+      "fatima-al-zahra"
+    ]
   },
   {
     "id": "sajjad-birth-5-15",
@@ -846,7 +908,10 @@
       "ur": "ولادتِ امام سجاد",
       "zh-Hans": "伊玛目萨贾德诞辰",
       "zh-Hant": "伊瑪目薩賈德誕辰"
-    }
+    },
+    "figure_ids": [
+      "ali-zayn-al-abidin"
+    ]
   },
   {
     "id": "qasim-kadhim-death",
@@ -869,7 +934,10 @@
       "ur": "وفاتِ قاسم بن کاظم",
       "zh-Hans": "卡西姆·本·卡齐姆逝世",
       "zh-Hant": "卡西姆·本·卡齊姆逝世"
-    }
+    },
+    "figure_ids": [
+      "qasim-ibn-al-kadhim"
+    ]
   },
   {
     "id": "abdul-muttalib-death",
@@ -892,7 +960,10 @@
       "ur": "وفاتِ عبدالمطلب",
       "zh-Hans": "阿卜杜勒穆塔利布逝世",
       "zh-Hant": "阿卜杜勒穆塔利布逝世"
-    }
+    },
+    "figure_ids": [
+      "abd-al-muttalib"
+    ]
   },
   {
     "id": "fatima-death",
@@ -915,7 +986,10 @@
       "ur": "شہادتِ حضرت فاطمہ زہرا",
       "zh-Hans": "法蒂玛·扎赫拉殉道",
       "zh-Hant": "法蒂瑪·扎赫拉殉道"
-    }
+    },
+    "figure_ids": [
+      "fatima-al-zahra"
+    ]
   },
   {
     "id": "umm-al-banin-death",
@@ -938,7 +1012,10 @@
       "ur": "وفاتِ ام البنین",
       "zh-Hans": "乌姆·班宁逝世",
       "zh-Hant": "烏姆·班寧逝世"
-    }
+    },
+    "figure_ids": [
+      "umm-al-banin"
+    ]
   },
   {
     "id": "battle-of-jamal",
@@ -983,7 +1060,11 @@
       "ur": "عبداللہ و آمنہ کا نکاح",
       "zh-Hans": "阿卜杜拉与阿米娜成婚",
       "zh-Hant": "阿卜杜拉與阿می娜成婚"
-    }
+    },
+    "figure_ids": [
+      "abdullah-ibn-abd-al-muttalib",
+      "amina-bint-wahb"
+    ]
   },
   {
     "id": "fatima-birth",
@@ -1006,7 +1087,10 @@
       "ur": "ولادتِ حضرت فاطمہ زہرا",
       "zh-Hans": "法蒂玛·扎赫拉诞辰",
       "zh-Hant": "法蒂瑪·扎赫拉誕辰"
-    }
+    },
+    "figure_ids": [
+      "fatima-al-zahra"
+    ]
   },
   {
     "id": "umm-kulthum-death",
@@ -1029,7 +1113,10 @@
       "ur": "وفاتِ ام کلثوم",
       "zh-Hans": "乌姆·库勒苏姆逝世",
       "zh-Hant": "烏姆·庫勒蘇姆逝世"
-    }
+    },
+    "figure_ids": [
+      "umm-kulthum-bint-ali"
+    ]
   },
   {
     "id": "abu-bakr-death",
@@ -1052,7 +1139,10 @@
       "ur": "وفاتِ ابوبکر",
       "zh-Hans": "艾布·伯克尔逝世",
       "zh-Hant": "艾布·伯克爾逝世"
-    }
+    },
+    "figure_ids": [
+      "abu-bakr"
+    ]
   },
   {
     "id": "hadi-death-6-26",
@@ -1075,7 +1165,10 @@
       "ur": "شہادتِ امام ہادی",
       "zh-Hans": "伊玛目哈迪殉道",
       "zh-Hant": "伊瑪目哈迪殉道"
-    }
+    },
+    "figure_ids": [
+      "ali-al-hadi"
+    ]
   },
   {
     "id": "baqir-birth",
@@ -1098,7 +1191,10 @@
       "ur": "ولادتِ امام باقر",
       "zh-Hans": "伊玛目巴吉尔诞辰",
       "zh-Hant": "伊瑪目巴吉爾誕辰"
-    }
+    },
+    "figure_ids": [
+      "muhammad-al-baqir"
+    ]
   },
   {
     "id": "hadi-birth",
@@ -1121,7 +1217,10 @@
       "ur": "ولادتِ امام ہادی",
       "zh-Hans": "伊玛目哈迪诞辰",
       "zh-Hant": "伊瑪目哈迪誕辰"
-    }
+    },
+    "figure_ids": [
+      "ali-al-hadi"
+    ]
   },
   {
     "id": "hadi-death",
@@ -1144,7 +1243,10 @@
       "ur": "شہادتِ امام ہادی",
       "zh-Hans": "伊玛目哈迪殉道",
       "zh-Hant": "伊瑪目哈迪殉道"
-    }
+    },
+    "figure_ids": [
+      "ali-al-hadi"
+    ]
   },
   {
     "id": "kadhim-death-7-7",
@@ -1167,7 +1269,10 @@
       "ur": "شہادتِ امام کاظم",
       "zh-Hans": "伊玛目卡齐姆殉道",
       "zh-Hant": "伊瑪目卡齊姆殉道"
-    }
+    },
+    "figure_ids": [
+      "musa-al-kadhim"
+    ]
   },
   {
     "id": "jawad-birth",
@@ -1190,7 +1295,10 @@
       "ur": "ولادتِ امام جواد",
       "zh-Hans": "伊玛目贾瓦德诞辰",
       "zh-Hant": "伊瑪目賈瓦德誕辰"
-    }
+    },
+    "figure_ids": [
+      "muhammad-al-jawad"
+    ]
   },
   {
     "id": "ali-birth",
@@ -1213,7 +1321,10 @@
       "ur": "ولادتِ امام علی",
       "zh-Hans": "伊玛目阿里诞辰",
       "zh-Hant": "伊瑪目阿里誕辰"
-    }
+    },
+    "figure_ids": [
+      "ali-ibn-abi-talib"
+    ]
   },
   {
     "id": "qibla-change",
@@ -1258,7 +1369,10 @@
       "ur": "شہادتِ امام صادق",
       "zh-Hans": "伊玛目萨迪格殉道",
       "zh-Hant": "伊瑪目薩迪格殉道"
-    }
+    },
+    "figure_ids": [
+      "jafar-al-sadiq"
+    ]
   },
   {
     "id": "zaynab-death",
@@ -1281,7 +1395,10 @@
       "ur": "شہادتِ سیدہ زینب",
       "zh-Hans": "宰奈卜殉道",
       "zh-Hant": "宰奈卜殉道"
-    }
+    },
+    "figure_ids": [
+      "zaynab-bint-ali"
+    ]
   },
   {
     "id": "sakina-birth",
@@ -1304,7 +1421,10 @@
       "ur": "ولادتِ سکینہ بنت الحسین",
       "zh-Hans": "苏凯娜·宾特·侯赛因诞辰",
       "zh-Hant": "蘇凱娜·賓特·侯賽因誕辰"
-    }
+    },
+    "figure_ids": [
+      "sukayna-bint-al-husayn"
+    ]
   },
   {
     "id": "kadhim-death",
@@ -1327,7 +1447,10 @@
       "ur": "شہادتِ امام کاظم",
       "zh-Hans": "伊玛目卡齐姆殉道",
       "zh-Hant": "伊瑪目卡齊姆殉道"
-    }
+    },
+    "figure_ids": [
+      "musa-al-kadhim"
+    ]
   },
   {
     "id": "abu-talib-death",
@@ -1350,7 +1473,10 @@
       "ur": "وفاتِ ابو طالب",
       "zh-Hans": "艾布·塔利卜逝世",
       "zh-Hant": "艾布·塔利卜逝世"
-    }
+    },
+    "figure_ids": [
+      "abu-talib"
+    ]
   },
   {
     "id": "mabath",
@@ -1396,7 +1522,10 @@
       "ur": "امام حسین کا مکہ سے خروج",
       "zh-Hans": "伊玛目侯赛因离开麦加",
       "zh-Hant": "伊瑪目侯賽因離開麥加"
-    }
+    },
+    "figure_ids": [
+      "husayn-ibn-ali"
+    ]
   },
   {
     "id": "husayn-leave-medina",
@@ -1419,7 +1548,10 @@
       "ur": "امام حسین کا مدینہ سے خروج",
       "zh-Hans": "伊玛目侯赛因离开麦地那",
       "zh-Hant": "伊瑪目侯賽因離開麥地那"
-    }
+    },
+    "figure_ids": [
+      "husayn-ibn-ali"
+    ]
   },
   {
     "id": "khadija-death",
@@ -1442,7 +1574,10 @@
       "ur": "وفاتِ سیدہ خدیجہ",
       "zh-Hans": "赫蒂彻逝世",
       "zh-Hant": "赫蒂徹逝世"
-    }
+    },
+    "figure_ids": [
+      "khadija-bint-khuwaylid"
+    ]
   },
   {
     "id": "husayn-birth",
@@ -1465,7 +1600,10 @@
       "ur": "ولادتِ امام حسین",
       "zh-Hans": "伊玛目侯赛因诞辰",
       "zh-Hant": "伊瑪目侯賽因誕辰"
-    }
+    },
+    "figure_ids": [
+      "husayn-ibn-ali"
+    ]
   },
   {
     "id": "husayn-enter-mecca",
@@ -1488,7 +1626,10 @@
       "ur": "امام حسین کا مکہ میں دخول",
       "zh-Hans": "伊玛目侯赛因进入麦加",
       "zh-Hant": "伊瑪目侯賽因進入麥加"
-    }
+    },
+    "figure_ids": [
+      "husayn-ibn-ali"
+    ]
   },
   {
     "id": "abbas-birth",
@@ -1511,7 +1652,10 @@
       "ur": "ولادتِ عباس",
       "zh-Hans": "阿巴斯诞辰",
       "zh-Hant": "阿巴斯誕辰"
-    }
+    },
+    "figure_ids": [
+      "abbas-ibn-ali"
+    ]
   },
   {
     "id": "sajjad-birth",
@@ -1534,7 +1678,10 @@
       "ur": "ولادتِ امام سجاد",
       "zh-Hans": "伊玛目萨贾德诞辰",
       "zh-Hant": "伊瑪目薩賈德誕辰"
-    }
+    },
+    "figure_ids": [
+      "ali-zayn-al-abidin"
+    ]
   },
   {
     "id": "ali-akbar-birth",
@@ -1557,7 +1704,10 @@
       "ur": "ولادتِ علی اکبر",
       "zh-Hans": "阿里·阿克巴尔诞辰",
       "zh-Hant": "阿里·阿克巴爾誕辰"
-    }
+    },
+    "figure_ids": [
+      "ali-al-akbar"
+    ]
   },
   {
     "id": "qasim-hasan-birth",
@@ -1580,7 +1730,10 @@
       "ur": "ولادتِ قاسم بن حسن",
       "zh-Hans": "卡西姆·本·哈桑诞辰",
       "zh-Hant": "卡西姆·本·哈桑誕辰"
-    }
+    },
+    "figure_ids": [
+      "qasim-ibn-al-hasan"
+    ]
   },
   {
     "id": "fourth-deputy-death",
@@ -1603,7 +1756,10 @@
       "ur": "وفاتِ چوتھا سفیر",
       "zh-Hans": "第四代特使逝世",
       "zh-Hant": "第四代特使逝世"
-    }
+    },
+    "figure_ids": [
+      "ali-ibn-muhammad-al-samarri"
+    ]
   },
   {
     "id": "mahdi-birth",
@@ -1626,7 +1782,10 @@
       "ur": "ولادتِ امام مہدی",
       "zh-Hans": "伊玛目马赫迪诞辰",
       "zh-Hant": "伊瑪目馬赫迪誕辰"
-    }
+    },
+    "figure_ids": [
+      "muhammad-al-mahdi"
+    ]
   },
   {
     "id": "major-occultation",
@@ -1672,7 +1831,10 @@
       "ur": "ولادتِ رقیہ بنت الحسین",
       "zh-Hans": "鲁盖娅·宾特·侯赛因诞辰",
       "zh-Hant": "魯蓋婭·賓特·侯賽因誕辰"
-    }
+    },
+    "figure_ids": [
+      "ruqayya-bint-al-husayn"
+    ]
   },
   {
     "id": "ridha-wilayah",
@@ -1695,7 +1857,10 @@
       "ur": "امام رضا کی ولایتِ عہد",
       "zh-Hans": "伊玛目里达受命为储君",
       "zh-Hant": "伊瑪目里達受命為儲君"
-    }
+    },
+    "figure_ids": [
+      "ali-al-ridha"
+    ]
   },
   {
     "id": "abu-talib-death-9-7",
@@ -1718,7 +1883,10 @@
       "ur": "وفاتِ ابو طالب",
       "zh-Hans": "艾布·塔利卜逝世",
       "zh-Hant": "艾布·塔利卜逝世"
-    }
+    },
+    "figure_ids": [
+      "abu-talib"
+    ]
   },
   {
     "id": "khadija-death-9-10",
@@ -1741,7 +1909,10 @@
       "ur": "وفاتِ سیدہ خدیجہ",
       "zh-Hans": "赫蒂彻逝世",
       "zh-Hant": "赫蒂徹逝世"
-    }
+    },
+    "figure_ids": [
+      "khadija-bint-khuwaylid"
+    ]
   },
   {
     "id": "hasan-birth",
@@ -1764,7 +1935,10 @@
       "ur": "ولادتِ امام حسن",
       "zh-Hans": "伊玛目哈桑诞辰",
       "zh-Hant": "伊瑪目哈桑誕辰"
-    }
+    },
+    "figure_ids": [
+      "hasan-ibn-ali"
+    ]
   },
   {
     "id": "muslim-leaves-mecca",
@@ -1787,7 +1961,10 @@
       "ur": "مسلم بن عقیل کا مکہ سے روانگی",
       "zh-Hans": "穆斯林·本·阿基勒离开麦加",
       "zh-Hant": "穆斯林·本·阿基勒離開麥加"
-    }
+    },
+    "figure_ids": [
+      "muslim-ibn-aqil"
+    ]
   },
   {
     "id": "miraj",
@@ -1854,7 +2031,10 @@
       "ur": "امام علی پر ضرب",
       "zh-Hans": "伊玛目阿里遇刺",
       "zh-Hant": "伊瑪目阿里遇刺"
-    }
+    },
+    "figure_ids": [
+      "ali-ibn-abi-talib"
+    ]
   },
   {
     "id": "conquest-of-mecca",
@@ -1944,7 +2124,10 @@
       "ur": "شہادتِ امام علی",
       "zh-Hans": "伊玛目阿里殉道",
       "zh-Hant": "伊瑪目阿里殉道"
-    }
+    },
+    "figure_ids": [
+      "ali-ibn-abi-talib"
+    ]
   },
   {
     "id": "qadr-21",
@@ -2033,7 +2216,10 @@
       "ur": "مسلم بن عقیل کا کوفہ پہنچنا",
       "zh-Hans": "穆斯林·本·阿基勒抵达库法",
       "zh-Hant": "穆斯林·本·阿基勒抵達庫法"
-    }
+    },
+    "figure_ids": [
+      "muslim-ibn-aqil"
+    ]
   },
   {
     "id": "hamza-death",
@@ -2056,7 +2242,10 @@
       "ur": "شہادتِ حمزہ",
       "zh-Hans": "哈姆扎殉道",
       "zh-Hant": "哈姆扎殉道"
-    }
+    },
+    "figure_ids": [
+      "hamza-ibn-abd-al-muttalib"
+    ]
   },
   {
     "id": "hamza-death-10-15",
@@ -2079,7 +2268,10 @@
       "ur": "شہادتِ حمزہ",
       "zh-Hans": "哈姆扎殉道",
       "zh-Hant": "哈姆扎殉道"
-    }
+    },
+    "figure_ids": [
+      "hamza-ibn-abd-al-muttalib"
+    ]
   },
   {
     "id": "radd-al-shams",
@@ -2102,7 +2294,10 @@
       "ur": "امام علی کے لیے رد الشمس",
       "zh-Hans": "为伊玛目阿里太阳回转",
       "zh-Hant": "為伊瑪目阿里太陽回轉"
-    }
+    },
+    "figure_ids": [
+      "ali-ibn-abi-talib"
+    ]
   },
   {
     "id": "sadiq-death",
@@ -2125,7 +2320,10 @@
       "ur": "شہادتِ امام صادق",
       "zh-Hans": "伊玛目萨迪格殉道",
       "zh-Hant": "伊瑪目薩迪格殉道"
-    }
+    },
+    "figure_ids": [
+      "jafar-al-sadiq"
+    ]
   },
   {
     "id": "abu-talib-death-11-1",
@@ -2148,7 +2346,10 @@
       "ur": "وفاتِ ابو طالب",
       "zh-Hans": "艾布·塔利卜逝世",
       "zh-Hant": "艾布·塔利卜逝世"
-    }
+    },
+    "figure_ids": [
+      "abu-talib"
+    ]
   },
   {
     "id": "masuma-birth",
@@ -2171,7 +2372,10 @@
       "ur": "ولادتِ سیدہ معصومہ",
       "zh-Hans": "玛苏玛诞辰",
       "zh-Hant": "瑪蘇瑪誕辰"
-    }
+    },
+    "figure_ids": [
+      "fatima-al-masuma"
+    ]
   },
   {
     "id": "moses-appointment",
@@ -2193,7 +2397,10 @@
       "ur": "میعادِ موسیٰ",
       "zh-Hans": "穆萨之约",
       "zh-Hant": "穆薩之約"
-    }
+    },
+    "figure_ids": [
+      "prophet-musa"
+    ]
   },
   {
     "id": "ridha-birth",
@@ -2216,7 +2423,10 @@
       "ur": "ولادتِ امام رضا",
       "zh-Hans": "伊玛目里达诞辰",
       "zh-Hant": "伊瑪目里達誕辰"
-    }
+    },
+    "figure_ids": [
+      "ali-al-ridha"
+    ]
   },
   {
     "id": "ridha-death-11-23",
@@ -2239,7 +2449,10 @@
       "ur": "شہادتِ امام رضا",
       "zh-Hans": "伊玛目里达殉道",
       "zh-Hant": "伊瑪目里達殉道"
-    }
+    },
+    "figure_ids": [
+      "ali-al-ridha"
+    ]
   },
   {
     "id": "dahw-al-ard",
@@ -2269,7 +2482,7 @@
     "day": 25,
     "year": 10,
     "title": {
-      "ar": "خروج النبي لحجة الوداع",
+      "ar": "خروج رسول الله ﷺ لحجة الوداع",
       "de": "Aufbruch des Propheten zur Abschiedswallfahrt",
       "en": "Prophet leaves for the Farewell Hajj",
       "es": "Salida del Profeta para la Hajj de despedida",
@@ -2284,7 +2497,10 @@
       "ur": "نبی کا حجۃ الوداع کے لیے خروج",
       "zh-Hans": "先知启程辞朝",
       "zh-Hant": "先知啟程辭朝"
-    }
+    },
+    "figure_ids": [
+      "prophet-muhammad"
+    ]
   },
   {
     "id": "ibrahim-birth",
@@ -2306,7 +2522,10 @@
       "ur": "ولادتِ حضرت ابراہیم",
       "zh-Hans": "先知易卜拉欣诞辰",
       "zh-Hant": "先知易卜拉欣誕辰"
-    }
+    },
+    "figure_ids": [
+      "prophet-ibrahim"
+    ]
   },
   {
     "id": "isa-birth",
@@ -2328,7 +2547,10 @@
       "ur": "ولادتِ حضرت عیسیٰ",
       "zh-Hans": "先知尔撒诞辰",
       "zh-Hant": "先知爾撒誕辰"
-    }
+    },
+    "figure_ids": [
+      "prophet-isa"
+    ]
   },
   {
     "id": "jawad-death",
@@ -2351,7 +2573,10 @@
       "ur": "شہادتِ امام جواد",
       "zh-Hans": "伊玛目贾瓦德殉道",
       "zh-Hant": "伊瑪目賈瓦德殉道"
-    }
+    },
+    "figure_ids": [
+      "muhammad-al-jawad"
+    ]
   },
   {
     "id": "ali-fatima-marriage",
@@ -2374,7 +2599,11 @@
       "ur": "علی و فاطمہ کا نکاح",
       "zh-Hans": "阿里与法蒂玛成婚",
       "zh-Hant": "阿里與法蒂瑪成婚"
-    }
+    },
+    "figure_ids": [
+      "ali-ibn-abi-talib",
+      "fatima-al-zahra"
+    ]
   },
   {
     "id": "ibrahim-birth-12-1",
@@ -2396,7 +2625,10 @@
       "ur": "ولادتِ حضرت ابراہیم",
       "zh-Hans": "先知易卜拉欣诞辰",
       "zh-Hant": "先知易卜拉欣誕辰"
-    }
+    },
+    "figure_ids": [
+      "prophet-ibrahim"
+    ]
   },
   {
     "id": "baqir-death",
@@ -2419,7 +2651,10 @@
       "ur": "شہادتِ امام باقر",
       "zh-Hans": "伊玛目巴吉尔殉道",
       "zh-Hant": "伊瑪目巴吉爾殉道"
-    }
+    },
+    "figure_ids": [
+      "muhammad-al-baqir"
+    ]
   },
   {
     "id": "husayn-leave-mecca-12-8",
@@ -2442,7 +2677,10 @@
       "ur": "امام حسین کا مکہ سے خروج",
       "zh-Hans": "伊玛目侯赛因离开麦加",
       "zh-Hant": "伊瑪目侯賽因離開麥加"
-    }
+    },
+    "figure_ids": [
+      "husayn-ibn-ali"
+    ]
   },
   {
     "id": "arafah",
@@ -2487,7 +2725,10 @@
       "ur": "شہادتِ ہانی بن عروہ",
       "zh-Hans": "哈尼·本·乌尔瓦殉道",
       "zh-Hant": "哈尼·本·烏爾瓦殉道"
-    }
+    },
+    "figure_ids": [
+      "hani-ibn-urwa"
+    ]
   },
   {
     "id": "muslim-death",
@@ -2510,7 +2751,10 @@
       "ur": "شہادتِ مسلم بن عقیل",
       "zh-Hans": "穆斯林·本·阿基勒殉道",
       "zh-Hant": "穆斯林·本·阿基勒殉道"
-    }
+    },
+    "figure_ids": [
+      "muslim-ibn-aqil"
+    ]
   },
   {
     "id": "adha",
@@ -2555,7 +2799,10 @@
       "ur": "فدک کا زہرا کو عطا",
       "zh-Hans": "法蒂玛获赐法达克",
       "zh-Hant": "法蒂瑪獲賜法達克"
-    }
+    },
+    "figure_ids": [
+      "fatima-al-zahra"
+    ]
   },
   {
     "id": "hadi-birth-12-15",
@@ -2578,7 +2825,10 @@
       "ur": "ولادتِ امام ہادی",
       "zh-Hans": "伊玛目哈迪诞辰",
       "zh-Hant": "伊瑪目哈迪誕辰"
-    }
+    },
+    "figure_ids": [
+      "ali-al-hadi"
+    ]
   },
   {
     "id": "ghadir",
@@ -2624,7 +2874,10 @@
       "ur": "علی کا انگوٹھی صدقہ",
       "zh-Hans": "阿里施舍戒指",
       "zh-Hant": "阿里施捨戒指"
-    }
+    },
+    "figure_ids": [
+      "ali-ibn-abi-talib"
+    ]
   },
   {
     "id": "mubahala",

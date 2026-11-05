@@ -1,2 +1,5 @@
 "CFBundleDisplayName" = "Muntathir";
 "NSLocationWhenInUseUsageDescription" = "您的位置用于在此设备上计算礼拜时间和礼拜朝向。";
+"QiblaPreciseLocation" = "您的精确位置用于在地图上显示您所在的位置和克尔白方向。";
+
+"NSPhotoLibraryAddUsageDescription" = "将分享的古兰经和圣训图片保存到照片图库。";

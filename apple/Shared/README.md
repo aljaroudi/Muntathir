@@ -2,7 +2,7 @@
 
 ## Calendar rules
 
-Foundation's explicit Umm al-Qura calendar supplies the unconfirmed baseline. The app uses midnight in the selected location's time zone. Manual adjustments are stored as Hijri month/offset pairs, limited to −2 through +2 days. A positive offset advances the Hijri date by moving its start earlier relative to the source calendar. The engine derives Gregorian anchors before applying manual precedence; these are not global offsets. Explicit neighboring anchors must allow 29/30-day months. Provisional intervening months start with baseline lengths and adjust only as needed to reach the next anchor. Baseline boundaries resume when compatible. Supported correction years: 1300–1600 AH; corrections are limited to seven days from the baseline to catch input errors.
+Foundation's explicit Umm al-Qura calendar supplies the unconfirmed baseline. The app uses midnight in the selected location's time zone. Manual adjustments are stored as Hijri month/offset pairs, limited to −2 through +2 days. A positive offset advances the Hijri date by moving its start earlier relative to the source calendar. The engine derives Gregorian anchors before applying manual precedence; these are not global offsets. Explicit neighboring anchors must allow 29/30-day months. Provisional intervening months start with baseline lengths and adjust only as needed to reach the next anchor. Baseline boundaries resume when compatible. Supported correction years: 1350–1500 AH; corrections are limited to seven days from the baseline to catch input errors.
 
 ## Corrections feed
 
@@ -20,7 +20,7 @@ The background refresh path accepts an injected FeedClient. Production construct
 
 ## Content provenance
 
-- Quran: `Resources/Quran/quran.db` contains all 6,236 Arabic verses; translation source files are sibling `<id>.db` files keyed by the same verse `index`, delivered as [on-demand asset packs](../AssetPacks/) rather than bundled. The daily ayah cycles through 32 numeric database IDs by corrected Islamic month and day, changing at midnight in the selected location’s time zone. A complete dated dataset will select by corrected Hijri month/day; see [daily verse schedule](../content/daily-verses/). Never edit the Arabic text.
+- Quran: `Resources/Quran/quran.db` contains all 6,236 Arabic verses; translation source files are sibling `<id>.db` files keyed by the same verse `index`, with the shipping language subset bundled in both app and widget; see [asset delivery](../AssetPacks/). The daily ayah cycles through 32 numeric database IDs by corrected Islamic month and day, changing at midnight in the selected location’s time zone. A complete dated dataset will select by corrected Hijri month/day; see [daily verse schedule](../content/daily-verses/). Never edit the Arabic text.
 - Prayer fixtures: copied from [Adhan Swift 1.5.0](https://github.com/batoulapps/adhan-swift/tree/1.5.0/Tests/Resources/Times); original source/tolerance remains in each JSON. Test-target copies mirror `Shared/Fixtures`.
 
 Prayer fixtures remain duplicated in the test bundle because tests load bundled resources. Keep both copies identical. See [test coverage](../MuntathirTests/).

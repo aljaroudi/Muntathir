@@ -14,7 +14,7 @@ struct AyahImageTests {
     @MainActor @Test func shareImageExpandsForLongVerses() throws {
         let library = ContentLibrary()
         let short = try #require(library.verses.min { $0.text.count < $1.text.count })
-        let long = try #require(library.verses.max { $0.text.count < $1.text.count })
+        let long = Ayah(surah: 1, number: 1, text: short.text + "\n" + short.text)
         let shortImage = try #require(AyahImageRenderer.image(for: short, locale: Locale(identifier: "en")))
         let longImage = try #require(AyahImageRenderer.image(for: long, locale: Locale(identifier: "ar")))
         try Attachment.record(#require(shortImage.pngData()), named: "ayah-share.png")

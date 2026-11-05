@@ -13,6 +13,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
     private(set) var headingOwners: Set<UUID> = []
     private var requestID = UUID()
+    private var awaitingAuthorization = false
 
     var hasAccurateHeading: Bool {
         guard let heading, heading.isFinite, (0 ..< 360).contains(heading),
@@ -83,7 +84,9 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     func locate() {
         message = nil
         switch manager.authorizationStatus {
-        case .notDetermined: manager.requestWhenInUseAuthorization()
+        case .notDetermined:
+            awaitingAuthorization = true
+            manager.requestWhenInUseAuthorization()
         case .authorizedWhenInUse, .authorizedAlways:
             isBusy = true
             manager.requestLocation()
@@ -125,7 +128,9 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        if manager.authorizationStatus != .notDetermined {
+        // Permission changes from Qibla must not start a prayer-location request.
+        if awaitingAuthorization, manager.authorizationStatus != .notDetermined {
+            awaitingAuthorization = false
             locate()
         }
     }

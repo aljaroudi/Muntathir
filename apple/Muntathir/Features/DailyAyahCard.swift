@@ -19,12 +19,11 @@ struct DailyAyahCard: View {
                 Spacer()
                 VerseActions(ayah: ayah, translation: dailyTranslation, identifier: "share-daily-ayah")
             }
-            AyahText(ayah: ayah, alignment: .center)
+            HighlightText(text: ayah.text, source: ayah.id, block: "arabic", arabic: true, centered: true)
                 .accessibilityIdentifier("daily-ayah-text")
                 .textSelection(.enabled)
             if let translation = ayah.selectedTranslationText {
-                Text(translation)
-                    .font(.body)
+                HighlightText(text: translation, source: ayah.id, block: dailyTranslation?.id ?? "", centered: true)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
                     .environment(\.layoutDirection, dailyTranslation.map { Locale(identifier: $0.language).language.characterDirection == .rightToLeft } == true ? .rightToLeft : .leftToRight)
@@ -36,7 +35,8 @@ struct DailyAyahCard: View {
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .trailing)
         }
-        .padding(24)
+        .readingColumn()
+        .padding(20)
         .background {
             if skyBackground {
                 SkyCardSurface()
@@ -56,10 +56,10 @@ struct DailyAyahCard: View {
 struct AyahText: View {
     let ayah: Ayah
     var alignment: TextAlignment = .leading
+    var adjustable = true
     var body: some View {
         Text(ayah.text)
-            .font(.custom("KFGQPCHAFSUthmanicScript-Regula", size: 28, relativeTo: .title2))
-            .lineSpacing(12)
+            .readingText(arabic: true, adjustable: adjustable)
             .multilineTextAlignment(alignment)
             .frame(maxWidth: .infinity, alignment: alignment == .center ? .center : .leading)
             .fixedSize(horizontal: false, vertical: true)
@@ -72,44 +72,76 @@ struct AyahShareArtwork: View {
     var translation: QuranTranslation?
     @Environment(\.locale) private var locale
     var body: some View {
-        VStack(spacing: 28) {
+        ShareArtwork(reference: VerseShareContent(ayah: ayah, translation: translation, locale: locale).imageReference) {
             Label("The Holy Quran", systemImage: "book.closed")
                 .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
-            AyahText(ayah: ayah)
+            AyahText(ayah: ayah, adjustable: false)
                 .padding()
             if let translation, let text = ayah.translations[translation.id] {
                 Text(text)
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .environment(\.layoutDirection, Locale(identifier: translation.language).language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight)
-                Text(translation.translator).font(.caption).foregroundStyle(.secondary)
             }
-            Text(VerseShareContent(ayah: ayah, translation: translation, locale: locale).reference)
-                .font(.subheadline.monospacedDigit())
+        }
+    }
+}
+
+struct ShareArtwork<Content: View>: View {
+    let reference: String
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(spacing: 28) {
+            content
+            Text(reference).font(.subheadline.monospacedDigit())
             Divider().overlay(Color.accentColor.opacity(0.2))
-            HStack {
-                Text("Muntathir").font(.subheadline.weight(.medium))
-            }.foregroundStyle(.secondary)
+            Text("Muntathir").font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
         }
         .padding(40)
         .frame(width: 540)
         .background { AyahBackground() }
-        .clipped()
     }
 }
 
-@MainActor enum AyahImageRenderer {
-    static func image(for ayah: Ayah, locale: Locale, translation: QuranTranslation? = nil) -> UIImage? {
-        let content = AyahShareArtwork(ayah: ayah, translation: translation)
-            .environment(\.locale, locale)
+@MainActor enum ShareImageRenderer {
+    static let width: CGFloat = 540
+    static let maximumHeight: CGFloat = 960
+
+    private static func prepared(_ artwork: some View, locale: Locale) -> some View {
+        artwork.environment(\.locale, locale)
             .environment(\.layoutDirection, locale.language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight)
             .environment(\.colorScheme, .light)
             .dynamicTypeSize(.large)
             .fixedSize(horizontal: false, vertical: true)
-        let renderer = ImageRenderer(content: content)
+    }
+
+    static func fits(height: CGFloat) -> Bool {
+        height.isFinite && height > 0 && ceil(height) <= maximumHeight
+    }
+
+    static func canShare(_ artwork: some View, locale: Locale) -> Bool {
+        let host = UIHostingController(rootView: prepared(artwork, locale: locale))
+        return fits(height: host.sizeThatFits(in: CGSize(width: width, height: .greatestFiniteMagnitude)).height)
+    }
+
+    static func image(_ artwork: some View, locale: Locale) -> UIImage? {
+        guard canShare(artwork, locale: locale) else { return nil }
+        let renderer = ImageRenderer(content: prepared(artwork, locale: locale))
         renderer.scale = 2
         renderer.isOpaque = true
-        return renderer.uiImage
+        guard let image = renderer.uiImage, image.size.height * image.scale <= 1920 else { return nil }
+        return image
+    }
+}
+
+@MainActor enum AyahImageRenderer {
+    static func canShare(_ ayah: Ayah, locale: Locale, translation: QuranTranslation? = nil) -> Bool {
+        ShareImageRenderer.canShare(AyahShareArtwork(ayah: ayah, translation: translation), locale: locale)
+    }
+
+    static func image(for ayah: Ayah, locale: Locale, translation: QuranTranslation? = nil) -> UIImage? {
+        ShareImageRenderer.image(AyahShareArtwork(ayah: ayah, translation: translation), locale: locale)
     }
 }
 
@@ -119,9 +151,17 @@ struct SharedAyah: Identifiable {
 }
 
 struct AyahShareSheet: UIViewControllerRepresentable {
-    let image: UIImage
+    let items: [Any]
+    init(items: [Any]) {
+        self.items = items
+    }
+
+    init(image: UIImage) {
+        self.init(items: [image])
+    }
+
     func makeUIViewController(context _: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: [image], applicationActivities: nil)
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
     }
 
     func updateUIViewController(_: UIActivityViewController, context _: Context) {}

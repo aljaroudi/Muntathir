@@ -52,7 +52,7 @@ module MuntathirRelease
     value
   end
 
-  def self.validate_media!(root = ROOT)
+  def self.validate_media!(root = ROOT, screenshots_only: false)
     headlines = JSON.parse(File.read(File.join(__dir__, "marketing/headlines.json")))
     LOCALES.each do |locale|
       DEVICES.each do |device|
@@ -62,6 +62,7 @@ module MuntathirRelease
       end
       watch = File.join(root, "build/marketing/store", locale, "Apple Watch Series 12 (46mm)-01-PrayerTimes.png")
       raise "Missing required Apple Watch screenshot for #{locale}; run watch_screenshots" unless File.file?(watch)
+      next if screenshots_only
       %w[IPHONE_67 IPAD_PRO_3GEN_129 IPHONE_DUO].each do |type|
         folder = type == "IPHONE_DUO" ? "duo-previews" : "previews"
         path = File.join(root, "build/marketing", folder, locale, "01-#{type}-SunriseToSunset.mp4")
@@ -98,6 +99,13 @@ module MuntathirRelease
     parts = current.segments.fill(0, current.segments.length...3)
     parts[2] += 1
     parts.join(".")
+  end
+
+  def self.project_version
+    # Xcode 27 JSON projects are not readable by Fastlane's xcodeproj dependency.
+    settings = JSON.parse(run!("xcodebuild", "-project", File.join(ROOT, "Muntathir.xcodeproj"), "-scheme", "Muntathir", "-configuration", "Release",
+                               "-destination", "generic/platform=iOS", "-showBuildSettings", "-json"))
+    settings.find { |target| target["target"] == "Muntathir" }.fetch("buildSettings").fetch("MARKETING_VERSION")
   end
 
   def self.run!(*command)

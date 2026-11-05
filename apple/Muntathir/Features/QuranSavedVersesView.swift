@@ -1,8 +1,6 @@
 import SwiftUI
 
 struct QuranSavedVersesView: View {
-    enum Kind { case favorites, notes }
-    let kind: Kind
     let reader: QuranReader
     let surahs: [QuranSurah]
     @Environment(\.quranUserStore) private var store
@@ -11,6 +9,7 @@ struct QuranSavedVersesView: View {
     @State private var loading = true
     @State private var failed = false
     @State private var retry = 0
+    @State private var editing: ReadingHighlight?
 
     private struct Request: Equatable {
         let ids: [String]
@@ -18,15 +17,19 @@ struct QuranSavedVersesView: View {
         let translationRevision: Int
     }
 
+    private var highlights: [ReadingHighlight] {
+        store?.highlights.filter { !$0.isHadith } ?? []
+    }
+
     private var savedIDs: [String] {
-        (store?.states.values.filter { kind == .favorites ? $0.isFavorite : !$0.note.isEmpty }.map(\.id) ?? []).sorted()
+        Array(Set(highlights.map(\.source))).sorted()
     }
 
     var body: some View {
         List {
             if store?.unavailable != false {
                 ContentUnavailableView {
-                    Label("Favorites and notes unavailable", systemImage: "exclamationmark.triangle")
+                    Label("Highlights unavailable", systemImage: "exclamationmark.triangle")
                 } description: { Text("Your saved data could not be opened. Please try again.") }
                     actions: { Button("Try again") { store?.reopen() } }
             } else if loading {
@@ -35,30 +38,38 @@ struct QuranSavedVersesView: View {
                 ContentUnavailableView {
                     Label("Unable to load Quran", systemImage: "exclamationmark.triangle")
                 } actions: { Button("Try again") { retry += 1 } }
-            } else if verses.isEmpty {
-                if kind == .favorites {
-                    ContentUnavailableView("No favorites yet", systemImage: "star", description: Text("Use a verse’s actions to save it here."))
-                } else {
-                    ContentUnavailableView("No notes yet", systemImage: "note.text", description: Text("Use a verse’s actions to add a note."))
-                }
+            } else if highlights.isEmpty {
+                ContentUnavailableView("No highlights yet", systemImage: "highlighter", description: Text("Select text or use a verse’s actions to highlight it."))
             } else {
-                ForEach(verses) { ayah in
-                    VStack(alignment: .leading, spacing: 12) {
-                        QuranVerseRow(ayah: ayah, translation: QuranTranslation.catalog.first { $0.id == translationStore.activeID }, preview: true)
-                        if kind == .notes, let note = store?.state(for: ayah.id).note {
-                            Text(note).lineLimit(3).foregroundStyle(.secondary)
-                        }
-                        if let surah = surahs.first(where: { $0.id == ayah.surah }) {
+                ForEach(highlights) { highlight in
+                    let ayah = verses.first { $0.id == highlight.source }
+                    let available = ayah.map { highlight.isAvailable(in: $0.translations.merging(["arabic": $0.text]) { _, source in source }) } ?? false
+                    Group {
+                        if let ayah, let surah = surahs.first(where: { $0.id == ayah.surah }) {
                             NavigationLink {
-                                QuranChapterView(surah: surah, initialVerse: ayah.number, reader: reader)
-                            } label: { Label("Read verse", systemImage: "book") }
+                                QuranChapterView(surah: surah, initialVerse: ayah.number, reader: reader, highlight: highlight)
+                            } label: { HighlightSummary(highlight: highlight, available: available) }
                                 .accessibilityIdentifier("saved-verse-\(ayah.id)")
+                        } else {
+                            Button { editing = highlight } label: {
+                                HighlightSummary(highlight: highlight, available: false)
+                            }
+                            .tint(.primary)
                         }
+                    }
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button("Edit highlight", systemImage: "pencil") { editing = highlight }
+                            .tint(.accentColor)
+                    }
+                    .contextMenu {
+                        Button("Edit highlight", systemImage: "pencil") { editing = highlight }
                     }
                 }
             }
         }
-        .navigationTitle(kind == .favorites ? Text("Favorites") : Text("Notes"))
+        .listStyle(.insetGrouped)
+        .navigationTitle("Highlights")
+        .sheet(item: $editing) { HighlightEditor(highlight: $0, existing: true) }
         .task(id: Request(ids: savedIDs, retry: retry, translationRevision: translationStore.revision)) { await load() }
     }
 

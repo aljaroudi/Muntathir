@@ -1,2 +1,5 @@
 "CFBundleDisplayName" = "Muntathir";
 "NSLocationWhenInUseUsageDescription" = "Lokasi anda digunakan untuk mengira waktu solat dan kiblat pada peranti ini.";
+"QiblaPreciseLocation" = "Lokasi tepat anda menunjukkan kedudukan anda dan arah ke Kaabah pada peta.";
+
+"NSPhotoLibraryAddUsageDescription" = "Simpan imej al-Quran dan hadis yang dikongsi ke pustaka foto anda.";

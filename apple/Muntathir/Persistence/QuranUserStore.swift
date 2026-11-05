@@ -4,7 +4,7 @@ import SwiftData
 
 @MainActor @Observable final class QuranUserStore {
     private(set) var container: ModelContainer?
-    private(set) var states: [String: QuranVerseState] = [:]
+    private(set) var highlights: [ReadingHighlight] = []
     private(set) var unavailable = false
     @ObservationIgnored private let configuration: ModelConfiguration
     @ObservationIgnored private var installationID: String
@@ -18,38 +18,31 @@ import SwiftData
     }
 
     static func makeContainer(configuration: ModelConfiguration) throws -> ModelContainer {
-        try ModelContainer(for: Schema(versionedSchema: QuranUserSchemaV1.self), migrationPlan: QuranUserMigrationPlan.self, configurations: [configuration])
+        try ModelContainer(for: HighlightRecord.self, configurations: configuration)
     }
 
     static func application() -> QuranUserStore {
         let arguments = ProcessInfo.processInfo.arguments
         let testing = arguments.contains("--ui-testing")
-        let unitTesting = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
-        let defaults = UserDefaults(suiteName: "Muntathir.UITests")!
-        let installationID = defaults.string(forKey: "quranInstallationID") ?? UUID().uuidString
+        let schema = Schema([HighlightRecord.self])
         if testing {
-            defaults.set(installationID, forKey: "quranInstallationID")
-        }
-        let schema = Schema(versionedSchema: QuranUserSchemaV1.self)
-        if testing {
-            let directory = URL.applicationSupportDirectory.appending(path: "QuranUITests", directoryHint: .isDirectory)
+            let directory = URL.applicationSupportDirectory.appending(path: "HighlightsUITests", directoryHint: .isDirectory)
             // Only an explicitly requested UI-test reset removes this isolated test store.
             if !arguments.contains("--ui-testing-preserve-state") {
                 try? FileManager.default.removeItem(at: directory)
             }
             try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            let url = directory.appending(path: "annotations.store")
-            return QuranUserStore(configuration: ModelConfiguration("QuranUITests", schema: schema, url: url, cloudKitDatabase: .none), installationID: installationID) { context in
+            return QuranUserStore(configuration: ModelConfiguration("HighlightsUITests", schema: schema, url: directory.appending(path: "highlights.store"), cloudKitDatabase: .none), installationID: "ui-tests") { context in
                 if arguments.contains("--ui-testing-quran-save-failure") {
                     throw QuranUserStoreError.unavailable
                 }
                 try context.save()
             }
         }
-        if unitTesting {
-            return QuranUserStore(configuration: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none), installationID: installationID)
+        if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
+            return QuranUserStore(configuration: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none), installationID: "unit-tests")
         }
-        return QuranUserStore(configuration: ModelConfiguration("QuranPersonal", schema: schema, cloudKitDatabase: .private("iCloud.com.aljaroudi.Muntathir")), installationID: "")
+        return QuranUserStore(configuration: ModelConfiguration("ReadingHighlights", schema: schema, cloudKitDatabase: .private("iCloud.com.aljaroudi.Muntathir")), installationID: "")
     }
 
     static func localInstallationID(directory: URL = URL.applicationSupportDirectory.appending(path: "QuranIdentity", directoryHint: .isDirectory)) throws -> String {
@@ -77,9 +70,9 @@ import SwiftData
             }
             let opened = try Self.makeContainer(configuration: configuration)
             opened.mainContext.autosaveEnabled = false
-            let rows = try opened.mainContext.fetch(FetchDescriptor<QuranAnnotation>())
+            let rows = try opened.mainContext.fetch(FetchDescriptor<HighlightRecord>())
             container = opened
-            receive(rows.map(QuranAnnotationSnapshot.init))
+            receive(rows.map(HighlightSnapshot.init))
             unavailable = false
         } catch {
             container = nil
@@ -87,58 +80,53 @@ import SwiftData
         }
     }
 
-    func receive(_ rows: [QuranAnnotationSnapshot]) {
-        states = QuranVerseState.resolve(rows)
+    func receive(_ rows: [HighlightSnapshot]) {
+        highlights = HighlightSnapshot.winners(rows).values.filter { !$0.isTombstone }.compactMap {
+            try? JSONDecoder().decode(ReadingHighlight.self, from: $0.payload)
+        }.sorted { $0.modifiedAt == $1.modifiedAt ? $0.id > $1.id : $0.modifiedAt > $1.modifiedAt }
     }
 
-    func state(for verseID: String) -> QuranVerseState {
-        states[verseID] ?? QuranVerseState(id: verseID)
+    func highlights(for source: String, isHadith: Bool = false) -> [ReadingHighlight] {
+        highlights.filter { $0.source == source && $0.isHadith == isHadith }
     }
 
-    func setFavorite(_ value: Bool, for verseID: String, now: Date = .now) throws {
-        try update(verseID: verseID) { row in
-            row.isFavorite = value
-            row.favoriteModifiedAt = max(now, state(for: verseID).favoriteModifiedAt.addingTimeInterval(0.001))
-        }
+    func save(_ highlight: ReadingHighlight, now: Date = .now) throws {
+        guard !highlight.source.isEmpty, highlight.block == nil || !highlight.ranges.isEmpty else { throw QuranUserStoreError.invalidHighlight }
+        try update(highlight, deleted: false, now: now)
     }
 
-    func setNote(_ value: String, for verseID: String, now: Date = .now) throws {
-        try update(verseID: verseID) { row in
-            row.note = value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "" : value
-            row.noteModifiedAt = max(now, state(for: verseID).noteModifiedAt.addingTimeInterval(0.001))
-        }
+    func delete(_ highlight: ReadingHighlight, now: Date = .now) throws {
+        try update(highlight, deleted: true, now: now)
     }
 
-    private func refresh(_ verseID: String, in context: ModelContext) throws -> [QuranAnnotation] {
-        let rows = try context.fetch(FetchDescriptor<QuranAnnotation>(predicate: #Predicate { $0.verseID == verseID }))
-        states[verseID] = QuranVerseState.resolve(rows.map(QuranAnnotationSnapshot.init))[verseID]
-        return rows
-    }
-
-    private func update(verseID: String, mutation: (QuranAnnotation) -> Void) throws {
+    private func update(_ highlight: ReadingHighlight, deleted: Bool, now: Date) throws {
         guard let context = container?.mainContext else { throw QuranUserStoreError.unavailable }
-        let installation = installationID
         do {
-            // Imported state may have changed since the menu or editor opened.
-            let rows = try refresh(verseID, in: context)
-            let local = rows.filter { $0.verseID == verseID && $0.installationID == installation }
-                .sorted { $0.recordID < $1.recordID }
-            let row: QuranAnnotation
-            if let existing = local.first {
-                row = existing
-            } else {
-                row = QuranAnnotation(verseID: verseID, installationID: installation)
+            // Imported state may have changed since the editor opened.
+            let rows = try context.fetch(FetchDescriptor<HighlightRecord>())
+            let matching = rows.filter { $0.highlightID == highlight.id }
+            let winner = HighlightSnapshot.winners(matching.map(HighlightSnapshot.init))[highlight.id]
+            let local = matching.filter { $0.installationID == installationID }.sorted { $0.recordID > $1.recordID }.first
+            let row = local ?? HighlightRecord(highlightID: highlight.id, installationID: installationID)
+            if local == nil {
                 context.insert(row)
             }
-            mutation(row)
+            var value = highlight
+            value.modifiedAt = max(now, (winner?.modifiedAt ?? .distantPast).addingTimeInterval(0.001))
+            value.note = value.note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "" : value.note
+            row.payload = try JSONEncoder().encode(value)
+            row.modifiedAt = value.modifiedAt
+            row.isTombstone = deleted
             try saveContext(context)
-            _ = try refresh(verseID, in: context)
+            try receive(context.fetch(FetchDescriptor<HighlightRecord>()).map(HighlightSnapshot.init))
         } catch {
             context.rollback()
-            _ = try? refresh(verseID, in: context)
+            if let rows = try? context.fetch(FetchDescriptor<HighlightRecord>()) {
+                receive(rows.map(HighlightSnapshot.init))
+            }
             throw error
         }
     }
 }
 
-enum QuranUserStoreError: Error { case unavailable }
+enum QuranUserStoreError: Error { case unavailable, invalidHighlight }

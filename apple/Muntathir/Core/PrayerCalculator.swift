@@ -48,7 +48,7 @@ enum PrayerName: String, Codable, CaseIterable, Identifiable, Sendable {
         case .sunrise: String(localized: "Sunrise")
         case .dhuhr: String(localized: "Dhuhr")
         case .asr: String(localized: "Asr")
-        case .midnight: String(localized: "Islamic midnight")
+        case .midnight: String(localized: "Midnight")
         case .sunset: String(localized: "Sunset")
         case .maghrib: String(localized: "Maghrib")
         case .isha: String(localized: "Isha")

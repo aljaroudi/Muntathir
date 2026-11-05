@@ -1,0 +1,3061 @@
+{
+  "$schema": "./schema.json",
+  "schema_version": 1,
+  "people": [
+    {
+      "id": "prophet-muhammad",
+      "display_names": {
+        "ar": "رسول الله محمد ﷺ",
+        "en": "Prophet Muhammad ﷺ"
+      },
+      "names": {
+        "ar": {
+          "title": [
+            "رسول الله"
+          ],
+          "laqab": [
+            "المصطفى",
+            "سيد المرسلين",
+            "خاتم الأنبياء",
+            "الصادق",
+            "الأمين",
+            "رحمة العالمين",
+            "الشافع",
+            "صفي الله",
+            "المبشر",
+            "المنصور",
+            "البشير",
+            "صاحب المقام المحمود",
+            "طه",
+            "ياسين",
+            "النذير",
+            "المختار",
+            "المظلل بالغمامة",
+            "صاحب السكينة"
+          ],
+          "kunya": [
+            "أبو الزهراء",
+            "أبو القاسم",
+            "أبو إبراهيم"
+          ],
+          "name": "محمد",
+          "full_name": "محمد بن عبد الله"
+        },
+        "ar-Latn": {
+          "name": "Muhammad"
+        },
+        "en": {
+          "title": [
+            "Messenger of God"
+          ]
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "BH",
+          "precision": "exact",
+          "start": {
+            "year": 53,
+            "month": 3,
+            "day": 17
+          },
+          "original": "Rabi' I 17, Year of the Elephant (Am al-Fil)",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-prophet-birth",
+              "locator": "Famous Shi'a View",
+              "quote": "The famous opinion among Shi'a scholars is that the Prophet (s) was born on the seventeenth of Rabi' I."
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 11,
+            "month": 2,
+            "day": 28
+          },
+          "original": "Safar 28, 11 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-prophet-demise",
+              "locator": "Date",
+              "quote": "Among Shi'a scholars, al-Shaykh al-Mufid and al-Shaykh al-Tusi have stated that it took place on the twenty-eighth of Safar"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fatima-al-zahra",
+      "display_names": {
+        "ar": "فاطمة الزهراء",
+        "en": "Fatima al-Zahra"
+      },
+      "names": {
+        "ar": {
+          "laqab": [
+            "الزهراء",
+            "البتول",
+            "الحوراء الإنسية",
+            "الطاهرة",
+            "المحدثة",
+            "المحدِّثة",
+            "الصدّيقة",
+            "المباركة",
+            "الزكية",
+            "الراضية",
+            "المرضية"
+          ],
+          "kunya": [
+            "أم أبيها",
+            "أم الحسن",
+            "أم الحسين"
+          ],
+          "title": [
+            "سيدة نساء العالمين"
+          ],
+          "name": "فاطمة"
+        },
+        "ar-Latn": {
+          "name": "Fatima"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "BH",
+          "precision": "exact",
+          "start": {
+            "year": 8,
+            "month": 6,
+            "day": 20
+          },
+          "original": "Jumada II 20, 5th year after Bi'tha (8 BH)",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-fatima",
+              "locator": "Birth",
+              "quote": "Based on the popular opinion amongst the Shia, she was born in the 5th year after bi'tha"
+            },
+            {
+              "source_id": "wikishia-fatima",
+              "locator": "Birth",
+              "quote": "In many Shia resources, Jumada II 20 is mentioned as Lady Fatima's (a) birthday."
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 11,
+            "month": 6,
+            "day": 3
+          },
+          "original": "Jumada II 3, 11 AH (95 days; most commonly accepted)",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-fatima",
+              "locator": "Martyrdom",
+              "quote": "The most commonly accepted view, according to the Shia, is that she passed away on Jumada II 3"
+            }
+          ]
+        },
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 11,
+            "month": 5,
+            "day": 13
+          },
+          "original": "Jumada I 13, 11 AH (75 days; First Fatimiyya)",
+          "status": "disputed",
+          "citations": [
+            {
+              "source_id": "wikishia-fatima",
+              "locator": "Martyrdom",
+              "quote": "Based on another view, she passed away on Jumada I 13"
+            }
+          ]
+        },
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 11,
+            "month": 4,
+            "day": 8
+          },
+          "original": "Rabi' II 8, 11 AH (40 days; Iraqi observance)",
+          "status": "disputed",
+          "citations": [
+            {
+              "source_id": "wikishia-fatimiyya",
+              "locator": "Variance of Historical Reports",
+              "quote": "Iraqi Shi'as hold ceremonies in three of these reports: forty days after the demise of the Prophet (s) (Rabi' II 8), seventy-five days after it (Jumada I 13), and ninety-five days (Jumada II 3)."
+            }
+          ]
+        },
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 11,
+            "month": 4,
+            "day": 13
+          },
+          "original": "Rabi' II 13, 11 AH (another reported day)",
+          "status": "disputed",
+          "citations": [
+            {
+              "source_id": "wikishia-fatima",
+              "locator": "Martyrdom",
+              "quote": "Other views on her passing are the Rabi' II 8, Rabi' II 13, and the Ramadan 3"
+            }
+          ]
+        }
+      ],
+      "notes": {
+        "en": "Popular birth is 20 Jumada II, five years after Bi'tha. The observed death days are 3 Jumada II, 13 Jumada I, and 8 Rabi II; 13 Rabi II is also reported. Lesser reports (72 days, three or six months, 3 Ramadan) are not kept.",
+        "ar": "المولد المشهور ٢٠ جمادى الآخرة، في السنة الخامسة للبعثة. أيام الوفاة المرعية: ٣ جمادى الآخرة، و١٣ جمادى الأولى، و٨ ربيع الآخر، ويُروى أيضاً ١٣ ربيع الآخر."
+      }
+    },
+    {
+      "id": "ali-ibn-abi-talib",
+      "display_names": {
+        "ar": "الإمام علي",
+        "en": "Imam Ali"
+      },
+      "names": {
+        "ar": {
+          "laqab": [
+            "أمير المؤمنين",
+            "أبو تراب",
+            "أسد الله",
+            "حيدر",
+            "الأنزع البطين",
+            "صاحب اللواء",
+            "زوج البتول",
+            "أمير النحل",
+            "يعسوب الدين"
+          ],
+          "kunya": [
+            "أبو الحسن",
+            "أبو الأئمة",
+            "أبو السبطين"
+          ],
+          "title": [
+            "أمير المؤمنين"
+          ],
+          "name": "علي",
+          "full_name": "علي بن أبي طالب"
+        },
+        "ar-Latn": {
+          "name": "Ali"
+        },
+        "en": {
+          "title": [
+            "Commander of the Faithful"
+          ]
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "BH",
+          "precision": "exact",
+          "start": {
+            "year": 23,
+            "month": 7,
+            "day": 13
+          },
+          "original": "Rajab 13, 23 BH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-ali",
+              "locator": "Infobox / Birth",
+              "quote": "Born Rajab 13, 23 BH"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 40,
+            "month": 9,
+            "day": 21
+          },
+          "original": "Ramadan 21, 40 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-ali",
+              "locator": "Infobox / Martyrdom",
+              "quote": "Martyrdom Ramadan 21, 40"
+            }
+          ]
+        }
+      ],
+      "notes": {
+        "en": "Struck on Ramadan 19, 40 AH; martyred two days later per WikiShia.",
+        "ar": "ضُرب في ١٩ رمضان سنة ٤٠ هـ، واستُشهد بعد يومين بحسب ويكي شيعة."
+      }
+    },
+    {
+      "id": "hasan-ibn-ali",
+      "display_names": {
+        "ar": "الإمام الحسن",
+        "en": "Imam al-Hasan"
+      },
+      "names": {
+        "ar": {
+          "kunya": [
+            "أبو محمد"
+          ],
+          "laqab": [
+            "المجتبى",
+            "الزكي",
+            "السبط",
+            "كَريم أهل البيت"
+          ],
+          "name": "الحسن",
+          "full_name": "الحسن بن علي"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 3,
+            "month": 9,
+            "day": 15
+          },
+          "original": "Ramadan 15, 3 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-hasan",
+              "locator": "Infobox",
+              "quote": "Born Ramadan 15, 3"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 50,
+            "month": 2,
+            "day": 28
+          },
+          "original": "Safar 28, 50 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-hasan",
+              "locator": "Date of Martyrdom",
+              "quote": "many Shiite scholars such as al-Shaykh al-Mufid have mentioned Safar 28th"
+            }
+          ]
+        },
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 50,
+            "month": 2,
+            "day": 7
+          },
+          "original": "Safar 7, 50 AH (al-Shahid al-Awwal / Najaf observance)",
+          "status": "disputed",
+          "citations": [
+            {
+              "source_id": "wikishia-hasan",
+              "locator": "Date of Martyrdom",
+              "quote": "al-Shahid al-Awwal has mentioned Safar 7th"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "husayn-ibn-ali",
+      "display_names": {
+        "ar": "الإمام الحسين",
+        "en": "Imam al-Husayn"
+      },
+      "names": {
+        "ar": {
+          "kunya": [
+            "أبو عبد الله",
+            "أبو علي"
+          ],
+          "laqab": [
+            "سيد الشهداء",
+            "الشهيد",
+            "السبط",
+            "ثار الله"
+          ],
+          "name": "الحسين",
+          "full_name": "الحسين بن علي"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 4,
+            "month": 8,
+            "day": 3
+          },
+          "original": "Sha'ban 3, 4 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-husayn",
+              "locator": "Infobox / Birth",
+              "quote": "Born Sha'ban 3, 4"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 61,
+            "month": 1,
+            "day": 10
+          },
+          "original": "Muharram 10, 61 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-husayn",
+              "locator": "Infobox / Martyrdom",
+              "quote": "Martyrdom Muharram 10, 61"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ali-zayn-al-abidin",
+      "display_names": {
+        "ar": "الإمام السجاد",
+        "en": "Imam al-Sajjad"
+      },
+      "names": {
+        "ar": {
+          "laqab": [
+            "السجاد",
+            "زين العابدين"
+          ],
+          "kunya": [
+            "أبو الحسن"
+          ],
+          "name": "علي",
+          "full_name": "علي بن الحسين"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 38,
+            "month": 8,
+            "day": 5
+          },
+          "original": "Sha'ban 5, 38 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-sajjad",
+              "locator": "Infobox",
+              "quote": "Born Sha'ban 5, 38"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 95,
+            "month": 1,
+            "day": 25
+          },
+          "original": "Muharram 25, 95 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-sajjad",
+              "locator": "Infobox / Martyrdom",
+              "quote": "Martyrdom Muharram 25, 95"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "muhammad-al-baqir",
+      "display_names": {
+        "ar": "الإمام الباقر",
+        "en": "Imam al-Baqir"
+      },
+      "names": {
+        "ar": {
+          "laqab": [
+            "الباقر",
+            "باقر العلوم"
+          ],
+          "kunya": [
+            "أبو جعفر"
+          ],
+          "name": "محمد",
+          "full_name": "محمد بن علي"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 57,
+            "month": 7,
+            "day": 1
+          },
+          "original": "Rajab 1, 57 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-baqir",
+              "locator": "Infobox / Birth",
+              "quote": "Born Rajab 1, 57"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 114,
+            "month": 12,
+            "day": 7
+          },
+          "original": "Dhu l-Hijja 7, 114 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-baqir",
+              "locator": "Infobox / Martyrdom",
+              "quote": "Martyrdom Dhu l-Hijja 7, 114"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jafar-al-sadiq",
+      "display_names": {
+        "ar": "الإمام الصادق",
+        "en": "Imam al-Sadiq"
+      },
+      "names": {
+        "ar": {
+          "laqab": [
+            "الصادق"
+          ],
+          "kunya": [
+            "أبو عبد الله"
+          ],
+          "name": "جعفر",
+          "full_name": "جعفر بن محمد"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 83,
+            "month": 3,
+            "day": 17
+          },
+          "original": "Rabi' I 17, 83 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-sadiq",
+              "locator": "Birth",
+              "quote": "born on Rabi' I 17, 83"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 148,
+            "month": 10,
+            "day": 25
+          },
+          "original": "Shawwal 25, 148 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-sadiq",
+              "locator": "Martyrdom",
+              "quote": "later sources considered Shawwal 25 as the day of his martyrdom"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "musa-al-kadhim",
+      "display_names": {
+        "ar": "الإمام الكاظم",
+        "en": "Imam al-Kadhim"
+      },
+      "names": {
+        "ar": {
+          "laqab": [
+            "الكاظم",
+            "باب الحوائج"
+          ],
+          "kunya": [
+            "أبو الحسن"
+          ],
+          "name": "موسى",
+          "full_name": "موسى بن جعفر"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 128,
+            "month": 2,
+            "day": 7
+          },
+          "original": "Safar 7, 128 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-imams",
+              "locator": "Table",
+              "quote": "Birth 7 Safar 128"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 183,
+            "month": 7,
+            "day": 25
+          },
+          "original": "Rajab 25, 183 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-imams",
+              "locator": "Table",
+              "quote": "Martyrdom 25 Rajab 183"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ali-al-ridha",
+      "display_names": {
+        "ar": "الإمام الرضا",
+        "en": "Imam al-Ridha"
+      },
+      "names": {
+        "ar": {
+          "laqab": [
+            "الرضا",
+            "غريب طوس"
+          ],
+          "kunya": [
+            "أبو الحسن"
+          ],
+          "name": "علي",
+          "full_name": "علي بن موسى"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 148,
+            "month": 11,
+            "day": 11
+          },
+          "original": "Dhu l-Qa'da 11, 148 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-imams",
+              "locator": "Table",
+              "quote": "Birth 11 Dhu l-Qa'da 148"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "approximate",
+          "start": {
+            "year": 203,
+            "month": 2
+          },
+          "original": "Last day of Safar, 203 AH (Safar 29 or 30)",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-ridha",
+              "locator": "Martyrdom",
+              "quote": "According to al-Tabrisi, the martyrdom was on the last day of Safar"
+            }
+          ],
+          "notes": "Infobox: Safar 29 or Safar 30, 203. The popular observance is the last day of Safar."
+        }
+      ]
+    },
+    {
+      "id": "muhammad-al-jawad",
+      "display_names": {
+        "ar": "الإمام الجواد",
+        "en": "Imam al-Jawad"
+      },
+      "names": {
+        "ar": {
+          "laqab": [
+            "الجواد",
+            "التقي"
+          ],
+          "kunya": [
+            "أبو جعفر"
+          ],
+          "name": "محمد",
+          "full_name": "محمد بن علي"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 195,
+            "month": 7,
+            "day": 10
+          },
+          "original": "Rajab 10, 195 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-jawad",
+              "locator": "Birth",
+              "quote": "born on Rajab 10, 195"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 220,
+            "month": 11,
+            "day": 30
+          },
+          "original": "Dhu l-Qa'da 30, 220 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-jawad",
+              "locator": "Infobox",
+              "quote": "Dhu l-Qa'da 30, 220 / November 25, 835 in Kadhimiya"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ali-al-hadi",
+      "display_names": {
+        "ar": "الإمام الهادي",
+        "en": "Imam al-Hadi"
+      },
+      "names": {
+        "ar": {
+          "laqab": [
+            "الهادي",
+            "النقي"
+          ],
+          "kunya": [
+            "أبو الحسن"
+          ],
+          "name": "علي",
+          "full_name": "علي بن محمد"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 212,
+            "month": 12,
+            "day": 15
+          },
+          "original": "Dhu l-Hijja 15, 212 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-hadi",
+              "locator": "Infobox / Birth",
+              "quote": "Born Dhu l-Hijja 15, 212"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 254,
+            "month": 7,
+            "day": 3
+          },
+          "original": "Rajab 3, 254 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-hadi",
+              "locator": "Infobox / Martyrdom",
+              "quote": "Martyrdom Rajab 3, 254"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hasan-al-askari",
+      "display_names": {
+        "ar": "الإمام العسكري",
+        "en": "Imam al-Askari"
+      },
+      "names": {
+        "ar": {
+          "laqab": [
+            "العسكري"
+          ],
+          "kunya": [
+            "أبو محمد"
+          ],
+          "name": "الحسن",
+          "full_name": "الحسن بن علي"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 232,
+            "month": 4,
+            "day": 8
+          },
+          "original": "Rabi' II 8, 232 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-imams",
+              "locator": "Table",
+              "quote": "Birth 8 Rabi' II 232"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 260,
+            "month": 3,
+            "day": 8
+          },
+          "original": "Rabi' I 8, 260 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-askari",
+              "locator": "Martyrdom",
+              "quote": "martyred on Rabi' I 8, 260"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "muhammad-al-mahdi",
+      "display_names": {
+        "ar": "الإمام المهدي",
+        "en": "Imam al-Mahdi"
+      },
+      "names": {
+        "ar": {
+          "laqab": [
+            "المهدي",
+            "القائم",
+            "الحجة",
+            "صاحب الزمان",
+            "الناحية المقدسة"
+          ],
+          "kunya": [
+            "أبو القاسم"
+          ],
+          "name": "محمد",
+          "full_name": "محمد بن الحسن"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 255,
+            "month": 8,
+            "day": 15
+          },
+          "original": "Sha'ban 15, 255 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-imams",
+              "locator": "Table",
+              "quote": "Birth 15 Sha'ban 255"
+            }
+          ]
+        }
+      ],
+      "death_dates": []
+    },
+    {
+      "id": "abd-al-muttalib",
+      "display_names": {
+        "ar": "عبد المطلب",
+        "en": "Abd al-Muttalib"
+      },
+      "names": {
+        "ar": {
+          "name": "عبد المطلب",
+          "full_name": "عبد المطلب بن هاشم"
+        },
+        "ar-Latn": {
+          "name": "Abd al-Muttalib"
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "BH",
+          "precision": "approximate",
+          "start": {
+            "year": 45
+          },
+          "original": "About 45 BH / c. 578 CE",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-prophet",
+              "locator": "Timeline / Boycott article",
+              "quote": "578 Demise of Abd al-Muttalib"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "abdullah-ibn-abd-al-muttalib",
+      "display_names": {
+        "ar": "عبد الله بن عبد المطلب",
+        "en": "Abdullah ibn Abd al-Muttalib"
+      },
+      "names": {
+        "ar": {
+          "laqab": [
+            "الذبيح"
+          ],
+          "name": "عبد الله",
+          "full_name": "عبد الله بن عبد المطلب"
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "BH",
+          "precision": "approximate",
+          "start": {
+            "year": 53
+          },
+          "original": "Around the Year of the Elephant; before or shortly after the Prophet's birth",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-abdullah",
+              "locator": "Death",
+              "quote": "Most historians believe that he demised before the birth of the Prophet; Ya'qubi/Kulayni: two months after"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "amina-bint-wahb",
+      "display_names": {
+        "ar": "آمنة بنت وهب",
+        "en": "Amina bint Wahb"
+      },
+      "names": {
+        "ar": {
+          "name": "آمنة",
+          "full_name": "آمنة بنت وهب"
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "BH",
+          "precision": "approximate",
+          "start": {
+            "year": 46
+          },
+          "original": "46 BH / 575-6 CE",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-amina",
+              "locator": "Infobox",
+              "quote": "Death/Martyrdom 46 years before Hijra/575-6"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "abu-talib",
+      "display_names": {
+        "ar": "أبو طالب",
+        "en": "Abu Talib"
+      },
+      "names": {
+        "ar": {
+          "laqab": [
+            "مؤمن قريش"
+          ],
+          "kunya": [
+            "أبو طالب"
+          ],
+          "name": "عبد مناف",
+          "full_name": "عبد مناف بن عبد المطلب"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "BH",
+          "precision": "approximate",
+          "start": {
+            "year": 85
+          },
+          "original": "About 35 years before Am al-Fil / c. 535 CE",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-abu-talib",
+              "locator": "Infobox",
+              "quote": "Birth 35 years before Am al-Fil/c. 535"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "BH",
+          "precision": "exact",
+          "start": {
+            "year": 4,
+            "month": 7,
+            "day": 26
+          },
+          "original": "Rajab 26, 4 BH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-abu-talib",
+              "locator": "Infobox",
+              "quote": "Death Rajab 26, 4 BH"
+            }
+          ]
+        },
+        {
+          "calendar": "hijri",
+          "era": "BH",
+          "precision": "exact",
+          "start": {
+            "year": 3,
+            "month": 9,
+            "day": 7
+          },
+          "original": "Shawwal 7 (alternate report / some calendars)",
+          "status": "disputed",
+          "citations": [
+            {
+              "source_id": "wikishia-abu-talib",
+              "locator": "Death",
+              "quote": "Some have mentioned his demise on Shawwal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "khadija-bint-khuwaylid",
+      "display_names": {
+        "ar": "خديجة بنت خويلد",
+        "en": "Khadija bint Khuwaylid"
+      },
+      "names": {
+        "ar": {
+          "laqab": [
+            "خديجة الكبرى"
+          ],
+          "title": [
+            "أم المؤمنين"
+          ],
+          "kunya": [
+            "أم هند"
+          ],
+          "name": "خديجة",
+          "full_name": "خديجة بنت خويلد"
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "BH",
+          "precision": "exact",
+          "start": {
+            "year": 4,
+            "month": 9,
+            "day": 10
+          },
+          "original": "Ramadan 10, 4 BH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-khadija",
+              "locator": "Infobox",
+              "quote": "Death/Martyrdom Ramadan 10, 4 BH/ May 1, 619"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hamza-ibn-abd-al-muttalib",
+      "display_names": {
+        "ar": "حمزة بن عبد المطلب",
+        "en": "Hamza ibn Abd al-Muttalib"
+      },
+      "names": {
+        "ar": {
+          "laqab": [
+            "أسد الله",
+            "أسد رسول الله",
+            "سيد الشهداء"
+          ],
+          "name": "حمزة",
+          "full_name": "حمزة بن عبد المطلب"
+        },
+        "en": {
+          "title": [
+            "Lion of God"
+          ]
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 3,
+            "month": 10,
+            "day": 7
+          },
+          "original": "Shawwal 7, 3 AH (Battle of Uhud)",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-hamza",
+              "locator": "Martyrdom",
+              "quote": "Martyrdom of Hamza in the battle of Uhud (Shawwal 7, 3 AH)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "zaynab-bint-ali",
+      "display_names": {
+        "ar": "السيدة زينب",
+        "en": "Lady Zaynab"
+      },
+      "names": {
+        "ar": {
+          "laqab": [
+            "زينب الكبرى",
+            "عقيلة بني هاشم"
+          ],
+          "name": "زينب",
+          "full_name": "زينب بنت علي"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 5,
+            "month": 5,
+            "day": 5
+          },
+          "original": "Jumada I 5, 5 AH (or 6 AH)",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-zaynab",
+              "locator": "Infobox / Birth",
+              "quote": "Birth Jumada I 5, 5 (or 6)"
+            }
+          ]
+        },
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 6,
+            "month": 5,
+            "day": 5
+          },
+          "original": "Jumada I 5, 6 AH (infobox alternative year)",
+          "status": "disputed",
+          "citations": [
+            {
+              "source_id": "wikishia-zaynab",
+              "locator": "Birth",
+              "quote": "She was born on Jumada I 5, 5 (or 6)"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 62,
+            "month": 7,
+            "day": 15
+          },
+          "original": "Rajab 15, 62 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-zaynab",
+              "locator": "Demise",
+              "quote": "Lady Zaynab (a) passed away on Sunday, Rajab 15, 62"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "umm-kulthum-bint-ali",
+      "display_names": {
+        "ar": "أم كلثوم بنت علي",
+        "en": "Umm Kulthum bint Ali"
+      },
+      "names": {
+        "ar": {
+          "kunya": [
+            "أم كلثوم"
+          ],
+          "laqab": [
+            "أم كلثوم الكبرى"
+          ],
+          "nickname": [
+            "زينب الصغرى"
+          ],
+          "full_name": "أم كلثوم بنت علي"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "approximate",
+          "start": {
+            "year": 6
+          },
+          "original": "About 6 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-umm-kulthum",
+              "locator": "Birth",
+              "quote": "It is recorded that she was born in 6/627-8"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "approximate",
+          "start": {
+            "year": 50
+          },
+          "original": "About 50 AH (some scholars; opinions differ)",
+          "status": "disputed",
+          "citations": [
+            {
+              "source_id": "wikishia-umm-kulthum",
+              "locator": "Demise",
+              "quote": "Some scholars believe that they passed away about 50/670-1 at the time of Mu'awiya"
+            }
+          ],
+          "notes": "WikiShia records differing opinions and no popular exact day. Another report places the death in the reign of Abd al-Malik."
+        }
+      ],
+      "notes": {
+        "en": "Daughter of Ali and Fatima; distinct from Umm Kulthum daughter of the Prophet (d. 9 AH). No agreed death day.",
+        "ar": "ابنة علي وفاطمة، وهي غير أم كلثوم ابنة النبي التي توفيت سنة ٩ هـ. لا يتفق المصادر على يوم وفاتها."
+      }
+    },
+    {
+      "id": "umm-al-banin",
+      "display_names": {
+        "ar": "أم البنين",
+        "en": "Umm al-Banin"
+      },
+      "names": {
+        "ar": {
+          "kunya": [
+            "أم البنين"
+          ],
+          "name": "فاطمة",
+          "full_name": "فاطمة بنت حزام"
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 64,
+            "month": 6,
+            "day": 13
+          },
+          "original": "Jumada II 13, 64 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-umm-al-banin",
+              "locator": "Lineage and Demise",
+              "quote": "The exact date of her demise is unknown. However, her demise is marked on Jumada II 13, 64"
+            }
+          ],
+          "notes": "Popular marked anniversary. WikiShia says the exact historical day is unknown."
+        }
+      ]
+    },
+    {
+      "id": "abbas-ibn-ali",
+      "display_names": {
+        "ar": "العباس بن علي",
+        "en": "Al-Abbas ibn Ali"
+      },
+      "names": {
+        "ar": {
+          "kunya": [
+            "أبو الفضل"
+          ],
+          "laqab": [
+            "قمر بني هاشم",
+            "السقاء",
+            "باب الحوائج"
+          ],
+          "name": "العباس",
+          "full_name": "العباس بن علي"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 26,
+            "month": 8,
+            "day": 4
+          },
+          "original": "Sha'ban 4, 26 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-abbas",
+              "locator": "Birth",
+              "quote": "Birth of al-Abbas"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 61,
+            "month": 1,
+            "day": 10
+          },
+          "original": "Muharram 10, 61 AH (Karbala)",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-abbas",
+              "locator": "Martyrdom",
+              "quote": "Martyred in the Battle of Karbala"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ali-al-akbar",
+      "display_names": {
+        "ar": "علي الأكبر",
+        "en": "Ali al-Akbar"
+      },
+      "names": {
+        "ar": {
+          "laqab": [
+            "علي الأكبر"
+          ],
+          "name": "علي",
+          "full_name": "علي بن الحسين",
+          "kunya": [
+            "أبو الحسن"
+          ]
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 33,
+            "month": 8,
+            "day": 11
+          },
+          "original": "Sha'ban 11, 33 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-ali-akbar",
+              "locator": "Birth",
+              "quote": "born in 33/654"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 61,
+            "month": 1,
+            "day": 10
+          },
+          "original": "Muharram 10, 61 AH (Karbala)",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-ali-akbar",
+              "locator": "Martyrdom",
+              "quote": "Martyred in Karbala"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ruqayya-bint-al-husayn",
+      "display_names": {
+        "ar": "رقية بنت الحسين",
+        "en": "Ruqayya bint al-Husayn"
+      },
+      "names": {
+        "ar": {
+          "name": "رقية",
+          "full_name": "رقية بنت الحسين"
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 61,
+            "month": 2,
+            "day": 5
+          },
+          "original": "Safar 5, 61 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-ruqayya-ar",
+              "locator": "Infobox",
+              "quote": "تاريخ الوفاة 5 صفر سنة 61 هـ"
+            }
+          ],
+          "notes": "Arabic WikiShia infobox records this day. The English article does not fix the day and discusses disagreements about the account."
+        }
+      ],
+      "notes": {
+        "en": "Popular marked death is Safar 5, 61 AH. No popular birth day is recorded.",
+        "ar": "الوفاة المرعية ٥ صفر ٦١ هـ. لا يُذكر مولد مشهور."
+      }
+    },
+    {
+      "id": "sukayna-bint-al-husayn",
+      "display_names": {
+        "ar": "سكينة بنت الحسين",
+        "en": "Sukayna bint al-Husayn"
+      },
+      "names": {
+        "ar": {
+          "name": "سكينة",
+          "nickname": [
+            "آمنة"
+          ],
+          "full_name": "سكينة بنت الحسين"
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 117,
+            "month": 3,
+            "day": 5
+          },
+          "original": "Rabi' I 5, 117 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-sukayna",
+              "locator": "Death",
+              "quote": "Death of Sukayna bint al-Husayn"
+            }
+          ]
+        }
+      ],
+      "notes": {
+        "en": "No exact birthday is recorded. Her name is given as Amina; she is known as Sukayna. Majority death report: Rabi' I 5, 117 AH.",
+        "ar": "لا يُروى تاريخ مولد محدد. اسمها آمنة، وتُعرف بسكينة. وفاتها في المشهور ٥ ربيع الأول ١١٧ هـ."
+      }
+    },
+    {
+      "id": "qasim-ibn-al-hasan",
+      "display_names": {
+        "ar": "القاسم بن الحسن",
+        "en": "Al-Qasim ibn al-Hasan"
+      },
+      "names": {
+        "ar": {
+          "name": "القاسم",
+          "full_name": "القاسم بن الحسن"
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 61,
+            "month": 1,
+            "day": 10
+          },
+          "original": "Muharram 10, 61 AH (Karbala)",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-qasim-hasan",
+              "locator": "Martyrdom",
+              "quote": "Martyred on Ashura in Karbala"
+            }
+          ]
+        }
+      ],
+      "notes": {
+        "en": "WikiShia: no record of his birthday. Martyred on Ashura; some reports say he had not reached puberty, others that he was 16.",
+        "ar": "ويكي شيعة: لا يُذكر تاريخ مولده. استُشهد يوم عاشوراء، وقيل لم يبلغ الحلم، وقيل كان في السادسة عشرة."
+      }
+    },
+    {
+      "id": "fatima-al-masuma",
+      "display_names": {
+        "ar": "فاطمة المعصومة",
+        "en": "Fatima al-Masuma"
+      },
+      "names": {
+        "ar": {
+          "laqab": [
+            "المعصومة",
+            "كريمة أهل البيت"
+          ],
+          "name": "فاطمة",
+          "full_name": "فاطمة بنت موسى"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 173,
+            "month": 11,
+            "day": 1
+          },
+          "original": "Dhu l-Qa'da 1, 173 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-masuma",
+              "locator": "Birth",
+              "quote": "b. 173/790"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 201,
+            "month": 4,
+            "day": 10
+          },
+          "original": "Rabi' II 10, 201 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-masuma",
+              "locator": "Death",
+              "quote": "d. 201/816 in Qom"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "qasim-ibn-al-kadhim",
+      "display_names": {
+        "ar": "القاسم بن الكاظم",
+        "en": "Al-Qasim ibn al-Kadhim"
+      },
+      "names": {
+        "ar": {
+          "name": "القاسم",
+          "full_name": "القاسم بن موسى الكاظم"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "approximate",
+          "start": {
+            "year": 150
+          },
+          "original": "About 150 AH (one report; year not established)",
+          "status": "disputed",
+          "citations": [
+            {
+              "source_id": "wikishia-qasim-kadhim",
+              "locator": "Birth",
+              "quote": "لم تذكر في المصادر سنة ولادته ووفاته، لكن قيل أنه ولد سنة 150 هـ"
+            }
+          ]
+        }
+      ],
+      "death_dates": [],
+      "notes": {
+        "en": "Arabic WikiShia: sources do not record his birth or death year. One report says he was born about 150 AH. The old Jumada I 22, 189 date is not in WikiShia.",
+        "ar": "ويكي شيعة: لم تُذكر سنة ولادته ووفاته، وقيل وُلد سنة ١٥٠ هـ."
+      }
+    },
+    {
+      "id": "muslim-ibn-aqil",
+      "display_names": {
+        "ar": "مسلم بن عقيل",
+        "en": "Muslim ibn Aqil"
+      },
+      "names": {
+        "ar": {
+          "name": "مسلم",
+          "full_name": "مسلم بن عقيل"
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 60,
+            "month": 12,
+            "day": 9
+          },
+          "original": "Dhu l-Hijja 9, 60 AH (Day of Arafah)",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-muslim",
+              "locator": "Martyrdom",
+              "quote": "martyred on the Day of Arafa (Dhu l-Hijja 9), 60"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hani-ibn-urwa",
+      "display_names": {
+        "ar": "هاني بن عروة",
+        "en": "Hani ibn Urwa"
+      },
+      "names": {
+        "ar": {
+          "name": "هاني",
+          "full_name": "هاني بن عروة المرادي"
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 60,
+            "month": 12,
+            "day": 9
+          },
+          "original": "Dhu l-Hijja 9, 60 AH (same day as Muslim; one report says the 8th)",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-hani",
+              "locator": "Infobox / Martyrdom",
+              "quote": "On the Dhu l-Hijja 9, 60, after the martyrdom of Muslim b. Aqil, Hani was taken handcuffed to the butchers' bazaar and was decapitated"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jabir-ibn-abdullah",
+      "display_names": {
+        "ar": "جابر بن عبد الله",
+        "en": "Jabir ibn Abdullah"
+      },
+      "names": {
+        "ar": {
+          "nisba": [
+            "الأنصاري"
+          ],
+          "name": "جابر",
+          "full_name": "جابر بن عبد الله الأنصاري"
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "approximate",
+          "start": {
+            "year": 78
+          },
+          "original": "About 78 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-jabir",
+              "locator": "Death",
+              "quote": "Demise commonly placed in the 70s AH"
+            }
+          ]
+        }
+      ],
+      "notes": {
+        "en": "Companion who performed the first Arbaeen ziyarah of Imam al-Husayn.",
+        "ar": "صحابي قام بأول زيارة أربعين للإمام الحسين."
+      }
+    },
+    {
+      "id": "ali-ibn-muhammad-al-samarri",
+      "display_names": {
+        "ar": "علي بن محمد السمري",
+        "en": "Ali ibn Muhammad al-Samarri"
+      },
+      "names": {
+        "ar": {
+          "kunya": [
+            "أبو الحسن"
+          ],
+          "name": "علي",
+          "full_name": "علي بن محمد السمري"
+        },
+        "en": {
+          "title": [
+            "Fourth Special Deputy"
+          ]
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 329,
+            "month": 8,
+            "day": 15
+          },
+          "original": "Sha'ban 15, 329 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-four-deputies",
+              "locator": "Ali b. Muhammad al-Samuri",
+              "quote": "d. 329/941"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prophet-ibrahim",
+      "display_names": {
+        "ar": "رسول الله إبراهيم",
+        "en": "Prophet Ibrahim"
+      },
+      "names": {
+        "ar": {
+          "title": [
+            "رسول الله"
+          ],
+          "laqab": [
+            "خليل الله"
+          ],
+          "name": "إبراهيم"
+        },
+        "en": {
+          "name": "Abraham"
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [],
+      "notes": {
+        "en": "Earlier prophet; birth observed on Shia calendars (Dhu l-Qa'da 25 / Dhu l-Hijja 1 traditions) without a fixed AH year.",
+        "ar": "نبي سابق، تُحيي بعض التقاويم الشيعية مولده في ٢٥ ذي القعدة أو أول ذي الحجة، دون سنة هجرية محددة."
+      }
+    },
+    {
+      "id": "prophet-isa",
+      "display_names": {
+        "ar": "رسول الله عيسى",
+        "en": "Prophet Isa"
+      },
+      "names": {
+        "ar": {
+          "title": [
+            "رسول الله"
+          ],
+          "laqab": [
+            "المسيح"
+          ],
+          "name": "عيسى"
+        },
+        "en": {
+          "name": "Jesus"
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [],
+      "notes": {
+        "en": "Earlier prophet; birth observed on Shia calendars (often Dhu l-Qa'da 25) without a fixed AH year.",
+        "ar": "نبي سابق، تُحيي بعض التقاويم الشيعية مولده في ٢٥ ذي القعدة، دون سنة هجرية محددة."
+      }
+    },
+    {
+      "id": "prophet-musa",
+      "display_names": {
+        "ar": "رسول الله موسى",
+        "en": "Prophet Musa"
+      },
+      "names": {
+        "ar": {
+          "title": [
+            "رسول الله"
+          ],
+          "laqab": [
+            "كليم الله"
+          ],
+          "name": "موسى"
+        },
+        "en": {
+          "name": "Moses"
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [],
+      "notes": {
+        "en": "Earlier prophet; calendar marks appointment/meeting (Dhu l-Qa'da 1) rather than birth/death AH dates.",
+        "ar": "نبي سابق، يذكر التقويم ميقاته في أول ذي القعدة."
+      }
+    },
+    {
+      "id": "abu-bakr",
+      "display_names": {
+        "ar": "أبو بكر",
+        "en": "Abu Bakr"
+      },
+      "names": {
+        "ar": {
+          "kunya": [
+            "أبو بكر"
+          ],
+          "name": "عبد الله",
+          "full_name": "أبو بكر بن أبي قحافة"
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 13,
+            "month": 6,
+            "day": 22
+          },
+          "original": "Jumada II 22, 13 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-abu-bakr",
+              "locator": "Death",
+              "quote": "Death of Abu Bakr"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "yazid-ibn-muawiya",
+      "display_names": {
+        "ar": "يزيد بن معاوية",
+        "en": "Yazid ibn Muawiya"
+      },
+      "names": {
+        "ar": {
+          "name": "يزيد",
+          "full_name": "يزيد بن معاوية"
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "exact",
+          "start": {
+            "year": 64,
+            "month": 3,
+            "day": 14
+          },
+          "original": "Rabi' I 14, 64 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-yazid",
+              "locator": "Death",
+              "quote": "Death of Yazid ibn Muawiya"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "salman-al-muhammadi",
+      "display_names": {
+        "ar": "سلمان المحمدي",
+        "en": "Salman al-Muhammadi"
+      },
+      "names": {
+        "ar": {
+          "nisba": [
+            "الفارسي",
+            "المحمدي"
+          ],
+          "kunya": [
+            "أبو عبد الله"
+          ],
+          "name": "سلمان"
+        },
+        "ar-Latn": {
+          "name": "Salman al-Farsi"
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "approximate",
+          "start": {
+            "year": 33
+          },
+          "original": "33 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-salman",
+              "locator": "Infobox / Demise",
+              "quote": "Death/Martyrdom 33/653-4"
+            }
+          ]
+        },
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "approximate",
+          "start": {
+            "year": 36
+          },
+          "original": "36 AH (alternate report)",
+          "status": "disputed",
+          "citations": [
+            {
+              "source_id": "wikishia-salman",
+              "locator": "Demise",
+              "quote": "Salman passed away in 36/656-7"
+            }
+          ]
+        }
+      ],
+      "notes": {
+        "en": "One of the four early Shi'a pillars with Abu Dharr, Miqdad, and Ammar. Prophet: 'Salman is of us, the Ahl al-Bayt'.",
+        "ar": "أحد الأركان الأربعة الأوائل مع أبي ذر والمقداد وعمار. قال النبي: سلمان منا أهل البيت."
+      }
+    },
+    {
+      "id": "abu-dharr-al-ghifari",
+      "display_names": {
+        "ar": "أبو ذر الغفاري",
+        "en": "Abu Dharr al-Ghifari"
+      },
+      "names": {
+        "ar": {
+          "kunya": [
+            "أبو ذر",
+            "أباذر"
+          ],
+          "nisba": [
+            "الغفاري"
+          ],
+          "name": "جندب",
+          "full_name": "جندب بن جنادة بن سفيان الغفاري"
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "BH",
+          "precision": "approximate",
+          "start": {
+            "year": 33
+          },
+          "original": "About 33 BH / 590-1 CE",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-abu-dharr",
+              "locator": "Infobox",
+              "quote": "Birth 33 BH/590-1"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "approximate",
+          "start": {
+            "year": 32,
+            "month": 12
+          },
+          "original": "Dhu l-Hijja 32 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-abu-dharr",
+              "locator": "Death",
+              "quote": "passed away in Dhu l-Hijja 32/653, in al-Rabatha"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "miqdad-ibn-al-aswad",
+      "display_names": {
+        "ar": "المقداد بن الأسود",
+        "en": "Miqdad ibn al-Aswad"
+      },
+      "names": {
+        "ar": {
+          "kunya": [
+            "أبو سعيد"
+          ],
+          "name": "المقداد",
+          "full_name": "المقداد بن عمرو بن ثعلبة",
+          "nickname": [
+            "المقداد بن الأسود"
+          ]
+        }
+      },
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "BH",
+          "precision": "approximate",
+          "start": {
+            "year": 37
+          },
+          "original": "About 37 BH (or 24 BH by age-at-death calculation)",
+          "status": "disputed",
+          "citations": [
+            {
+              "source_id": "wikishia-miqdad",
+              "locator": "Lineage, Birth, and Demise",
+              "quote": "birth time uncertain; died 33 AH at about seventy"
+            }
+          ]
+        }
+      ],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "approximate",
+          "start": {
+            "year": 33
+          },
+          "original": "33 AH",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-miqdad",
+              "locator": "Death and Burial Place",
+              "quote": "died in 33/653-4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ammar-ibn-yasir",
+      "display_names": {
+        "ar": "عمار بن ياسر",
+        "en": "Ammar ibn Yasir"
+      },
+      "names": {
+        "ar": {
+          "kunya": [
+            "أبو يقظان"
+          ],
+          "name": "عمار",
+          "full_name": "عمار بن ياسر بن عامر"
+        }
+      },
+      "birth_dates": [],
+      "death_dates": [
+        {
+          "calendar": "hijri",
+          "era": "AH",
+          "precision": "approximate",
+          "start": {
+            "year": 37
+          },
+          "original": "37 AH (Battle of Siffin)",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-ammar",
+              "locator": "Infobox",
+              "quote": "Death/Martyrdom 37/657"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "parentages": [
+    {
+      "id": "parentage-prophet",
+      "child_id": "prophet-muhammad",
+      "father_id": "abdullah-ibn-abd-al-muttalib",
+      "mother_id": "amina-bint-wahb",
+      "kind": "biological",
+      "union_id": "union-abdullah-amina",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-prophet",
+          "locator": "Lineage"
+        }
+      ]
+    },
+    {
+      "id": "parentage-abdullah",
+      "child_id": "abdullah-ibn-abd-al-muttalib",
+      "father_id": "abd-al-muttalib",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-abdullah",
+          "locator": "Lineage"
+        }
+      ]
+    },
+    {
+      "id": "parentage-abu-talib",
+      "child_id": "abu-talib",
+      "father_id": "abd-al-muttalib",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-abu-talib",
+          "locator": "Lineage"
+        }
+      ]
+    },
+    {
+      "id": "parentage-hamza",
+      "child_id": "hamza-ibn-abd-al-muttalib",
+      "father_id": "abd-al-muttalib",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-hamza",
+          "locator": "Lineage"
+        }
+      ]
+    },
+    {
+      "id": "parentage-ali",
+      "child_id": "ali-ibn-abi-talib",
+      "father_id": "abu-talib",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-ali",
+          "locator": "Father"
+        }
+      ],
+      "notes": "Mother Fatima bt. Asad not in this dataset."
+    },
+    {
+      "id": "parentage-fatima",
+      "child_id": "fatima-al-zahra",
+      "father_id": "prophet-muhammad",
+      "mother_id": "khadija-bint-khuwaylid",
+      "kind": "biological",
+      "union_id": "union-prophet-khadija",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-fatima",
+          "locator": "Father / Mother"
+        }
+      ]
+    },
+    {
+      "id": "parentage-hasan",
+      "child_id": "hasan-ibn-ali",
+      "father_id": "ali-ibn-abi-talib",
+      "mother_id": "fatima-al-zahra",
+      "kind": "biological",
+      "union_id": "union-ali-fatima",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-hasan",
+          "locator": "Father / Mother"
+        }
+      ]
+    },
+    {
+      "id": "parentage-husayn",
+      "child_id": "husayn-ibn-ali",
+      "father_id": "ali-ibn-abi-talib",
+      "mother_id": "fatima-al-zahra",
+      "kind": "biological",
+      "union_id": "union-ali-fatima",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-husayn",
+          "locator": "Father / Mother"
+        }
+      ]
+    },
+    {
+      "id": "parentage-zaynab",
+      "child_id": "zaynab-bint-ali",
+      "father_id": "ali-ibn-abi-talib",
+      "mother_id": "fatima-al-zahra",
+      "kind": "biological",
+      "union_id": "union-ali-fatima",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-zaynab",
+          "locator": "Parents"
+        }
+      ]
+    },
+    {
+      "id": "parentage-umm-kulthum",
+      "child_id": "umm-kulthum-bint-ali",
+      "father_id": "ali-ibn-abi-talib",
+      "mother_id": "fatima-al-zahra",
+      "kind": "biological",
+      "union_id": "union-ali-fatima",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-umm-kulthum",
+          "locator": "Parents"
+        }
+      ]
+    },
+    {
+      "id": "parentage-abbas",
+      "child_id": "abbas-ibn-ali",
+      "father_id": "ali-ibn-abi-talib",
+      "mother_id": "umm-al-banin",
+      "kind": "biological",
+      "union_id": "union-ali-umm-al-banin",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-abbas",
+          "locator": "Parents"
+        }
+      ]
+    },
+    {
+      "id": "parentage-sajjad",
+      "child_id": "ali-zayn-al-abidin",
+      "father_id": "husayn-ibn-ali",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-sajjad",
+          "locator": "Father"
+        }
+      ],
+      "notes": "Mother often identified as Shahrbanu; not in this dataset."
+    },
+    {
+      "id": "parentage-ali-akbar",
+      "child_id": "ali-al-akbar",
+      "father_id": "husayn-ibn-ali",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-ali-akbar",
+          "locator": "Father"
+        }
+      ],
+      "notes": "Mother Layla bt. Abi Murra not in this dataset."
+    },
+    {
+      "id": "parentage-ruqayya",
+      "child_id": "ruqayya-bint-al-husayn",
+      "father_id": "husayn-ibn-ali",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-ruqayya",
+          "locator": "Father"
+        }
+      ]
+    },
+    {
+      "id": "parentage-sukayna",
+      "child_id": "sukayna-bint-al-husayn",
+      "father_id": "husayn-ibn-ali",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-sukayna",
+          "locator": "Father"
+        }
+      ],
+      "notes": "Mother often Rabab; not in this dataset."
+    },
+    {
+      "id": "parentage-qasim-hasan",
+      "child_id": "qasim-ibn-al-hasan",
+      "father_id": "hasan-ibn-ali",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-qasim-hasan",
+          "locator": "Father"
+        }
+      ]
+    },
+    {
+      "id": "parentage-baqir",
+      "child_id": "muhammad-al-baqir",
+      "father_id": "ali-zayn-al-abidin",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-baqir",
+          "locator": "Father"
+        }
+      ],
+      "notes": "Mother Fatima bt. al-Hasan not in this dataset as a separate person record."
+    },
+    {
+      "id": "parentage-sadiq",
+      "child_id": "jafar-al-sadiq",
+      "father_id": "muhammad-al-baqir",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-sadiq",
+          "locator": "Father"
+        }
+      ]
+    },
+    {
+      "id": "parentage-kadhim",
+      "child_id": "musa-al-kadhim",
+      "father_id": "jafar-al-sadiq",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-imams",
+          "locator": "Table"
+        }
+      ]
+    },
+    {
+      "id": "parentage-ridha",
+      "child_id": "ali-al-ridha",
+      "father_id": "musa-al-kadhim",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-ridha",
+          "locator": "Father"
+        }
+      ]
+    },
+    {
+      "id": "parentage-masuma",
+      "child_id": "fatima-al-masuma",
+      "father_id": "musa-al-kadhim",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-masuma",
+          "locator": "Father"
+        }
+      ]
+    },
+    {
+      "id": "parentage-qasim-kadhim",
+      "child_id": "qasim-ibn-al-kadhim",
+      "father_id": "musa-al-kadhim",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-qasim-kadhim",
+          "locator": "Father"
+        }
+      ]
+    },
+    {
+      "id": "parentage-jawad",
+      "child_id": "muhammad-al-jawad",
+      "father_id": "ali-al-ridha",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-jawad",
+          "locator": "Father"
+        }
+      ]
+    },
+    {
+      "id": "parentage-hadi",
+      "child_id": "ali-al-hadi",
+      "father_id": "muhammad-al-jawad",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-hadi",
+          "locator": "Father"
+        }
+      ]
+    },
+    {
+      "id": "parentage-askari",
+      "child_id": "hasan-al-askari",
+      "father_id": "ali-al-hadi",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-askari",
+          "locator": "Father"
+        }
+      ]
+    },
+    {
+      "id": "parentage-mahdi",
+      "child_id": "muhammad-al-mahdi",
+      "father_id": "hasan-al-askari",
+      "mother_id": null,
+      "kind": "biological",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-imams",
+          "locator": "Table"
+        }
+      ]
+    }
+  ],
+  "unions": [
+    {
+      "id": "union-abdullah-amina",
+      "partner_ids": [
+        "abdullah-ibn-abd-al-muttalib",
+        "amina-bint-wahb"
+      ],
+      "kind": "marriage",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-amina",
+          "locator": "Marriage"
+        }
+      ]
+    },
+    {
+      "id": "union-prophet-khadija",
+      "partner_ids": [
+        "prophet-muhammad",
+        "khadija-bint-khuwaylid"
+      ],
+      "kind": "marriage",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-khadija",
+          "locator": "Marriage"
+        }
+      ]
+    },
+    {
+      "id": "union-ali-fatima",
+      "partner_ids": [
+        "ali-ibn-abi-talib",
+        "fatima-al-zahra"
+      ],
+      "kind": "marriage",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-ali",
+          "locator": "Marriage"
+        }
+      ]
+    },
+    {
+      "id": "union-ali-umm-al-banin",
+      "partner_ids": [
+        "ali-ibn-abi-talib",
+        "umm-al-banin"
+      ],
+      "kind": "marriage",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "wikishia-umm-al-banin",
+          "locator": "Marriage"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "wikishia-prophet-birth",
+      "title": "Birth of the Prophet (s)",
+      "url": "https://en.wikishia.net/view/Birth_of_the_Prophet_(s)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-prophet-demise",
+      "title": "Demise of the Prophet (s)",
+      "url": "https://en.wikishia.net/view/Demise_of_the_Prophet_(s)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-prophet",
+      "title": "Prophet Muhammad (s)",
+      "url": "https://en.wikishia.net/view/Prophet_Muhammad_(s)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-fatima",
+      "title": "Lady Fatimah al-Zahra' (a)",
+      "url": "https://en.wikishia.net/view/Lady_Fatima_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-ali",
+      "title": "Imam Ali b. Abi Talib (a)",
+      "url": "https://en.wikishia.net/view/Imam_Ali_b._Abi_Talib_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-hasan",
+      "title": "Imam al-Hasan b. Ali al-Mujtaba (a)",
+      "url": "https://en.wikishia.net/view/Imam_al-Hasan_b._Ali_al-Mujtaba_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-husayn",
+      "title": "Imam al-Husayn b. Ali (a)",
+      "url": "https://en.wikishia.net/view/Imam_al-Husayn_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-sajjad",
+      "title": "Imam Ali b. al-Husayn al-Sajjad (a)",
+      "url": "https://en.wikishia.net/view/Imam_Ali_b._al-Husayn_al-Sajjad_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-baqir",
+      "title": "Imam Muhammad b. Ali al-Baqir (a)",
+      "url": "https://en.wikishia.net/view/Imam_Muhammad_b._Ali_al-Baqir_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-sadiq",
+      "title": "Imam Ja'far b. Muhammad al-Sadiq (a)",
+      "url": "https://en.wikishia.net/view/Imam_Ja'far_b._Muhammad_al-Sadiq_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-imams",
+      "title": "Imams of the Shi'a",
+      "url": "https://en.wikishia.net/view/Imams_of_the_Shia",
+      "notes": "WikiShia summary table of Twelver Imams"
+    },
+    {
+      "id": "wikishia-ridha",
+      "title": "Imam Ali b. Musa al-Rida (a)",
+      "url": "https://en.wikishia.net/view/Imam_Ali_b._Musa_al-Rida_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-jawad",
+      "title": "Imam Muhammad b. Ali al-Jawad (a)",
+      "url": "https://en.wikishia.net/view/Imam_Muhammad_b._Ali_al-Jawad_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-hadi",
+      "title": "Imam Ali b. Muhammad al-Hadi (a)",
+      "url": "https://en.wikishia.net/view/Imam_Ali_b._Muhammad_al-Hadi_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-askari",
+      "title": "Imam al-Hasan b. Ali al-Askari (a)",
+      "url": "https://en.wikishia.net/view/Imam_al-Hasan_b._Ali_al-Askari_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-mahdi",
+      "title": "Imam Muhammad b. al-Hasan al-Mahdi (a)",
+      "url": "https://en.wikishia.net/view/Imam_al-Mahdi_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-khadija",
+      "title": "Khadija bt. Khuwaylid (a)",
+      "url": "https://en.wikishia.net/view/Khadija_bt._Khuwaylid_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-abu-talib",
+      "title": "Abu Talib",
+      "url": "https://en.wikishia.net/view/Abu_Talib",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-abdullah",
+      "title": "Abd Allah b. Abd al-Muttalib",
+      "url": "https://en.wikishia.net/view/Abd_Allah_b._Abd_al-Muttalib",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-amina",
+      "title": "Amina bt. Wahb",
+      "url": "https://en.wikishia.net/view/Amina_bt._Wahb",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-abd-muttalib",
+      "title": "Abd al-Muttalib b. Hashim",
+      "url": "https://en.wikishia.net/view/Abd_al-Muttalib",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-hamza",
+      "title": "Hamza b. Abd al-Muttalib",
+      "url": "https://en.wikishia.net/view/Hamza_b._Abd_al-Muttalib",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-umm-al-banin",
+      "title": "Umm al-Banin (a)",
+      "url": "https://en.wikishia.net/view/Umm_al-Banin_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-abbas",
+      "title": "Al-Abbas b. Ali (a)",
+      "url": "https://en.wikishia.net/view/Al-Abbas_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-zaynab",
+      "title": "Al-Sayyida Zaynab (a)",
+      "url": "https://en.wikishia.net/view/Al-Sayyida_Zaynab_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-umm-kulthum",
+      "title": "Umm Kulthum bt. al-Imam Ali (a)",
+      "url": "https://en.wikishia.net/view/Umm_Kulthum_bt._al-Imam_Ali_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-masuma",
+      "title": "Fatima al-Ma'suma (a)",
+      "url": "https://en.wikishia.net/view/Fatima_al-Ma%27suma_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-ali-akbar",
+      "title": "Ali al-Akbar (a)",
+      "url": "https://en.wikishia.net/view/Ali_al-Akbar_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-ruqayya",
+      "title": "Ruqayya bt. al-Imam al-Husayn (a)",
+      "url": "https://en.wikishia.net/view/Ruqayya_bt._al-Imam_al-Husayn_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-sukayna",
+      "title": "Sukayna bt. al-Imam al-Husayn (a)",
+      "url": "https://en.wikishia.net/view/Sukayna_bt._al-Imam_al-Husayn_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-qasim-hasan",
+      "title": "Al-Qasim b. al-Imam al-Hasan (a)",
+      "url": "https://en.wikishia.net/view/Al-Qasim_b._al-Imam_al-Hasan_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-muslim",
+      "title": "Muslim b. Aqil",
+      "url": "https://en.wikishia.net/view/Muslim_b._Aqil",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-hani",
+      "title": "Hani b. Urwa",
+      "url": "https://en.wikishia.net/view/Hani_b._%27Urwa",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-jabir",
+      "title": "Jabir b. Abd Allah al-Ansari",
+      "url": "https://en.wikishia.net/view/Jabir_b._Abd_Allah_al-Ansari",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-four-deputies",
+      "title": "Four Deputies",
+      "url": "https://en.wikishia.net/view/Four_Deputies",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-salman",
+      "title": "Salman al-Farsi",
+      "url": "https://en.wikishia.net/view/Salman_al-Farsi",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-abu-dharr",
+      "title": "Abu Dharr al-Ghifari",
+      "url": "https://en.wikishia.net/view/Abu_Dharr_al-Ghifari",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-miqdad",
+      "title": "Miqdad b. Amr",
+      "url": "https://en.wikishia.net/view/Miqdad_b._Amr",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-ammar",
+      "title": "Ammar b. Yasir",
+      "url": "https://en.wikishia.net/view/Ammar_b._Yasir",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-yazid",
+      "title": "Yazid b. Muawiya",
+      "url": "https://en.wikishia.net/view/Yazid_b._Muawiya",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-abu-bakr",
+      "title": "Abu Bakr b. Abi Quhafa",
+      "url": "https://en.wikishia.net/view/Abu_Bakr",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-ibrahim",
+      "title": "Prophet Ibrahim (a)",
+      "url": "https://en.wikishia.net/view/Ibrahim_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-isa",
+      "title": "Prophet Isa (a)",
+      "url": "https://en.wikishia.net/view/Isa_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-musa",
+      "title": "Prophet Musa (a)",
+      "url": "https://en.wikishia.net/view/Musa_(a)",
+      "notes": "WikiShia"
+    },
+    {
+      "id": "wikishia-qasim-kadhim",
+      "title": "القاسم بن موسى بن جعفر",
+      "url": "https://ar.wikishia.net/view/%D8%A7%D9%84%D9%82%D8%A7%D8%B3%D9%85_%D8%A8%D9%86_%D8%A7%D9%84%D8%A5%D9%85%D8%A7%D9%85_%D8%A7%D9%84%D9%83%D8%A7%D8%B8%D9%85",
+      "notes": "Arabic WikiShia; English page was not found"
+    },
+    {
+      "id": "iranica-ali",
+      "title": "Ali b. Abi Taleb",
+      "author": "Encyclopaedia Iranica",
+      "url": "https://www.iranicaonline.org/articles/ali-b-abi-taleb",
+      "edition": "Vol. I, Fasc. 8, pp. 838-848"
+    },
+    {
+      "id": "wikishia-fatimiyya",
+      "title": "Fatimiyya",
+      "url": "https://en.wikishia.net/view/Fatimiyya",
+      "notes": "WikiShia; popular Fatima mourning days"
+    },
+    {
+      "id": "wikishia-ruqayya-ar",
+      "title": "رقية بنت الحسين",
+      "url": "https://ar.wikishia.net/view/%D8%B1%D9%82%D9%8A%D8%A9_%D8%A8%D9%86%D8%AA_%D8%A7%D9%84%D8%AD%D8%B3%D9%8A%D9%86",
+      "notes": "Arabic WikiShia infobox records Safar 5, 61"
+    }
+  ]
+}

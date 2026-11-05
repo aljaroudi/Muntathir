@@ -1,9 +1,12 @@
 import SwiftUI
 
 struct QuranChapterView: View {
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    @State private var textSizePresented = false
     let surah: QuranSurah
     var initialVerse = 1
     let reader: QuranReader
+    var highlight: ReadingHighlight?
     @Environment(\.locale) private var locale
     @State private var translationStore = QuranTranslationStore.shared
     @State private var verses: [Ayah] = []
@@ -14,6 +17,8 @@ struct QuranChapterView: View {
     @State private var verseNumber = ""
     @State private var invalidVerse = false
     @State private var target: Int?
+    @State private var activatedHighlight = false
+    @State private var focusReady = false
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -41,6 +46,8 @@ struct QuranChapterView: View {
                 await Task.yield()
                 guard !Task.isCancelled else { return }
                 proxy.scrollTo(initialVerse, anchor: .top)
+                await Task.yield()
+                focusReady = true
             }
             .onChange(of: target) { _, number in
                 if let number {
@@ -49,6 +56,7 @@ struct QuranChapterView: View {
                 target = nil
             }
         }
+        .environment(\.focusedHighlight, focusReady ? highlight : nil)
         .navigationTitle(surah.title(locale: locale))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -58,7 +66,13 @@ struct QuranChapterView: View {
                     .accessibilityIdentifier("quran-jump")
             }
             ToolbarItem(placement: .topBarTrailing) {
-                QuranTranslationPicker()
+                Menu {
+                    QuranTranslationPicker()
+                    ReadingSizeMenu(isPresented: $textSizePresented)
+                } label: {
+                    Label("Reading options", systemImage: "textformat")
+                }.accessibilityIdentifier("quran-reading-options")
+                    .readingSizePresentation(isPresented: $textSizePresented, compact: sizeClass != .regular)
             }
         }
         .alert("Go to verse", isPresented: $jumpPresented) {
@@ -80,6 +94,12 @@ struct QuranChapterView: View {
             Text("Enter a verse from \(1, format: .number) to \(verses.count, format: .number).")
         }
         .task(id: "\(retry)-\(translationStore.revision)") {
+            if !activatedHighlight {
+                activatedHighlight = true
+                if let block = highlight?.block, block != "arabic", translationStore.activeID != block {
+                    translationStore.select(block)
+                }
+            }
             loading = true
             failed = false
             do {

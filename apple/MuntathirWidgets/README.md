@@ -18,4 +18,4 @@ The calendar Home Screen widget pairs the abbreviated weekday with temperature, 
 
 The medium prayer widget and large ayah widget are no longer offered. Ayah retains medium Home Screen and rectangular Lock Screen sizes. Replace existing copies of removed sizes through the widget gallery.
 
-English, Spanish, German, Russian, and both Chinese translations are bundled and follow the reader's Auto/None/explicit selection. The medium widget shows the selected translation with its text direction; None leaves Arabic readable. See [asset delivery](../AssetPacks/).
+Only English and Arabic are bundled. Other translations read installed files from the shared App Group and follow the reader's Auto/None/explicit selection. Missing translations show Arabic only; widgets never initiate downloads. The medium widget shows the selected translation with its text direction; None leaves Arabic readable. See [asset delivery](../AssetPacks/).

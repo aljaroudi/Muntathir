@@ -3,17 +3,23 @@ import SwiftUI
 struct ContentView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
+    @State private var hadithSession = HadithSession(defaults: ProcessInfo.processInfo.arguments.contains("--ui-testing") ? UserDefaults(suiteName: "Muntathir.UITests")! : .standard)
+    @State private var selectedTab = 0
+    @State private var toolsPath: [FigureRoute] = []
+    @State private var restored = false
     @State private var settings = false
+    @State private var hadithAssets = HadithAssetStore()
+    @State private var translations = QuranTranslationStore.shared
     var body: some View {
-        TabView {
-            Tab("Today", systemImage: "sun.max") {
+        TabView(selection: $selectedTab) {
+            Tab("Today", systemImage: "sun.max", value: 0) {
                 shell { TodayView(referenceDate: skyTestDate) }
             }
-            Tab("Calendar", systemImage: "calendar") {
-                shell { CalendarScreen() }
+            Tab("Calendar", systemImage: "calendar", value: 1) {
+                shell { CalendarScreen().figureDestinations() }
             }
-            Tab("Tools", systemImage: "square.grid.2x2") {
-                shell {
+            Tab("Tools", systemImage: "square.grid.2x2", value: 2) {
+                NavigationStack(path: $toolsPath) {
                     List {
                         NavigationLink {
                             QuranView()
@@ -21,28 +27,64 @@ struct ContentView: View {
                             Label("The Holy Quran", systemImage: "book.closed")
                         }
                         .accessibilityIdentifier("holy-quran")
+                        NavigationLink(value: FigureRoute.hadith) {
+                            Label("Hadith", systemImage: "text.book.closed")
+                        }
+                        .accessibilityIdentifier("hadith")
+                        NavigationLink(value: FigureRoute.browser) {
+                            Label("Figures", systemImage: "person.2")
+                        }
+                        .accessibilityIdentifier("figures")
                         NavigationLink {
-                            QiblaView().toolbar { settingsToolbar }
+                            QiblaView(isCovered: settings).toolbar { settingsToolbar }
                         } label: {
                             Label("Qibla", systemImage: "location.north.circle")
                         }
                         .accessibilityIdentifier("qibla")
                     }
                     .navigationTitle("Tools")
+                    .figureDestinations(hadithAssets: hadithAssets)
+                    .toolbar { settingsToolbar }
                 }
             }
         }
+        .environment(\.hadithAssets, hadithAssets)
+        .environment(\.hadithSession, hadithSession)
+        .task {
+            guard !restored else { return }
+            if hadithSession.state.active {
+                selectedTab = 2; toolsPath = [.hadith]
+            }
+            restored = true
+        }
+        .onChange(of: selectedTab) { _, _ in updateReadingRoute() }
+        .onChange(of: toolsPath) { _, _ in updateReadingRoute() }
         .tint(.accentColor)
-        .sheet(isPresented: $settings) { SettingsView() }
+        .sheet(isPresented: $settings) {
+            SettingsView()
+                .environment(\.hadithAssets, hadithAssets)
+                .environment(\.hadithSession, hadithSession)
+        }
+        .sheet(item: $translations.downloadRequest) { translation in
+            QuranDownloadView(requested: translation.id)
+        }
         .task { model.reschedule() }
+        .task { await hadithAssets.monitor() }
+        .task { await QuranTranslationStore.shared.monitor() }
+        .task { await QuranTranslationStore.shared.refresh() }
+        .task { await hadithAssets.refresh() }
         .onChange(of: model.locationService.current) { _, location in
             if model.liveLocation != nil, let location {
                 model.applyLive(location)
             }
         }
         .onChange(of: scenePhase) { _, phase in
+            if phase == .background {
+                hadithSession.save()
+            }
             if phase == .active {
                 model.reschedule()
+                Task { await hadithAssets.refresh(); await QuranTranslationStore.shared.refresh() }
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in model.reschedule() }
@@ -74,6 +116,11 @@ struct ContentView: View {
             }
         #endif
         return nil
+    }
+
+    private func updateReadingRoute() {
+        guard restored else { return }
+        hadithSession.state.active = selectedTab == 2 && toolsPath.contains(.hadith)
     }
 
     private func shell(@ViewBuilder content: () -> some View) -> some View {

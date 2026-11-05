@@ -2,26 +2,17 @@ import type { Locale } from "./site"
 
 const en = {
   name: "Muntathir",
-  title: "Muntathir: Prayer times, Quran, and Hijri calendar",
+  title: "Muntathir: Prayer, Quran, Hadith, and Hijri calendar",
   description:
-    "Prayer times, daily Quran verses, the Hijri calendar, and Qibla. An app in 15 languages for iPhone, iPad, and Apple Watch.",
+    "Prayer reminders, Quran and Hadith reading, highlights, Islamic figures, the Hijri calendar, and Qibla. In 15 languages for iPhone, iPad, and Apple Watch.",
   skip: "Skip to content",
   nav: { language: "Choose language" },
   hero: {
     first: "Prayer and",
     second: "daily remembrance.",
     eyebrow: "Prayer · Quran · Hijri calendar",
-    text: "Prayer times, a Quran verse each day, the Hijri calendar, and the direction of the Qibla. Together in a simple app.",
+    text: "Prayer times and daily verses, Quran and Hadith reading, and the dates that matter. Keep your daily remembrance together in Muntathir.",
     cta: "Download Muntathir from the App Store",
-  },
-  preview: {
-    label: "Example prayer times and a daily Quran verse",
-    today: "Muntathir",
-    verseLabel: "A verse from the Quran",
-    verse: "Indeed, with hardship comes ease.",
-    reference: "94:5",
-    prayers: ["Fajr", "Dhuhr", "Maghrib"],
-    times: ["4:42am", "12:08pm", "5:36pm"],
   },
   features: {
     title: "In the app",
@@ -30,25 +21,52 @@ const en = {
         title: "Prayer times",
         text: "Choose a calculation method and set prayer reminders for your location.",
       },
+      {
+        title: "Quran reader",
+        text: "Read and search the Quran with translations, and return to your reading position.",
+      },
+      {
+        title: "Hadith library",
+        text: "Download collections to browse chapters and search Arabic and English offline.",
+      },
+      {
+        title: "Highlights and notes",
+        text: "Highlight Quran and Hadith passages, add notes, and share text or image cards.",
+      },
+      {
+        title: "Islamic figures",
+        text: "Explore religious figures, their family relationships, and related observances.",
+      },
       { title: "Daily Quran verse", text: "Read a verse each day and share it as a card." },
       {
         title: "Hijri calendar",
         text: "Follow Islamic dates and observances, with adjustable month starts.",
       },
-      { title: "Qibla", text: "Find the direction of prayer with a compass view." },
+      {
+        title: "Qibla",
+        text: "Find Qibla on a map, with alignment guidance and haptic feedback on supported devices.",
+      },
     ],
   },
   calendar: {
     title: "Islamic calendar subscription",
     subscribe: "Subscribe to calendar",
-    description:
-      "Dates follow Middle East naked-eye confirmations, with Umm al-Qura calculations until confirmed. Subscribe to receive date corrections; your calendar app controls refresh timing.",
+    browse: "Browse events",
+    description: "Not all dates are verified",
   },
   companions:
     "Available in 15 languages, including Arabic and English. Made for iPhone and iPad, with an Apple Watch companion and Home Screen widgets.",
   faq: {
     title: "A few useful details",
     items: [
+      {
+        q: "Can I read offline?",
+        a: "Quran Arabic and English are bundled. Download other Quran translations and the Hadith library in Settings → Downloads, then read them offline.",
+      },
+      {
+        q: "Can I keep highlights and notes?",
+        a: "Highlight Quran and Hadith passages and attach notes. Personal highlights sync through your private iCloud account when enabled.",
+      },
       {
         q: "Can I adjust prayer times?",
         a: "You can choose the prayer calculation method in the app’s settings.",
@@ -70,50 +88,65 @@ const en = {
 
 const ar: typeof en = {
   name: "منتظِر",
-  title: "منتظِر — مواقيت الصلاة والقرآن والتقويم الهجري",
+  title: "منتظِر — الصلاة والقرآن والحديث والتقويم الهجري",
   description:
-    "مواقيت الصلاة وآيات قرآنية يومية والتقويم الهجري واتجاه القبلة. تطبيق بـ١٥ لغة لأجهزة iPhone وiPad وApple Watch.",
+    "تنبيهات الصلاة وقراءة القرآن والحديث والتظليلات والأعلام والتقويم الهجري والقبلة. بـ١٥ لغة لأجهزة iPhone وiPad وApple Watch.",
   skip: "انتقل إلى المحتوى",
   nav: { language: "اختر اللغة" },
   hero: {
     first: "صلاتك،",
     second: "وذكرُك اليومي.",
     eyebrow: "الصلاة · القرآن · التقويم الهجري",
-    text: "مواقيت الصلاة، وآية قرآنية كل يوم، والتقويم الهجري، واتجاه القبلة. في تطبيق بسيط يرافق يومك.",
+    text: "مواقيت الصلاة وآيات يومية، وقراءة القرآن والحديث، والمناسبات التي تهمّك. اجمع عبادتك وذكرَك اليومي في منتظِر.",
     cta: "تحميل تطبيق مُنتظِر من متجر التطبيقات",
-  },
-  preview: {
-    label: "أوقات صلاة توضيحية وآية من القرآن الكريم",
-    today: "منتظِر",
-    verseLabel: "آية اليوم",
-    verse: "إِنَّ مَعَ الْعُسْرِ يُسْرًا",
-    reference: "الشرح ٥",
-    prayers: ["الفجر", "الظهر", "المغرب"],
-    times: ["٤:٤٢ ص", "١٢:٠٨ م", "٥:٣٦ م"],
   },
   features: {
     title: "في التطبيق",
     items: [
       { title: "مواقيت الصلاة", text: "اختر طريقة الحساب واضبط تنبيهات الصلاة حسب موقعك." },
+      {
+        title: "قراءة القرآن",
+        text: "اقرأ القرآن وابحث في آياته مع الترجمات، وعُد إلى موضع قراءتك.",
+      },
+      {
+        title: "مكتبة الحديث",
+        text: "نزّل الكتب لتصفّح الأبواب والبحث بالعربية والإنجليزية دون اتصال.",
+      },
+      {
+        title: "التظليلات والملاحظات",
+        text: "ظلّل مقاطع من القرآن والحديث وأضف ملاحظات وشارك النصوص أو البطاقات المصوّرة.",
+      },
+      { title: "الأعلام", text: "تعرّف إلى الأعلام والعلاقات العائلية بينهم والمناسبات المرتبطة بهم." },
       { title: "آية كل يوم", text: "اقرأ آية قرآنية يوميًا وشاركها في بطاقة." },
       {
         title: "التقويم الهجري",
         text: "تابع التواريخ والمناسبات الإسلامية، مع إمكانية ضبط بدايات الأشهر.",
       },
-      { title: "اتجاه القبلة", text: "اعرف اتجاه الصلاة من خلال بوصلة واضحة." },
+      {
+        title: "اتجاه القبلة",
+        text: "اعرف اتجاه القبلة على الخريطة، مع إرشادات للمحاذاة وتنبيهات لمسية على الأجهزة المدعومة.",
+      },
     ],
   },
   calendar: {
     title: "الاشتراك في تقويم المناسبات الإسلامية",
     subscribe: "اشترك في التقويم",
-    description:
-      "تتبع التواريخ تأكيدات الرؤية بالعين المجردة للشرق الأوسط، وحسابات أم القرى حتى ورود التأكيد. اشترك لتصلك تصحيحات التواريخ؛ ويتحكم تطبيق التقويم في مواعيد التحديث.",
+    browse: "تصفّح المناسبات",
+    description: "ليست كل التواريخ مؤكدة",
   },
   companions:
     "متوفر بـ١٥ لغة، منها العربية والإنجليزية. لأجهزة \u2066iPhone\u2069 و\u2066iPad\u2069، مع تطبيق مرافق لساعة \u2066Apple Watch\u2069 وأدوات للشاشة الرئيسية.",
   faq: {
     title: "تفاصيل مفيدة",
     items: [
+      {
+        q: "هل يمكنني القراءة دون اتصال؟",
+        a: "النص القرآني العربي والترجمة الإنجليزية مضمّنان. نزّل ترجمات القرآن الأخرى ومكتبة الحديث من الإعدادات ← التنزيلات، ثم اقرأها دون اتصال.",
+      },
+      {
+        q: "هل يمكنني حفظ التظليلات والملاحظات؟",
+        a: "ظلّل مقاطع من القرآن والحديث وأضف إليها ملاحظات. تتزامن تظليلاتك الشخصية عبر حساب iCloud الخاص بك عند تفعيله.",
+      },
       {
         q: "هل يمكنني ضبط مواقيت الصلاة؟",
         a: "يمكنك اختيار طريقة حساب مواقيت الصلاة من إعدادات التطبيق.",

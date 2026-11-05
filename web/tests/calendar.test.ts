@@ -119,6 +119,14 @@ test("skips nonexistent month days and validates events and titles", () => {
   ).toThrow()
 })
 
+test("figure links do not change exported observances", () => {
+  const { figure_ids, ...event } = events[0]
+  expect(figure_ids).toEqual(["husayn-ibn-ali"])
+  expect(generateCalendar([event], empty, "en", now)).toBe(
+    generateCalendar([events[0]], empty, "en", now)
+  )
+})
+
 test("missing Arabic title falls back to English", () => {
   const output = unfold(
     generateCalendar(
@@ -170,3 +178,100 @@ for (const locale of ["ar", "en"] as const)
     const html = readFileSync(`dist/${locale === "ar" ? "" : "en/"}index.html`, "utf8")
     expect(html).toContain(`href="webcal://${site.host}/calendar/${locale}.ics"`)
   })
+
+test("event calendar groups and sorts days with the same corrected dates as ICS", async () => {
+  const { calendarMonths, validateEvents } = await import("../src/calendar")
+  const { renderCalendar } = await import("../src/calendar-view")
+  const sample = [
+    { id: "later", month: 1, day: 5, title: { en: "Later" } },
+    { id: "first", month: 1, day: 2, title: { en: "First" } },
+    { id: "same-day", month: 1, day: 2, title: { en: "Same day" } },
+  ]
+  const feed = { ...empty, announcements: [announcement("2026-06-17")] }
+  const start = calendarStarts(feed)
+  const today = new Date("2026-06-18T00:00:00Z")
+  const validated = validateEvents(sample, "en")
+  const months = calendarMonths(validated, start, [month], 1448, today)
+  expect(months).toHaveLength(12)
+  expect(months[0]!.days.map(row => row.day)).toEqual([2, 5])
+  expect(months[0]!.days[0]!.events.map(event => event.id)).toEqual(["first", "same-day"])
+  expect(months[0]!.days[0]).toMatchObject({ today: true, next: true, distance: 0 })
+  expect(months[1]!.days).toEqual([])
+  const html = renderCalendar(validated, start, [month], 1448, "en", today)
+  const ics = unfold(generateCalendar(sample, feed, "en", today))
+  for (const row of months.flatMap(value => value.days)) {
+    const date = new Date(row.date * 86400000).toISOString().slice(0, 10)
+    expect(html).toContain(`datetime="${date}"`)
+    for (const event of row.events) {
+      expect(ics).toContain(`UID:${event.id}-1448-en@`)
+      expect(ics).toContain(`DTSTART;VALUE=DATE:${date.replace(/-/g, "")}`)
+    }
+  }
+  expect(html).toContain("No events")
+})
+
+test("expected months exclude confirmed future boundaries and current/past months", async () => {
+  const { calendarMonths, validateEvents } = await import("../src/calendar")
+  const start = calendarStarts(empty)
+  const sample = validateEvents(events, "en")
+  const months = calendarMonths(sample, start, [month + 1], 1448, new Date("2026-06-18Z"))
+  expect(months[0]!.expected).toBe(false)
+  expect(months[1]!.expected).toBe(false)
+  expect(months[2]!.expected).toBe(true)
+  expect(calendarMonths(sample, start, [], 1447, now).every(value => !value.expected)).toBe(true)
+  expect(calendarMonths(sample, start, [], 1449, now).every(value => value.expected)).toBe(true)
+  expect(
+    calendarMonths(sample, start, [], 1449, now)
+      .flatMap(value => value.days)
+      .some(value => value.next)
+  ).toBe(false)
+})
+
+test("month models skip absent day 30 and handle year limits and corrected rollover", async () => {
+  const { calendarMonths, currentMonthIndex, validateEvents } = await import("../src/calendar")
+  const start = calendarStarts({ ...empty, announcements: [announcement("2026-06-17")] })
+  expect(currentMonthIndex(start, new Date("2026-06-16Z"))).toBe(month - 1)
+  expect(currentMonthIndex(start, new Date("2026-06-17Z"))).toBe(month)
+  const sample = validateEvents(
+    [{ id: "last-day", month: 1, day: 30, title: { en: "Last day" } }],
+    "en"
+  )
+  for (const year of [1350, 1448, 1449, 1500]) {
+    const months = calendarMonths(sample, start, [], year, now)
+    expect(months).toHaveLength(12)
+    for (let i = 0; i < 12; i++)
+      expect([29, 30]).toContain(start(year * 12 + i + 1) - start(year * 12 + i))
+    expect(months[0]!.days.length).toBe(start(year * 12 + 1) - start(year * 12) === 30 ? 1 : 0)
+  }
+})
+
+test("calendar rendering escapes event markup and uses localized labels", async () => {
+  const { validateEvents } = await import("../src/calendar")
+  const { renderCalendar } = await import("../src/calendar-view")
+  const sample = validateEvents(
+    [{ id: "test", month: 1, day: 1, title: { en: '<img src=x onerror="alert(1)">' } }],
+    "ar"
+  )
+  const html = renderCalendar(sample, calendarStarts(empty), [], 1449, "ar", now)
+  expect(html).not.toContain("<img")
+  expect(html).toContain("&lt;img")
+  expect(html).toContain("متوقّع")
+  expect(html).toContain("لا توجد مناسبات")
+})
+
+test("next-event highlighting rolls into the next year only when no events remain", async () => {
+  const { calendarMonths, validateEvents } = await import("../src/calendar")
+  const start = calendarStarts(empty)
+  const sample = validateEvents(
+    [{ id: "new-year", month: 1, day: 1, title: { en: "New year" } }],
+    "en"
+  )
+  const date = new Date((start(1449 * 12) - 1) * 86400000)
+  expect(
+    calendarMonths(sample, start, [], 1448, date)
+      .flatMap(month => month.days)
+      .some(day => day.next)
+  ).toBe(false)
+  const first = calendarMonths(sample, start, [], 1449, date)[0]!.days[0]!
+  expect(first).toMatchObject({ next: true, today: false, distance: 1 })
+})

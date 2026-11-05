@@ -1,6 +1,6 @@
 import Foundation
 
-/// Translations ship with the app and widget.
+/// Arabic and English are bundled; other translations are installed in shared storage.
 struct QuranTranslation: Identifiable, Hashable, Sendable {
     let language: String
     let translator: String
@@ -13,7 +13,19 @@ struct QuranTranslation: Identifiable, Hashable, Sendable {
         .init(language: "de", translator: "Bubenheim & Elyas", id: "de.bubenheim"),
         .init(language: "ru", translator: "Кулиев", id: "ru.kuliev"),
         .init(language: "es", translator: "Bornez", id: "es.bornez"),
+        .init(language: "fa", translator: "فولادوند", id: "fa.fooladvand"),
+        .init(language: "fr", translator: "Hamidullah", id: "fr.hamidullah"),
+        .init(language: "id", translator: "Kementerian Agama", id: "id.indonesian"),
+        .init(language: "it", translator: "Piccardo", id: "it.piccardo"),
+        .init(language: "ms", translator: "Basmeih", id: "ms.basmeih"),
+        .init(language: "tr", translator: "Diyanet Vakfı", id: "tr.vakfi"),
+        .init(language: "ur", translator: "جوادی", id: "ur.jawadi"),
     ]
+
+    static let bundledID = "en.qarai"
+    static var downloadable: [QuranTranslation] {
+        catalog.filter { $0.id != bundledID }
+    }
 
     static func preferred(in available: [QuranTranslation], locale: Locale) -> QuranTranslation? {
         let language = locale.language.languageCode?.identifier
@@ -61,6 +73,14 @@ enum QuranTranslationPreferences {
     }
 
     static func url(for translation: QuranTranslation) throws -> URL {
+        if translation.id != QuranTranslation.bundledID {
+            guard let root = QuranTranslationFiles.sharedRoot,
+                  let url = try QuranTranslationFiles(root: root).installedURLs()[translation.id]
+            else {
+                throw QuranDatabaseError.unavailable
+            }
+            return url
+        }
         guard let url = Bundle.main.url(forResource: translation.id, withExtension: "db") else {
             throw QuranDatabaseError.unavailable
         }

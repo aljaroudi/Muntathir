@@ -1,0 +1,478 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Religious figures dataset",
+  "description": "Portable source data. IDs join records; historical claims retain evidence and alternatives.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "const": "./schema.json"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "people": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/person"
+      }
+    },
+    "parentages": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/parentage"
+      }
+    },
+    "unions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/union"
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/source"
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "people",
+    "parentages",
+    "unions",
+    "sources"
+  ],
+  "$defs": {
+    "datePoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "year": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "month": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "day": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 31
+        }
+      },
+      "required": [
+        "year"
+      ],
+      "dependentRequired": {
+        "day": [
+          "month"
+        ]
+      }
+    },
+    "dateClaim": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "calendar": {
+          "enum": [
+            "gregorian",
+            "julian",
+            "hijri"
+          ]
+        },
+        "era": {
+          "enum": [
+            "CE",
+            "BCE",
+            "AH",
+            "BH"
+          ]
+        },
+        "precision": {
+          "enum": [
+            "exact",
+            "approximate",
+            "range"
+          ]
+        },
+        "start": {
+          "$ref": "#/$defs/datePoint"
+        },
+        "end": {
+          "$ref": "#/$defs/datePoint"
+        },
+        "original": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "accepted",
+            "disputed",
+            "unreviewed"
+          ]
+        },
+        "citations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/citation"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "calendar",
+        "era",
+        "precision",
+        "start",
+        "original",
+        "status",
+        "citations"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "calendar": {
+                "const": "hijri"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "era": {
+                "enum": [
+                  "AH",
+                  "BH"
+                ]
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "era": {
+                "enum": [
+                  "CE",
+                  "BCE"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "precision": {
+                "const": "range"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "end"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "end"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "citation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "quote": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "source_id",
+        "locator"
+      ]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "author": {
+          "type": "string",
+          "minLength": 1
+        },
+        "edition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title"
+      ]
+    },
+    "person": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "display_names": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "names": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "surname": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "kunya": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "laqab": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "nisba": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "nickname": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "title": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "full_name": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "birth_dates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/dateClaim"
+          }
+        },
+        "death_dates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/dateClaim"
+          }
+        },
+        "notes": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "id",
+        "display_names",
+        "names",
+        "birth_dates",
+        "death_dates"
+      ]
+    },
+    "parentage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "child_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "father_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "mother_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "enum": [
+            "biological",
+            "adoptive",
+            "foster"
+          ]
+        },
+        "union_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "accepted",
+            "disputed",
+            "unreviewed"
+          ]
+        },
+        "citations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/citation"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "child_id",
+        "father_id",
+        "mother_id",
+        "kind",
+        "status",
+        "citations"
+      ]
+    },
+    "union": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "partner_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true
+        },
+        "kind": {
+          "enum": [
+            "marriage",
+            "reported-partnership"
+          ]
+        },
+        "status": {
+          "enum": [
+            "accepted",
+            "disputed",
+            "unreviewed"
+          ]
+        },
+        "citations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/citation"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "partner_ids",
+        "kind",
+        "status",
+        "citations"
+      ]
+    }
+  }
+}

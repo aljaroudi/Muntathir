@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "people": [
+    {
+      "id": "example-father",
+      "display_names": {
+        "en": "Example Father"
+      },
+      "names": {},
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "BH",
+          "precision": "approximate",
+          "start": {
+            "year": 40
+          },
+          "original": "Around 40 BH",
+          "status": "unreviewed",
+          "citations": [
+            {
+              "source_id": "example-source",
+              "locator": "Example family"
+            }
+          ]
+        },
+        {
+          "calendar": "hijri",
+          "era": "BH",
+          "precision": "range",
+          "start": {
+            "year": 42
+          },
+          "end": {
+            "year": 39
+          },
+          "original": "Between 42 and 39 BH",
+          "status": "unreviewed",
+          "citations": [
+            {
+              "source_id": "example-source",
+              "locator": "Example family"
+            }
+          ]
+        }
+      ],
+      "death_dates": []
+    },
+    {
+      "id": "example-mother-a",
+      "display_names": {
+        "en": "Example Mother A"
+      },
+      "names": {},
+      "birth_dates": [],
+      "death_dates": []
+    },
+    {
+      "id": "example-mother-b",
+      "display_names": {
+        "en": "Example Mother B"
+      },
+      "names": {},
+      "birth_dates": [],
+      "death_dates": []
+    },
+    {
+      "id": "example-child-a",
+      "display_names": {
+        "en": "Example Child A"
+      },
+      "names": {},
+      "birth_dates": [],
+      "death_dates": []
+    },
+    {
+      "id": "example-child-b",
+      "display_names": {
+        "en": "Example Child B"
+      },
+      "names": {},
+      "birth_dates": [],
+      "death_dates": []
+    },
+    {
+      "id": "example-child-c",
+      "display_names": {
+        "en": "Example Child C"
+      },
+      "names": {},
+      "birth_dates": [],
+      "death_dates": []
+    }
+  ],
+  "parentages": [
+    {
+      "id": "example-parentage-a",
+      "child_id": "example-child-a",
+      "father_id": "example-father",
+      "mother_id": "example-mother-a",
+      "kind": "biological",
+      "union_id": "example-union-a",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "example-source",
+          "locator": "Example family"
+        }
+      ]
+    },
+    {
+      "id": "example-parentage-b",
+      "child_id": "example-child-b",
+      "father_id": "example-father",
+      "mother_id": "example-mother-a",
+      "kind": "biological",
+      "union_id": "example-union-a",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "example-source",
+          "locator": "Example family"
+        }
+      ]
+    },
+    {
+      "id": "example-parentage-c",
+      "child_id": "example-child-c",
+      "father_id": "example-father",
+      "mother_id": "example-mother-b",
+      "kind": "biological",
+      "union_id": "example-union-b",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "example-source",
+          "locator": "Example family"
+        }
+      ]
+    }
+  ],
+  "unions": [
+    {
+      "id": "example-union-a",
+      "partner_ids": [
+        "example-father",
+        "example-mother-a"
+      ],
+      "kind": "marriage",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "example-source",
+          "locator": "Example family"
+        }
+      ]
+    },
+    {
+      "id": "example-union-b",
+      "partner_ids": [
+        "example-father",
+        "example-mother-b"
+      ],
+      "kind": "marriage",
+      "status": "accepted",
+      "citations": [
+        {
+          "source_id": "example-source",
+          "locator": "Example family"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "example-source",
+      "title": "Fictional example only; not historical evidence"
+    }
+  ]
+}

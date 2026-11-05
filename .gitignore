@@ -16,3 +16,14 @@ apple/fastlane/Preview.html
 *.p8
 *.ipa
 *.dSYM.zip
+
+# Generated assets stay local; track build scripts and schemas only.
+/temp/
+/build/**
+!/build/**/
+!/build/**/*.py
+!/build/**/*.sh
+!/build/*/schema.sql
+
+# Python
+__pycache__

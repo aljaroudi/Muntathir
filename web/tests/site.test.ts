@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
+import { calendarYears, calendarPath } from "../src/calendar-view"
 import { translations } from "../src/i18n"
 import { appStore, site, paths, isPreview, type Locale } from "../src/site"
 
@@ -118,4 +119,65 @@ test("privacy pages and support redirect are ready before deployment", () => {
     expect(html).toContain("Google")
     expect(html).toContain('href="/support/"')
   }
+})
+
+for (const locale of ["ar", "en"] as const) {
+  test(`${locale} event calendar is complete and accessible without JavaScript`, () => {
+    const path = locale === "ar" ? "/calendar/" : "/en/calendar/"
+    const html = readFileSync(join("dist", path, "index.html"), "utf8")
+    expect(html).toContain(`lang="${locale}"`)
+    expect(html).toContain(`dir="${locale === "ar" ? "rtl" : "ltr"}"`)
+    expect(html.match(/<h1\b/g)).toHaveLength(1)
+    expect(html.match(/<section id="month-/g)).toHaveLength(12)
+    expect(html).toContain('href="#main"')
+    expect(html).toContain('aria-live="polite"')
+    expect(html).toContain("data-year-select")
+    expect(html).toContain('value="1350"')
+    expect(html).toContain('value="1500"')
+    expect(html).not.toContain('value="1349"')
+    expect(html).not.toContain('value="1501"')
+    expect(html.match(/<option\b/g)).toHaveLength(151)
+    expect(html).not.toMatch(/\bdata-(previous|next|month)(?:\s|=|>)/)
+    const year = Number(html.match(/data-year-value="(\d+)"/)![1])
+    expect(html).toContain(
+      `rel="canonical" href="${new URL(calendarPath(locale, year), site).href}"`
+    )
+    expect(html).toContain(`hreflang="ar" href="${new URL(calendarPath("ar", year), site).href}"`)
+    expect(html).toContain(`hreflang="en" href="${new URL(calendarPath("en", year), site).href}"`)
+    expect(html).toContain(`href="webcal://${site.host}/calendar/${locale}.ics"`)
+    expect(html.includes('name="robots" content="noindex, nofollow"')).toBe(isPreview)
+    expect(html).not.toContain("undefined")
+    expect(readFileSync("dist/sitemap.xml", "utf8")).toContain(
+      `<loc>${new URL(calendarPath(locale, year), site).href}</loc>`
+    )
+    const landing = readFileSync(join("dist", paths[locale], "index.html"), "utf8")
+    expect(landing).toContain(`href="${path}"`)
+    expect(landing).toContain(".webp")
+    expect(landing).toContain("srcset=")
+    expect(landing).toContain("data-phone-preview")
+    for (const feature of translations[locale].features.items)
+      expect(landing).toContain(feature.title)
+  })
+}
+
+test("every supported year has crawlable bilingual HTML, headings, anchors, and canonical metadata", () => {
+  const sitemap = readFileSync("dist/sitemap.xml", "utf8")
+  for (const locale of ["ar", "en"] as const) {
+    for (const year of calendarYears) {
+      const path = calendarPath(locale, year)
+      const html = readFileSync(join("dist", path, "index.html"), "utf8")
+      expect(html).toContain(`data-year-value="${year}"`)
+      expect(html).toContain(`data-fixed-year="${year}"`)
+      expect(html).toContain(`rel="canonical" href="${new URL(path, site).href}"`)
+      expect(html).toContain(`href="${calendarPath(locale === "ar" ? "en" : "ar", year)}" lang=`)
+      expect(html.match(/<h2\b/g)).toHaveLength(12)
+      expect(html).toContain('href="#month-1"')
+      expect(html).toContain('<h3 id="observance-')
+      expect(html).toContain('href="#observance-')
+      expect(sitemap).toContain(`<loc>${new URL(path, site).href}</loc>`)
+      expect(html.includes('name="robots" content="noindex, nofollow"')).toBe(isPreview)
+    }
+  }
+  expect(existsSync("dist/calendar/1349/index.html")).toBe(false)
+  expect(existsSync("dist/en/calendar/1501/index.html")).toBe(false)
 })

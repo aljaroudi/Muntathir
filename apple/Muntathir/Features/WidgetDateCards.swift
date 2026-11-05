@@ -123,7 +123,7 @@ struct WeatherDateCard: View {
 
     private var weekday: some View {
         Text(date, format: Date.FormatStyle(locale: locale, calendar: settings.engine.gregorian,
-                                          timeZone: settings.zone).weekday(.abbreviated))
+                                            timeZone: settings.zone).weekday(.abbreviated))
             .font(.subheadline.weight(.medium))
     }
 
@@ -143,7 +143,7 @@ struct WeatherDateCard: View {
         formatter.calendar = calendar
         formatter.timeZone = settings.zone
         formatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "Md", options: 0,
-                                                       locale: Locale(components: numericLocale))
+                                                        locale: Locale(components: numericLocale))
         return Text(verbatim: formatter.string(from: displayDate))
             .font(.subheadline)
     }
@@ -176,18 +176,18 @@ struct CalendarWeatherCard: View {
         return VStack(alignment: .leading, spacing: 1) {
             if secondaryDates {
                 Text(date.formatted(Date.FormatStyle(locale: locale, calendar: engine.gregorian,
-                    timeZone: settings.zone).weekday(.abbreviated)))
+                                                     timeZone: settings.zone).weekday(.abbreviated)))
                     .font((compact ? Font.caption2 : .caption).weight(.medium))
             }
             Text(day.day, format: .number)
                 .font(.system(size: compact ? compactDaySize : daySize, weight: .medium, design: .rounded))
             Text(engine.baselineStart(day.month).formatted(Date.FormatStyle(locale: locale,
-                calendar: engine.baseline, timeZone: settings.zone).month(.wide)))
+                                                                            calendar: engine.baseline, timeZone: settings.zone).month(.wide)))
                 .font(compact ? .subheadline.weight(.semibold) : .headline)
                 .fixedSize(horizontal: false, vertical: true)
             if secondaryDates {
                 Text(date.formatted(Date.FormatStyle(locale: locale, calendar: engine.gregorian,
-                    timeZone: settings.zone).month(.abbreviated).day()))
+                                                     timeZone: settings.zone).month(.abbreviated).day()))
                     .font(.caption2)
             }
             if let weather {
@@ -200,7 +200,7 @@ struct CalendarWeatherCard: View {
                     WidgetTemperature(weather: weather, feelsLike: settings.showFeelsLikeTemperature ?? false)
                         .font((compact ? Font.caption : .subheadline).weight(.semibold))
                     WeatherAttributionLink(legalPageURL: weather.attribution?.legalPageURL,
-                        size: CGSize(width: 46, height: 8))
+                                           size: CGSize(width: 46, height: 8))
                 }
             }
         }
@@ -227,10 +227,11 @@ private struct WidgetTemperature: View {
     var body: some View {
         Text(verbatim: weather.temperature(feelsLike: feelsLike).formatted(
             .measurement(width: .narrow, usage: .weather, hidesScaleName: true,
-                         numberFormatStyle: .number.precision(.fractionLength(0))).locale(locale)))
-            .lineLimit(1)
-            .minimumScaleFactor(0.6)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityValue(weather.condition)
+                         numberFormatStyle: .number.precision(.fractionLength(0))).locale(locale)
+        ))
+        .lineLimit(1)
+        .minimumScaleFactor(0.6)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityValue(weather.condition)
     }
 }

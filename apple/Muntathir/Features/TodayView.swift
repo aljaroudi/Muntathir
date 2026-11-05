@@ -78,17 +78,22 @@ struct TodayView: View {
                                 }
                             }
                         }
-                        Grid(horizontalSpacing: 8, verticalSpacing: 16) {
+                        VStack(spacing: 16) {
                             ForEach(prayers) { prayer in
-                                GridRow {
-                                    HStack {
+                                let rowLayout = typeSize.isAccessibilitySize
+                                    ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+                                    : AnyLayout(HStackLayout(spacing: 8))
+                                rowLayout {
+                                    rowLayout {
                                         Label {
                                             Text(prayer.name.title)
                                         } icon: {
                                             Image(systemName: prayer.name.symbol)
                                                 .frame(width: prayerSymbolWidth)
                                         }
-                                        Spacer(minLength: 8)
+                                        if !typeSize.isAccessibilitySize {
+                                            Spacer(minLength: 8)
+                                        }
                                         if prayer.name == next?.name, let next {
                                             Text(PrayerCountdownFormat(target: next.date, locale: locale).format(now))
                                                 .font(.caption).monospacedDigit()
@@ -101,7 +106,6 @@ struct TodayView: View {
                                     )
                                     .font(.system(.title3, design: .monospaced, weight: .medium))
                                     .fixedSize(horizontal: true, vertical: false)
-                                    .gridColumnAlignment(.trailing)
                                 }
                                 .foregroundStyle(
                                     prayer.name == next?.name
@@ -109,7 +113,20 @@ struct TodayView: View {
                                 )
                                 .padding(.vertical, 5)
                                 .accessibilityElement(children: .combine)
+                                .contentShape(.rect)
                                 .accessibilityIdentifier("prayer-\(prayer.name.rawValue)")
+                                .contextMenu {
+                                    Button(model.preferences.enabledPrayers.contains(prayer.name) ? "Mute" : "Alert",
+                                           systemImage: model.preferences.enabledPrayers.contains(prayer.name) ? "bell.slash" : "bell")
+                                    {
+                                        Task { await model.setPrayer(prayer.name, enabled: !model.preferences.enabledPrayers.contains(prayer.name)) }
+                                    }
+                                    if !prayer.name.isRequired {
+                                        Button("Hide", systemImage: "eye.slash") {
+                                            model.update { $0.hiddenPrayers.insert(prayer.name) }
+                                        }
+                                    }
+                                }
                                 if prayer.id != prayers.last?.id {
                                     Divider()
                                         .gridCellUnsizedAxes(.horizontal)

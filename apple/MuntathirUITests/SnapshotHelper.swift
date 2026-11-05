@@ -228,6 +228,9 @@ open class Snapshot: NSObject {
     }
 
     class func getCacheDirectory() throws -> URL {
+        if let isolatedCache = ProcessInfo.processInfo.environment["MUNTATHIR_SNAPSHOT_CACHE_DIR"] {
+            return URL(fileURLWithPath: isolatedCache, isDirectory: true)
+        }
         let cachePath = "Library/Caches/tools.fastlane"
         // on OSX config is stored in /Users/<username>/Library
         // and on iOS/tvOS/WatchOS it's in simulator's home dir

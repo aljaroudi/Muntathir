@@ -6,7 +6,7 @@ struct QuranView: View {
     @State private var reader = QuranReader()
     @State private var surahs: [QuranSurah] = []
     @State private var counts: [Int: Int] = [:]
-    @State private var query = ""
+    @State private var query = Self.initialQuery
     @State private var results: [Ayah] = []
     @State private var limit = 50
     @State private var loading = true
@@ -16,6 +16,18 @@ struct QuranView: View {
     @State private var retry = 0
     @State private var resultQuery = ""
     @State private var resultTranslationID = ""
+
+    private static var initialQuery: String {
+        #if DEBUG
+            let arguments = ProcessInfo.processInfo.arguments
+            if arguments.contains("--ui-testing"), arguments.contains("--marketing-capture"),
+               arguments.contains("--screenshot-verse")
+            {
+                return "94:6"
+            }
+        #endif
+        return ""
+    }
 
     private struct Request: Equatable {
         let query: String
@@ -38,13 +50,9 @@ struct QuranView: View {
             if request.query.isEmpty {
                 Section {
                     NavigationLink {
-                        QuranSavedVersesView(kind: .favorites, reader: reader, surahs: surahs)
-                    } label: { Label("Favorites", systemImage: "star") }
-                        .accessibilityIdentifier("quran-favorites")
-                    NavigationLink {
-                        QuranSavedVersesView(kind: .notes, reader: reader, surahs: surahs)
-                    } label: { Label("Notes", systemImage: "note.text") }
-                        .accessibilityIdentifier("quran-notes")
+                        QuranSavedVersesView(reader: reader, surahs: surahs)
+                    } label: { Label("Highlights", systemImage: "highlighter") }
+                        .accessibilityIdentifier("quran-highlights")
                 }
             }
             if !matchingSurahs.isEmpty {
@@ -171,7 +179,12 @@ struct QuranTranslationPicker: View {
 
     var body: some View {
         Menu {
-            Button { store.select("auto") } label: {
+            Button {
+                store.select("auto")
+                if !store.activeID.isEmpty, !store.isInstalled(store.activeID) {
+                    store.downloadRequest = QuranTranslation.catalog.first { $0.id == store.activeID }
+                }
+            } label: {
                 Label("Auto", systemImage: store.selection == "auto" ? "checkmark" : "globe")
             }
             Button { store.select("") } label: {
@@ -179,7 +192,12 @@ struct QuranTranslationPicker: View {
             }
             .accessibilityIdentifier("quran-translation-none")
             ForEach(QuranTranslation.catalog) { translation in
-                Button { store.select(translation.id) } label: {
+                Button {
+                    store.select(translation.id)
+                    if !store.isInstalled(translation.id) {
+                        store.downloadRequest = translation
+                    }
+                } label: {
                     Label(locale.localizedString(forIdentifier: translation.language) ?? translation.language,
                           systemImage: symbol(for: translation.id))
                 }.accessibilityIdentifier("quran-translation-option-\(translation.id)")
@@ -192,6 +210,9 @@ struct QuranTranslationPicker: View {
     }
 
     private func symbol(for id: String) -> String {
+        if !store.isInstalled(id) {
+            return "arrow.down.circle"
+        }
         if store.selection == id {
             return "checkmark"
         }
@@ -212,18 +233,29 @@ struct QuranVerseRow: View {
                 Spacer()
                 VerseActions(ayah: ayah, translation: translation)
             }
-            AyahText(ayah: ayah)
-                .lineLimit(preview ? 3 : nil)
+            if preview {
+                AyahText(ayah: ayah).lineLimit(3)
+            } else {
+                HighlightText(text: ayah.text, source: ayah.id, block: "arabic", arabic: true)
+                    .accessibilityIdentifier("quran-arabic-\(ayah.id)")
+            }
             if let translation, let text = ayah.translations[translation.id] {
-                Text(text)
-                    .lineLimit(preview ? 3 : nil)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .environment(\.layoutDirection, Locale(identifier: translation.language).language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight)
-                    .accessibilityIdentifier("quran-translation-\(ayah.id)")
+                Group {
+                    if preview {
+                        Text(text).readingText().lineLimit(3)
+                    } else {
+                        HighlightText(text: text, source: ayah.id, block: translation.id)
+                    }
+                }
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .environment(\.layoutDirection, Locale(identifier: translation.language).language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight)
+                .accessibilityIdentifier("quran-translation-\(ayah.id)")
             }
         }
+        .readingColumn()
         .padding(.vertical, 12)
+        .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
         .textSelection(.enabled)
         .accessibilityElement(children: .contain)
     }
