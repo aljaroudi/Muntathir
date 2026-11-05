@@ -59,7 +59,6 @@ final class QuranUITests: XCTestCase {
         XCTAssertFalse(app.descendants(matching: .any)["quran-translation-1:1"].firstMatch.exists)
     }
 
-
     @MainActor func testMissingTranslationOffersExplicitDownload() {
         let app = openQuran()
         app.buttons["quran-surah-1"].tap()
