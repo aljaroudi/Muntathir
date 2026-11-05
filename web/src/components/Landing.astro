@@ -69,11 +69,12 @@ const schema = {
   </head>
   <body id="top" class="bg-ivory text-emerald antialiased">
     <a class="fixed inset-s-3 top-3 z-50 -translate-y-24 rounded-lg bg-emerald px-5 py-3 text-white focus:translate-y-0" href="#main">{t.skip}</a>
-    <header class="mx-auto flex max-w-5xl items-center justify-between gap-4 border-b border-emerald/15 px-5 py-6 sm:px-8">
+    <header class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 border-b border-emerald/15 px-5 py-6 sm:px-8">
       <a href={paths[locale]} class="flex items-center gap-3 text-xl font-semibold" aria-label={t.name}>
         <img src="/favicon.svg" width="38" height="38" alt="" class="rounded-xl" />{t.name}
       </a>
       <nav aria-label={t.nav.language} class="flex items-center gap-3 text-sm">
+        <a href={locale === "ar" ? "/calendar/" : "/en/calendar/"} class="rounded px-1 py-2">{locale === "ar" ? "التقويم" : "Calendar"}</a>
         <a href="/" lang="ar" hreflang="ar" class="rounded px-1 py-2 aria-[current=page]:underline underline-offset-8" aria-current={locale === "ar" ? "page" : undefined}>العربية</a>
         <span aria-hidden="true" class="text-emerald/35">/</span>
         <a href="/en/" lang="en" hreflang="en" class="rounded px-1 py-2 aria-[current=page]:underline underline-offset-8" aria-current={locale === "en" ? "page" : undefined}>English</a>
@@ -105,6 +106,7 @@ const schema = {
       <section class="border-t border-emerald/15 py-12 sm:py-16" aria-labelledby="calendar-title">
         <h2 id="calendar-title" class="text-2xl font-medium">{t.calendar.title}</h2>
         <p class="mt-3 max-w-2xl text-sm leading-loose text-muted">{t.calendar.description}</p>
+        <a class="me-6 mt-4 inline-flex min-h-11 items-center underline underline-offset-4" href={locale === "ar" ? "/calendar/" : "/en/calendar/"}>{t.calendar.browse}</a>
         <a class="mt-4 inline-flex min-h-11 items-center underline underline-offset-4" href={`webcal://${site.host}/calendar/${locale}.ics`}>{t.calendar.subscribe}</a>
       </section>
     </main>

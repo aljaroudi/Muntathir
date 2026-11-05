@@ -34,7 +34,7 @@ struct HijriMonth: Codable, Hashable, Comparable, Sendable {
     }
 
     var isValid: Bool {
-        (1300 ... 1600).contains(year) && (1 ... 12).contains(month)
+        (1350 ... 1500).contains(year) && (1 ... 12).contains(month)
     }
 
     func advanced(_ count: Int) -> Self {

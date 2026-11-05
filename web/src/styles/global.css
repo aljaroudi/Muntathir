@@ -17,7 +17,9 @@
     font-family: var(--font-quran), serif;
   }
   a:focus-visible,
-  summary:focus-visible {
+  summary:focus-visible,
+  button:focus-visible,
+  select:focus-visible {
     outline: 3px solid var(--color-gold);
     outline-offset: 5px;
   }

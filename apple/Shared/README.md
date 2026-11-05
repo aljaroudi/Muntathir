@@ -2,7 +2,7 @@
 
 ## Calendar rules
 
-Foundation's explicit Umm al-Qura calendar supplies the unconfirmed baseline. The app uses midnight in the selected location's time zone. Manual adjustments are stored as Hijri month/offset pairs, limited to −2 through +2 days. A positive offset advances the Hijri date by moving its start earlier relative to the source calendar. The engine derives Gregorian anchors before applying manual precedence; these are not global offsets. Explicit neighboring anchors must allow 29/30-day months. Provisional intervening months start with baseline lengths and adjust only as needed to reach the next anchor. Baseline boundaries resume when compatible. Supported correction years: 1300–1600 AH; corrections are limited to seven days from the baseline to catch input errors.
+Foundation's explicit Umm al-Qura calendar supplies the unconfirmed baseline. The app uses midnight in the selected location's time zone. Manual adjustments are stored as Hijri month/offset pairs, limited to −2 through +2 days. A positive offset advances the Hijri date by moving its start earlier relative to the source calendar. The engine derives Gregorian anchors before applying manual precedence; these are not global offsets. Explicit neighboring anchors must allow 29/30-day months. Provisional intervening months start with baseline lengths and adjust only as needed to reach the next anchor. Baseline boundaries resume when compatible. Supported correction years: 1350–1500 AH; corrections are limited to seven days from the baseline to catch input errors.
 
 ## Corrections feed
 

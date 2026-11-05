@@ -1,0 +1,10 @@
+---
+import EventCalendar from "../../../components/EventCalendar.astro";
+import { calendarYears } from "../../../calendar-view";
+export function getStaticPaths() {
+  return calendarYears.map(year => ({ params: { year: String(year) }, props: { year } }));
+}
+interface Props { year: number }
+const { year } = Astro.props;
+---
+<EventCalendar locale="en" year={year} />

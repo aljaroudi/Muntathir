@@ -34,7 +34,7 @@ vp create astro --package-manager bun --no-git --no-hooks --no-agent --no-editor
 - `src/styles/global.css`: Tailwind theme tokens, language-level fonts, and shared accessibility defaults. Layout and component styles use Tailwind utilities.
 - `public/social/`: localized 1200×630 social images. Browser typography uses Noto Sans Arabic for both languages and Amiri for the Quran verse through Astro’s Google font provider. Astro downloads and self-hosts the font at build time; the first build requires network access.
 
-The phone screen is an illustration, not a live calculation or exact app screenshot. The download link points to the published App Store listing. Do not add pricing, ratings, or claims without evidence.
+The phone preview uses tracked Arabic and English Today screenshots from `apple/build/marketing/raw/{ar-SA,en-US}/iPhone 17 Pro Max-01-Today.png`. Refresh the copies in `src/assets/today-{ar,en}.png` after recapturing with Fastlane; Astro generates responsive WebP images at build time. The metal frame retains scroll and pointer tilt, with glass reflections from CSS gradients and SVG specular lighting. Reduced motion disables tilt and keeps lighting static. The download link points to the published App Store listing. Do not add pricing, ratings, or claims without evidence.
 
 ## Git hooks
 
@@ -78,3 +78,9 @@ Edit repository-root `shared/events.json` for event dates and localized titles. 
 Publish reviewed announcements to `public/calendar/corrections-v1.json`, then rebuild/deploy to update subscriptions. The feeds never fetch live announcements or publish test fixtures. Each build includes the previous, current, and next five Hijri years. Rebuild at least annually to advance that window. Stable UIDs preserve occurrence identity when dates change. Calendar apps choose their own refresh schedule; the feed suggests 12 hours. Removed occurrences disappear from the next complete feed.
 
 Vercel must include files outside `web` as described above. After deploying, check both HTTPS `.ics` URLs return HTTP 200 with `Content-Type: text/calendar; charset=utf-8`, and test subscription in a calendar client.
+
+## Event calendar
+
+`/calendar/` and `/en/calendar/` show all twelve months of the build’s current Hijri year without JavaScript. Browser enhancement enables a year dropdown for 1350–1500 with Gregorian year ranges, Today, and current-day countdowns. The visitor’s local civil date determines Today; dates do not roll over at sunset. Future unconfirmed months are labeled as estimates. The page shares event validation, month resolution, and occurrence generation with ICS feeds, using the same checked-in corrections and shared events. Rebuild after publishing confirmations. No native preferences or personal offsets are used.
+
+Year pages at `/calendar/1350/` through `/calendar/1500/` (and `/en/calendar/{year}/`) are pre-rendered with year-specific titles, canonical URLs, language alternates, and sitemap entries. The base calendar URL shows the current year and declares that year's page as canonical. The year dropdown navigates to these URLs; ordinary links under Browse years work without JavaScript and let crawlers discover every year. Month headings and event headings have fragment links for sharing. Rebuild to publish new corrections and refresh expected-date labels.

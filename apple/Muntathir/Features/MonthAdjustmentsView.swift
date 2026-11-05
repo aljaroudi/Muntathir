@@ -28,10 +28,10 @@ struct MonthAdjustmentsView: View {
         Form {
             HStack {
                 Button("Previous month", systemImage: "chevron.backward") { moveMonth(-1) }
-                    .disabled(month.year <= 1300 && month.month == 1)
+                    .disabled(month.year <= 1350 && month.month == 1)
                 Spacer()
                 Button("Next month", systemImage: "chevron.forward") { moveMonth(1) }
-                    .disabled(month.year >= 1600 && month.month == 12)
+                    .disabled(month.year >= 1500 && month.month == 12)
             }.labelStyle(.iconOnly)
             Text("Hijri month: \(month.month, format: .number) / \(month.year, format: .number.grouping(.never))")
             Stepper(value: $offset, in: -2 ... 2) {

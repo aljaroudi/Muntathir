@@ -29,7 +29,7 @@ struct CalendarScreen: View {
             VStack(spacing: 0) {
                 HStack {
                     Button("Previous year", systemImage: "chevron.backward") { selectedYear = year - 1 }
-                        .labelStyle(.iconOnly).frame(minWidth: 44, minHeight: 44).disabled(year <= 1300)
+                        .labelStyle(.iconOnly).frame(minWidth: 44, minHeight: 44).disabled(year <= 1350)
                     Spacer()
                     Menu {
                         ForEach(months, id: \.self) { month in
@@ -48,7 +48,7 @@ struct CalendarScreen: View {
                     .accessibilityIdentifier("calendar-year")
                     Spacer()
                     Button("Next year", systemImage: "chevron.forward") { selectedYear = year + 1 }
-                        .labelStyle(.iconOnly).frame(minWidth: 44, minHeight: 44).disabled(year >= 1600)
+                        .labelStyle(.iconOnly).frame(minWidth: 44, minHeight: 44).disabled(year >= 1500)
                 }.padding(.horizontal, 20).padding(.vertical, 8)
                 List {
                     ForEach(months, id: \.self) { month in
@@ -107,13 +107,13 @@ struct CalendarScreen: View {
                 VStack(spacing: 20) {
                     HStack {
                         Button("Previous month", systemImage: "chevron.backward") { pickerMonth = month.advanced(-1) }
-                            .labelStyle(.iconOnly).disabled(month == HijriMonth(year: 1300, month: 1))
+                            .labelStyle(.iconOnly).disabled(month == HijriMonth(year: 1350, month: 1))
                         Spacer()
                         Text(monthTitle(month, engine: engine)).font(.headline).multilineTextAlignment(.center)
                             .accessibilityIdentifier("calendar-month-title")
                         Spacer()
                         Button("Next month", systemImage: "chevron.forward") { pickerMonth = month.advanced(1) }
-                            .labelStyle(.iconOnly).disabled(month == HijriMonth(year: 1600, month: 12))
+                            .labelStyle(.iconOnly).disabled(month == HijriMonth(year: 1500, month: 12))
                     }
                     if isExpected(month, engine: engine) {
                         Text("Future dates are estimates until the month’s moonsighting is confirmed or the month begins.")
