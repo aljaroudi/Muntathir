@@ -3,7 +3,7 @@ import dataset from "../../../../shared/figures/figures.json"
 import schema from "../../../../shared/figures/schema.json?raw"
 
 // Add IDs here once their records have been verified.
-const publishedIDs = new Set(["prophet-muhammad"])
+const publishedIDs = new Set(["prophet-muhammad", "fatima-al-zahra", "ali-ibn-abi-talib", "hasan-ibn-ali", "husayn-ibn-ali"])
 
 function publishedDataset() {
   const people = dataset.people.filter(person => publishedIDs.has(person.id))
