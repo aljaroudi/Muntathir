@@ -23,11 +23,12 @@ concurrency:
 jobs:
   deploy:
     if: >-
-      github.actor == github.repository_owner &&
-      ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-       (github.event.pull_request.head.repo.full_name == github.repository &&
-        ((github.event.action != 'closed' && !github.event.pull_request.draft) ||
-         (github.event.action == 'closed' && github.event.pull_request.merged))))
+      ${{ github.actor == 'aljaroudi' &&
+          (github.event_name == 'workflow_dispatch' ||
+           (github.event_name == 'pull_request' &&
+            github.event.pull_request.head.repo.id == github.event.repository.id &&
+            !github.event.pull_request.draft &&
+            (github.event.action != 'closed' || github.event.pull_request.merged == true))) }}
     runs-on: [self-hosted, macOS, ARM64, muntathir-deploy]
     timeout-minutes: 120
     defaults:
