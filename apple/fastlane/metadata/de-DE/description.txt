@@ -17,3 +17,5 @@ HADITHE
 Laden Sie die Hadith-Bibliothek herunter. Durchstöbern Sie Sammlungen und Kapitel, suchen Sie auf Arabisch und Englisch und lesen Sie offline. Speichern Sie Favoriten, ergänzen Sie Notizen und teilen Sie Überlieferungen als Text oder Bild.
 
 Markiere Passagen im Koran und in Hadithen und finde sie unter Markierungen wieder.
+
+Finde Koranverse und Hadithe nach ihrer Bedeutung. Wenn die lokale Suche nichts findet, probiere die Onlinesuche in derselben Suchleiste. Das gewählte Buch und Kapitel bleiben berücksichtigt. Die lokale Textsuche bleibt offline verfügbar.

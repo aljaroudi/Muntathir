@@ -1,3 +1,1 @@
-Markiere Passagen im Koran und in Hadithen und finde sie unter Markierungen wieder.
-
-Entdecken Sie Hadith-Sammlungen mit arabischer und englischer Suche, Offline-Lesen nach dem Download, Favoriten, Notizen und Teilen.
+Finde Koranverse und Hadithe nach ihrer Bedeutung. Wenn die lokale Suche nichts findet, probiere die Onlinesuche in derselben Suchleiste. Das gewählte Buch und Kapitel bleiben berücksichtigt. Die lokale Textsuche bleibt offline verfügbar.

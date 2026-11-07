@@ -3,7 +3,6 @@ name: Local Apple deployment
 on:
   pull_request:
     branches: [main]
-    paths: ['apple/**', '.github/workflows/apple-deploy.yml']
     types: [opened, synchronize, reopened, ready_for_review, closed]
   workflow_dispatch:
     inputs:
@@ -24,11 +23,12 @@ concurrency:
 jobs:
   deploy:
     if: >-
-      github.actor == github.repository_owner &&
-      ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-       (github.event.pull_request.head.repo.full_name == github.repository &&
-        ((github.event.action != 'closed' && !github.event.pull_request.draft) ||
-         (github.event.action == 'closed' && github.event.pull_request.merged))))
+      ${{ github.actor == github.repository_owner &&
+          (github.event_name == 'workflow_dispatch' ||
+           (github.event_name == 'pull_request' &&
+            github.event.pull_request.head.repo.id == github.event.repository.id &&
+            !github.event.pull_request.draft &&
+            (github.event.action != 'closed' || github.event.pull_request.merged == true))) }}
     runs-on: [self-hosted, macOS, ARM64, muntathir-deploy]
     timeout-minutes: 120
     defaults:
@@ -51,6 +51,8 @@ jobs:
           export BUNDLE_PATH="$RUNNER_TOOL_CACHE/muntathir-bundle"
           bundle install
           bundle exec fastlane check
+      - name: Prepare local content in isolated checkout
+        run: python3 fastlane/prepare_content.py
       - name: Run Fastlane
         env:
           DEPLOY_LANE: ${{ github.event_name == 'workflow_dispatch' && inputs.lane || (github.event.pull_request.merged && 'release' || 'beta') }}
@@ -73,6 +75,7 @@ jobs:
             apple/build/marketing/store
             apple/build/marketing/previews
             apple/build/marketing/duo-previews
+            apple/build/symbols
             apple/build/tests
             apple/build/logs
             apple/fastlane/report.xml

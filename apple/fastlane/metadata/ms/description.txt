@@ -17,3 +17,5 @@ HADIS
 Muat turun pustaka hadis, kemudian layari koleksi dan bab, cari dalam bahasa Arab dan Inggeris, dan baca di luar talian. Simpan kegemaran, tambah nota, dan kongsi riwayat sebagai teks atau imej.
 
 Serlahkan petikan al-Quran dan hadis, kemudian baca semula dalam Sorotan.
+
+Cari ayat al-Quran dan hadis mengikut makna. Jika carian setempat tidak menemui hasil, cuba carian dalam talian dari bar yang sama. Buku dan bab yang dipilih dikekalkan. Carian teks setempat masih tersedia di luar talian.

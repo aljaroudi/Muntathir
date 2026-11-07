@@ -41,13 +41,8 @@ def capture(devices, locales, os, derived_data, buildlog_path, compact = false)
   Snapshot::Runner.new.work
 end
 
-standard = devices - ["iPhone Duo"]
-capture(standard, locales, ENV.fetch("SCREENSHOT_IOS_VERSION", "27.0"), derived_data, buildlog_path) unless standard.empty?
-if devices.include?("iPhone Duo")
-  compact = locales & %w[ja ru ur-PK]
-  regular = locales - compact
-  capture(["iPhone Duo"], regular, ENV.fetch("SCREENSHOT_DUO_IOS_VERSION", "27.2"), derived_data, buildlog_path) unless regular.empty?
-  capture(["iPhone Duo"], compact, ENV.fetch("SCREENSHOT_DUO_IOS_VERSION", "27.2"), derived_data, buildlog_path, true) unless compact.empty?
+MuntathirRelease.capture_passes(devices, locales).each do |pass_devices, pass_locales, runtime, compact|
+  capture(pass_devices, pass_locales, runtime, derived_data, buildlog_path, compact)
 end
 screens = JSON.parse(File.read("fastlane/marketing/headlines.json")).fetch("en-US").keys
 missing = devices.product(locales, screens).reject do |device, locale, screen|
@@ -55,4 +50,7 @@ missing = devices.product(locales, screens).reject do |device, locale, screen|
   File.file?(path) && File.mtime(path) >= capture_started
 end
 raise "Screenshots not regenerated: #{missing.map { |device, locale, screen| "#{locale}/#{device}-#{screen}" }.join(', ')}" unless missing.empty?
+if File.expand_path(derived_data) == File.join(MuntathirRelease::ROOT, "build/marketing/TranslationDerivedData")
+  MuntathirRelease.cleanup_build_artifacts!(paths: ["build/marketing/TranslationDerivedData"])
+end
 puts "CAPTURE COMPLETE"

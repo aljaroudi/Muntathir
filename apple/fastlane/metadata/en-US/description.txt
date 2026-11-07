@@ -24,3 +24,5 @@ HADITH
 Download the Hadith library, then browse collections and chapters, search Arabic and English, and read offline. Save favorites, add notes, and share narrations as text or images.
 
 Highlight Quran and Hadith passages and revisit them in Highlights.
+
+Find Quran verses and Hadith by meaning. When local search finds nothing, try online search from the same search bar. Your selected book and chapter stay in scope. Local text search remains available offline.

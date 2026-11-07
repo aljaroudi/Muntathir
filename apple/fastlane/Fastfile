@@ -20,6 +20,12 @@ platform :ios do
               skip_testing: ["MuntathirUITests/MarketingScreenshotTests", "MuntathirUITests/QuranScreenshotRefreshTests"], parallel_testing: false,
               output_directory: "./build/tests", buildlog_path: "./build/logs/tests",
               derived_data_path: "./build/DerivedData")
+    MuntathirRelease.cleanup_build_artifacts!(paths: ["build/DerivedData"])
+  end
+
+  desc "Remove disposable local build caches; keep IPAs, symbols, media and diagnostics"
+  lane :cleanup do
+    MuntathirRelease.cleanup_build_artifacts!
   end
 
   desc "Capture localized iPhone, iPad and Duo screenshots"
@@ -33,8 +39,8 @@ platform :ios do
   end
 
   desc "Record continuous sunrise-to-sunset simulator previews in every store locale"
-  lane :previews do
-    sh("bundle", "exec", "ruby", File.join(__dir__, "previews.rb"))
+  lane :previews do |options|
+    sh("bundle", "exec", "ruby", File.join(__dir__, "previews.rb"), options[:devices].to_s)
   end
 
   desc "Capture required localized Apple Watch store screenshots"
@@ -117,11 +123,14 @@ platform :ios do
     # Gym's project parser cannot open Xcode 27 JSON projects; let Xcode archive and export directly.
     sh("xcodebuild", "-quiet", "-project", File.join(MuntathirRelease::ROOT, "Muntathir.xcodeproj"), "-scheme", "Muntathir",
        "-configuration", "Release", "-destination", "generic/platform=iOS", "-archivePath", archive,
+       "-derivedDataPath", File.join(output, "ArchiveDerivedData"),
        "MARKETING_VERSION=#{options.fetch(:version)}", "CURRENT_PROJECT_VERSION=#{number}", *provisioning, "archive")
     sh("xcodebuild", "-quiet", "-exportArchive", "-archivePath", archive, "-exportPath", output,
        "-exportOptionsPlist", export, *provisioning)
     ipa = File.join(output, "Muntathir.ipa")
     sh("python3", File.join(__dir__, "../AssetPacks/assets.py"), "check-bundle", ipa)
+    MuntathirRelease.retire_archive!(archive, symbols: File.join(output, "symbols", "#{options.fetch(:version)}-#{number}"))
+    MuntathirRelease.cleanup_build_artifacts!(paths: ["build/ArchiveDerivedData"])
     { ipa: ipa, build: number }
   end
 
@@ -222,7 +231,7 @@ platform :ios do
     automatic = context[:automatic_release] == true || context[:automatic_release] == "true"
     options = { metadata_path: "./fastlane/metadata", screenshots_path: "./build/marketing/store",
                 app_previews_path: "./build/marketing/previews", preview_frame_time_code: "00:00:05:00",
-                overwrite_screenshots: context[:replace_media] == true, overwrite_preview_videos: context[:replace_media] == true,
+                overwrite_screenshots: true, overwrite_preview_videos: context[:replace_media] == true,
                 automatic_release: automatic, force: true, precheck_include_in_app_purchases: false }
     if context[:screenshots_only]
       options.delete(:app_previews_path)
@@ -265,7 +274,7 @@ platform :ios do
     require "spaceship"
     Spaceship::ConnectAPI::ReviewSubmission.prepend(MuntathirRelease::ReviewAssetPacks)
     UI.header("Uploading metadata and media; then submitting App Review")
-    upload_to_app_store(**store_options(app: context.fetch(:app), automatic_release: options[:automatic_release], screenshots_only: screenshots_only),
+    upload_to_app_store(**store_options(app: context.fetch(:app), automatic_release: options.fetch(:automatic_release, true), screenshots_only: screenshots_only),
                         **binary, app_version: context.fetch(:version), submit_for_review: true)
     UI.success("App Review submitted.")
   end

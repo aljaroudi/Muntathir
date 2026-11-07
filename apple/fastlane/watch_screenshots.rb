@@ -64,3 +64,5 @@ ensure
     original_preferences ? File.binwrite(preferences, original_preferences) : FileUtils.rm_f(preferences)
   end
 end
+
+MuntathirRelease.cleanup_build_artifacts!(paths: ["build/WatchCapture"])

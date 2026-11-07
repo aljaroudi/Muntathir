@@ -16,6 +16,11 @@ def rejects(message)
   raise message
 end
 
+passes = MuntathirRelease.capture_passes(MuntathirRelease::DEVICES, %w[en-US ja])
+assert(passes.map { |pass| pass[0] }.flatten.uniq.sort == MuntathirRelease::DEVICES.sort, "Capture device missing")
+assert(passes.select { |pass| pass[0] == ["iPhone Duo"] }.map { |pass| [pass[1], pass[3]] } == [[["en-US"], false], [["ja"], true]], "Duo locale capture layouts changed")
+assert(!MuntathirRelease::PREVIEW_DEVICES.include?("iPhone Duo"), "Unsupported preview must not block releases")
+
 MuntathirRelease.validate_metadata!
 MuntathirRelease.validate_metadata!(File.join(__dir__, "listing-drafts"), locales: ["fa"])
 require "fastlane_core/languages"
@@ -110,8 +115,8 @@ begin
         headlines.fetch(locale).each_key { |key| File.write(File.join(directory, "#{device}-#{key}.png"), "") }
       end
       File.write(File.join(directory, "Apple Watch Series 12 (46mm)-01-PrayerTimes.png"), "")
-      %w[IPHONE_67 IPAD_PRO_3GEN_129 IPHONE_DUO].each do |type|
-        folder = type == "IPHONE_DUO" ? "duo-previews" : "previews"
+      %w[IPHONE_67 IPAD_PRO_3GEN_129].each do |type|
+        folder = "previews"
         output = File.join(root, "build/marketing", folder, locale)
         FileUtils.mkdir_p(output)
         File.write(File.join(output, "01-#{type}-SunriseToSunset.mp4"), "")
@@ -125,6 +130,27 @@ begin
 ensure
   MuntathirRelease.define_singleton_method(:validate_video!, &original_video_check)
 end
+
+# Cleanup removes only lane-owned caches, preserves release files, and rejects redirected paths.
+Dir.mktmpdir do |root|
+  FileUtils.mkdir_p(File.join(root, "build/DerivedData"))
+  File.write(File.join(root, "build/keep.ipa"), "release")
+  MuntathirRelease.cleanup_build_artifacts!(root: root)
+  assert(!File.exist?(File.join(root, "build/DerivedData")), "Disposable cache retained")
+  assert(File.file?(File.join(root, "build/keep.ipa")), "Release IPA deleted")
+  rejects("Unknown cleanup path accepted") { MuntathirRelease.cleanup_build_artifacts!(root: root, paths: ["build"]) }
+  File.symlink(root, File.join(root, "build/DerivedData"))
+  rejects("Symlink cleanup accepted") { MuntathirRelease.cleanup_build_artifacts!(root: root) }
+  archive = File.join(root, "test.xcarchive")
+  FileUtils.mkdir_p(File.join(archive, "dSYMs"))
+  File.write(File.join(archive, "dSYMs/app.dSYM"), "symbols")
+  symbols = File.join(root, "symbols")
+  MuntathirRelease.retire_archive!(archive, symbols: symbols)
+  assert(!File.exist?(archive) && File.read(File.join(symbols, "app.dSYM")) == "symbols", "Archive cleanup lost symbols")
+end
+# Lane wiring tests must never clean the developer's real artifacts.
+MuntathirRelease.define_singleton_method(:cleanup_build_artifacts!) { |**_| }
+MuntathirRelease.define_singleton_method(:retire_archive!) { |*_, **_| }
 
 # Exercise lane wiring without network access, builds, uploads, or credentials.
 module UI
@@ -214,8 +240,8 @@ Dir.mktmpdir do |dir|
 end
 check.release
 release = check.calls.reverse.find { |name, _| name == :upload_to_app_store }.last
-assert(release[:submit_for_review] && release[:automatic_release] == false, "Default release must submit with manual publication")
-assert(release[:overwrite_screenshots] == false && release[:overwrite_preview_videos] == false, "Existing assets must not be deleted")
+assert(release[:submit_for_review] && release[:automatic_release] == true, "Default release must publish automatically after approval")
+assert(release[:overwrite_screenshots] == true && release[:overwrite_preview_videos] == false, "Screenshots must be replaced while existing previews are preserved")
 check.define_singleton_method(:processed_build) { |**_| Struct.new(:version).new("10") }
 check.release(build: "10")
 reused = check.calls.reverse.find { |name, _| name == :upload_to_app_store }.last
@@ -246,7 +272,10 @@ rejects("Release ignored failing tests") { check.release }
 assert(check.calls.count { |name, _| [:upload_to_app_store, :upload_to_testflight].include?(name) } == uploads_before, "Uploaded after failed tests")
 workflow = File.read(File.expand_path("../../.github/workflows/apple-deploy.yml", __dir__))
 assert(workflow.include?("cancel-in-progress: false"), "Deployment queue must not cancel uploads")
-assert(workflow.include?("head.repo.full_name == github.repository"), "Fork PR guard missing")
+assert(workflow.include?("head.repo.id == github.event.repository.id"), "Fork PR guard missing")
 assert(workflow.include?("github.actor == github.repository_owner"), "Owner guard missing")
 assert(workflow.include?("persist-credentials: false"), "Checkout credentials must not persist")
+assert(workflow.include?("github.event.pull_request.merged && 'release' || 'beta'"), "PR and merge deployment lanes changed")
+assert(workflow.include?("types: [opened, synchronize, reopened, ready_for_review, closed]"), "PR lifecycle triggers missing")
+assert(!workflow.include?("    paths:"), "Deployment must run for every eligible PR")
 puts "Metadata, version selection, fail-closed validation, deployment lanes and workflow guards passed."

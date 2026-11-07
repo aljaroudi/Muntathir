@@ -3,6 +3,7 @@ require "addressable/uri"
 require "fileutils"
 require "open3"
 require_relative "asset_packs"
+require_relative "cleanup"
 
 module MuntathirRelease
   # Fastlane 2.241.1 omits editable versions already attached to a draft review.
@@ -24,6 +25,25 @@ module MuntathirRelease
   # Apple does not support Persian store metadata; its copy stays in listing-drafts/fa.
   LOCALES = %w[en-US ar-SA fr-FR de-DE id it ja ms ru es-ES tr ur-PK zh-Hans zh-Hant].freeze
   DEVICES = ["iPhone 17 Pro Max", "iPad Pro 13-inch (M5)", "iPhone Duo"].freeze
+  PREVIEW_DEVICES = DEVICES.reject { |name| name == "iPhone Duo" }.freeze
+
+  def self.capture_runtime(device)
+    device == "iPhone Duo" ? ENV.fetch("SCREENSHOT_DUO_IOS_VERSION", "27.2") : ENV.fetch("SCREENSHOT_IOS_VERSION", "27.0")
+  end
+
+  def self.capture_passes(devices, locales)
+    standard = devices - ["iPhone Duo"]
+    passes = standard.empty? ? [] : [[standard, locales, capture_runtime(standard.first), false]]
+    if devices.include?("iPhone Duo")
+      # These locales need the compact capture layout to keep headlines/content within the outer display.
+      compact = locales & %w[ja ru ur-PK]
+      regular = locales - compact
+      passes << [["iPhone Duo"], regular, capture_runtime("iPhone Duo"), false] unless regular.empty?
+      passes << [["iPhone Duo"], compact, capture_runtime("iPhone Duo"), true] unless compact.empty?
+    end
+    passes
+  end
+
   LIMITS = { "name" => 30, "subtitle" => 30, "keywords" => 100, "description" => 4000,
              "promotional_text" => 170, "release_notes" => 4000 }.freeze
 
@@ -63,8 +83,8 @@ module MuntathirRelease
       watch = File.join(root, "build/marketing/store", locale, "Apple Watch Series 12 (46mm)-01-PrayerTimes.png")
       raise "Missing required Apple Watch screenshot for #{locale}; run watch_screenshots" unless File.file?(watch)
       next if screenshots_only
-      %w[IPHONE_67 IPAD_PRO_3GEN_129 IPHONE_DUO].each do |type|
-        folder = type == "IPHONE_DUO" ? "duo-previews" : "previews"
+      %w[IPHONE_67 IPAD_PRO_3GEN_129].each do |type|
+        folder = "previews"
         path = File.join(root, "build/marketing", folder, locale, "01-#{type}-SunriseToSunset.mp4")
         raise "Missing preview #{path}; run marketing" unless File.file?(path)
         validate_video!(path, type.start_with?("IPAD") ? [1200, 1600] : [886, 1920])

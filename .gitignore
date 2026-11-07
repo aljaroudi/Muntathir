@@ -27,3 +27,12 @@ apple/fastlane/Preview.html
 
 # Python
 __pycache__
+
+# Semantic search credentials and generated corpus/batch state
+backend/.env*
+!backend/.env.example
+backend/.venv/
+backend/work/
+apple/Muntathir/Resources/SemanticSearchConfiguration.plist
+
+backend/api/node_modules/

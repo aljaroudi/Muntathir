@@ -31,6 +31,14 @@ Validate local metadata and automation checks without Apple access
 
 Run unit and UI regression tests, excluding marketing captures
 
+### ios cleanup
+
+```sh
+[bundle exec] fastlane ios cleanup
+```
+
+Remove disposable local build caches; keep IPAs, symbols, media and diagnostics
+
 ### ios screenshots
 
 ```sh
