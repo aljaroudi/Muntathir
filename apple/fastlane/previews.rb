@@ -5,10 +5,10 @@ $stdout.sync = true
 Dir.chdir(MuntathirRelease::ROOT)
 root = File.expand_path("build/marketing")
 all_devices = JSON.parse(MuntathirRelease.run!("xcrun", "simctl", "list", "devices", "available", "--json")).fetch("devices")
-names = ARGV.empty? ? MuntathirRelease::DEVICES : ARGV
+names = ARGV[0].to_s.empty? ? MuntathirRelease::PREVIEW_DEVICES : ARGV[0].split(",")
 raise "Unknown capture device" unless (names - MuntathirRelease::DEVICES).empty?
 names.each do |name|
-  version = name == "iPhone Duo" ? ENV.fetch("SCREENSHOT_DUO_IOS_VERSION", "27.2") : ENV.fetch("SCREENSHOT_IOS_VERSION", "27.0")
+  version = MuntathirRelease.capture_runtime(name)
   runtime = "com.apple.CoreSimulator.SimRuntime.iOS-#{version.tr('.', '-')}"
   devices = all_devices.fetch(runtime) { raise "Install iOS #{version} in Xcode." }
   device = devices.find { |d| d["name"] == name && d["state"] == "Shutdown" } || devices.find { |d| d["name"] == name }

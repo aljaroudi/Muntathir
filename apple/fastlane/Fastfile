@@ -39,8 +39,8 @@ platform :ios do
   end
 
   desc "Record continuous sunrise-to-sunset simulator previews in every store locale"
-  lane :previews do
-    sh("bundle", "exec", "ruby", File.join(__dir__, "previews.rb"))
+  lane :previews do |options|
+    sh("bundle", "exec", "ruby", File.join(__dir__, "previews.rb"), options[:devices].to_s)
   end
 
   desc "Capture required localized Apple Watch store screenshots"
@@ -231,7 +231,7 @@ platform :ios do
     automatic = context[:automatic_release] == true || context[:automatic_release] == "true"
     options = { metadata_path: "./fastlane/metadata", screenshots_path: "./build/marketing/store",
                 app_previews_path: "./build/marketing/previews", preview_frame_time_code: "00:00:05:00",
-                overwrite_screenshots: context[:replace_media] == true, overwrite_preview_videos: context[:replace_media] == true,
+                overwrite_screenshots: true, overwrite_preview_videos: context[:replace_media] == true,
                 automatic_release: automatic, force: true, precheck_include_in_app_purchases: false }
     if context[:screenshots_only]
       options.delete(:app_previews_path)

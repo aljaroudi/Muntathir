@@ -1,6 +1,6 @@
 # Apple release automation
 
-Run commands from `apple/`. The project pins Fastlane 2.241.1 through Bundler; the machine-wide Fastlane installation is unchanged. `README.md` is Fastlane's generated lane reference. Keep project setup notes here.
+Run commands from `apple/`. The project pins Fastlane 2.241.2 through Bundler; the machine-wide Fastlane installation is unchanged. `README.md` is Fastlane's generated lane reference. Keep project setup notes here.
 
 ```sh
 export PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/bin:$PATH"
@@ -15,8 +15,8 @@ bundle exec fastlane marketing
 - `screenshots`: capture Today, Calendar, Quran, and Qibla in all 14 supported store locales on iPhone 17 Pro Max, iPad Pro 13-inch (M5), and iPhone Duo.
 - `watch_screenshots`: capture the real Watch prayer list in every store locale at 416 × 496, using a temporary Mecca connectivity cache that is restored afterward.
 - `style`: add device bezels, gradient backgrounds and native text rendering for Arabic shaping.
-- `previews`: record 15-second sunrise-to-sunset videos on all three devices.
-- `marketing`: run capture, styling and preview generation.
+- `previews`: record uploadable 15-second iPhone/iPad videos. Optional `previews devices:"iPhone Duo"` exports Duo videos for manual upload.
+- `marketing`: capture/style all supported screenshots, including Duo, and generate uploadable previews. Unsupported Duo previews never block release.
 - `tests`: run unit/UI regressions, excluding marketing captures.
 - `readiness` / `readiness release:true`: read TestFlight / App Store prerequisites without changing remote data.
 - `build`: export a signed IPA without uploading.
@@ -44,11 +44,11 @@ Generated files live under ignored `build/marketing/`:
 - `watch/`: native Watch captures required for the embedded companion.
 - `raw/`: original screenshots and snapshot HTML summary.
 - `frames/`: intermediate bezel images.
-- `store/`: styled store screenshots, 224 files across iPhone, iPad, Duo and Apple Watch in 14 locales.
+- `store/`: styled store screenshots, screenshots across iPhone, iPad, Duo and Apple Watch in 14 locales.
 - `previews/`: 15-second standard iPhone/iPad videos and start/middle/end QA frames.
 - `duo-previews/`: 15-second Duo videos at 886 × 1920, with QA frames. Duo keeps the native screen proportions inside a neutral frame and background on Apple’s required 886 × 1920 canvas.
 
-**Duo preview upload limitation:** Fastlane 2.241.1 supports Duo screenshots but has no Duo preview upload type. Duo videos are exported separately for manual App Store Connect upload. Keeping them outside automatic preview discovery prevents silent skipping or assignment to another device slot. An upload integration can move to Apple's App Asset Library when that work is requested; no undocumented preview enum is invented here.
+**Duo preview upload limitation:** Fastlane 2.241.2 supports Duo screenshots but has no Duo preview upload type. Optional Duo videos are exported separately with `bundle exec fastlane previews devices:"iPhone Duo"` for manual App Store Connect upload. Keeping them outside automatic preview discovery prevents silent skipping or assignment to another device slot. An upload integration can move to Apple's App Asset Library when that work is requested; no undocumented preview enum is invented here.
 
 Inspect all locales before upload: readable headlines, Arabic direction and joining, four visible prayer rows, no prompts, and Sun movement from start to finish. Simulator captures do not establish hardware compass, notifications or Watch behavior.
 
@@ -68,11 +68,11 @@ Readiness uses existing store fields plus explicitly managed local values. Missi
 
 Owner-created, same-repository non-draft PRs to `main` upload to TestFlight Public. Merging submits App Review with automatic publication after approval. Fork PRs are excluded. Manual dispatch on `main` supports individual lanes. Jobs serialize and never cancel active uploads. Artifacts retain captures, supported/manual preview exports, tests and deployment logs for 14 days. Never grant untrusted contributors execution access on this persistent signing machine.
 
-Commit/push the workflow to activate it in GitHub. Binary upload, Apple processing and review submission are separate stages; an upload does not imply approval. TestFlight processing times out after 30 minutes. Check App Store Connect before retrying, and use `assets` to retry metadata/media without rebuilding. Existing remote assets are not cleared automatically; remove superseded sets manually where necessary to stay within Apple limits.
+Commit/push the workflow to activate it in GitHub. Binary upload, Apple processing and review submission are separate stages; an upload does not imply approval. TestFlight processing times out after 30 minutes. Check App Store Connect before retrying, and use `assets` to retry metadata/media without rebuilding. Existing screenshot sets for uploaded locales are cleared before replacement uploads; local media validation runs first. Preview replacement is controlled separately.
 
 Processed asset packs available for internal testing do not satisfy the external TestFlight gate. Apple requires submitting a build before submitting its associated packs for external review. Use `build` to export an IPA, upload it for internal testing through Transporter, then submit the processed pack versions in App Store Connect. Rerun `readiness` after approval. See [Apple’s asset-pack testing instructions](https://developer.apple.com/help/app-store-connect/test-a-beta-version/test-apple-hosted-asset-packs).
 
-References: [Fastlane 2.241.1](https://github.com/fastlane/fastlane/releases/tag/2.241.1), [snapshot](https://docs.fastlane.tools/actions/snapshot/), [frameit](https://docs.fastlane.tools/actions/frameit/), [App Asset Library release notes](https://developer.apple.com/documentation/appstoreconnectapi/app-store-connect-api-4-5-1-release-notes).
+References: [Fastlane 2.241.2](https://github.com/fastlane/fastlane/releases/tag/2.241.2), [snapshot](https://docs.fastlane.tools/actions/snapshot/), [frameit](https://docs.fastlane.tools/actions/frameit/), [App Asset Library release notes](https://developer.apple.com/documentation/appstoreconnectapi/app-store-connect-api-4-5-1-release-notes).
 
 Apple requires 15–30 seconds for App Store previews. The capture clock advances the full Sun movement over 15 seconds. Today and daily ayah share one screenshot and headline. Duo screenshots clip to rounded corners inside a dark bezel.
 
@@ -122,3 +122,7 @@ upload, and submit App Store review. Publication is automatic after Apple approv
 Deployments queue on this Mac; its runner and signing session must be available.
 Push the workflow to GitHub to activate changes. Workflow artifacts include symbols
 for 14 days; retain local symbols for older builds.
+
+Fastlane 2.241.2 was checked for Duo support: screenshot support remains available, but its released preview types still omit Duo. Duo preview exports remain separate for manual upload.
+
+Capture runtime and locale/layout rules are maintained in `support.rb`. Screenshot passes remain sequential to avoid Snapshot cache collisions. Duo-specific display selection, size validation and neutral framing remain necessary compatibility handling. Routine releases need no separate Duo command.

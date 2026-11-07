@@ -16,6 +16,11 @@ def rejects(message)
   raise message
 end
 
+passes = MuntathirRelease.capture_passes(MuntathirRelease::DEVICES, %w[en-US ja])
+assert(passes.map { |pass| pass[0] }.flatten.uniq.sort == MuntathirRelease::DEVICES.sort, "Capture device missing")
+assert(passes.select { |pass| pass[0] == ["iPhone Duo"] }.map { |pass| [pass[1], pass[3]] } == [[["en-US"], false], [["ja"], true]], "Duo locale capture layouts changed")
+assert(!MuntathirRelease::PREVIEW_DEVICES.include?("iPhone Duo"), "Unsupported preview must not block releases")
+
 MuntathirRelease.validate_metadata!
 MuntathirRelease.validate_metadata!(File.join(__dir__, "listing-drafts"), locales: ["fa"])
 require "fastlane_core/languages"
@@ -110,8 +115,8 @@ begin
         headlines.fetch(locale).each_key { |key| File.write(File.join(directory, "#{device}-#{key}.png"), "") }
       end
       File.write(File.join(directory, "Apple Watch Series 12 (46mm)-01-PrayerTimes.png"), "")
-      %w[IPHONE_67 IPAD_PRO_3GEN_129 IPHONE_DUO].each do |type|
-        folder = type == "IPHONE_DUO" ? "duo-previews" : "previews"
+      %w[IPHONE_67 IPAD_PRO_3GEN_129].each do |type|
+        folder = "previews"
         output = File.join(root, "build/marketing", folder, locale)
         FileUtils.mkdir_p(output)
         File.write(File.join(output, "01-#{type}-SunriseToSunset.mp4"), "")
@@ -236,7 +241,7 @@ end
 check.release
 release = check.calls.reverse.find { |name, _| name == :upload_to_app_store }.last
 assert(release[:submit_for_review] && release[:automatic_release] == true, "Default release must publish automatically after approval")
-assert(release[:overwrite_screenshots] == false && release[:overwrite_preview_videos] == false, "Existing assets must not be deleted")
+assert(release[:overwrite_screenshots] == true && release[:overwrite_preview_videos] == false, "Screenshots must be replaced while existing previews are preserved")
 check.define_singleton_method(:processed_build) { |**_| Struct.new(:version).new("10") }
 check.release(build: "10")
 reused = check.calls.reverse.find { |name, _| name == :upload_to_app_store }.last
