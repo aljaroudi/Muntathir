@@ -126,3 +126,5 @@ for 14 days; retain local symbols for older builds.
 Fastlane 2.241.2 was checked for Duo support: screenshot support remains available, but its released preview types still omit Duo. Duo preview exports remain separate for manual upload.
 
 Capture runtime and locale/layout rules are maintained in `support.rb`. Screenshot passes remain sequential to avoid Snapshot cache collisions. Duo-specific display selection, size validation and neutral framing remain necessary compatibility handling. Routine releases need no separate Duo command.
+
+The isolated runner checkout stages its ignored Hadith database from `MUNTATHIR_CONTENT_ROOT` (default `~/code/Muntathir`). Corpus validation runs before tests; the public search URL is configured without copying credentials. Prepare this content workspace before deployment.

@@ -23,7 +23,7 @@ concurrency:
 jobs:
   deploy:
     if: >-
-      ${{ github.actor == 'aljaroudi' &&
+      ${{ github.actor == github.repository_owner &&
           (github.event_name == 'workflow_dispatch' ||
            (github.event_name == 'pull_request' &&
             github.event.pull_request.head.repo.id == github.event.repository.id &&
@@ -51,6 +51,8 @@ jobs:
           export BUNDLE_PATH="$RUNNER_TOOL_CACHE/muntathir-bundle"
           bundle install
           bundle exec fastlane check
+      - name: Prepare local content in isolated checkout
+        run: python3 fastlane/prepare_content.py
       - name: Run Fastlane
         env:
           DEPLOY_LANE: ${{ github.event_name == 'workflow_dispatch' && inputs.lane || (github.event.pull_request.merged && 'release' || 'beta') }}
