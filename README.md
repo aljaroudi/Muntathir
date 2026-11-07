@@ -8,6 +8,7 @@ Prayer times, Hijri calendar, daily Quran verses, and Qibla with localization in
 - [`web/`](web/README.md): bilingual Astro landing page, built with Bun, Tailwind CSS, and Vite+.
 - Android is planned; its project will live in `android/` when added.
 - [`shared/figures/`](shared/figures/): religious-figure data format, family relationships, names, and uncertain historical dates.
+- [`backend/`](backend/README.md): Qdrant/Gemini semantic search, corpus batches, evaluation, and local deployment.
 
 See [Apple setup and release checks](apple/README.md).
 

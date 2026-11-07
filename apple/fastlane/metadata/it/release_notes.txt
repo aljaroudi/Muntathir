@@ -1,3 +1,1 @@
-Evidenzia brani del Corano e degli hadith e ritrovali nella sezione Evidenziazioni.
-
-Esplora le raccolte di hadith con ricerca in arabo e inglese, lettura offline dopo il download, preferiti, note e condivisione.
+Trova versetti del Corano e hadith per significato. Se la ricerca locale non trova nulla, prova la ricerca online dalla stessa barra. Il libro e il capitolo selezionati restano invariati. La ricerca testuale locale rimane disponibile offline.

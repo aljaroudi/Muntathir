@@ -1,3 +1,1 @@
-Surlignez des passages du Coran et des hadiths et retrouvez-les dans les surlignages.
-
-Découvrez les recueils de hadiths : recherche en arabe et en anglais, lecture hors ligne après téléchargement, favoris, notes et partage.
+Trouvez des versets du Coran et des hadiths par leur sens. Si la recherche locale ne trouve rien, essayez la recherche en ligne depuis la même barre. Le livre et le chapitre sélectionnés sont conservés. La recherche textuelle locale reste disponible hors ligne.

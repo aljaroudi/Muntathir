@@ -1,3 +1,5 @@
+Find Quran verses and Hadith by meaning. When local search finds nothing, try online search from the same search bar. Your selected book and chapter stay in scope. Local text search remains available offline.
+
 Highlight Quran and Hadith passages and revisit them in Highlights.
 
 Test the Hadith download, interruption/retry, offline reading, and removal/redownload. Browse collections and chapters; search Arabic and English. Check favorites, notes, and text/image sharing. Also check prayer times and reminders, calendar month adjustments, Quran search/reading, Qibla, widgets, and Watch sync. Report your device, iOS version, app language, and steps to reproduce.

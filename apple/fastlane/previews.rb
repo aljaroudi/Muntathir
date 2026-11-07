@@ -70,6 +70,7 @@ names.each do |name|
         brightness = MuntathirRelease.run!("magick", frame, *content_crop, "-format", "%[fx:mean]", "info:").to_f
         raise "Blank simulator display captured for #{name}; inspect #{frame}" if brightness < 0.01
       end
+      FileUtils.rm_f(recording)
       puts "Validated #{output}"
     end
   ensure
@@ -78,3 +79,5 @@ names.each do |name|
     system("xcrun", "simctl", "shutdown", id) unless was_booted
   end
 end
+
+MuntathirRelease.cleanup_build_artifacts!(paths: ["build/marketing/PreviewDerivedData"])

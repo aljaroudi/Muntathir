@@ -1,3 +1,5 @@
+Encuentra aleyas del Corán y hadices por su significado. Si la búsqueda local no encuentra nada, prueba la búsqueda en línea desde la misma barra. Se mantienen el libro y el capítulo seleccionados. La búsqueda de texto local sigue disponible sin conexión.
+
 Resalta pasajes del Corán y de los hadices y vuelve a ellos en Resaltados.
 
 Prueba la descarga de hadices, interrupciones y reintentos, lectura sin conexión, eliminación y nueva descarga. Explora colecciones y capítulos; busca en árabe e inglés. Comprueba favoritos, notas y compartir texto e imágenes. Revisa también horarios y recordatorios de oración, ajustes del calendario, búsqueda y lectura del Corán, Qibla, widgets y sincronización Watch. Indica dispositivo, versión de iOS, idioma y pasos para reproducir el problema.

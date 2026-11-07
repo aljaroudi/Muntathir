@@ -55,4 +55,7 @@ missing = devices.product(locales, screens).reject do |device, locale, screen|
   File.file?(path) && File.mtime(path) >= capture_started
 end
 raise "Screenshots not regenerated: #{missing.map { |device, locale, screen| "#{locale}/#{device}-#{screen}" }.join(', ')}" unless missing.empty?
+if File.expand_path(derived_data) == File.join(MuntathirRelease::ROOT, "build/marketing/TranslationDerivedData")
+  MuntathirRelease.cleanup_build_artifacts!(paths: ["build/marketing/TranslationDerivedData"])
+end
 puts "CAPTURE COMPLETE"

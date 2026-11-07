@@ -18,6 +18,7 @@ struct HadithView: View {
     @State private var chapters: [HadithChapter] = []
     @State private var request = HadithRequest()
     @State private var searchText = ""
+    @State private var completedRequest: HadithRequest?
     @State private var page = HadithPage(rows: [], hasMore: false)
     @State private var history: [HadithCursor] = []
     @State private var loading = true
@@ -108,33 +109,31 @@ struct HadithView: View {
                     }
                 }
                 chapterResults
-                if showsNarrations {
-                    Section("Hadith") {
-                        if page.usedOrderedFallback, !page.rows.isEmpty {
-                            Text("No exact phrase found.")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                                .accessibilityIdentifier("hadith-ordered-fallback")
-                        }
-                        ForEach(page.rows) { narration in
-                            Button { searchFocused = false; selected = narration } label: {
-                                HadithPreviewRow(narration: narration)
-                            }
-                            .buttonStyle(.plain)
-                            .padding(.horizontal, 14)
-                            .background(HadithBookStyle.background(for: narration.collectionID), in: .rect(cornerRadius: 14))
-                            .accessibilityIdentifier("hadith-result-\(narration.id)")
-                        }
-                    }
+                if showsNarrations, !page.rows.isEmpty {
+                    narrationResults(page.rows, orderedFallback: page.usedOrderedFallback)
                 }
                 if loading {
                     ProgressView("Loading Hadith…").frame(maxWidth: .infinity)
                 } else if failed {
                     HadithLoadError { Task { await assets?.refresh(); retry += 1 } }
-                } else if !query.isEmpty, page.rows.isEmpty, matchingBooks.isEmpty, matchingChapters.isEmpty {
-                    VStack {
-                        ContentUnavailableView.search(text: query)
-                            .accessibilityIdentifier("hadith-empty-results")
+                } else if !query.isEmpty, completedRequest == request, page.rows.isEmpty, matchingBooks.isEmpty, matchingChapters.isEmpty {
+                    Group {
+                        MeaningSearchResults(query: query, emptyIdentifier: "hadith-empty-results") {
+                            guard let client = SemanticSearchClient.configured else { throw URLError(.unsupportedURL) }
+                            let scope = try await reader.meaningSearchScope(request)
+                            let matches = try await client.search(query, kind: "hadith", sources: scope.sources, chapter: scope.chapter)
+                            var narrations: [Hadith] = []
+                            for match in matches {
+                                guard case let .hadith(book, chapter, number) = match.reference,
+                                      let id = try await reader.resolveSearch(book: book, chapter: chapter, number: number) else { continue }
+                                try Task.checkCancellation()
+                                try await narrations.append(reader.detail(id: id).narration)
+                            }
+                            return narrations
+                        } resultsContent: { narrations in
+                            narrationResults(narrations)
+                        }
+                        .id(request)
                         if request.collectionID != nil {
                             Button("Search all books") {
                                 searchFocused = false
@@ -424,6 +423,26 @@ struct HadithView: View {
         } catch { /* Keep the previous complete session if a query fails. */ }
     }
 
+    private func narrationResults(_ narrations: [Hadith], orderedFallback: Bool = false) -> some View {
+        Section("Hadith") {
+            if orderedFallback, !narrations.isEmpty {
+                Text("No exact phrase found.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("hadith-ordered-fallback")
+            }
+            ForEach(narrations) { narration in
+                Button { searchFocused = false; selected = narration } label: {
+                    HadithPreviewRow(narration: narration)
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 14)
+                .background(HadithBookStyle.background(for: narration.collectionID), in: .rect(cornerRadius: 14))
+                .accessibilityIdentifier("hadith-result-\(narration.id)")
+            }
+        }
+    }
+
     private func load() async {
         let current = request
         loading = true
@@ -460,6 +479,7 @@ struct HadithView: View {
             guard current == request else { return }
             await saveSession(current)
             guard !Task.isCancelled else { return }
+            completedRequest = current
             loading = false
         } catch is CancellationError {
             // The replacement request owns the UI state.

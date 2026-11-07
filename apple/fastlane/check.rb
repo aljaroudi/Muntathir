@@ -126,6 +126,27 @@ ensure
   MuntathirRelease.define_singleton_method(:validate_video!, &original_video_check)
 end
 
+# Cleanup removes only lane-owned caches, preserves release files, and rejects redirected paths.
+Dir.mktmpdir do |root|
+  FileUtils.mkdir_p(File.join(root, "build/DerivedData"))
+  File.write(File.join(root, "build/keep.ipa"), "release")
+  MuntathirRelease.cleanup_build_artifacts!(root: root)
+  assert(!File.exist?(File.join(root, "build/DerivedData")), "Disposable cache retained")
+  assert(File.file?(File.join(root, "build/keep.ipa")), "Release IPA deleted")
+  rejects("Unknown cleanup path accepted") { MuntathirRelease.cleanup_build_artifacts!(root: root, paths: ["build"]) }
+  File.symlink(root, File.join(root, "build/DerivedData"))
+  rejects("Symlink cleanup accepted") { MuntathirRelease.cleanup_build_artifacts!(root: root) }
+  archive = File.join(root, "test.xcarchive")
+  FileUtils.mkdir_p(File.join(archive, "dSYMs"))
+  File.write(File.join(archive, "dSYMs/app.dSYM"), "symbols")
+  symbols = File.join(root, "symbols")
+  MuntathirRelease.retire_archive!(archive, symbols: symbols)
+  assert(!File.exist?(archive) && File.read(File.join(symbols, "app.dSYM")) == "symbols", "Archive cleanup lost symbols")
+end
+# Lane wiring tests must never clean the developer's real artifacts.
+MuntathirRelease.define_singleton_method(:cleanup_build_artifacts!) { |**_| }
+MuntathirRelease.define_singleton_method(:retire_archive!) { |*_, **_| }
+
 # Exercise lane wiring without network access, builds, uploads, or credentials.
 module UI
   def self.user_error!(message) = raise(message)
@@ -214,7 +235,7 @@ Dir.mktmpdir do |dir|
 end
 check.release
 release = check.calls.reverse.find { |name, _| name == :upload_to_app_store }.last
-assert(release[:submit_for_review] && release[:automatic_release] == false, "Default release must submit with manual publication")
+assert(release[:submit_for_review] && release[:automatic_release] == true, "Default release must publish automatically after approval")
 assert(release[:overwrite_screenshots] == false && release[:overwrite_preview_videos] == false, "Existing assets must not be deleted")
 check.define_singleton_method(:processed_build) { |**_| Struct.new(:version).new("10") }
 check.release(build: "10")
@@ -249,4 +270,7 @@ assert(workflow.include?("cancel-in-progress: false"), "Deployment queue must no
 assert(workflow.include?("head.repo.full_name == github.repository"), "Fork PR guard missing")
 assert(workflow.include?("github.actor == github.repository_owner"), "Owner guard missing")
 assert(workflow.include?("persist-credentials: false"), "Checkout credentials must not persist")
+assert(workflow.include?("github.event.pull_request.merged && 'release' || 'beta'"), "PR and merge deployment lanes changed")
+assert(workflow.include?("types: [opened, synchronize, reopened, ready_for_review, closed]"), "PR lifecycle triggers missing")
+assert(!workflow.include?("    paths:"), "Deployment must run for every eligible PR")
 puts "Metadata, version selection, fail-closed validation, deployment lanes and workflow guards passed."

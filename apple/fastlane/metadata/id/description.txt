@@ -17,3 +17,5 @@ HADIS
 Unduh pustaka hadis, lalu telusuri koleksi dan bab, cari dalam bahasa Arab dan Inggris, dan baca secara luring. Simpan favorit, tambahkan catatan, dan bagikan riwayat sebagai teks atau gambar.
 
 Sorot ayat Al-Qur’an dan kutipan hadis, lalu buka kembali di Sorotan.
+
+Temukan ayat Al-Quran dan hadis berdasarkan makna. Jika pencarian lokal tidak menemukan hasil, coba pencarian online dari kolom yang sama. Buku dan bab yang dipilih tetap digunakan. Pencarian teks lokal tetap tersedia secara offline.

@@ -17,3 +17,5 @@ HADITHS
 Téléchargez la bibliothèque de hadiths, parcourez les recueils et chapitres, recherchez en arabe et en anglais et lisez hors ligne. Enregistrez des favoris, ajoutez des notes et partagez les récits en texte ou en image.
 
 Surlignez des passages du Coran et des hadiths et retrouvez-les dans les surlignages.
+
+Trouvez des versets du Coran et des hadiths par leur sens. Si la recherche locale ne trouve rien, essayez la recherche en ligne depuis la même barre. Le livre et le chapitre sélectionnés sont conservés. La recherche textuelle locale reste disponible hors ligne.

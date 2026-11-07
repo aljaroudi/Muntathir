@@ -1,0 +1,2442 @@
+{
+  "version": 1,
+  "notes": "80 existing reviewed queries plus 70 new seed-positive queries. New judgments need expert review. Relevance sets are not exhaustive. Do not treat repeated topic/language pairs as independent samples.",
+  "queries": [
+    {
+      "id": "quran-animals-en",
+      "query": "Verses mentioning animals",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "93e4a927-b3b7-5a06-a8f9-df9a8a42c5f3": 3,
+        "a89edd2f-fd2a-55b5-8f11-781cd5d170ee": 3,
+        "dba0ec6c-001a-514b-b2f3-f8fbc2cc5a83": 3,
+        "4c0421c4-f689-5aad-80a7-071590ce3d83": 3,
+        "2af3b4d2-3f6e-5fad-899f-0b24de6c0f21": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-animals-ar",
+      "query": "آيات تذكر الحيوانات",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "93e4a927-b3b7-5a06-a8f9-df9a8a42c5f3": 3,
+        "a89edd2f-fd2a-55b5-8f11-781cd5d170ee": 3,
+        "dba0ec6c-001a-514b-b2f3-f8fbc2cc5a83": 3,
+        "4c0421c4-f689-5aad-80a7-071590ce3d83": 3,
+        "2af3b4d2-3f6e-5fad-899f-0b24de6c0f21": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-parents-en",
+      "query": "Kindness toward elderly parents",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "8d7ff388-0887-5a1a-b135-710fd6d96810": 3,
+        "e1a32f85-9ccc-5cac-800b-c86d36a7bcf1": 3,
+        "f91c9d3b-ffb7-5ebc-9c60-0ff955d50710": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-parents-ar",
+      "query": "الإحسان إلى الوالدين عند الكبر",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "8d7ff388-0887-5a1a-b135-710fd6d96810": 3,
+        "e1a32f85-9ccc-5cac-800b-c86d36a7bcf1": 3,
+        "f91c9d3b-ffb7-5ebc-9c60-0ff955d50710": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-hardship-en",
+      "query": "Hope and ease during hardship",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "3e089aab-c7b7-5d92-ae50-239a627e2469": 3,
+        "a27ee435-5874-5ab0-9487-152d55a91a45": 3,
+        "d0b3ed0c-b85a-532c-b322-72234773e15d": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-hardship-ar",
+      "query": "الأمل واليسر عند الشدة",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "3e089aab-c7b7-5d92-ae50-239a627e2469": 3,
+        "a27ee435-5874-5ab0-9487-152d55a91a45": 3,
+        "d0b3ed0c-b85a-532c-b322-72234773e15d": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-giving-en",
+      "query": "Giving to people in need",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "4e026c30-d5e1-56d7-a284-7144e67943a6": 3,
+        "724ec661-a2cf-56cb-be37-88b00d49a1d2": 3,
+        "02cfa1f1-8c2b-5dc3-bf50-d471bd4bffbd": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-giving-ar",
+      "query": "الإنفاق على المحتاجين",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "4e026c30-d5e1-56d7-a284-7144e67943a6": 3,
+        "724ec661-a2cf-56cb-be37-88b00d49a1d2": 3,
+        "02cfa1f1-8c2b-5dc3-bf50-d471bd4bffbd": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-forgiveness-en",
+      "query": "Not giving up hope of forgiveness",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "936d472e-6740-5c1c-8094-64d854aa3d96": 3,
+        "a530133e-0154-565f-ae75-432096ad21c1": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-forgiveness-ar",
+      "query": "عدم اليأس من مغفرة الله",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "936d472e-6740-5c1c-8094-64d854aa3d96": 3,
+        "a530133e-0154-565f-ae75-432096ad21c1": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-justice-en",
+      "query": "Being fair even toward people you dislike",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "9748d3fc-693d-5499-9770-22ef0834c2d9": 3,
+        "879676ba-c801-5715-bb7e-2eedadab1a01": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-justice-ar",
+      "query": "العدل مع من نكره",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "9748d3fc-693d-5499-9770-22ef0834c2d9": 3,
+        "879676ba-c801-5715-bb7e-2eedadab1a01": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-water-en",
+      "query": "Water as a source of life",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "f0eec0d6-806d-5b76-b5db-db057b9a3288": 3,
+        "8e921f34-cf51-5990-ba89-92e0f9117d76": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-water-ar",
+      "query": "الماء أصل الحياة",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "f0eec0d6-806d-5b76-b5db-db057b9a3288": 3,
+        "8e921f34-cf51-5990-ba89-92e0f9117d76": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-anger-en",
+      "query": "Controlling anger and pardoning others",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "8f1b0bed-ac72-5176-af57-2b5da5ba5dfc": 3,
+        "72c6ff56-b9e2-55cd-9641-86da7762cc34": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-anger-ar",
+      "query": "كظم الغيظ والعفو عن الناس",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "8f1b0bed-ac72-5176-af57-2b5da5ba5dfc": 3,
+        "72c6ff56-b9e2-55cd-9641-86da7762cc34": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-exact_patience-en",
+      "query": "Indeed Allah is with the patient",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "exact",
+      "split": "tune",
+      "relevant": {
+        "9a79e00c-7a24-54c6-b1d1-8122755e04c6": 3,
+        "65c16e24-3ede-575e-a313-bf3efe860cc0": 3,
+        "4552257d-3a81-5eb7-9032-8e0ae4c4f1b9": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-exact_patience-ar",
+      "query": "إِنَّ اللَّهَ مَعَ الصَّابِرِينَ",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "exact",
+      "split": "tune",
+      "relevant": {
+        "9a79e00c-7a24-54c6-b1d1-8122755e04c6": 3,
+        "65c16e24-3ede-575e-a313-bf3efe860cc0": 3,
+        "4552257d-3a81-5eb7-9032-8e0ae4c4f1b9": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-unrelated_wifi-en",
+      "query": "Resetting a Wi-Fi router password",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "unrelated",
+      "split": "tune",
+      "relevant": {},
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-unrelated_wifi-ar",
+      "query": "تغيير كلمة مرور جهاز الواي فاي",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "unrelated",
+      "split": "tune",
+      "relevant": {},
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-cows-en",
+      "query": "Verses that mention a cow",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "93e4a927-b3b7-5a06-a8f9-df9a8a42c5f3": 3,
+        "f279d968-413d-57b3-9022-f79e375374c7": 3,
+        "04603876-121f-5b25-836e-9b23cec6a7a7": 3,
+        "b33fd09b-8c2a-5379-aa9c-18842645bee6": 3,
+        "14200a38-022d-54ba-b4d8-304d98e6969d": 3,
+        "669760cf-545a-57db-9ece-e07c35e685db": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-cows-ar",
+      "query": "آيات عن البقرة",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "93e4a927-b3b7-5a06-a8f9-df9a8a42c5f3": 3,
+        "f279d968-413d-57b3-9022-f79e375374c7": 3,
+        "04603876-121f-5b25-836e-9b23cec6a7a7": 3,
+        "b33fd09b-8c2a-5379-aa9c-18842645bee6": 3,
+        "14200a38-022d-54ba-b4d8-304d98e6969d": 3,
+        "669760cf-545a-57db-9ece-e07c35e685db": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-orphans-en",
+      "query": "Protecting orphans and their property",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "a8f79bfd-2f1a-5722-87fb-a361b14c4bee": 3,
+        "2b2f2731-61bc-5178-98e3-98a7bb658422": 3,
+        "8a297419-545d-5468-ba44-b47bac796e63": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-orphans-ar",
+      "query": "حفظ حقوق اليتامى وأموالهم",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "a8f79bfd-2f1a-5722-87fb-a361b14c4bee": 3,
+        "2b2f2731-61bc-5178-98e3-98a7bb658422": 3,
+        "8a297419-545d-5468-ba44-b47bac796e63": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-bereavement-en",
+      "query": "Responding patiently to loss",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "fd84c482-4fbe-5f27-afc0-5bb3198045cf": 3,
+        "49a6cedb-c498-507d-bd81-8d20c79f6602": 3,
+        "77adf3a3-7199-571c-aea8-0fe8f4387140": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-bereavement-ar",
+      "query": "الصبر عند فقد الأحبة والمصيبة",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "fd84c482-4fbe-5f27-afc0-5bb3198045cf": 3,
+        "49a6cedb-c498-507d-bd81-8d20c79f6602": 3,
+        "77adf3a3-7199-571c-aea8-0fe8f4387140": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-debt-en",
+      "query": "Recording a debt with witnesses",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "307bffc6-6bfd-5e31-8a99-70c1e4a2d3fa": 3,
+        "74291efd-b97e-54e7-970d-add18b976821": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-debt-ar",
+      "query": "كتابة الدين والإشهاد عليه",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "307bffc6-6bfd-5e31-8a99-70c1e4a2d3fa": 3,
+        "74291efd-b97e-54e7-970d-add18b976821": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-backbiting-en",
+      "query": "Avoiding gossip and speaking ill of others",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "cb24f6e6-69b2-5ca2-83e0-16e9de396071": 3,
+        "4a82b8d2-6917-50b7-9097-ea75959e2c5c": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-backbiting-ar",
+      "query": "اجتناب الغيبة وسوء الظن",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "cb24f6e6-69b2-5ca2-83e0-16e9de396071": 3,
+        "4a82b8d2-6917-50b7-9097-ea75959e2c5c": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-gratitude-en",
+      "query": "Being thankful for blessings",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "aaaf5225-57c7-564a-98d9-0517818ac578": 3,
+        "20ac432b-64bf-5610-b342-80f9600e9d40": 3,
+        "56ce7eb6-8e7d-5a9f-a045-4e36657afb35": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-gratitude-ar",
+      "query": "شكر النعم",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "aaaf5225-57c7-564a-98d9-0517818ac578": 3,
+        "20ac432b-64bf-5610-b342-80f9600e9d40": 3,
+        "56ce7eb6-8e7d-5a9f-a045-4e36657afb35": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-reconciliation-en",
+      "query": "Making peace between people in conflict",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "4e082f56-90b1-5ea2-ae13-be44033cff71": 3,
+        "8ee70e73-c7ba-5d6e-9c7c-76a95c7425f3": 3,
+        "536afc53-e0f5-5144-a08e-c188de0f0faa": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-reconciliation-ar",
+      "query": "الإصلاح بين المتخاصمين",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "4e082f56-90b1-5ea2-ae13-be44033cff71": 3,
+        "8ee70e73-c7ba-5d6e-9c7c-76a95c7425f3": 3,
+        "536afc53-e0f5-5144-a08e-c188de0f0faa": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-family-en",
+      "query": "Affection and mercy between spouses",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "536d0e5e-f349-52c1-8a83-68b6354ddec4": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-family-ar",
+      "query": "المودة والرحمة بين الزوجين",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "536d0e5e-f349-52c1-8a83-68b6354ddec4": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-reference-en",
+      "query": "2:255",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "reference",
+      "split": "heldout",
+      "relevant": {
+        "15e2bbfb-7009-5dc9-8911-4f896b0a3f54": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-reference-ar",
+      "query": "٢:٢٥٥",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "reference",
+      "split": "heldout",
+      "relevant": {
+        "15e2bbfb-7009-5dc9-8911-4f896b0a3f54": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-unrelated_cpu-en",
+      "query": "Installing a graphics card driver",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "category": "unrelated",
+      "split": "heldout",
+      "relevant": {},
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "quran-unrelated_cpu-ar",
+      "query": "تثبيت برنامج تشغيل بطاقة الرسوميات",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "category": "unrelated",
+      "split": "heldout",
+      "relevant": {},
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-cat-en",
+      "query": "Cruelty toward a cat",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "5e32ed5f-ada0-5208-9edb-2f0e1777b0aa": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-cat-ar",
+      "query": "تعذيب الهرة وحبسها بلا طعام",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "5e32ed5f-ada0-5208-9edb-2f0e1777b0aa": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-mother-en",
+      "query": "Who deserves the best companionship?",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "755b0189-1394-51a1-87bf-6e50cab59133": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-mother-ar",
+      "query": "من أحق الناس بحسن الصحبة؟",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "755b0189-1394-51a1-87bf-6e50cab59133": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-bereavement-en",
+      "query": "Patience at the first shock of loss",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "069f46c4-1714-5bfc-96c9-90af5200e7ad": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-bereavement-ar",
+      "query": "الصبر عند الصدمة الأولى",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "069f46c4-1714-5bfc-96c9-90af5200e7ad": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-small_gift-en",
+      "query": "Even a small donation matters",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "b81ed4b4-3ade-59d8-9c46-92d2e5ade27e": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-small_gift-ar",
+      "query": "فضل الصدقة ولو كانت قليلة",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "b81ed4b4-3ade-59d8-9c46-92d2e5ade27e": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-anger-en",
+      "query": "Real strength is controlling anger",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "81e3d278-59f1-519b-b59e-80a1b053b6f4": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-anger-ar",
+      "query": "القوة في ضبط النفس عند الغضب",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "81e3d278-59f1-519b-b59e-80a1b053b6f4": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-intentions-en",
+      "query": "The intention behind an action",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "6930e0d5-2b01-57ff-b84a-b248b0ab3cd8": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-intentions-ar",
+      "query": "النية وراء العمل",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "6930e0d5-2b01-57ff-b84a-b248b0ab3cd8": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-debt-en",
+      "query": "Delaying repayment when you can afford it",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "7d815fcc-7145-59e4-8bf3-a174bc5ed9cc": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-debt-ar",
+      "query": "تأخير سداد الدين مع القدرة",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "7d815fcc-7145-59e4-8bf3-a174bc5ed9cc": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-orphans-en",
+      "query": "Reward for caring for an orphan",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "6a83b826-64f1-5962-b7b0-617ac884cb63": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-orphans-ar",
+      "query": "فضل كفالة اليتيم",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "tune",
+      "relevant": {
+        "6a83b826-64f1-5962-b7b0-617ac884cb63": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-exact_fasting-en",
+      "query": "Fasting is a shield",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "exact",
+      "split": "tune",
+      "relevant": {
+        "0abc6fa1-86ad-5fab-b81c-bc729e066e34": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-exact_fasting-ar",
+      "query": "الصيام جنة",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "exact",
+      "split": "tune",
+      "relevant": {
+        "0abc6fa1-86ad-5fab-b81c-bc729e066e34": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-unrelated_wifi-en",
+      "query": "Resetting a Wi-Fi router password",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "unrelated",
+      "split": "tune",
+      "relevant": {},
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-unrelated_wifi-ar",
+      "query": "تغيير كلمة مرور جهاز الواي فاي",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "unrelated",
+      "split": "tune",
+      "relevant": {},
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-dog-en",
+      "query": "Giving water to a thirsty animal",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "58ced84b-37e5-52d5-baaf-6bc8e3660eee": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-dog-ar",
+      "query": "سقي الحيوان العطشان",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "58ced84b-37e5-52d5-baaf-6bc8e3660eee": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-neighbors-en",
+      "query": "Treating neighbors and guests well",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "10900b71-a14e-5812-a578-c1f560a8ed97": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-neighbors-ar",
+      "query": "الإحسان إلى الجار وإكرام الضيف",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "10900b71-a14e-5812-a578-c1f560a8ed97": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-mercy-en",
+      "query": "Mercy toward other people",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "78273890-21f5-518a-a0bb-b7cd2c0b803a": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-mercy-ar",
+      "query": "الرحمة بالناس",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "78273890-21f5-518a-a0bb-b7cd2c0b803a": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-planting-en",
+      "query": "Planting trees that feed people and animals",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "1d53d6e0-9de6-5bdc-9912-5b4de967c26f": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-planting-ar",
+      "query": "غرس الشجر الذي يأكل منه الناس والحيوان",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "1d53d6e0-9de6-5bdc-9912-5b4de967c26f": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-knowledge-en",
+      "query": "Seeking knowledge as a path to Paradise",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "bf462153-08aa-525d-9131-341e458c4047": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-knowledge-ar",
+      "query": "طلب العلم طريق إلى الجنة",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "bf462153-08aa-525d-9131-341e458c4047": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-harm-en",
+      "query": "Not hurting others with words or actions",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "f3e1de5e-d0f6-5b52-b3b2-6937c7724c88": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-harm-ar",
+      "query": "عدم إيذاء الناس بالقول والفعل",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "f3e1de5e-d0f6-5b52-b3b2-6937c7724c88": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-promises-en",
+      "query": "Breaking promises and hypocrisy",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "a22712d6-2a3e-5784-b766-37cf3eeebf64": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-promises-ar",
+      "query": "إخلاف الوعد والنفاق",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "a22712d6-2a3e-5784-b766-37cf3eeebf64": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-smiling-en",
+      "query": "Kindness through a cheerful face",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "0a76a8d8-4ec5-5b93-84fb-ad83ae014350": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-smiling-ar",
+      "query": "الإحسان بالبشاشة وطلاقة الوجه",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "0a76a8d8-4ec5-5b93-84fb-ad83ae014350": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-brother-en",
+      "query": "Wanting good for others as for yourself",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "124b7963-8b0d-54b4-bc41-466f54301322": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-brother-ar",
+      "query": "أن تحب لأخيك ما تحب لنفسك",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "topic",
+      "split": "heldout",
+      "relevant": {
+        "124b7963-8b0d-54b4-bc41-466f54301322": 3
+      },
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-unrelated_cpu-en",
+      "query": "Installing a graphics card driver",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "en",
+      "category": "unrelated",
+      "split": "heldout",
+      "relevant": {},
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "hadith-unrelated_cpu-ar",
+      "query": "تثبيت برنامج تشغيل بطاقة الرسوميات",
+      "kinds": [
+        "hadith"
+      ],
+      "language": "ar",
+      "category": "unrelated",
+      "split": "heldout",
+      "relevant": {},
+      "review_status": "verified",
+      "judgment_scope": "reviewed seed positives; not exhaustive"
+    },
+    {
+      "id": "additional-1-en",
+      "query": "No compulsion in religion",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "58f0e7b9-3f3d-53bd-9789-93cde304d4fe": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-1-ar",
+      "query": "لا إكراه في الدين",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "58f0e7b9-3f3d-53bd-9789-93cde304d4fe": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-2-en",
+      "query": "Avoid spying and backbiting",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "cb24f6e6-69b2-5ca2-83e0-16e9de396071": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-2-ar",
+      "query": "النهي عن التجسس والغيبة",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "cb24f6e6-69b2-5ca2-83e0-16e9de396071": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-3-en",
+      "query": "Human peoples and tribes knowing one another",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "21b276ab-47d3-59df-b4b3-a3f37084cc81": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-3-ar",
+      "query": "الشعوب والقبائل للتعارف",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "21b276ab-47d3-59df-b4b3-a3f37084cc81": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-4-en",
+      "query": "Remain just even toward people you dislike",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "9748d3fc-693d-5499-9770-22ef0834c2d9": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-4-ar",
+      "query": "العدل مع من نبغضهم",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "9748d3fc-693d-5499-9770-22ef0834c2d9": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-5-en",
+      "query": "Stand for justice even against yourself or your parents",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "879676ba-c801-5715-bb7e-2eedadab1a01": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-5-ar",
+      "query": "القسط ولو على النفس والوالدين",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "879676ba-c801-5715-bb7e-2eedadab1a01": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-6-en",
+      "query": "Do not speak disrespectfully to elderly parents",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "8d7ff388-0887-5a1a-b135-710fd6d96810": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-6-ar",
+      "query": "عدم التأفف من الوالدين عند الكبر",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "8d7ff388-0887-5a1a-b135-710fd6d96810": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-7-en",
+      "query": "Pray for mercy for parents who raised you",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "e1a32f85-9ccc-5cac-800b-c86d36a7bcf1": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-7-ar",
+      "query": "الدعاء للوالدين بالرحمة كما ربياني صغيرا",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "e1a32f85-9ccc-5cac-800b-c86d36a7bcf1": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-8-en",
+      "query": "Do not walk arrogantly or turn away from people",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "d71ff779-6f0c-5c8b-9c2f-d78e7d0a6971": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-8-ar",
+      "query": "النهي عن التكبر والإعراض عن الناس",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "d71ff779-6f0c-5c8b-9c2f-d78e7d0a6971": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-9-en",
+      "query": "Moderate your pace and lower your voice",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "5a77f1e7-85aa-5e4e-851c-e1e93e3e32ab": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-9-ar",
+      "query": "القصد في المشي وخفض الصوت",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "5a77f1e7-85aa-5e4e-851c-e1e93e3e32ab": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-10-en",
+      "query": "Spending between extravagance and stinginess",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "7636792e-f656-5368-a552-9d46356ccbe0": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-10-ar",
+      "query": "الإنفاق بين الإسراف والتقتير",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "7636792e-f656-5368-a552-9d46356ccbe0": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-11-en",
+      "query": "Eat and drink without excess",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "eb66bd37-2440-5954-8483-7d0a8b75d5cd": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-11-ar",
+      "query": "الأكل والشرب دون إسراف",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "eb66bd37-2440-5954-8483-7d0a8b75d5cd": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-12-en",
+      "query": "Fasting prescribed to attain mindfulness of God",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "fd1faa96-dccf-5e7d-a79c-f36678c4e878": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-12-ar",
+      "query": "فرض الصيام لتحقيق التقوى",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "fd1faa96-dccf-5e7d-a79c-f36678c4e878": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-13-en",
+      "query": "Ramadan revelation and concessions for sick travellers",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "3232ae7f-9cea-5de7-947d-ddcb7315270d": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-13-ar",
+      "query": "نزول القرآن في رمضان ورخصة المريض والمسافر",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "3232ae7f-9cea-5de7-947d-ddcb7315270d": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-14-en",
+      "query": "God is near and answers those who call upon Him",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "c03f8964-c6bd-50f3-a34c-c88e0afe99ef": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-14-ar",
+      "query": "قرب الله وإجابته دعوة الداعي",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "c03f8964-c6bd-50f3-a34c-c88e0afe99ef": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-15-en",
+      "query": "Hearts find reassurance in remembering God",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "58f96d26-5eae-5cef-8181-28f488e1a814": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-15-ar",
+      "query": "اطمئنان القلوب بذكر الله",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "58f96d26-5eae-5cef-8181-28f488e1a814": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-16-en",
+      "query": "Do not despair of divine mercy after wrongdoing",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "936d472e-6740-5c1c-8094-64d854aa3d96": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-16-ar",
+      "query": "عدم القنوط من رحمة الله بعد الإسراف على النفس",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "936d472e-6740-5c1c-8094-64d854aa3d96": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-17-en",
+      "query": "Ease accompanies hardship",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "3e089aab-c7b7-5d92-ae50-239a627e2469": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-17-ar",
+      "query": "اليسر مع العسر",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "3e089aab-c7b7-5d92-ae50-239a627e2469": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-18-en",
+      "query": "No soul is burdened beyond its capacity",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "d0b3ed0c-b85a-532c-b322-72234773e15d": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-18-ar",
+      "query": "لا يكلف الله نفسا إلا وسعها",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "d0b3ed0c-b85a-532c-b322-72234773e15d": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-19-en",
+      "query": "Whoever relies on God finds Him sufficient",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "20324533-c9ce-529e-91e4-192a3142e2d8": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-19-ar",
+      "query": "كفاية الله لمن يتوكل عليه",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "20324533-c9ce-529e-91e4-192a3142e2d8": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-20-en",
+      "query": "Consult others then place trust in God",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "311112e8-24b0-5285-a54e-70cc18b1557b": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-20-ar",
+      "query": "الشورى ثم العزم والتوكل على الله",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "311112e8-24b0-5285-a54e-70cc18b1557b": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-21-en",
+      "query": "Affairs conducted through mutual consultation",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "60bbc12c-bfc1-5704-b537-210d3b286027": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-21-ar",
+      "query": "الأمر شورى بين المؤمنين",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "60bbc12c-bfc1-5704-b537-210d3b286027": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-22-en",
+      "query": "Justice kindness and giving to relatives",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "ec864df4-e84c-5d2c-a451-a127dcdf0f9b": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-22-ar",
+      "query": "الأمر بالعدل والإحسان وإيتاء ذي القربى",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "ec864df4-e84c-5d2c-a451-a127dcdf0f9b": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-23-en",
+      "query": "Rebuking those who push away the orphan",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "665cfead-3509-5db6-acba-93cc13a88181": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-23-ar",
+      "query": "ذم من يدع اليتيم",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "665cfead-3509-5db6-acba-93cc13a88181": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-24-en",
+      "query": "Failure to encourage feeding the poor",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "d0735fd5-3063-5e83-ab19-4cf2b084aeb4": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-24-ar",
+      "query": "عدم الحض على طعام المسكين",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "d0735fd5-3063-5e83-ab19-4cf2b084aeb4": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-25-en",
+      "query": "Do not oppress the orphan",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "ad98df21-4a6d-5dcd-9346-791dfd804ad3": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-25-ar",
+      "query": "النهي عن قهر اليتيم",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "ad98df21-4a6d-5dcd-9346-791dfd804ad3": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-26-en",
+      "query": "Do not repel the petitioner",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "8f53856c-caa0-5a77-a4c5-13a16d7e6266": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-26-ar",
+      "query": "النهي عن نهر السائل",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "8f53856c-caa0-5a77-a4c5-13a16d7e6266": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-27-en",
+      "query": "Feeding the poor orphan and captive",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "02cfa1f1-8c2b-5dc3-bf50-d471bd4bffbd": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-27-ar",
+      "query": "إطعام المسكين واليتيم والأسير",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "02cfa1f1-8c2b-5dc3-bf50-d471bd4bffbd": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-28-en",
+      "query": "Charity compared with grain multiplying seven hundredfold",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "724ec661-a2cf-56cb-be37-88b00d49a1d2": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-28-ar",
+      "query": "مثل الإنفاق حبة تنبت سبع سنابل",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "724ec661-a2cf-56cb-be37-88b00d49a1d2": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-29-en",
+      "query": "Do not invalidate charity through reminders and injury",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "7ca67a40-4816-59c6-8f31-5225c635d910": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-29-ar",
+      "query": "إبطال الصدقة بالمن والأذى",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "7ca67a40-4816-59c6-8f31-5225c635d910": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-30-en",
+      "query": "Restrain anger and pardon people",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "8f1b0bed-ac72-5176-af57-2b5da5ba5dfc": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-30-ar",
+      "query": "كظم الغيظ والعفو عن الناس",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "8f1b0bed-ac72-5176-af57-2b5da5ba5dfc": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-31-en",
+      "query": "Repel evil with a better response",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "b015f600-86c0-5f69-964e-80d09c0ea425": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-31-ar",
+      "query": "دفع السيئة بالتي هي أحسن",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "b015f600-86c0-5f69-964e-80d09c0ea425": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-32-en",
+      "query": "Saving one life likened to saving all humanity",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "4bab6188-7d49-5d0a-b97d-610f8a8f05c2": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-32-ar",
+      "query": "إحياء نفس كإحياء الناس جميعا",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "4bab6188-7d49-5d0a-b97d-610f8a8f05c2": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-33-en",
+      "query": "Seek permission before entering other homes",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "43899486-9511-585d-a1a2-f6c085a41441": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-33-ar",
+      "query": "الاستئذان والسلام قبل دخول بيوت الغير",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "43899486-9511-585d-a1a2-f6c085a41441": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-34-en",
+      "query": "Verify news brought by an unreliable person",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "89798b2b-bf34-5d9d-9305-b074fe8232d0": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-34-ar",
+      "query": "التبين من خبر الفاسق",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "89798b2b-bf34-5d9d-9305-b074fe8232d0": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-35-en",
+      "query": "Do not follow claims without knowledge",
+      "kinds": [
+        "quran"
+      ],
+      "language": "en",
+      "languages": [
+        "ar"
+      ],
+      "category": "cross_language",
+      "split": "heldout",
+      "relevant": {
+        "56bd1c48-f51b-5951-8e33-b55dbaaa2fee": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    },
+    {
+      "id": "additional-35-ar",
+      "query": "عدم اتباع ما ليس للمرء به علم",
+      "kinds": [
+        "quran"
+      ],
+      "language": "ar",
+      "languages": null,
+      "category": "paraphrase",
+      "split": "heldout",
+      "relevant": {
+        "56bd1c48-f51b-5951-8e33-b55dbaaa2fee": 3
+      },
+      "review_status": "seed_positive",
+      "judgment_scope": "Positive passage identified; expert review and exhaustive judgments pending"
+    }
+  ]
+}

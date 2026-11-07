@@ -25,7 +25,7 @@ bundle exec fastlane marketing
 - `assets`: upload existing metadata and supported media without submitting review.
 - `prepare build:NUMBER replace_screenshots:true`: replace screenshots, preserve existing previews and select a processed build without submitting review. Pass `automatic_release:true` only for a release approved for automatic publication.
 - `upload_prepared ipa:/absolute/path.ipa`: upload an approved archive and replace media, preserving the review draft.
-- `release`: test, generate media, archive, upload and submit App Review. Pass `build:NUMBER` to reuse a processed TestFlight build and generate fresh media. Publication is manual unless `automatic_release:true` is passed.
+- `release`: test, generate media, archive, upload and submit App Review. Pass `build:NUMBER` to reuse a processed TestFlight build and generate fresh media. Publication is automatic after approval; pass `automatic_release:false` to hold a release manually.
 
 ## Capture settings and outputs
 
@@ -66,7 +66,7 @@ Readiness uses existing store fields plus explicitly managed local values. Missi
 
 `bash apple/fastlane/setup-runner.sh` registers `Muntathir-local-Mac` with label `muntathir-deploy`, after `gh` authentication with repository administration access. It verifies GitHub's runner archive SHA-256, keeps isolated work directories under ignored `.local-ci/runner/`, and installs a user LaunchAgent. Other project runners are preserved. The service shares the logged-in GUI security session for signing Keychain access; the Mac must be awake with the session available.
 
-Owner-created, same-repository non-draft PRs to `main` upload to TestFlight Public. Merging submits App Review; release remains manual. Fork PRs are excluded. Manual dispatch on `main` supports individual lanes. Jobs serialize and never cancel active uploads. Artifacts retain captures, supported/manual preview exports, tests and deployment logs for 14 days. Never grant untrusted contributors execution access on this persistent signing machine.
+Owner-created, same-repository non-draft PRs to `main` upload to TestFlight Public. Merging submits App Review with automatic publication after approval. Fork PRs are excluded. Manual dispatch on `main` supports individual lanes. Jobs serialize and never cancel active uploads. Artifacts retain captures, supported/manual preview exports, tests and deployment logs for 14 days. Never grant untrusted contributors execution access on this persistent signing machine.
 
 Commit/push the workflow to activate it in GitHub. Binary upload, Apple processing and review submission are separate stages; an upload does not imply approval. TestFlight processing times out after 30 minutes. Check App Store Connect before retrying, and use `assets` to retry metadata/media without rebuilding. Existing remote assets are not cleared automatically; remove superseded sets manually where necessary to stay within Apple limits.
 
@@ -80,7 +80,7 @@ Screenshot validation reads the required screen names from `marketing/headlines.
 
 ## Replacement submission (November 2026)
 
-Current release target: reuse editable version 1.0 and archive once with the next build number. Xcode 27 JSON projects require native `xcodebuild archive` and `-exportArchive`; Fastlane’s project parser cannot read them. The build lane reads the version through Xcode build settings.
+Current release target: 1.1.0, with the next available build number. Xcode 27 JSON projects require native `xcodebuild archive` and `-exportArchive`; Fastlane’s project parser cannot read them. The build lane reads the version through Xcode build settings.
 
 Arabic and English Quran databases ship in the app and widget. The other translations use the hosted `quran-translations` pack, and Hadith uses `hadith`. Upload the validated archives with `bundle exec ruby fastlane/asset_pack_delivery.rb --upload`. The release lane attaches processed versions of required packs that are unavailable on the App Store. Submit new packs separately for external Beta App Review in App Store Connect after submitting the beta build.
 
@@ -89,3 +89,36 @@ Arabic and English Quran databases ship in the app and widget. The other transla
 Screenshots stage the unchanged production Hadith database in the Debug capture bundle only. Marketing launches bypass hosted download events; Release excludes both the staged database and the capture override. Capture all five screens in each supported locale and device. Keep previews only after validating their formats and reviewing their content.
 
 The requested publication policy is automatic after approval. Existing pre-order configuration may lock Apple’s release-type field; verify the actual remote setting before submission rather than assuming a lane option changed it.
+
+## Build artifact lifecycle
+
+Successful test and capture runs remove their own DerivedData directories. Failed runs
+keep their artifacts for diagnosis; run `bundle exec fastlane cleanup` once finished.
+The cleanup lane touches only its listed project-local caches, not global Xcode data,
+IPAs, test reports, screenshots, previews, or asset packs. Do not run cleanup during a build.
+Custom screenshot DerivedData paths remain caller-owned.
+
+After a successful archive export and bundle validation, dSYMs move to
+`build/symbols/<version>-<build>/`, then the archive and archive build cache are removed.
+The signed IPA stays available for upload retries. Failed exports retain the archive.
+Keep symbols for crash symbolication. Existing manually created archives are not pruned.
+Preview source recordings are removed once their final video and QA frames validate.
+
+## Search-by-meaning release copy
+
+Metadata and beta notes spotlight the optional online fallback in Quran/Hadith search.
+Local search and book/chapter scopes remain unchanged. There is no separate Search tab.
+The copy is prepared locally in all store locales (Persian remains a listing draft);
+metadata changes are not uploaded until an explicit release/upload lane runs.
+
+### Version 1.1.0 automation
+
+Your non-draft, same-repository PRs to `main` run `beta` when opened, updated,
+reopened, or marked ready: validate, test, archive, upload to TestFlight, and request
+Public external beta review. All changed paths qualify. Fork PRs are excluded.
+
+Merging runs `release` on the merge commit: validate, test, generate media, archive,
+upload, and submit App Store review. Publication is automatic after Apple approval.
+Deployments queue on this Mac; its runner and signing session must be available.
+Push the workflow to GitHub to activate changes. Workflow artifacts include symbols
+for 14 days; retain local symbols for older builds.

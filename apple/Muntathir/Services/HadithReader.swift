@@ -208,6 +208,20 @@ actor HadithReader {
         }.first
     }
 
+    /// Preserve collection/volume and chapter boundaries when opting into online search.
+    func meaningSearchScope(_ request: HadithRequest) throws -> (sources: [String]?, chapter: String?) {
+        if let id = request.chapterID {
+            guard let source = try chapterSource(id: id) else { throw URLError(.resourceUnavailable) }
+            return ([source.book], source.chapterFile)
+        }
+        guard let collection = request.collectionID else { return (nil, nil) }
+        let books = try database.connection().query("SELECT id FROM book WHERE collection_id = ? ORDER BY id", parameters: [collection]) {
+            QuranConnection.text($0, 0)
+        }
+        guard !books.isEmpty else { throw URLError(.resourceUnavailable) }
+        return (books, nil)
+    }
+
     func chapterSource(id: Int?) throws -> HadithSource? {
         guard let id else { return nil }
         return try database.connection().query("SELECT book_id, file_name FROM chapter WHERE id = CAST(? AS INTEGER)", parameters: [String(id)]) {
@@ -227,6 +241,17 @@ actor HadithReader {
         AND h.id_in_book = CAST(? AS INTEGER)
         AND (h.source_id = CAST(? AS INTEGER) OR (h.source_id IS NULL AND ? = '')) LIMIT 2
         """, parameters: [source.book, source.chapterFile, String(source.number), source.sourceID.map(String.init) ?? "", source.sourceID.map(String.init) ?? ""]) {
+            Int(sqlite3_column_int($0, 0))
+        }
+        return matches.count == 1 ? matches.first : nil
+    }
+
+    /// Compact search references omit source IDs; ambiguous assets must never open the wrong narration.
+    func resolveSearch(book: String, chapter: String, number: Int) throws -> Int? {
+        let matches = try database.connection().query("""
+        SELECT h.id \(Self.joins) WHERE b.id = ? AND c.file_name = ?
+        AND h.id_in_book = CAST(? AS INTEGER) LIMIT 2
+        """, parameters: [book, chapter, String(number)]) {
             Int(sqlite3_column_int($0, 0))
         }
         return matches.count == 1 ? matches.first : nil

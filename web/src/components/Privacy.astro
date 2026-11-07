@@ -7,12 +7,14 @@ const { locale } = Astro.props;
 const arabic = locale === "ar";
 const title = arabic ? "سياسة الخصوصية" : "Privacy policy";
 const paragraphs = arabic ? [
-  "لا يجمع مطوّر منتظِر أي بيانات شخصية عنك، ولا يشاركها مع أي جهة.",
-  "تبقى بيانات التطبيق على أجهزتك. تُزامَن الإعدادات وبيانات القرآن الشخصية عبر حساب iCloud الخاص بك عند تفعيله. تستخدم خدمات Apple، مثل الطقس والموقع والتنزيلات، البيانات اللازمة لتقديم الخدمة وفق سياسة خصوصية Apple.",
+  "لا يتطلب منتظِر حسابًا، ولا يستخدم بياناتك للإعلانات أو التتبّع.",
+  "تبقى تفضيلات القراءة والمفضلة والملاحظات على أجهزتك. تُزامَن الإعدادات وبيانات القرآن الشخصية عبر حساب iCloud الخاص بك عند تفعيله. تستخدم خدمات Apple، مثل الطقس والموقع والتنزيلات، البيانات اللازمة لتقديم الخدمة وفق سياسة خصوصية Apple.",
+  "يعمل البحث النصي محليًا. إذا اخترت البحث بالمعنى بعد عدم العثور على نتائج محلية، يُرسل استعلامك إلى خدمة البحث لدينا وإلى Google لتحويله إلى تمثيل رقمي والعثور على النصوص ذات الصلة. تنقل Cloudflare الطلب وتعالج معلومات الاتصال، ومنها عنوان IP. تخزّن خدمتنا تمثيلات الاستعلام الرقمية ونتائج البحث مؤقتًا، وتستخدم معرّفات مشتقة بالتجزئة من عناوين IP لتحديد معدل الطلبات، وتسجّل مقاييس تشغيلية دون نص الاستعلام الأصلي. لا تُرسل ملاحظات القراءة أو المفضلة مع البحث. تجنّب تضمين معلومات شخصية في استعلاماتك.",
   "إذا اخترت التواصل معنا عبر نموذج الدعم، فسنستخدم المعلومات التي ترسلها طوعًا للرد عليك فقط. تستضيف Google النموذج وفق سياسة خصوصيتها.",
 ] : [
-  "Muntathir’s developer does not collect personal data about you or share it with anyone.",
-  "App data stays on your devices. Settings and personal Quran data sync through your own iCloud account when enabled. Apple services, including weather, location, and downloads, use the data needed to provide those services under Apple’s privacy policy.",
+  "Muntathir does not require an account and does not use your data for advertising or tracking.",
+  "Reading preferences, favorites, and notes stay on your devices. Settings and personal Quran data sync through your own iCloud account when enabled. Apple services, including weather, location, and downloads, use the data needed to provide those services under Apple’s privacy policy.",
+  "Text search runs locally. If you choose Search by meaning after no local matches, your query is sent to our search service and to Google to turn it into a search vector and find relevant passages. Cloudflare carries the request and processes connection information, including your IP address. Our service temporarily caches query embeddings and search results, uses hashed IP identifiers for rate limits, and records operational metrics without raw query text. Your reading notes and favorites are not sent with searches. Avoid including personal information in search queries.",
   "If you contact us through the support form, we use the information you voluntarily submit only to reply. Google hosts the form under its privacy policy.",
 ];
 ---

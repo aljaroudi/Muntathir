@@ -3,6 +3,7 @@ require "addressable/uri"
 require "fileutils"
 require "open3"
 require_relative "asset_packs"
+require_relative "cleanup"
 
 module MuntathirRelease
   # Fastlane 2.241.1 omits editable versions already attached to a draft review.

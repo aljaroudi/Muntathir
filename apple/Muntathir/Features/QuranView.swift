@@ -80,23 +80,7 @@ struct QuranView: View {
                 }
             }
             if !results.isEmpty {
-                Section("Verses") {
-                    ForEach(results) { ayah in
-                        if let surah = surahs.first(where: { $0.id == ayah.surah }) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                QuranVerseRow(ayah: ayah, translation: QuranTranslation.catalog.first { $0.id == translationStore.activeID }, preview: true)
-                                NavigationLink {
-                                    QuranChapterView(surah: surah, initialVerse: ayah.number, reader: reader)
-                                } label: { Label("Read verse", systemImage: "book") }
-                                    .accessibilityIdentifier("quran-result-\(ayah.id)")
-                            }
-                        }
-                    }
-                    if hasMore {
-                        Button("Load more") { limit += 50 }
-                            .disabled(loading)
-                    }
-                }
+                verseResults(results)
             }
             if loading {
                 ProgressView("Loading Quran…").frame(maxWidth: .infinity)
@@ -110,8 +94,21 @@ struct QuranView: View {
                 }
             } else if invalidReference {
                 ContentUnavailableView("Invalid verse reference", systemImage: "number", description: Text("Enter a chapter and verse such as 2:255."))
-            } else if matchingSurahs.isEmpty, results.isEmpty {
-                ContentUnavailableView.search(text: request.query)
+            } else if !request.query.isEmpty, resultQuery == request.query, matchingSurahs.isEmpty, results.isEmpty {
+                MeaningSearchResults(query: request.query) {
+                    guard let client = SemanticSearchClient.configured else { throw URLError(.unsupportedURL) }
+                    let matches = try await client.search(request.query, kind: "quran")
+                    let references = matches.compactMap { match -> String? in
+                        guard case let .quran(chapter, verse) = match.reference else { return nil }
+                        return "\(chapter):\(verse)"
+                    }
+                    let verses = try await reader.verses(references: references)
+                    let byID = Dictionary(uniqueKeysWithValues: verses.map { ($0.id, $0) })
+                    return references.compactMap { byID[$0] }
+                } resultsContent: { verses in
+                    verseResults(verses)
+                }
+                .id("\(request.query):\(request.translationID):\(request.translationRevision)")
             }
         }
         .navigationTitle("The Holy Quran")
@@ -125,6 +122,26 @@ struct QuranView: View {
         .onChange(of: query) { limit = 50 }
         .onChange(of: translationStore.activeID) { limit = 50 }
         .task(id: request) { await load() }
+    }
+
+    private func verseResults(_ verses: [Ayah]) -> some View {
+        Section("Verses") {
+            ForEach(verses) { ayah in
+                if let surah = surahs.first(where: { $0.id == ayah.surah }) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        QuranVerseRow(ayah: ayah, translation: QuranTranslation.catalog.first { $0.id == translationStore.activeID }, preview: true)
+                        NavigationLink {
+                            QuranChapterView(surah: surah, initialVerse: ayah.number, reader: reader)
+                        } label: { Label("Read verse", systemImage: "book") }
+                            .accessibilityIdentifier("quran-result-\(ayah.id)")
+                    }
+                }
+            }
+            if hasMore {
+                Button("Load more") { limit += 50 }
+                    .disabled(loading)
+            }
+        }
     }
 
     private func load() async {
