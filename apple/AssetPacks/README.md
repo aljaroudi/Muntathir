@@ -1,8 +1,8 @@
 # Asset packs
 
-Only Quran Arabic and English stay bundled in the app and daily-ayah widget. Hadith uses `hadith`, containing `Hadith/hadith.db`. The on-demand `quran-translations` pack contains all twelve other translations.
+Only Quran Arabic and English stay bundled in the app and daily-ayah widget. Hadith uses `hadith`, containing `Hadith/hadith.db`. Supplications use the independent `supplications` pack, containing `Supplications/supplications.db`. The on-demand `quran-translations` pack contains all twelve other translations.
 
-Quran installs validated databases into the shared App Group, then removes the managed pack. Settings → Downloads deletes individual Quran languages, all downloaded translations, or the Hadith library. Restoring a deleted Quran language downloads the full pack, but restores only that language. Arabic and English cannot be removed. Missing translations leave Arabic readable and never trigger an automatic download.
+Quran installs validated databases into the shared App Group, then removes the managed pack. Settings → Downloads deletes individual Quran languages, all downloaded translations, the Hadith library, or supplications independently. Restoring a deleted Quran language downloads the full pack, but restores only that language. Arabic and English cannot be removed. Missing translations leave Arabic readable and never trigger an automatic download.
 
 An atomic index records pending installation and pack cleanup. Interrupted installs resume from local assets; failed cleanup retries on launch without restoring deleted languages. Installation needs temporary space for both the archive contents and installed copies. Downloaded Quran files are excluded from backup.
 
@@ -19,6 +19,10 @@ The shared **Muntathir** scheme already sets **Run → Options → Background As
 
 The folder contains packaged `.aar` files and is ignored by Git. Repackage and restart the debug session after database changes. No separate server, certificates, or manual URL override are needed for this workflow. See [Apple’s Xcode 27 release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-27-release-notes).
 
+`--four` includes the Four Books, Nahj al-Balagha, al-Sahifa al-Sajjadiyya, Wasa’il al-Shia, and Bihar al-Anwar. The last three are curated additions, not members of the Four Books. Al-Istibsar supplies all four volumes; al-Sahifa supplies its Arabic introduction and 54 prayers in the separate `supplications.db` output. The OpenITI additions use the pinned OpenITI 2025-01-09 files under `build/library/data/OpenITI_data_2025-1-9`. Their checksums and provenance are recorded in `build/hadith/data/openiti-editions.json`; changed editions require boundary review before import. Reading entries retain author commentary and are not a canonical hadith count. Wasa’il contains 30 volumes. Bihar contains 106 supplied volumes; 103 and 108–110 are missing. See [adding and classifying books](../../build/library/README.md).
+
+Reviewed Arabic chapter mappings live in `build/hadith/data/arabic-chapters.json`. They preserve existing English titles and verify the original narration URLs and text before filling blank Arabic titles. Original headings come from Arabic source indexes; modern summaries without original headings use numbered Arabic section labels. Every build writes a sibling `.chapter-gaps.csv` report. To audit the entire library, build without `--sittah --four`, using `--output` to keep the app's selected database intact.
+
 If a device’s local-test installation gets stuck waiting for an app-install event, send that event, then rerun from Xcode:
 
 ```sh
@@ -30,9 +34,9 @@ Check that progress survives leaving and reopening Hadith. After installation, t
 
 ## Database and size
 
-The Six Books/Four Books build contains 61,799 narrations: **223.1 MiB installed**, with an **88.84 MiB local asset archive**. Apple’s processed download size remains unverified.
+The selected Hadith library contains 145,488 reading entries. The separate supplications asset contains an introduction and 54 prayers. Installed and archive sizes are generated locally; Apple’s processed download sizes remain unverified.
 
-Schema v6 and application ID `1230262606` identify compatible reader databases. `--experimental-morphology` is off by default; production packaging rejects experimental databases. Packaging regenerates `AssetDownloadSizes.json` from actual archive byte counts. Both downloads use native, rounded size formatting; installed sizes come from local files.
+Schema v6 and application ID `1230262606` identify compatible reader databases. `--experimental-morphology` is off by default; production packaging rejects experimental databases. Packaging regenerates `AssetDownloadSizes.json` from actual archive byte counts. All downloads use native, rounded size formatting; installed sizes come from local files.
 
 ## Before release
 

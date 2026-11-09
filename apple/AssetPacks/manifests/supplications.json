@@ -1,0 +1,16 @@
+{
+  "assetPackID": "supplications",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "build/hadith/dist/supplications.db",
+      "fileDestination": "Supplications/supplications.db"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ],
+  "sourceRoot": "../../.."
+}

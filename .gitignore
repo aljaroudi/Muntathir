@@ -36,3 +36,5 @@ backend/work/
 apple/Muntathir/Resources/SemanticSearchConfiguration.plist
 
 backend/api/node_modules/
+
+!/build/library/README.md

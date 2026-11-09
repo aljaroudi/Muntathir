@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct DownloadsSettingsView: View {
+    @Environment(\.supplicationAssets) private var supplications
     @Environment(\.hadithAssets) private var hadith
     @Environment(\.locale) private var locale
     @State private var quran = QuranTranslationStore.shared
@@ -9,10 +10,11 @@ struct DownloadsSettingsView: View {
     @State private var requested: QuranTranslation?
 
     private enum Removal: Identifiable {
-        case hadith, translations, language(String)
+        case hadith, supplications, translations, language(String)
         var id: String {
             switch self {
             case .hadith: "hadith"
+            case .supplications: "supplications"
             case .translations: "translations"
             case let .language(id): id
             }
@@ -32,6 +34,23 @@ struct DownloadsSettingsView: View {
                             .accessibilityIdentifier("downloads-remove-hadith")
                     } else {
                         NavigationLink("Hadith") { HadithLibraryView(assets: hadith) }
+                    }
+                }
+            }
+            if let supplications {
+                Section("Supplications") {
+                    if supplications.hasLocalAsset {
+                        LabeledContent {
+                            AssetSizeText(bytes: supplications.installedBytes)
+                        } label: { Text("Supplications") }
+                        Button("Remove download", systemImage: "trash", role: .destructive) { removal = .supplications }
+                            .disabled(supplications.busy)
+                            .accessibilityIdentifier("downloads-remove-supplications")
+                    } else {
+                        NavigationLink("Supplications") {
+                            HadithLibraryView(assets: supplications, supplications: true)
+                                .environment(\.hadithAssets, supplications)
+                        }
                     }
                 }
             }
@@ -92,6 +111,9 @@ struct DownloadsSettingsView: View {
                         case .hadith:
                             await hadith?.remove()
                             hadithRemovalFailed = hadith?.state != .missing
+                        case .supplications:
+                            await supplications?.remove()
+                            hadithRemovalFailed = supplications?.state != .missing
                         case .translations: await quran.remove(QuranTranslation.downloadable.map(\.id))
                         case let .language(id): await quran.remove([id])
                         }

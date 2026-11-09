@@ -54,7 +54,7 @@ assert(!MuntathirRelease.app_store_asset_gate?(true, nil), "First submission can
 assert(MuntathirRelease.app_store_asset_gate?(true, Object.new), "Existing App Store release must require live packs")
 assert(!MuntathirRelease.app_store_asset_gate?(false, Object.new), "Beta must use beta pack availability")
 # The release gate must reject missing packs and accept only active iOS versions.
-pack_ids = %w[hadith quran-translations]
+pack_ids = %w[hadith supplications quran-translations]
 page = { "data" => pack_ids.map { |id| { "attributes" => { "assetPackIdentifier" => id }, "relationships" => { "externalBetaVersion" => { "data" => { "id" => id } }, "appStoreVersion" => { "data" => { "id" => id } } } } },
          "included" => pack_ids.map { |id| { "id" => id, "attributes" => { "platforms" => ["IOS"] } } } }
 assert(MuntathirRelease.validate_asset_packs!(get: ->(_) { page }), "Ready beta packs rejected")

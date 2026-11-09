@@ -11,13 +11,14 @@ Outputs:
 Usage:
   uv run build/hadith/build.py
   uv run build/hadith/build.py --sittah   # Kutub al-Sittah + Shia only
-  uv run build/hadith/build.py --sittah --four  # Six Books + Four Books + Nahj al-Balagha
+  uv run build/hadith/build.py --sittah --four  # Six Books + Four Books + curated additions
 """
 
 from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import unicodedata
 import json
 import re
@@ -27,12 +28,21 @@ import zlib
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from import_collections import parse as parse_collection
+
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 DATA = HERE / "data"
 DIST = HERE / "dist"
 DATA_PATH = ROOT / "temp/hadith-data"
 ADDITIONAL_PATH = ROOT / "temp/additional-books"
+OPENITI_PATH = ROOT / "build/library/data/OpenITI_data_2025-1-9"
+OPENITI_EDITIONS = {
+    "istibsar": "0460ShaykhTusi.Istibsar.Shia001157Vols-ara1",
+    "sahifa": "0786ShahidAwwal.SahifaSajjadiyya.Shia001112-ara1",
+    "wasail": "1104IbnHasanHurrCamili.WasailShica.Shia001187Vols-ara1",
+    "bihar": "1111Majlisi.BiharAnwar.Shia001432Vols-ara1",
+}
 
 # The Six Books (الكتب الستة): the only books whose gradings are imported.
 SITTAH_BOOKS = frozenset(
@@ -780,6 +790,226 @@ def load_additional_books(folder: Path, db: sqlite3.Connection, *, four: bool = 
     return imported
 
 
+def clean_openiti(text: str) -> str:
+    text = re.sub(r"PageV\d+P\d+[A-Za-z]?|\bms\d+\b", "", text)
+    text = re.sub(r"(?m)^~~", "", text)
+    text = re.sub(r"(?m)^# ?", "\n", text)
+    text = text.replace("#", "")
+    return re.sub(r"[ \t]+", " ", text).strip()
+
+
+def parse_openiti(text: str, kind: str) -> list[dict]:
+    """Read only the two pinned editions; keep commentary with its preceding entry."""
+    if kind not in {"istibsar", "sahifa"}:
+        raise ValueError(f"Unsupported OpenITI edition: {kind}")
+    body = text.split("#META#Header#End#", 1)[1]
+    records = []
+    volume, page = (1 if kind == "istibsar" else 0), ""
+    chapter, title = -1, ""
+    chunks: list[str] = []
+    entry_page = ""
+    editorial = False
+    heading_open = False
+    emitted_headings = set()
+
+    def flush():
+        nonlocal chunks
+        content = clean_openiti("\n".join(chunks))
+        heading = clean_openiti(title)
+        if kind == "istibsar":
+            # In this edition some headings also contain the first narration or commentary.
+            boundary = re.search(r"\]\s+|\s+(?=\d+\s*-\s*\d*\s*[-أاخمعلح])|\s+(?=(?:قد بينا|وقد بينا|وقد ذكرنا|قد مضى|إذا ثبت بما|هذه المسألة|ظاهر قوله|يدل على ذلك|اختلف أصحابنا|أخبرني|اخبرني|محمد بن يعقوب|علي بن الحسن بن فضال|أحمد بن محمد بن عيسى))", heading)
+            if boundary:
+                prefix, content_start = heading[:boundary.start()], heading[boundary.end():]
+                heading = prefix
+                if (volume, chapter) not in emitted_headings and not editorial and not re.fullmatch(r"\(\d+\)", content_start):
+                    content = (content_start + "\n\n" + content).strip()
+                    emitted_headings.add((volume, chapter))
+            heading = re.sub(r"\s*\(\d+\)", "", heading)
+        heading = heading.replace("[", "").replace("]", "").strip()
+        if content and not editorial:
+            records.append(dict(volume=volume, chapter=chapter, title=heading,
+                                text=content, page=entry_page))
+        chunks = []
+
+    for line in body.splitlines():
+        if line.startswith("#####ENDNOTES#"):
+            break
+        marker = re.search(r"PageV(\d+)P\d+", line)
+        if marker:
+            new_volume = int(marker[1])
+            if new_volume != volume:
+                flush()
+                volume, chapter, title = new_volume, -1, "مقدمة الجزء"
+                heading_open = False
+            page = marker[0]
+        # Sixteen bab headings were mistakenly tagged as narrations in the pinned edition.
+        if kind == "istibsar":
+            line = re.sub(r"^### \$\s*-\s*(?=باب\s)", "### || ", line)
+        heading = re.match(r"^#{2,3}\s*(\|+)\s*(.*)", line)
+        if heading:
+            flush()
+            editorial = heading[2] == "EDITOR|"
+            chapter += 1
+            title = heading[2].strip(" []") or "مقدمة المؤلف"
+            entry_page = page
+            heading_open = True
+            continue
+        if editorial:
+            continue
+        if heading_open and line.startswith("~~") and not marker:
+            title += " " + line[2:]
+            continue
+        if not clean_openiti(line):
+            continue
+        heading_open = False
+        tagged_entry = re.match(r"^### \$\s*(.*)", line)
+        # This edition leaves 47 narration starts untagged, including the start of volume 2.
+        bare_entry = kind == "istibsar" and not line.startswith(("#", "~~", "Page"))
+        if tagged_entry or bare_entry:
+            flush()
+            entry_page = page
+            line = tagged_entry[1] if tagged_entry else line
+            line = re.sub(r"^[\d\s#\-\]]+", "", line)
+        if not chunks:
+            entry_page = page
+        chunks.append(line)
+    flush()
+    return records
+
+
+def load_openiti_books(db: sqlite3.Connection, folder: Path = OPENITI_PATH) -> int:
+    pinned = json.loads((DATA / "openiti-editions.json").read_text())["editions"]
+    hid = db.execute("SELECT coalesce(max(id), 0) FROM hadith").fetchone()[0]
+    cid = db.execute("SELECT coalesce(max(id), 0) FROM chapter").fetchone()[0]
+    order = db.execute("SELECT coalesce(max(sort_order), -1) + 1 FROM book").fetchone()[0]
+    start = hid
+    for kind, edition in OPENITI_EDITIONS.items():
+        author_uri, book_uri = edition.split(".")[:2]
+        path = folder / author_uri / f"{author_uri}.{book_uri}" / (edition + (".completed" if kind in {"istibsar", "sahifa"} else ""))
+        raw = path.read_bytes()
+        if hashlib.sha256(raw).hexdigest() != pinned[kind]["sha256"]:
+            raise ValueError(f"OpenITI edition changed; review its boundaries before importing: {path}")
+        records = parse_collection(raw.decode(), kind) if kind in {"wasail", "bihar"} else parse_openiti(raw.decode(), kind)
+        if len(records) != pinned[kind]["reading_entries"]:
+            raise ValueError(f"OpenITI reading entry count changed: {edition}")
+        counts = {str(v): n for v, n in Counter(r["volume"] for r in records).items()}
+        if counts != pinned[kind]["entries_by_volume"]:
+            raise ValueError(f"OpenITI volume boundaries changed: {edition}")
+        if kind == "istibsar":
+            collection = "additional-Al-Istibsar-Tusi"
+            name_ar, name_en = "الاستبصار", "Al-Istibsar"
+            author = db.execute("SELECT author, author_ar, died FROM book WHERE collection_id = 'additional-Tahdhib-al-Ahkam-Tusi' LIMIT 1").fetchone()
+            if author is None:
+                raise ValueError("Al-Istibsar requires the existing al-Tusi author metadata")
+            if {r["volume"] for r in records} != {1, 2, 3, 4}:
+                raise ValueError("Al-Istibsar must contain four volumes")
+        elif kind == "sahifa":
+            collection = "openiti-Sahifa-Sajjadiyya"
+            name_ar, name_en = "الصحيفة السجادية الكاملة", "Al-Sahifa al-Sajjadiyya"
+            author = ("Imam Zayn al-Abidin", "الإمام زين العابدين", 94)
+            prayers = [r for r in records if re.match(r"\(\d+\)", r["title"])]
+            if [int(re.match(r"\((\d+)\)", r["title"])[1]) for r in prayers] != list(range(1, 55)):
+                raise ValueError("Al-Sahifa must contain 54 complete prayers in order")
+            # The pinned edition repeats prayer 30's heading on prayer 29.
+            prayers[28]["title"] = "(29) دعاؤه إذا قتر عليه الرزق"
+        else:
+            collection = f"openiti-{kind}"
+            if kind == "wasail":
+                name_ar, name_en = "وسائل الشيعة", "Wasa'il al-Shia"
+                author = ("Al-Hurr al-Amili", "الحر العاملي", 1104)
+            else:
+                name_ar, name_en = "بحار الأنوار", "Bihar al-Anwar"
+                author = ("Al-Majlisi", "العلامة المجلسي", 1111)
+        if db.execute("SELECT 1 FROM collection WHERE id = ?", (collection,)).fetchone():
+            raise ValueError(f"Duplicate OpenITI collection: {collection}")
+        db.execute("INSERT INTO collection VALUES (?, ?, ?, ?)", (collection, name_ar, name_en, order))
+        books, chapters, numbers = {}, {}, Counter()
+        for row in records:
+            volume = row["volume"]
+            if volume not in books:
+                book_id = f"additional-Al-Istibsar-Volume-{volume}-Tusi" if kind == "istibsar" else (collection if kind == "sahifa" else f"{collection}-volume-{volume}")
+                books[volume] = book_id
+                ar, en = volume_title(volume) if kind != "sahifa" else (name_ar, name_en)
+                db.execute("""INSERT INTO book
+                    (id,collection_id,sect,book_group,name_ar,name_en,author,author_ar,died,volume,sort_order)
+                    VALUES (?,?,'shia','shia',?,?,?,?,?,?,?)""",
+                    (book_id, collection, ar, en, *author, volume if kind != "sahifa" else 1, order))
+                order += 1
+            book_id = books[volume]
+            key = (volume, row["chapter"])
+            if key not in chapters:
+                cid += 1
+                idx = sum(v == volume for v, _ in chapters)
+                chapters[key] = (cid, idx)
+                db.execute("INSERT INTO chapter(id,book_id,chapter_idx,file_name,name_ar) VALUES (?,?,?,?,?)",
+                           (cid, book_id, idx, path.name, row["title"]))
+            chapter_id, idx = chapters[key]
+            hid += 1
+            numbers[book_id] += 1
+            period = ((int(author_uri[:4]) + 24) // 25) * 25
+            url = f"https://github.com/OpenITI/{period:04}AH/blob/master/data/{author_uri}/{author_uri}.{book_uri}/{path.name}#{row['page']}"
+            db.execute("""INSERT INTO hadith
+                (id,book_id,chapter_id,chapter_idx,id_in_book,arabic,url,source_id) VALUES (?,?,?,?,?,?,?,?)""",
+                (hid, book_id, chapter_id, idx, numbers[book_id], row["text"], url, row.get("number") or None))
+        db.execute("UPDATE chapter SET hadith_count = (SELECT count(*) FROM hadith WHERE chapter_id=chapter.id) WHERE book_id IN (SELECT id FROM book WHERE collection_id=?)", (collection,))
+        print(f"  OpenITI {edition}: {len(records)} reading entries")
+    return hid - start
+
+
+def extract_supplications(db: sqlite3.Connection, output: Path) -> int:
+    """Move the prayer collection into its own asset, preserving saved source identities."""
+    collection = "openiti-Sahifa-Sajjadiyya"
+    target = connect(output)
+    apply_schema(target, HERE / "schema.sql")
+    predicates = {
+        "collection": "id = ?",
+        "book": "collection_id = ?",
+        "chapter": "book_id IN (SELECT id FROM book WHERE collection_id = ?)",
+        "hadith": "book_id IN (SELECT id FROM book WHERE collection_id = ?)",
+    }
+    count = 0
+    for table, predicate in predicates.items():
+        rows = db.execute(f"SELECT * FROM {table} WHERE {predicate}", (collection,)).fetchall()
+        if rows:
+            target.executemany(f"INSERT INTO {table} VALUES ({','.join('?' for _ in rows[0])})", rows)
+        if table == "hadith":
+            count = len(rows)
+    if not count:
+        target.close()
+        raise ValueError("Supplications source is missing")
+    build_fts(target)
+    target.commit()
+    finalize(target, "supplications.db")
+    target.close()
+    for table in reversed(predicates):
+        db.execute(f"DELETE FROM {table} WHERE {predicates[table]}", (collection,))
+    return count
+
+
+def localize_chapters(db: sqlite3.Connection) -> None:
+    mappings = json.loads((DATA / "arabic-chapters.json").read_text())["chapters"]
+    for row in mappings:
+        chapter = db.execute("SELECT id,name_en FROM chapter WHERE book_id=? AND chapter_idx=? AND name_ar=''",
+                             (row["book_id"], row["chapter_idx"])).fetchone()
+        if chapter is None:
+            continue
+        entries = db.execute("SELECT url,arabic FROM hadith WHERE chapter_id=? ORDER BY id", (chapter[0],)).fetchall()
+        digest = hashlib.sha256(json.dumps(entries, ensure_ascii=False).encode()).hexdigest()
+        if chapter[1] != row["name_en"] or digest != row["boundary_sha256"]:
+            raise ValueError(f"Arabic chapter source changed: {row['book_id']}/{row['chapter_idx']}")
+        db.execute("UPDATE chapter SET name_ar=? WHERE id=?", (row["name_ar"], chapter[0]))
+
+
+def report_chapter_gaps(db: sqlite3.Connection, output: Path) -> None:
+    rows = db.execute("SELECT book_id,chapter_idx,name_en,hadith_count FROM chapter WHERE trim(name_ar)='' ORDER BY book_id,chapter_idx").fetchall()
+    with output.open("w") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(("book_id", "chapter_idx", "name_en", "hadith_count"))
+        writer.writerows(rows)
+    print(f"  Arabic chapter gaps: {len(rows)} ({output})")
+
+
 def localize_kafi_chapters(db: sqlite3.Connection) -> None:
     books = json.loads((DATA / "kafi-chapters.json").read_text())["books"]
     for book_id, chapters in books.items():
@@ -1413,10 +1643,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument(
         "--four",
         action="store_true",
-        help="Limit Shia books to the Four Books plus Nahj al-Balagha; combine with --sittah.",
+        help="Limit Shia books to the Four Books plus Nahj al-Balagha and the pinned OpenITI collections; combine with --sittah.",
     )
     p.add_argument("--experimental-morphology", action="store_true", help="Include unverified root/lemma mappings and indexes (off by default).")
-    p.add_argument("--output", type=Path, default=DIST / "hadith.db", help="Destination database.")
+    p.add_argument("--output", type=Path, default=DIST / "hadith.db", help="Destination Hadith database; supplications.db is written alongside it.")
     return p.parse_args(argv)
 
 
@@ -1426,6 +1656,14 @@ def main(argv: list[str] | None = None) -> int:
         if not source.is_dir():
             print(f"Missing source folder: {source}", file=sys.stderr)
             return 1
+    # Check pinned sources before replacing an existing output database.
+    pinned = json.loads((DATA / "openiti-editions.json").read_text())["editions"]
+    for kind, edition in OPENITI_EDITIONS.items():
+        author, book = edition.split(".")[:2]
+        path = OPENITI_PATH / author / f"{author}.{book}" / (edition + (".completed" if kind in {"istibsar", "sahifa"} else ""))
+        if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != pinned[kind]["sha256"]:
+            print(f"Missing or changed pinned OpenITI source: {path}", file=sys.stderr)
+            return 1
     print(f"Python {sys.version.split()[0]} SQLite {sqlite3.sqlite_version}")
     print(f"Reading {DATA_PATH} and {ADDITIONAL_PATH}")
     if args.sittah:
@@ -1434,7 +1672,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.four:
         metadata = json.loads((ADDITIONAL_PATH / "BookNames.json").read_bytes())
         available = {re.sub(r"-Volume-\d+", "", m["bookId"]) for m in metadata}
-        missing = FOUR_BOOKS - available
+        missing = FOUR_BOOKS - available - {"Al-Istibsar-Tusi"}
         if missing:
             print(f"Warning: requested books missing from source exports: {sorted(missing)}", file=sys.stderr)
 
@@ -1470,6 +1708,10 @@ def main(argv: list[str] | None = None) -> int:
     shia_count += load_additional_books(ADDITIONAL_PATH, hdb, four=args.four)
     localize_books(hdb)
     localize_kafi_chapters(hdb)
+    localize_chapters(hdb)
+    shia_count += load_openiti_books(hdb)
+    shia_count -= extract_supplications(hdb, hadith_path.with_name("supplications.db"))
+    report_chapter_gaps(hdb, hadith_path.with_suffix(".chapter-gaps.csv"))
     hdb.commit()
 
     print("Building FTS…")

@@ -245,6 +245,7 @@
       "name": "Recovered References",
       "children": [
         { "path": "<PROJECT>/../build/hadith/dist/hadith.db", "target-membership": [ "MuntathirTests/resources" ] },
+        { "path": "<PROJECT>/../build/hadith/dist/supplications.db", "target-membership": [ "MuntathirTests/resources" ] },
       ],
     },
   ],

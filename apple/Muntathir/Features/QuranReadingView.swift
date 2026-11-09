@@ -9,6 +9,7 @@ struct QuranReadingView: View {
     @State private var position: (surah: Int, verse: Int)?
     @State private var query = ""
     @State private var searchPresented = false
+    @FocusState private var searchFocused: Bool
     @State private var searchSurah: QuranSurah?
     @State private var surahs: [QuranSurah] = []
 
@@ -24,6 +25,7 @@ struct QuranReadingView: View {
     var body: some View {
         ZStack {
             readingContent
+                .ignoresSafeArea(.keyboard, edges: mode == .mushaf ? .bottom : [])
                 .opacity(showingResults ? 0 : 1)
                 .allowsHitTesting(!showingResults)
                 .accessibilityHidden(showingResults)
@@ -32,8 +34,8 @@ struct QuranReadingView: View {
             }
         }
         .searchable(text: $query, isPresented: $searchPresented,
-                    placement: .toolbar, prompt: "Verse number or Quran text")
-        .searchToolbarBehavior(.minimize)
+                    placement: .navigationBarDrawer(displayMode: .always), prompt: "Verse number or Quran text")
+        .searchFocused($searchFocused)
         .autocorrectionDisabled()
         .task {
             guard surahs.isEmpty else { return }
@@ -42,7 +44,9 @@ struct QuranReadingView: View {
         .onChange(of: searchPresented) { _, presented in
             if presented {
                 searchSurah = currentSurah
-            } else if query.isEmpty {
+            } else {
+                searchFocused = false
+                query = ""
                 searchSurah = nil
             }
         }

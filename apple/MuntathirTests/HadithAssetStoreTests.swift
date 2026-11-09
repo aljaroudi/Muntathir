@@ -3,6 +3,32 @@ import Foundation
 import Testing
 
 @MainActor struct HadithAssetStoreTests {
+    @Test func supplicationsHaveIndependentDownloadAndValidationState() async throws {
+        let fixture = try HadithFixture(count: 1)
+        defer { fixture.remove() }
+        let suite = "IndependentAssets.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let hadithBackend = TestHadithAssets(url: fixture.url)
+        let prayerBackend = TestHadithAssets(url: fixture.url)
+        let hadith = HadithAssetStore(backend: hadithBackend, defaults: defaults)
+        let prayers = HadithAssetStore(backend: prayerBackend, packID: "supplications", defaults: defaults)
+        await hadith.refresh()
+        await prayers.download()
+        await prayers.integrityCheck?.value
+        #expect(prayers.state == .ready)
+        #expect(hadith.state == .missing)
+        #expect(await hadithBackend.downloads == 0)
+        #expect(defaults.string(forKey: "supplications.validated.v1") != nil)
+        #expect(defaults.string(forKey: "hadith.validated.v1") == nil)
+        await hadith.download()
+        await hadith.integrityCheck?.value
+        await prayers.remove()
+        #expect(prayers.state == .missing)
+        #expect(hadith.state == .ready)
+        #expect(defaults.string(forKey: "hadith.validated.v1") != nil)
+    }
+
     @Test func explicitDownloadOfflineRelaunchAndRemoval() async throws {
         let fixture = try HadithFixture(count: 1)
         defer { fixture.remove() }

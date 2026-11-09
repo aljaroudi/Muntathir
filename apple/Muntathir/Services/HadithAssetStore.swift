@@ -7,6 +7,7 @@ import OSLog
         case checking, missing, downloading, ready, failed, incompatible
     }
 
+    let packID: String
     let reader: HadithReader
     private(set) var state: State = .checking
     private(set) var downloadProgress: Progress?
@@ -23,7 +24,10 @@ import OSLog
     private var integrityWorker: Task<Void, Error>?
     private let validateIntegrity: @Sendable (URL) async throws -> Void
     private let defaults: UserDefaults
-    private let validationKey = "hadith.validated.v1"
+    private var validationKey: String {
+        "\(packID).validated.v1"
+    }
+
     private let backend: any AssetPackBackend
     private var installedSignature: String?
     private var refreshPending = false
@@ -33,9 +37,10 @@ import OSLog
     private var progressSample: (date: Date, fraction: Double)?
     private var transferFinishedAt: Date?
 
-    init(backend: any AssetPackBackend = AppleAssetPackBackend(), reader: HadithReader = HadithReader(), defaults: UserDefaults = .standard,
+    init(backend: any AssetPackBackend = AppleAssetPackBackend(), packID: String = "hadith", reader: HadithReader = HadithReader(), defaults: UserDefaults = .standard,
          validateIntegrity: @escaping @Sendable (URL) async throws -> Void = { try HadithDatabase(url: $0).validate() })
     {
+        self.packID = packID
         self.validateIntegrity = validateIntegrity
         self.defaults = defaults
         self.backend = backend

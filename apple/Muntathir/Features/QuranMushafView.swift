@@ -3,6 +3,8 @@ import UIKit
 
 struct QuranMushafView: View {
     @Environment(\.locale) private var locale
+    @Environment(\.isSearching) private var isSearching
+    @State private var readingViewport: CGSize?
     let surah: QuranSurah
     var initialVerse = 1
     let reader: QuranReader
@@ -21,6 +23,7 @@ struct QuranMushafView: View {
         Group {
             if initialized {
                 GeometryReader { viewport in
+                    let height = isSearching ? (readingViewport?.height ?? viewport.size.height) : viewport.size.height
                     ScrollView(.horizontal) {
                         LazyHStack(spacing: 0) {
                             // Reverse page order without reversing the scroll position's coordinate system.
@@ -32,7 +35,7 @@ struct QuranMushafView: View {
                                     }
                                 } select: { selected = $0; positionChanged($0.surah, $0.number) }
                                     .environment(\.layoutDirection, .rightToLeft)
-                                    .frame(width: viewport.size.width, height: viewport.size.height)
+                                    .frame(width: viewport.size.width, height: height)
                                     .id(number)
                             }
                         }
@@ -42,6 +45,12 @@ struct QuranMushafView: View {
                     .scrollPosition(id: $current, anchor: .center)
                     .scrollIndicators(.hidden)
                     .environment(\.layoutDirection, .leftToRight)
+                }
+                .onGeometryChange(for: CGSize.self) { $0.size } action: { size in
+                    // Search moves native toolbar space; retain the reading layout while typing.
+                    if !isSearching || readingViewport?.width != size.width {
+                        readingViewport = size
+                    }
                 }
             } else if initializationFailed {
                 ContentUnavailableView {

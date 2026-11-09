@@ -13,6 +13,12 @@ struct HadithDetailView: View {
     let query: String
     let orderedFallback: Bool
     var highlight: ReadingHighlight?
+    var supplication = false
+
+    private var isSupplication: Bool {
+        detail?.narration.isSupplication ?? supplication
+    }
+
     @AppStorage("hadithEnglishEnabled") private var showEnglish = true
     @Environment(\.locale) private var locale
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -26,27 +32,34 @@ struct HadithDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 if loading {
-                    ProgressView("Loading Hadith…")
+                    ProgressView()
                 } else if failed {
-                    HadithLoadError { Task { await assets?.refresh(); retry += 1 } }
+                    HadithLoadError(supplications: isSupplication) { Task { await assets?.refresh(); retry += 1 } }
                 } else if let detail {
                     let narration = detail.narration
-                    Section {
-                        if !detail.authorName(locale: locale).isEmpty {
-                            metadata("Author", value: detail.authorName(locale: locale))
-                                .accessibilityIdentifier("hadith-detail-author")
+                    if isSupplication {
+                        Text(narration.chapter.chapterTitle(locale: locale))
+                            .font(.title2.weight(.semibold))
+                            .accessibilityIdentifier("supplication-title")
+                    } else {
+                        Section {
+                            if !detail.authorName(locale: locale).isEmpty {
+                                metadata("Author", value: detail.authorName(locale: locale))
+                                    .accessibilityIdentifier("hadith-detail-author")
+                            }
+                            metadata("Book", value: narration.chapter.bookTitle(locale: locale))
+                                .accessibilityIdentifier("hadith-detail-book")
+                            if !narration.chapter.chapterTitle(locale: locale).isEmpty {
+                                metadata("Chapter", value: narration.chapter.chapterTitle(locale: locale))
+                                    .accessibilityIdentifier("hadith-detail-chapter")
+                            }
+                            if let number = narration.displayNumber {
+                                metadata("Hadith number", value: number.formatted(.number.grouping(.never)))
+                                    .accessibilityIdentifier("hadith-detail-number")
+                            }
                         }
-                        metadata("Book", value: narration.chapter.bookTitle(locale: locale))
-                            .accessibilityIdentifier("hadith-detail-book")
-                        if !narration.chapter.chapterTitle(locale: locale).isEmpty {
-                            metadata("Chapter", value: narration.chapter.chapterTitle(locale: locale))
-                                .accessibilityIdentifier("hadith-detail-chapter")
-                        }
-                        metadata("Hadith number", value: narration.number.formatted(.number.grouping(.never)))
-                            .id("top")
-                            .accessibilityIdentifier("hadith-detail-number")
+                        .listRowBackground(HadithBookStyle.background(for: narration.collectionID))
                     }
-                    .listRowBackground(HadithBookStyle.background(for: narration.collectionID))
                     Section {
                         if !narration.arabic.isEmpty {
                             highlighted(narration.arabicDisplay, block: "arabic", narration: narration, arabic: true)
@@ -93,17 +106,19 @@ struct HadithDetailView: View {
                             }
                         }
                     }
-                    Section {
-                        HStack {
-                            Button("Previous") { session?.state.detailOffset = 0; currentID = detail.previousID }
-                                .disabled(detail.previousID == nil)
-                                .accessibilityIdentifier("hadith-previous")
-                            Spacer()
-                            Button("Next") { session?.state.detailOffset = 0; currentID = detail.nextID }
-                                .disabled(detail.nextID == nil)
-                                .accessibilityIdentifier("hadith-next")
+                    if !isSupplication {
+                        Section {
+                            HStack {
+                                Button("Previous") { session?.state.detailOffset = 0; currentID = detail.previousID }
+                                    .disabled(detail.previousID == nil)
+                                    .accessibilityIdentifier("hadith-previous")
+                                Spacer()
+                                Button("Next") { session?.state.detailOffset = 0; currentID = detail.nextID }
+                                    .disabled(detail.nextID == nil)
+                                    .accessibilityIdentifier("hadith-next")
+                            }
+                            .buttonStyle(.borderless)
                         }
-                        .buttonStyle(.borderless)
                     }
                 }
             }
@@ -130,7 +145,7 @@ struct HadithDetailView: View {
                 scrollPosition.scrollTo(y: session?.state.detailOffset ?? 0)
             }
         }
-        .navigationTitle("Hadith")
+        .navigationTitle(LocalizedStringKey(isSupplication ? "Supplications" : "Hadith"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

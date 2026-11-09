@@ -5,6 +5,62 @@ import SwiftUI
 import Testing
 
 struct HadithReaderTests {
+    @Test func bookLabelsIncludeCollectionAndVolume() async throws {
+        let fixture = try HadithFixture(count: 1)
+        defer { fixture.remove() }
+        let reader = HadithReader(database: HadithDatabase(url: fixture.url))
+        let detail = try await reader.detail(id: 1)
+        #expect(detail.narration.chapter.bookTitle(locale: Locale(identifier: "en")) == "Book · Volume 1")
+        #expect(detail.narration.chapter.bookTitle(locale: Locale(identifier: "ar")) == "كتاب · المجلد الأول")
+        let chapters = try await reader.chapters(collectionID: "merged")
+        #expect(chapters.first?.bookEnglish == "Book · Volume 1")
+        let page = try await reader.page(HadithRequest(collectionID: "merged"))
+        #expect(page.rows.first?.chapter.bookArabic == "كتاب · المجلد الأول")
+    }
+
+    @Test func importedCollectionsUsePrintedNumbersOnly() async throws {
+        let fixture = try HadithFixture(count: 2)
+        defer { fixture.remove() }
+        var handle: OpaquePointer?
+        #expect(sqlite3_open(fixture.url.path, &handle) == SQLITE_OK)
+        defer { sqlite3_close(handle) }
+        #expect(sqlite3_exec(handle, "UPDATE collection SET id='openiti-wasail' WHERE id='merged'; UPDATE book SET collection_id='openiti-wasail' WHERE collection_id='merged'; UPDATE hadith SET source_id=77 WHERE id=1; UPDATE hadith SET source_id=NULL WHERE id=2;", nil, nil, nil) == SQLITE_OK)
+        let reader = HadithReader(database: HadithDatabase(url: fixture.url))
+        var request = HadithRequest(collectionID: "openiti-wasail")
+        request.number = 77
+        let rows = try await reader.page(request).rows
+        #expect(rows.map(\.id) == [1])
+        #expect(rows.first?.displayNumber == 77)
+        #expect(try await reader.detail(id: 2).narration.displayNumber == nil)
+        request.number = 2
+        #expect(try await reader.page(request).rows.isEmpty)
+    }
+
+    @Test func supplicationsSearchTitlesAndContentWithoutHadithNavigation() async throws {
+        let reader = HadithReader(database: HadithDatabase(url: Bundle(for: HadithTestBundle.self).url(forResource: "supplications", withExtension: "db")))
+        let prayers = try await reader.supplications()
+        #expect(prayers.count == 54)
+        #expect(prayers.allSatisfy { $0.isSupplication })
+        #expect(prayers.first?.chapter.arabic.hasPrefix("(1)") == true)
+        #expect(prayers.last?.chapter.arabic.hasPrefix("(54)") == true)
+        let titleMatches = try await reader.supplications(query: "مَكَارِم الأخْلاق")
+        let prayer = try #require(titleMatches.first)
+        #expect(prayer.chapter.arabic.hasPrefix("(20)"))
+        let contentMatches = try await reader.supplications(query: "بلغ بإيماني أكمل الإيمان")
+        #expect(contentMatches.contains { $0.id == prayer.id })
+        #expect(try await reader.supplications(query: "zzzzunknown").isEmpty)
+        #expect(try await reader.supplications(query: "!!!").isEmpty)
+        let detail = try await reader.detail(id: prayer.id)
+        #expect(detail.narration.arabic.count > prayer.arabic.count)
+        let reference = HadithShareContent(narration: detail.narration, showEnglish: false, locale: Locale(identifier: "ar")).reference
+        #expect(reference.contains("(20)"))
+        #expect(!reference.hasSuffix(" · 21"))
+        #expect(try await reader.catalog().allSatisfy { $0.id != Hadith.supplicationCollectionID })
+        #expect(try await reader.chapters().allSatisfy { $0.collectionID != Hadith.supplicationCollectionID })
+        #expect(try await reader.page(HadithRequest(query: "الله", collectionID: Hadith.supplicationCollectionID)).rows.isEmpty)
+        #expect(try await reader.page(HadithRequest(query: "الله")).rows.allSatisfy { !$0.isSupplication })
+    }
+
     @Test func kafiOriginalChapterNamesFollowAppLocale() async throws {
         let reader = HadithReader(database: HadithDatabase(url: Bundle(for: HadithTestBundle.self).url(forResource: "hadith", withExtension: "db")))
         let chapters = try await reader.chapters(collectionID: "alkafi")

@@ -2,6 +2,7 @@ import SwiftData
 import SwiftUI
 
 extension EnvironmentValues {
+    @Entry var supplicationAssets: HadithAssetStore? = nil
     @Entry var hadithAssets: HadithAssetStore? = nil
     @Entry var hadithSession: HadithSession? = nil
     @Entry var quranUserStore: QuranUserStore? = nil

@@ -52,7 +52,7 @@ struct HadithShareContent {
     let locale: Locale
 
     var reference: String {
-        narration.chapter.title(locale: locale) + " · " + String(narration.number)
+        narration.chapter.title(locale: locale) + (narration.displayNumber.map { " · " + String($0) } ?? "")
     }
 
     var text: String {
@@ -135,11 +135,13 @@ struct HadithActions: View {
                 }
             }
             Divider()
-            HadithTranslationPicker()
+            if !narration.isSupplication {
+                HadithTranslationPicker()
+            }
             ReadingSizeMenu(isPresented: $textSizePresented)
             HighlightActions(source: narration.source?.key ?? "", isHadith: true, excerpt: content.body, reference: content.reference, editing: $editing)
         } label: {
-            Label("Hadith actions", systemImage: "ellipsis.circle").labelStyle(.iconOnly)
+            Label(LocalizedStringKey(narration.isSupplication ? "Supplication actions" : "Hadith actions"), systemImage: "ellipsis.circle").labelStyle(.iconOnly)
                 .frame(minWidth: 44, minHeight: 44)
         }
         .accessibilityIdentifier("hadith-actions")

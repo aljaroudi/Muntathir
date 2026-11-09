@@ -15,8 +15,10 @@ final class QuranUITests: XCTestCase {
     }
 
     @MainActor private func search(_ text: String, in app: XCUIApplication) {
-        if !app.searchFields.firstMatch.isHittable {
-            app.buttons["Search"].firstMatch.tap()
+        if !app.searchFields.firstMatch.waitForExistence(timeout: 5) {
+            let button = app.buttons["Search"].firstMatch
+            XCTAssertTrue(button.waitForExistence(timeout: 5))
+            button.tap()
         }
         let field = app.searchFields.firstMatch
         XCTAssertTrue(field.waitForExistence(timeout: 5))
@@ -49,11 +51,38 @@ final class QuranUITests: XCTestCase {
             search("287", in: app)
             XCTAssertTrue(app.staticTexts["Invalid verse reference"].waitForExistence(timeout: 5))
             app.searchFields.firstMatch.tap()
-            app.navigationBars.buttons["Close"].tap()
+            app.navigationBars.buttons.matching(NSPredicate(format: "label ==[c] %@ OR label ==[c] %@", "close", "cancel")).firstMatch.tap()
             let original = mode == "Verses" ? "quran-verse-2:1" : "quran-page-2"
             XCTAssertTrue(app.descendants(matching: .any)[original].firstMatch.waitForExistence(timeout: 5))
             app.terminate()
         }
+    }
+
+    @MainActor func testMushafKeyboardDoesNotResizePageOrReopenAfterClose() {
+        let app = openQuran()
+        app.buttons["quran-surah-2"].tap()
+        app.buttons["quran-reading-options"].tap()
+        app.buttons["Mushaf"].tap()
+        let page = app.descendants(matching: .any)["quran-page-2"].firstMatch
+        XCTAssertTrue(page.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["quran-verse-2:1"].waitForExistence(timeout: 10))
+        let height = page.frame.height
+        if !app.searchFields.firstMatch.waitForExistence(timeout: 5) {
+            let button = app.buttons["Search"].firstMatch
+            XCTAssertTrue(button.waitForExistence(timeout: 5))
+            button.tap()
+        }
+        let field = app.searchFields.firstMatch
+        field.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
+        XCTAssertEqual(page.frame.height, height, accuracy: 2)
+        field.typeText("255")
+        app.navigationBars.buttons.matching(NSPredicate(format: "label ==[c] %@ OR label ==[c] %@", "close", "cancel")).firstMatch.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 5))
+        let reopened = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == true"), object: app.keyboards.firstMatch)
+        reopened.isInverted = true
+        wait(for: [reopened], timeout: 2)
+        XCTAssertTrue(page.exists)
     }
 
     @MainActor func testMushafPagingSettlesAfterRepeatedSwipes() {
@@ -109,7 +138,7 @@ final class QuranUITests: XCTestCase {
         XCTAssertEqual(app.descendants(matching: .any)["quran-page-2"].firstMatch.frame.midX, app.frame.midX, accuracy: 4)
         search("255", in: app)
         XCTAssertTrue(app.buttons["quran-result-2:255"].exists)
-        app.navigationBars.buttons["Close"].tap()
+        app.navigationBars.buttons.matching(NSPredicate(format: "label ==[c] %@ OR label ==[c] %@", "close", "cancel")).firstMatch.tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-page-2"].firstMatch.waitForExistence(timeout: 5))
     }
 
@@ -177,7 +206,7 @@ final class QuranUITests: XCTestCase {
         XCTAssertFalse(app.descendants(matching: .any)["quran-translation-2:255"].firstMatch.exists)
         app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(app.buttons["quran-result-2:255"].waitForExistence(timeout: 5))
-        app.navigationBars.buttons["Close"].tap()
+        app.navigationBars.buttons.matching(NSPredicate(format: "label ==[c] %@ OR label ==[c] %@", "close", "cancel")).firstMatch.tap()
         app.navigationBars.buttons["BackButton"].tap()
         app.buttons["quran-surah-1"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-verse-1:1"].waitForExistence(timeout: 5))

@@ -127,7 +127,10 @@ struct HadithView: View {
                                 guard case let .hadith(book, chapter, number) = match.reference,
                                       let id = try await reader.resolveSearch(book: book, chapter: chapter, number: number) else { continue }
                                 try Task.checkCancellation()
-                                try await narrations.append(reader.detail(id: id).narration)
+                                let narration = try await reader.detail(id: id).narration
+                                if !narration.isSupplication {
+                                    narrations.append(narration)
+                                }
                             }
                             return narrations
                         } resultsContent: { narrations in
@@ -493,10 +496,11 @@ struct HadithView: View {
 }
 
 struct HadithLoadError: View {
+    var supplications = false
     let retry: () -> Void
     var body: some View {
         ContentUnavailableView {
-            Label("Unable to load Hadith", systemImage: "exclamationmark.triangle")
+            Label(LocalizedStringKey(supplications ? "Unable to load supplications" : "Unable to load Hadith"), systemImage: "exclamationmark.triangle")
         } description: {
             Text("Please try again.")
         } actions: {
@@ -508,6 +512,7 @@ struct HadithLoadError: View {
 struct HadithSavedView: View {
     @Environment(\.hadithAssets) private var assets
     let reader: HadithReader
+    var supplications = false
     @Environment(\.quranUserStore) private var store
     @State private var rows: [String: Int] = [:]
     @State private var availableHighlights: Set<String> = []
@@ -517,7 +522,9 @@ struct HadithSavedView: View {
     @State private var editing: ReadingHighlight?
 
     private var highlights: [ReadingHighlight] {
-        store?.highlights.filter(\.isHadith) ?? []
+        store?.highlights.filter {
+            $0.isHadith && (HadithSource(key: $0.source)?.book == Hadith.supplicationCollectionID) == supplications
+        } ?? []
     }
 
     private var keys: [String] {
@@ -531,9 +538,9 @@ struct HadithSavedView: View {
                     Label("Highlights unavailable", systemImage: "exclamationmark.triangle")
                 } actions: { Button("Try again") { store?.reopen() } }
             } else if loading {
-                ProgressView("Loading Hadith…")
+                ProgressView()
             } else if failed {
-                HadithLoadError { Task { await assets?.refresh(); retry += 1 } }
+                HadithLoadError(supplications: supplications) { Task { await assets?.refresh(); retry += 1 } }
             } else if highlights.isEmpty {
                 ContentUnavailableView("No highlights yet", systemImage: "highlighter")
             } else {
@@ -541,7 +548,7 @@ struct HadithSavedView: View {
                     Group {
                         if let id = rows[highlight.source] {
                             NavigationLink {
-                                HadithDetailView(initialID: id, reader: reader, query: "", orderedFallback: false, highlight: highlight)
+                                HadithDetailView(initialID: id, reader: reader, query: "", orderedFallback: false, highlight: highlight, supplication: supplications)
                             } label: { HighlightSummary(highlight: highlight, available: availableHighlights.contains(highlight.id)) }
                                 .accessibilityIdentifier("saved-hadith-\(highlight.source)")
                         } else {

@@ -6,6 +6,7 @@ enum FigureRoute: Hashable {
     case tree(String)
     case observance(eventID: String, figureIDs: [String])
     case hadith
+    case supplications
 }
 
 struct FigureBrowser: View {
@@ -83,7 +84,7 @@ struct FigureDestination: View {
 }
 
 extension View {
-    func figureDestinations(hadithAssets: HadithAssetStore? = nil) -> some View {
+    func figureDestinations(hadithAssets: HadithAssetStore? = nil, supplicationAssets: HadithAssetStore? = nil) -> some View {
         navigationDestination(for: FigureRoute.self) { route in
             switch route {
             case .browser: FigureBrowser()
@@ -93,6 +94,12 @@ extension View {
             case .hadith:
                 if let hadithAssets {
                     HadithLibraryView(assets: hadithAssets)
+                }
+            case .supplications:
+                if let supplicationAssets {
+                    HadithLibraryView(assets: supplicationAssets, supplications: true)
+                        .environment(\.hadithAssets, supplicationAssets)
+                        .environment(\.hadithSession, nil)
                 }
             }
         }

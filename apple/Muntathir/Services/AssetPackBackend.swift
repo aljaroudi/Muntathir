@@ -25,9 +25,9 @@ struct AppleAssetPackBackend: AssetPackBackend {
 
     @concurrent func localURL() async throws -> URL? {
         #if DEBUG
-            if identifier == Self.packID, ProcessInfo.processInfo.arguments.contains("--ui-testing"),
+            if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
                ProcessInfo.processInfo.arguments.contains("--marketing-capture"),
-               let url = Bundle.main.url(forResource: "hadith", withExtension: "db", subdirectory: "Hadith")
+               let url = Bundle.main.url(forResource: identifier, withExtension: "db", subdirectory: identifier == "supplications" ? "Supplications" : "Hadith")
             {
                 return url
             }

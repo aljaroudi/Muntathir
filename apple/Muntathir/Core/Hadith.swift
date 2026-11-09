@@ -56,6 +56,19 @@ struct HadithChapter: Identifiable, Hashable, Sendable {
 
 /// Preview text is prepared one result at a time; pages never retain complete narration text.
 struct Hadith: Identifiable, Hashable, Sendable {
+    static let supplicationCollectionID = "openiti-Sahifa-Sajjadiyya"
+
+    var isSupplication: Bool {
+        collectionID == Self.supplicationCollectionID
+    }
+
+    var displayNumber: Int? {
+        if collectionID == "openiti-wasail" || collectionID == "openiti-bihar" {
+            return source?.sourceID
+        }
+        return isSupplication ? nil : number
+    }
+
     let id: Int
     let collectionID: String
     let number: Int

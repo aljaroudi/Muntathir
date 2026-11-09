@@ -17,6 +17,29 @@ final class HadithUITests: XCTestCase {
         return app
     }
 
+    @MainActor func testSupplicationsOpenDirectlyAndSearchByTitle() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.buttons["Tools"].firstMatch.tap()
+        app.buttons["supplications"].tap()
+        if app.buttons["supplications-download"].waitForExistence(timeout: 3) {
+            throw XCTSkip("Install the supplications pack before supplication UI tests.")
+        }
+        XCTAssertTrue(app.buttons["supplication-1"].waitForExistence(timeout: 15))
+        let search = app.searchFields.firstMatch
+        search.tap()
+        search.typeText("مكارم الأخلاق\n")
+        let prayer = app.buttons["supplication-20"]
+        XCTAssertTrue(prayer.waitForExistence(timeout: 10))
+        prayer.tap()
+        XCTAssertTrue(app.staticTexts["supplication-title"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.descendants(matching: .any)["hadith-full-arabic"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["hadith-detail-number"].exists)
+        XCTAssertFalse(app.buttons["hadith-next"].exists)
+        XCTAssertFalse(app.buttons["hadith-previous"].exists)
+    }
+
     @MainActor func testDownloadIsExplicitWhenLibraryIsMissing() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
