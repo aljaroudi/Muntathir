@@ -59,7 +59,7 @@ struct QuranView: View {
                 Section("Surahs") {
                     ForEach(matchingSurahs) { surah in
                         NavigationLink {
-                            QuranChapterView(surah: surah, reader: reader)
+                            QuranReadingView(surah: surah, reader: reader)
                         } label: {
                             VStack(alignment: .leading, spacing: 6) {
                                 HStack(alignment: .firstTextBaseline, spacing: 0) {
@@ -131,7 +131,7 @@ struct QuranView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         QuranVerseRow(ayah: ayah, translation: QuranTranslation.catalog.first { $0.id == translationStore.activeID }, preview: true)
                         NavigationLink {
-                            QuranChapterView(surah: surah, initialVerse: ayah.number, reader: reader)
+                            QuranReadingView(surah: surah, initialVerse: ayah.number, reader: reader)
                         } label: { Label("Read verse", systemImage: "book") }
                             .accessibilityIdentifier("quran-result-\(ayah.id)")
                     }

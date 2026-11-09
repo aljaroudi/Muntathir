@@ -7,6 +7,8 @@ struct QuranChapterView: View {
     var initialVerse = 1
     let reader: QuranReader
     var highlight: ReadingHighlight?
+    var positionChanged: (Int, Int) -> Void = { _, _ in }
+    @State private var visibleVerses: Set<Int> = []
     @Environment(\.locale) private var locale
     @State private var translationStore = QuranTranslationStore.shared
     @State private var verses: [Ayah] = []
@@ -36,6 +38,19 @@ struct QuranChapterView: View {
                 } else {
                     ForEach(verses) { ayah in
                         QuranVerseRow(ayah: ayah, translation: QuranTranslation.catalog.first { $0.id == translationStore.activeID })
+                            .onGeometryChange(for: Bool.self) { geometry in
+                                let frame = geometry.frame(in: .scrollView)
+                                return frame.maxY > 0 && frame.minY < (geometry.bounds(of: .scrollView)?.height ?? 0)
+                            } action: { visible in
+                                if visible {
+                                    visibleVerses.insert(ayah.number)
+                                } else {
+                                    visibleVerses.remove(ayah.number)
+                                }
+                                if let first = visibleVerses.min() {
+                                    positionChanged(surah.id, first)
+                                }
+                            }
                             .id(ayah.number)
                             .accessibilityIdentifier("quran-verse-\(ayah.id)")
                     }
@@ -67,6 +82,7 @@ struct QuranChapterView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
+                    QuranReadingModePicker()
                     QuranTranslationPicker()
                     ReadingSizeMenu(isPresented: $textSizePresented)
                 } label: {

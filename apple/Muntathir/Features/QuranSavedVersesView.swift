@@ -47,7 +47,7 @@ struct QuranSavedVersesView: View {
                     Group {
                         if let ayah, let surah = surahs.first(where: { $0.id == ayah.surah }) {
                             NavigationLink {
-                                QuranChapterView(surah: surah, initialVerse: ayah.number, reader: reader, highlight: highlight)
+                                QuranReadingView(surah: surah, initialVerse: ayah.number, reader: reader, highlight: highlight)
                             } label: { HighlightSummary(highlight: highlight, available: available) }
                                 .accessibilityIdentifier("saved-verse-\(ayah.id)")
                         } else {

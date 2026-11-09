@@ -25,8 +25,8 @@ for index, sura, aya, text in db.execute('SELECT "index", sura, aya, text FROM q
     # QAC writes "بعدما" where the text has "بعد ما" in these three verses.
     joined = {(2, 181, 3), (8, 6, 4), (13, 37, 8)}
     spans = [2 if (sura, aya, n) in joined else len(forms[sura, aya][n].split()) for n in numbers]
-    # Tanzil prefixes verse 1 of every surah except 1 and 9 with the 4-word basmala; QAC does not.
-    skip = 4 if aya == 1 and sura not in (1, 9) else 0
+    # Tanzil can prefix verse 1 of every surah except 1 and 9 with the 4-word basmala; QAC does not.
+    skip = 4 if aya == 1 and sura not in (1, 9) and len(tokens) == 4 + sum(spans) else 0
     if len(tokens) != skip + sum(spans):
         mismatches.append(f"{sura}:{aya} text={len(tokens)} qac={skip + sum(spans)}")
         continue

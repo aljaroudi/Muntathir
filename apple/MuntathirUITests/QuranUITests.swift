@@ -14,6 +14,36 @@ final class QuranUITests: XCTestCase {
         return app
     }
 
+    @MainActor func testReadingModesPreserveVerse() {
+        let app = openQuran()
+        app.buttons["quran-surah-2"].tap()
+        app.buttons["quran-jump"].tap()
+        app.alerts.textFields.firstMatch.tap()
+        app.alerts.textFields.firstMatch.typeText("255")
+        app.alerts.buttons["Go"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["quran-verse-2:255"].firstMatch.waitForExistence(timeout: 10))
+        app.buttons["quran-reading-options"].tap()
+        app.buttons["Mushaf"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["quran-page-42"].firstMatch.waitForExistence(timeout: 10))
+        app.buttons["quran-verse-2:255"].firstMatch.tap()
+        app.buttons["quran-verse-2:255"].firstMatch.press(forDuration: 1)
+        XCTAssertTrue(app.buttons["Copy text"].waitForExistence(timeout: 5))
+        app.buttons["Copy text"].tap()
+        app.buttons["quran-reading-options"].tap()
+        app.buttons["Verses"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["quran-verse-2:255"].firstMatch.waitForExistence(timeout: 10))
+        app.buttons["quran-reading-options"].tap()
+        app.buttons["Mushaf"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["quran-page-42"].firstMatch.waitForExistence(timeout: 10))
+        app.terminate()
+        app.launchArguments += ["--ui-testing-preserve-state"]
+        app.launch()
+        app.buttons["Tools"].firstMatch.tap()
+        app.buttons["holy-quran"].tap()
+        app.buttons["quran-surah-1"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["quran-page-1"].firstMatch.waitForExistence(timeout: 10))
+    }
+
     @MainActor func testBrowseJumpAndTranslationSelection() {
         let app = openQuran()
         app.buttons["quran-surah-2"].tap()

@@ -57,6 +57,9 @@ expect() { # <id> <label> <sql> <expected count, or + for nonzero>
 
 load quran
 expect quran rows 'SELECT count(*) FROM quran' 6236
+# Shipped text omits the basmala that Tanzil prefixes to each opening verse; saved highlight ranges depend on it.
+sqlite3 -bail "$out/quran.db" "UPDATE quran SET text = substr(text, 36) WHERE aya = 1 AND sura NOT IN (1, 9) AND substr(text, 1, 35) = (SELECT text FROM quran WHERE \"index\" = 1);"
+expect quran 'basmala stripped from openings' "SELECT count(*) FROM quran WHERE aya = 1 AND sura NOT IN (1, 9) AND text LIKE (SELECT text FROM quran WHERE \"index\" = 1) || '%'" 0
 index quran 'unicode61 remove_diacritics 2' root
 sqlite3 -bail "$out/quran.db" "
   CREATE UNIQUE INDEX quran_sura_aya ON quran (sura, aya);
@@ -69,7 +72,18 @@ sqlite3 -bail "$out/quran.db" "
   INSERT INTO quran_words (rowid, text, root) SELECT \"index\", text, $(norm root) FROM quran_search;
   DROP TABLE quran_search;
   DROP TABLE quran_roots_raw;"
+python3 "$here/layout.py" "$data/quran-data.xml" "$data/qpc-v1-15-lines.db" "$data/qpc-hafs-word-by-word.db" "$out/quran.db"
 finish quran
+for d in 'page 604' 'juz 30' 'hizb 240' 'manzil 7' 'ruku 556'; do
+  expect quran "${d% *} count" "SELECT count(*) FROM quran_divisions WHERE kind = '${d% *}'" "${d#* }"
+done
+expect quran sajdas 'SELECT count(*) FROM quran_sajdas' 15
+expect quran 'every verse paged' 'SELECT count(*) FROM quran WHERE page IS NULL OR juz IS NULL' 0
+expect quran 'every page has 15 lines' 'SELECT count(*) FROM (SELECT page FROM quran_lines GROUP BY page HAVING count(*) = 15 OR page <= 2)' 604
+expect quran 'page 1 is Al-Fatiha' 'SELECT count(*) FROM quran WHERE page = 1 AND sura = 1' 7
+expect quran 'page 604 ends at 114:6' 'SELECT max("index") FROM quran WHERE page = 604' 6236
+expect quran 'every verse has a QPC end marker' 'SELECT count(DISTINCT "index") FROM quran_words_qpc' 6236
+expect quran 'Tanzil pages match layout' "SELECT count(*) FROM quran_divisions d JOIN quran q ON q.\"index\" = d.start WHERE d.kind = 'page' AND q.page != d.number" 0
 echo "quran $(du -h "$out/quran.db" | cut -f1)"
 expect quran 'word بسم' "SELECT count(*) FROM quran_words WHERE quran_words MATCH 'text : \"بسم\"'" +
 expect quran 'word في matches فى' "SELECT count(*) FROM quran_words WHERE quran_words MATCH 'text : \"في\"'" +

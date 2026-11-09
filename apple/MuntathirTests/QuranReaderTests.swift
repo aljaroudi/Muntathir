@@ -29,6 +29,21 @@ struct QuranReaderTests {
         #expect(catalog.surahs[1].matches("٢"))
     }
 
+    @Test func mushafPagesFollowTheFifteenLineLayout() async throws {
+        let reader = QuranReader(database: database)
+        let first = try await reader.page(1)
+        #expect(first.lines.count == 8)
+        #expect(first.lines[0].kind == .surahName)
+        #expect(first.verses.values.map(\.id).sorted() == (1 ... 7).map { "1:\($0)" })
+        let last = try await reader.page(QuranPage.count)
+        #expect(last.lines.count == 15)
+        #expect(last.lines.last?.words.last.map { last.verses[$0.index]?.id } == "114:6")
+        #expect(last.juz == 30)
+        #expect(try await reader.page(surah: 2, verse: 255) == 42)
+        let words = try await reader.page(42).lines.flatMap(\.words)
+        #expect(Set(words.map(\.id)).count == words.count)
+    }
+
     @Test func arabicSearchNormalizesOnlySearchKeysAndLeavesDatabaseUnchanged() async throws {
         let url = try #require(database.url)
         let before = try Data(contentsOf: url)

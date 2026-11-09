@@ -20,6 +20,14 @@ actor QuranReader {
         try database.verses(surah: surah)
     }
 
+    func page(_ number: Int) throws -> QuranPage {
+        try database.page(number)
+    }
+
+    func page(surah: Int, verse: Int) throws -> Int? {
+        try database.page(surah: surah, verse: verse)
+    }
+
     func verses(references: [String]) throws -> [Ayah] {
         try references.compactMap { reference in
             guard let parsed = try QuranSearchText.reference(reference) else { return nil }
