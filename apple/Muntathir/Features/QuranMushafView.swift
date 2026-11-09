@@ -12,29 +12,37 @@ struct QuranMushafView: View {
     @State private var surahs: [QuranSurah] = []
     @State private var initializationFailed = false
     @State private var initializationRetry = 0
+    @State private var initialized = false
     @State private var current: Int?
     @State private var pages: [Int: QuranPage] = [:]
     @State private var selected: Ayah?
-    @State private var jumpPresented = false
-    @State private var jumpText = ""
-    @State private var invalidJump = false
 
     var body: some View {
         Group {
-            if let current {
-                TabView(selection: Binding(get: { current }, set: { self.current = $0 })) {
-                    ForEach(1 ... QuranPage.count, id: \.self) { number in
-                        QuranPageView(number: number, reader: reader, revision: translationStore.revision, surahs: surahs, selected: selected?.id) { page in
-                            pages[number] = page
-                            if number == current {
-                                reportPosition(page)
+            if initialized {
+                GeometryReader { viewport in
+                    ScrollView(.horizontal) {
+                        LazyHStack(spacing: 0) {
+                            // Reverse page order without reversing the scroll position's coordinate system.
+                            ForEach((1 ... QuranPage.count).reversed(), id: \.self) { number in
+                                QuranPageView(number: number, reader: reader, revision: translationStore.revision, surahs: surahs, selected: selected?.id) { page in
+                                    pages[number] = page
+                                    if number == current {
+                                        reportPosition(page)
+                                    }
+                                } select: { selected = $0; positionChanged($0.surah, $0.number) }
+                                    .environment(\.layoutDirection, .rightToLeft)
+                                    .frame(width: viewport.size.width, height: viewport.size.height)
+                                    .id(number)
                             }
-                        } select: { selected = $0; positionChanged($0.surah, $0.number) }
-                            .tag(number)
+                        }
+                        .scrollTargetLayout()
                     }
+                    .scrollTargetBehavior(.viewAligned(limitBehavior: .alwaysByOne))
+                    .scrollPosition(id: $current, anchor: .center)
+                    .scrollIndicators(.hidden)
+                    .environment(\.layoutDirection, .leftToRight)
                 }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-                .environment(\.layoutDirection, .rightToLeft)
             } else if initializationFailed {
                 ContentUnavailableView {
                     Label("Unable to load Quran", systemImage: "exclamationmark.triangle")
@@ -49,29 +57,16 @@ struct QuranMushafView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Go to page or verse", systemImage: "number") { jumpPresented = true }
-                    .accessibilityIdentifier("quran-jump")
-            }
-            ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     QuranReadingModePicker()
+                    QuranTranslationPicker()
                 } label: {
                     Label("Reading options", systemImage: "textformat")
                 }.accessibilityIdentifier("quran-reading-options")
             }
         }
-        .alert("Go to page or verse", isPresented: $jumpPresented) {
-            TextField("Page or 2:255", text: $jumpText).keyboardType(.numbersAndPunctuation)
-            Button("Go") { Task { await jump() } }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Enter a page from \(1, format: .number) to \(QuranPage.count, format: .number), or a verse such as 2:255.")
-        }
-        .alert("Invalid page or verse", isPresented: $invalidJump) {
-            Button("OK", role: .cancel) {}
-        }
         .task(id: initializationRetry) {
-            guard current == nil else { return }
+            guard !initialized else { return }
             if let block = highlight?.block, block != "arabic", translationStore.activeID != block {
                 translationStore.select(block)
             }
@@ -84,6 +79,7 @@ struct QuranMushafView: View {
                 }
                 try Task.checkCancellation()
                 current = page
+                initialized = true
             } catch {
                 guard !Task.isCancelled else { return }
                 initializationFailed = true
@@ -113,21 +109,6 @@ struct QuranMushafView: View {
         let name = surahs.first { $0.id == page.surah }?.title(locale: locale) ?? surah.title(locale: locale)
         return "\(name) · " + String(localized: "Juz \(page.juz)")
     }
-
-    private func jump() async {
-        let text = jumpText.trimmingCharacters(in: .whitespacesAndNewlines)
-        jumpText = ""
-        if let reference = try? QuranSearchText.reference(text) {
-            if let page = try? await reader.page(surah: reference.surah, verse: reference.verse) {
-                current = page
-                return
-            }
-        } else if let number = QuranSearchText.number(text), (1 ... QuranPage.count).contains(number) {
-            current = number
-            return
-        }
-        invalidJump = true
-    }
 }
 
 private struct QuranPageView: View {
@@ -141,10 +122,12 @@ private struct QuranPageView: View {
     @Environment(\.quranUserStore) private var store
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiate
     @State private var page: QuranPage?
+    @State private var referenceLineWidth: CGFloat = 0
     @State private var failed = false
     @State private var retry = 0
 
     static let font = "KFGQPCHAFSUthmanicScript-Regula"
+    static let referenceFontSize: CGFloat = 100
     static let basmala = "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ"
 
     var body: some View {
@@ -153,7 +136,7 @@ private struct QuranPageView: View {
                 GeometryReader { geometry in
                     let width = max(1, geometry.size.width - 32)
                     let lineHeight = max(1, (geometry.size.height - 56) / 15)
-                    let size = fontSize(page, width: width, lineHeight: lineHeight)
+                    let size = fontSize(width: width, lineHeight: lineHeight)
                     VStack(spacing: 0) {
                         VStack(spacing: 0) {
                             ForEach(page.lines) { line in
@@ -181,6 +164,7 @@ private struct QuranPageView: View {
             do {
                 let loaded = try await reader.page(number)
                 try Task.checkCancellation()
+                referenceLineWidth = measureLineWidth(loaded)
                 page = loaded
                 self.loaded(loaded)
             } catch is CancellationError {
@@ -206,7 +190,7 @@ private struct QuranPageView: View {
         case .basmallah:
             Text(verbatim: Self.basmala).font(.custom(Self.font, fixedSize: size))
         case .ayah:
-            JustifiedLine(justified: !line.centered) {
+            JustifiedLine(justified: !line.centered, spacing: size * 0.25) {
                 ForEach(line.words) { word in
                     wordView(word, page: page, size: size)
                 }
@@ -261,21 +245,25 @@ private struct QuranPageView: View {
     }
 
     /// The largest size at which the widest justified line still fits.
-    private func fontSize(_ page: QuranPage, width: CGFloat, lineHeight: CGFloat) -> CGFloat {
-        let reference: CGFloat = 100
-        let font = UIFont(name: Self.font, size: reference) ?? .systemFont(ofSize: reference)
-        let space = (" " as NSString).size(withAttributes: [.font: font]).width
-        let widest = page.lines.filter { $0.kind == .ayah }.map { line in
-            line.words.reduce(0) { $0 + ($1.text as NSString).size(withAttributes: [.font: font]).width } + space * CGFloat(max(0, line.words.count - 1))
-        }.max() ?? 0
-        let fit = widest > 0 ? reference * width / widest : lineHeight * 0.55
+    private func fontSize(width: CGFloat, lineHeight: CGFloat) -> CGFloat {
+        let fit = referenceLineWidth > 0 ? Self.referenceFontSize * width / referenceLineWidth : lineHeight * 0.55
         return min(fit, lineHeight * 0.6)
+    }
+
+    private func measureLineWidth(_ page: QuranPage) -> CGFloat {
+        let font = UIFont(name: Self.font, size: Self.referenceFontSize) ?? .systemFont(ofSize: Self.referenceFontSize)
+        let space = (" " as NSString).size(withAttributes: [.font: font]).width
+        return page.lines.filter { $0.kind == .ayah }.map { line in
+            let gap = line.centered ? Self.referenceFontSize * 0.25 : space
+            return line.words.reduce(0) { $0 + ($1.text as NSString).size(withAttributes: [.font: font]).width } + gap * CGFloat(max(0, line.words.count - 1))
+        }.max() ?? 0
     }
 }
 
 /// Lays words out right to left, spreading the leftover width between them unless centered.
 private struct JustifiedLine: Layout {
     let justified: Bool
+    let spacing: CGFloat
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache _: inout ()) -> CGSize {
         let sizes = subviews.map { $0.sizeThatFits(.unspecified) }
@@ -285,8 +273,7 @@ private struct JustifiedLine: Layout {
     func placeSubviews(in bounds: CGRect, proposal _: ProposedViewSize, subviews: Subviews, cache _: inout ()) {
         let sizes = subviews.map { $0.sizeThatFits(.unspecified) }
         let total = sizes.reduce(0) { $0 + $1.width }
-        let natural = sizes.first.map { $0.height * 0.25 } ?? 0
-        let gap = justified && subviews.count > 1 ? max(0, bounds.width - total) / CGFloat(subviews.count - 1) : natural
+        let gap = justified && subviews.count > 1 ? max(0, bounds.width - total) / CGFloat(subviews.count - 1) : spacing
         let used = total + gap * CGFloat(max(0, subviews.count - 1))
         var x = justified ? bounds.maxX : bounds.midX + used / 2
         for (subview, size) in zip(subviews, sizes) {

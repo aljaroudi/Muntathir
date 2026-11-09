@@ -60,7 +60,12 @@ export function filter(input: SearchRequest): { must: any[] } {
     if (values) must.push({ key, match: { any: values } });
   }
   if (input.chapter)
-    must.push({ key: "ref.chapter", match: { value: input.chapter } });
+    must.push({
+      key: "ref.chapter",
+      match: {
+        value: input.kinds?.[0] === "quran" ? Number(input.chapter) : input.chapter,
+      },
+    });
   return { must };
 }
 export function cosine(a: number[], b: number[]): number {

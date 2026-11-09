@@ -119,6 +119,32 @@ struct QuranReaderTests {
         #expect(QuranSearchText.distance("الرحمم", "الرحمن") == 1)
     }
 
+    @Test func chapterSearchPreservesRankingAndFiltersBeforePagination() async throws {
+        let reader = QuranReader(database: database)
+        for (query, translation, chapter) in [("الله", "", 2), ("كتب", "", 2), ("الرحمم", "", 1),
+                                              ("merciful", "en.qarai", 1), ("真主", "zh.jian", 1)]
+        {
+            let global = try await reader.search(query, translationID: translation, limit: 6236)
+            let expected = global.filter { $0.surah == chapter }
+            #expect(!expected.isEmpty)
+            let scoped = try await reader.search(query, translationID: translation, limit: 2, surah: chapter)
+            #expect(scoped.map(\.id) == Array(expected.prefix(2)).map(\.id))
+        }
+        #expect(try await reader.search("merciful", translationID: nil, surah: 1).isEmpty)
+        #expect(try await reader.search("صوم", translationID: nil, surah: 19).contains { $0.id == "19:26" })
+    }
+
+    @Test func chapterSearchNumbersAndReferencesStayInScope() async throws {
+        let reader = QuranReader(database: database)
+        for query in ["255", "٢٥٥", "۲۵۵", "2:255", "٢:٢٥٥"] {
+            #expect(try await reader.search(query, translationID: nil, surah: 2).map(\.id) == ["2:255"])
+        }
+        #expect(try await reader.search("2:255", translationID: nil, surah: 1).isEmpty)
+        for query in ["0", "8", "1:8", "1:abc"] {
+            await #expect(throws: QuranDatabaseError.self) { try await reader.search(query, translationID: nil, surah: 1) }
+        }
+    }
+
     @Test func languageDefaultsAndSelectedDailyTranslation() throws {
         let available = try database.availableTranslations()
         #expect(QuranTranslation.preferred(in: available, locale: Locale(identifier: "en_GB"))?.id == "en.qarai")

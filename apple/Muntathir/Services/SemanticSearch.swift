@@ -98,7 +98,15 @@ struct SemanticSearchClient: Sendable {
                 let json = kind == "hadith"
                     ? #"[{"kind":"hadith","book":"bukhari","chapter":"1.json","number":105,"score":0.8}]"#
                     : #"[{"kind":"quran","chapter":2,"verse":255,"score":0.8}]"#
-                return try JSONDecoder().decode([SemanticSearchResult].self, from: Data(json.utf8))
+                let results = try JSONDecoder().decode([SemanticSearchResult].self, from: Data(json.utf8))
+                return results.filter { result in
+                    guard let chapter else { return true }
+                    switch result.reference {
+                    case let .quran(number, _): return String(number) == chapter
+                    case let .hadith(_, file, _): return file == chapter
+                    case .dua: return false
+                    }
+                }
             }
         #endif
         struct Payload: Decodable { let results: [SemanticSearchResult] }

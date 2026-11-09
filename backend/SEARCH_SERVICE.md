@@ -16,10 +16,14 @@ remain in `ingest.py`; `qdrant_import.py` imports its saved artifacts without Ge
 Optional `sources` (stable source/book IDs) and `languages` filter candidates before ranking.
 Hadith `chapter` accepts a stable chapter file (for example `1.json`), and requires
 `kinds: ["hadith"]` and exactly one entry in `sources`. A collection maps to all
-its volume IDs; a chapter maps to its one volume and file. These filters apply to
+its volume IDs; a chapter maps to its one volume and file. Quran `chapter` accepts
+a decimal string from `"1"` to `"114"` with `kinds: ["quran"]`; retrieval matches
+the numeric Quran chapter payload. These filters apply to
 semantic, keyword and explicit-reference retrieval and result-cache keys. Limit defaults
 to 20 and caps at 50. Query length is 1–512 Unicode characters; body is at most 8 KiB.
 No client API key is required. Server credentials never ship in the app.
+
+Deploy Quran chapter-filter support before releasing chapter-scoped search in the app.
 
 ```json
 {"results":[{"kind":"quran","chapter":2,"verse":255,"score":0.78}]}

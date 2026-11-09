@@ -14,17 +14,135 @@ final class QuranUITests: XCTestCase {
         return app
     }
 
+    @MainActor private func search(_ text: String, in app: XCUIApplication) {
+        if !app.searchFields.firstMatch.isHittable {
+            app.buttons["Search"].firstMatch.tap()
+        }
+        let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.tap()
+        if field.buttons["Clear text"].exists {
+            field.buttons["Clear text"].tap()
+        }
+        field.typeText(text + "\n")
+        if text == "255" {
+            XCTAssertTrue(app.buttons["quran-result-2:255"].waitForExistence(timeout: 5))
+        }
+    }
+
+    @MainActor func testChapterSearchInBothReadingModes() {
+        for mode in ["Verses", "Mushaf"] {
+            let app = openQuran()
+            app.buttons["quran-surah-2"].tap()
+            app.buttons["quran-reading-options"].tap()
+            app.buttons[mode].tap()
+            search("255", in: app)
+            XCTAssertFalse(app.buttons["quran-jump"].exists)
+            app.buttons["quran-result-2:255"].tap()
+            let destination = mode == "Verses" ? "quran-verse-2:255" : "quran-page-42"
+            XCTAssertTrue(app.descendants(matching: .any)[destination].firstMatch.waitForExistence(timeout: 10))
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+            XCTAssertTrue(app.buttons["quran-result-2:255"].waitForExistence(timeout: 5))
+            search("1:1", in: app)
+            XCTAssertTrue(app.descendants(matching: .any)["local-search-empty"].firstMatch.waitForExistence(timeout: 5))
+            XCTAssertFalse(app.buttons["quran-result-1:1"].exists)
+            search("287", in: app)
+            XCTAssertTrue(app.staticTexts["Invalid verse reference"].waitForExistence(timeout: 5))
+            app.searchFields.firstMatch.tap()
+            app.navigationBars.buttons["Close"].tap()
+            let original = mode == "Verses" ? "quran-verse-2:1" : "quran-page-2"
+            XCTAssertTrue(app.descendants(matching: .any)[original].firstMatch.waitForExistence(timeout: 5))
+            app.terminate()
+        }
+    }
+
+    @MainActor func testMushafPagingSettlesAfterRepeatedSwipes() {
+        let app = openQuran()
+        app.buttons["quran-surah-2"].tap()
+        app.buttons["quran-reading-options"].tap()
+        app.buttons["Mushaf"].tap()
+        let page = { (number: Int) in app.descendants(matching: .any)["quran-page-\(number)"].firstMatch }
+        func settled(_ number: Int) -> Bool {
+            let predicate = NSPredicate { _, _ in
+                let target = page(number)
+                return target.exists && abs(target.frame.midX - app.frame.midX) < 4
+            }
+            let result = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: predicate, object: nil)], timeout: 5)
+            if result != .completed {
+                let screenshot = XCTAttachment(screenshot: app.screenshot())
+                screenshot.lifetime = .keepAlways
+                add(screenshot)
+                XCTFail("Page \(number) did not center. \(app.debugDescription)")
+                return false
+            }
+            return true
+        }
+        guard settled(2) else { return }
+        var number = 2
+        for _ in 0 ..< 2 {
+            for destination in Array(3 ... 7) + Array((2 ... 6).reversed()) {
+                if destination > number {
+                    app.swipeRight(velocity: .fast)
+                } else {
+                    app.swipeLeft(velocity: .fast)
+                }
+                guard settled(destination) else { return }
+                number = destination
+            }
+        }
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "Mushaf after repeated paging"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
+    @MainActor func testMushafSearchUsesVisibleChapter() {
+        let app = openQuran()
+        app.buttons["quran-surah-1"].tap()
+        app.buttons["quran-reading-options"].tap()
+        app.buttons["Mushaf"].tap()
+        let firstPage = app.descendants(matching: .any)["quran-page-1"].firstMatch
+        XCTAssertTrue(firstPage.waitForExistence(timeout: 5))
+        XCTAssertEqual(firstPage.frame.midX, app.frame.midX, accuracy: 4)
+        firstPage.swipeRight()
+        XCTAssertTrue(app.descendants(matching: .any)["quran-page-2"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertEqual(app.descendants(matching: .any)["quran-page-2"].firstMatch.frame.midX, app.frame.midX, accuracy: 4)
+        search("255", in: app)
+        XCTAssertTrue(app.buttons["quran-result-2:255"].exists)
+        app.navigationBars.buttons["Close"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["quran-page-2"].firstMatch.waitForExistence(timeout: 5))
+    }
+
+    @MainActor func testChapterTextSearchTracksTranslationSelection() {
+        for mode in ["Verses", "Mushaf"] {
+            let app = openQuran()
+            app.buttons["quran-surah-1"].tap()
+            app.buttons["quran-reading-options"].tap()
+            app.buttons[mode].tap()
+            search("merciful", in: app)
+            XCTAssertTrue(app.buttons["quran-result-1:1"].waitForExistence(timeout: 5))
+            XCTAssertFalse(app.buttons["quran-result-2:1"].exists)
+            app.buttons["quran-result-1:1"].tap()
+            app.buttons["quran-reading-options"].tap()
+            app.buttons["quran-translation-picker"].tap()
+            app.buttons["None"].tap()
+            app.navigationBars.buttons["BackButton"].tap()
+            XCTAssertTrue(app.descendants(matching: .any)["local-search-empty"].firstMatch.waitForExistence(timeout: 5))
+            XCTAssertFalse(app.buttons["quran-result-1:1"].exists)
+            app.terminate()
+        }
+    }
+
     @MainActor func testReadingModesPreserveVerse() {
         let app = openQuran()
         app.buttons["quran-surah-2"].tap()
-        app.buttons["quran-jump"].tap()
-        app.alerts.textFields.firstMatch.tap()
-        app.alerts.textFields.firstMatch.typeText("255")
-        app.alerts.buttons["Go"].tap()
+        search("255", in: app)
+        app.buttons["quran-result-2:255"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-verse-2:255"].firstMatch.waitForExistence(timeout: 10))
         app.buttons["quran-reading-options"].tap()
         app.buttons["Mushaf"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-page-42"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertEqual(app.descendants(matching: .any)["quran-page-42"].firstMatch.frame.midX, app.frame.midX, accuracy: 4)
         app.buttons["quran-verse-2:255"].firstMatch.tap()
         app.buttons["quran-verse-2:255"].firstMatch.press(forDuration: 1)
         XCTAssertTrue(app.buttons["Copy text"].waitForExistence(timeout: 5))
@@ -35,6 +153,7 @@ final class QuranUITests: XCTestCase {
         app.buttons["quran-reading-options"].tap()
         app.buttons["Mushaf"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-page-42"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertEqual(app.descendants(matching: .any)["quran-page-42"].firstMatch.frame.midX, app.frame.midX, accuracy: 4)
         app.terminate()
         app.launchArguments += ["--ui-testing-preserve-state"]
         app.launch()
@@ -44,21 +163,22 @@ final class QuranUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["quran-page-1"].firstMatch.waitForExistence(timeout: 10))
     }
 
-    @MainActor func testBrowseJumpAndTranslationSelection() {
+    @MainActor func testBrowseSearchAndTranslationSelection() {
         let app = openQuran()
         app.buttons["quran-surah-2"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-verse-2:1"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.descendants(matching: .any)["quran-translation-2:1"].firstMatch.exists)
-        app.buttons["quran-jump"].tap()
-        app.alerts.textFields.firstMatch.tap()
-        app.alerts.textFields.firstMatch.typeText("255")
-        app.alerts.buttons["Go"].tap()
+        search("255", in: app)
+        app.buttons["quran-result-2:255"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-verse-2:255"].waitForExistence(timeout: 5))
         app.buttons["quran-reading-options"].tap()
         app.buttons["quran-translation-picker"].tap()
         app.buttons["None"].tap()
         XCTAssertFalse(app.descendants(matching: .any)["quran-translation-2:255"].firstMatch.exists)
         app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.buttons["quran-result-2:255"].waitForExistence(timeout: 5))
+        app.navigationBars.buttons["Close"].tap()
+        app.navigationBars.buttons["BackButton"].tap()
         app.buttons["quran-surah-1"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-verse-1:1"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.descendants(matching: .any)["quran-translation-1:1"].firstMatch.exists)

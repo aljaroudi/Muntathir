@@ -36,9 +36,16 @@ actor QuranReader {
     }
 
     /// Arabic matches first, then matches found only in the selected translation.
-    func search(_ query: String, translationID: String?, limit: Int = 50) throws -> [Ayah] {
+    func search(_ query: String, translationID: String?, limit: Int = 50, surah: Int? = nil) throws -> [Ayah] {
         try Task.checkCancellation()
+        if let surah, let number = QuranSearchText.number(query) {
+            guard let verse = try database.verse(surah: surah, number: number) else {
+                throw QuranDatabaseError.invalidReference
+            }
+            return [verse]
+        }
         if let reference = try QuranSearchText.reference(query) {
+            guard surah == nil || reference.surah == surah else { return [] }
             guard let verse = try database.verse(surah: reference.surah, number: reference.verse) else {
                 throw QuranDatabaseError.invalidReference
             }
@@ -59,6 +66,12 @@ actor QuranReader {
             } catch {
                 // Keep Arabic results when a translation cannot be read.
             }
+        }
+        if let surah {
+            let chapterIDs = try Set(database.connection().query("SELECT \"index\" FROM quran WHERE sura = ?", parameters: [String(surah)]) {
+                Int(sqlite3_column_int($0, 0))
+            })
+            ids = ids.filter { chapterIDs.contains($0) }
         }
         let page = ids.prefix(max(0, limit)).map(String.init)
         guard !page.isEmpty else { return [] }

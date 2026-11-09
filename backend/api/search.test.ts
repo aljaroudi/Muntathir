@@ -1,6 +1,6 @@
 import { test, expect } from "bun:test";
 import { Store } from "./store.ts";
-import { cosine, fuse, filter, type Point } from "./search.ts";
+import { cosine, fuse, filter, retrieve, type Point } from "./search.ts";
 import { parseRequest } from "./core.ts";
 import { createHandler } from "./server.ts";
 import { Qdrant } from "./search.ts";
@@ -199,4 +199,39 @@ test("chapter scopes require one hadith volume and constrain both retrieval path
   expect(JSON.stringify(request)).not.toBe(
     JSON.stringify({ ...request, chapter: "2.json" }),
   );
+});
+
+test("Quran chapter scopes validate and filter before every retrieval limit", async () => {
+  const input = parseRequest({ query: "mercy", kinds: ["quran"], chapter: "2" });
+  const chapterFilter = { key: "ref.chapter", match: { value: 2 } };
+  expect(filter(input).must).toContainEqual(chapterFilter);
+  expect(
+    parseRequest({ query: "x", kinds: ["quran"], chapter: "114" }).chapter,
+  ).toBe("114");
+  for (const chapter of ["0", "115", "-1", "2.5", "02", "1.json", 2]) {
+    expect(() => parseRequest({ query: "x", kinds: ["quran"], chapter })).toThrow();
+  }
+  expect(() =>
+    parseRequest({ query: "x", kinds: ["quran", "hadith"], chapter: "2" }),
+  ).toThrow();
+  const db = new Qdrant("http://unused");
+  const requests: any[] = [];
+  db.query = async (_, body) => {
+    requests.push(body);
+    return [];
+  };
+  await retrieve(db, "test", input, [1, 0], null);
+  expect(requests).toHaveLength(2);
+  for (const request of requests)
+    expect(request.filter.must).toContainEqual(chapterFilter);
+  db.call = async (_, body) => {
+    requests.push(body);
+    return { points: [], next_page_offset: null };
+  };
+  await retrieve(db, "test", input, null, { chapter: 1, verse: 1 });
+  expect(requests[2].filter.must).toContainEqual(chapterFilter);
+  expect(requests[2].filter.must).toContainEqual({
+    key: "ref.chapter",
+    match: { value: 1 },
+  });
 });

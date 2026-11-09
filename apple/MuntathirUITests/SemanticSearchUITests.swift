@@ -18,6 +18,9 @@ final class SemanticSearchUITests: XCTestCase {
     }
 
     @MainActor private func query(_ text: String, in app: XCUIApplication) {
+        if !app.searchFields.firstMatch.isHittable {
+            app.buttons["Search"].firstMatch.tap()
+        }
         let field = app.searchFields.firstMatch
         field.tap()
         field.typeText(text + "\n")
@@ -42,6 +45,26 @@ final class SemanticSearchUITests: XCTestCase {
         XCTAssertTrue(result.waitForExistence(timeout: 5))
         result.tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-verse-2:255"].waitForExistence(timeout: 10))
+    }
+
+    @MainActor func testChapterMeaningSearchStaysInScope() {
+        let app = openReader("holy-quran")
+        app.buttons["quran-surah-1"].tap()
+        query("zzmeaningquery", in: app)
+        let optIn = app.buttons["search-by-meaning"]
+        XCTAssertTrue(optIn.waitForExistence(timeout: 5))
+        optIn.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["local-search-empty"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["quran-result-2:255"].exists)
+        app.navigationBars.buttons["Close"].tap()
+        app.navigationBars.buttons["BackButton"].tap()
+        app.buttons["quran-surah-2"].tap()
+        query("zzmeaningquery", in: app)
+        XCTAssertTrue(optIn.waitForExistence(timeout: 5))
+        optIn.tap()
+        XCTAssertTrue(app.buttons["quran-result-2:255"].waitForExistence(timeout: 5))
+        app.buttons["quran-result-2:255"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["quran-verse-2:255"].firstMatch.waitForExistence(timeout: 10))
     }
 
     @MainActor func testChangingQueryRequiresConsentAgain() {

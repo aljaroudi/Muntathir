@@ -61,10 +61,16 @@ export function parseRequest(value: unknown): SearchRequest {
     (typeof v.chapter !== "string" ||
       !/^[\p{L}\p{N}_.-]{1,100}$/u.test(v.chapter) ||
       kinds?.length !== 1 ||
-      kinds[0] !== "hadith" ||
-      sources?.length !== 1)
+      !(
+        (kinds[0] === "hadith" && sources?.length === 1) ||
+        (kinds[0] === "quran" &&
+          /^[1-9]\d{0,2}$/.test(v.chapter) &&
+          Number(v.chapter) <= 114)
+      ))
   )
-    throw new Error("Chapter requires one hadith source");
+    throw new Error(
+      "Chapter requires one hadith source or a Quran chapter from 1 to 114",
+    );
   const limit = v.limit ?? 20;
   if (
     !Number.isInteger(limit) ||

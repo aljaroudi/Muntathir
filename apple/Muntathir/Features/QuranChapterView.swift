@@ -15,10 +15,6 @@ struct QuranChapterView: View {
     @State private var loading = true
     @State private var failed = false
     @State private var retry = 0
-    @State private var jumpPresented = false
-    @State private var verseNumber = ""
-    @State private var invalidVerse = false
-    @State private var target: Int?
     @State private var activatedHighlight = false
     @State private var focusReady = false
 
@@ -64,22 +60,11 @@ struct QuranChapterView: View {
                 await Task.yield()
                 focusReady = true
             }
-            .onChange(of: target) { _, number in
-                if let number {
-                    proxy.scrollTo(number, anchor: .top)
-                }
-                target = nil
-            }
         }
         .environment(\.focusedHighlight, focusReady ? highlight : nil)
         .navigationTitle(surah.title(locale: locale))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Go to verse", systemImage: "number") { jumpPresented = true }
-                    .disabled(verses.isEmpty)
-                    .accessibilityIdentifier("quran-jump")
-            }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     QuranReadingModePicker()
@@ -90,24 +75,6 @@ struct QuranChapterView: View {
                 }.accessibilityIdentifier("quran-reading-options")
                     .readingSizePresentation(isPresented: $textSizePresented, compact: sizeClass != .regular)
             }
-        }
-        .alert("Go to verse", isPresented: $jumpPresented) {
-            TextField("Verse number", text: $verseNumber).keyboardType(.numberPad)
-            Button("Go") {
-                if let number = QuranSearchText.number(verseNumber), verses.contains(where: { $0.number == number }) {
-                    target = number
-                } else {
-                    invalidVerse = true
-                }
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Enter a verse from \(1, format: .number) to \(verses.count, format: .number).")
-        }
-        .alert("Invalid verse reference", isPresented: $invalidVerse) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("Enter a verse from \(1, format: .number) to \(verses.count, format: .number).")
         }
         .task(id: "\(retry)-\(translationStore.revision)") {
             if !activatedHighlight {
