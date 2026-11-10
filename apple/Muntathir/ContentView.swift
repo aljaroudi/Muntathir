@@ -41,6 +41,12 @@ struct ContentView: View {
                         }
                         .accessibilityIdentifier("figures")
                         NavigationLink {
+                            RakaatTrackerView()
+                        } label: {
+                            Label("Rakaat Tracker", systemImage: "camera.metering.center.weighted")
+                        }
+                        .accessibilityIdentifier("rakaat-tracker")
+                        NavigationLink {
                             QiblaView(isCovered: settings).toolbar { settingsToolbar }
                         } label: {
                             Label("Qibla", systemImage: "location.north.circle")

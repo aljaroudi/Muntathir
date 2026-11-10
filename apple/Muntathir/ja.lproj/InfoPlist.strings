@@ -3,3 +3,5 @@
 "QiblaPreciseLocation" = "正確な位置情報を使用して、地図上に現在地とカアバの方向を表示します。";
 
 "NSPhotoLibraryAddUsageDescription" = "共有するクルアーンとハディースの画像を写真ライブラリに保存します。";
+
+"NSCameraUsageDescription" = "前面カメラが光の変化を検出してサジダを数えます。画像が保存・共有されることはありません。";

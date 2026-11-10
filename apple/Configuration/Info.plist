@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSCameraUsageDescription</key>
+	<string>The front camera detects changes in light to count sujood. Images are never saved or shared.</string>
 	<key>SemanticSearchURL</key>
 	<string>$(SEMANTIC_SEARCH_URL)</string>
 	<key>NSLocationTemporaryUsageDescriptionDictionary</key>

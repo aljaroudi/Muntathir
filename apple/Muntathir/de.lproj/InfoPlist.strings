@@ -3,3 +3,5 @@
 "QiblaPreciseLocation" = "Dein genauer Standort zeigt deine Position und die Richtung zur Kaaba auf der Karte.";
 
 "NSPhotoLibraryAddUsageDescription" = "Geteilte Koran- und Hadith-Bilder in deiner Fotomediathek speichern.";
+
+"NSCameraUsageDescription" = "Die Frontkamera erkennt Lichtänderungen, um Niederwerfungen zu zählen. Bilder werden niemals gespeichert oder geteilt.";

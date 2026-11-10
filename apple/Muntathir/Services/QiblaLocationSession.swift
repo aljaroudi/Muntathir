@@ -9,11 +9,14 @@ final class QiblaLocationSession: NSObject, CLLocationManagerDelegate {
     private(set) var location: CLLocation?
     private(set) var heading: CLHeading?
     private(set) var startedAt: Date?
-    private let manager = CLLocationManager()
+    private let manager: CLLocationManager
     private var requestedPrecision = false
     private let usesDeviceLocation: Bool
+    private let optional: Bool
 
-    init(usesDeviceLocation: Bool = true) {
+    init(usesDeviceLocation: Bool = true, optional: Bool = false, manager: CLLocationManager = CLLocationManager()) {
+        self.manager = manager
+        self.optional = optional
         #if DEBUG
             self.usesDeviceLocation = usesDeviceLocation && !ProcessInfo.processInfo.arguments.contains("--ui-testing")
         #else
@@ -90,7 +93,9 @@ final class QiblaLocationSession: NSObject, CLLocationManagerDelegate {
         guard usesDeviceLocation, startedAt != nil else { return }
         switch manager.authorizationStatus {
         case .notDetermined:
-            manager.requestWhenInUseAuthorization()
+            if !optional {
+                manager.requestWhenInUseAuthorization()
+            }
         case .authorizedAlways, .authorizedWhenInUse:
             guard manager.accuracyAuthorization == .fullAccuracy else {
                 location = nil
@@ -98,11 +103,14 @@ final class QiblaLocationSession: NSObject, CLLocationManagerDelegate {
                 status = .settings
                 manager.stopUpdatingLocation()
                 manager.stopUpdatingHeading()
-                if !requestedPrecision {
+                if !optional, !requestedPrecision {
                     requestedPrecision = true
                     manager.requestTemporaryFullAccuracyAuthorization(withPurposeKey: "QiblaPreciseLocation")
                 }
                 return
+            }
+            if optional, let cached = manager.location {
+                receive([cached], precise: true)
             }
             status = location == nil ? .locating : .ready
             manager.startUpdatingLocation()
@@ -137,7 +145,7 @@ final class QiblaLocationSession: NSObject, CLLocationManagerDelegate {
         {
             self.heading = nil
         }
-        if let location, !Self.accepts(location, since: startedAt, now: now) {
+        if let location, !Self.accepts(location, since: optional ? startedAt.addingTimeInterval(-15) : startedAt, now: now) {
             self.location = nil
             status = .failed
         }
@@ -154,7 +162,7 @@ final class QiblaLocationSession: NSObject, CLLocationManagerDelegate {
             status = .settings
             return
         }
-        if let fix = locations.last(where: { Self.accepts($0, since: startedAt, now: now) }) {
+        if let fix = locations.last(where: { Self.accepts($0, since: optional ? startedAt.addingTimeInterval(-15) : startedAt, now: now) }) {
             location = fix
             status = .ready
         } else {
