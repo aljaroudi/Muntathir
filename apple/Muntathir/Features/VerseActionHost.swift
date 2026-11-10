@@ -9,6 +9,7 @@ struct VerseActionHost<Content: View>: View {
     @State private var sharedImage: SharedAyah?
     @State private var copied = false
     @State private var editing: ReadingHighlight?
+    @State private var bookmarkFailed = false
     @Environment(\.quranUserStore) private var store
     @State private var shareFailed = false
 
@@ -25,6 +26,9 @@ struct VerseActionHost<Content: View>: View {
             HighlightEditor(highlight: value, existing: store?.highlights.contains { $0.id == value.id } == true)
         }
         .alert("Text copied", isPresented: $copied) { Button("OK", role: .cancel) {} }
+        .alert("Unable to save bookmark", isPresented: $bookmarkFailed) {
+            Button("OK", role: .cancel) {}
+        } message: { Text("Please try again.") }
         .alert("Unable to create image", isPresented: $shareFailed) { Button("OK", role: .cancel) {} }
     }
 
@@ -45,6 +49,6 @@ struct VerseActionHost<Content: View>: View {
         }
         .disabled(!canShare)
         Divider()
-        HighlightActions(source: ayah.id, isHadith: false, excerpt: ayah.text, reference: ayah.id, editing: $editing)
+        HighlightActions(source: ayah.id, isHadith: false, excerpt: ayah.text, reference: ayah.id, editing: $editing, bookmarkFailed: $bookmarkFailed)
     }
 }

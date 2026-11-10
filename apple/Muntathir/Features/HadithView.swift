@@ -286,8 +286,8 @@ struct HadithView: View {
     }
 
     @ViewBuilder private var toolbarActions: some View {
-        NavigationLink { HadithSavedView(reader: reader) } label: { Label("Highlights", systemImage: "highlighter") }
-            .accessibilityIdentifier("hadith-highlights")
+        NavigationLink { HadithSavedView(reader: reader) } label: { Label("Saved", systemImage: "bookmark") }
+            .accessibilityIdentifier("hadith-saved")
         HadithTranslationPicker()
     }
 
@@ -585,7 +585,6 @@ struct HadithSavedView: View {
     @State private var loading = true
     @State private var failed = false
     @State private var retry = 0
-    @State private var editing: ReadingHighlight?
 
     private var highlights: [ReadingHighlight] {
         store?.highlights.filter {
@@ -593,51 +592,47 @@ struct HadithSavedView: View {
         } ?? []
     }
 
+    private var bookmarks: [ReadingBookmark] {
+        store?.bookmarks.filter {
+            $0.isHadith && (Hadith.supplicationCollectionIDs.contains(HadithSource(key: $0.source)?.book ?? "")) == supplications
+        } ?? []
+    }
+
     private var keys: [String] {
-        Array(Set(highlights.map(\.source))).sorted()
+        Array(Set(highlights.map(\.source) + bookmarks.map(\.source))).sorted()
     }
 
     var body: some View {
-        List {
-            if store?.unavailable != false {
-                ContentUnavailableView {
-                    Label("Highlights unavailable", systemImage: "exclamationmark.triangle")
-                } actions: { Button("Try again") { store?.reopen() } }
-            } else if loading {
-                ProgressView()
-            } else if failed {
-                HadithLoadError(supplications: supplications) { Task { await assets?.refresh(); retry += 1 } }
-            } else if highlights.isEmpty {
-                ContentUnavailableView("No highlights yet", systemImage: "highlighter")
-            } else {
-                ForEach(highlights) { highlight in
+        SavedList(highlights: highlights, bookmarks: bookmarks, canOpen: { rows[$0.source] != nil },
+                  available: { availableHighlights.contains($0.id) })
+        { entry in
+            if let id = rows[entry.source] {
+                HadithDetailView(initialID: id, reader: reader, query: "", orderedFallback: false,
+                                 highlight: entry.highlight, supplication: supplications)
+            }
+        }
+        .accessibilityHidden(store?.unavailable != false || loading || failed)
+        .allowsHitTesting(store?.unavailable == false && !loading && !failed)
+        .overlay {
+            if store?.unavailable != false || loading || failed {
+                ZStack {
+                    Color(uiColor: .systemGroupedBackground).ignoresSafeArea()
                     Group {
-                        if let id = rows[highlight.source] {
-                            NavigationLink {
-                                HadithDetailView(initialID: id, reader: reader, query: "", orderedFallback: false, highlight: highlight, supplication: supplications)
-                            } label: { HighlightSummary(highlight: highlight, available: availableHighlights.contains(highlight.id)) }
-                                .accessibilityIdentifier("saved-hadith-\(highlight.source)")
-                        } else {
-                            Button { editing = highlight } label: {
-                                HighlightSummary(highlight: highlight, available: false)
-                            }
-                            .tint(.primary)
+                        if store?.unavailable != false {
+                            ContentUnavailableView {
+                                Label("Saved unavailable", systemImage: "exclamationmark.triangle")
+                            } actions: { Button("Try again") { store?.reopen() } }
+                        } else if loading {
+                            ProgressView()
+                        } else if failed {
+                            HadithLoadError(supplications: supplications) { Task { await assets?.refresh(); retry += 1 } }
                         }
-                    }
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button("Edit highlight", systemImage: "pencil") { editing = highlight }
-                            .tint(.accentColor)
-                    }
-                    .contextMenu {
-                        Button("Edit highlight", systemImage: "pencil") { editing = highlight }
                     }
                 }
             }
         }
-        .listStyle(.insetGrouped)
-        .navigationTitle("Highlights")
-        .sheet(item: $editing) { HighlightEditor(highlight: $0, existing: true) }
-        .task(id: highlights.map { $0.id + String($0.modifiedAt.timeIntervalSince1970) }.joined(separator: "|") + "-\(retry)") {
+        .navigationTitle("Saved")
+        .task(id: highlights.map { $0.id + String($0.modifiedAt.timeIntervalSince1970) }.joined(separator: "|") + bookmarks.map(\.id).joined(separator: "|") + "-\(retry)") {
             loading = true
             failed = false
             do {

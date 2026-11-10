@@ -43,8 +43,8 @@ struct QuranSearchContent: View {
                 Section {
                     NavigationLink {
                         QuranSavedVersesView(reader: reader, surahs: surahs)
-                    } label: { Label("Highlights", systemImage: "highlighter") }
-                        .accessibilityIdentifier("quran-highlights")
+                    } label: { Label("Saved", systemImage: "bookmark") }
+                        .accessibilityIdentifier("quran-saved")
                 }
             }
             if !matchingSurahs.isEmpty {

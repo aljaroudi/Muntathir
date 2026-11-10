@@ -31,8 +31,9 @@ struct AppleAssetPackBackend: AssetPackBackend {
             {
                 return url
             }
-            if identifier == Self.packID, ProcessInfo.processInfo.arguments.contains("--ui-testing"),
-               ProcessInfo.processInfo.arguments.contains("--ui-testing-hadith-fixture")
+            if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
+               (identifier == Self.packID && ProcessInfo.processInfo.arguments.contains("--ui-testing-hadith-fixture")) ||
+               (identifier == "supplications" && ProcessInfo.processInfo.arguments.contains("--ui-testing-supplications-fixture"))
             {
                 return try HadithUITestFixture.url()
             }
@@ -89,7 +90,8 @@ struct AppleAssetPackBackend: AssetPackBackend {
             let arguments = ProcessInfo.processInfo.arguments
             if arguments.contains("--ui-testing"),
                arguments.contains("--marketing-capture") ||
-               (identifier == Self.packID && arguments.contains("--ui-testing-hadith-fixture"))
+               (identifier == Self.packID && arguments.contains("--ui-testing-hadith-fixture")) ||
+               (identifier == "supplications" && arguments.contains("--ui-testing-supplications-fixture"))
             {
                 return AsyncStream { $0.finish() }
             }
@@ -126,7 +128,7 @@ struct AppleAssetPackBackend: AssetPackBackend {
     /// Isolated, deterministic data for UI tests; never substitutes for hosted assets in normal launches.
     enum HadithUITestFixture {
         static func url() throws -> URL {
-            let url = URL.applicationSupportDirectory.appending(path: "hadith-ui-fixture-v4.db")
+            let url = URL.applicationSupportDirectory.appending(path: "hadith-ui-fixture-v5.db")
             if FileManager.default.fileExists(atPath: url.path) {
                 return url
             }
@@ -159,6 +161,10 @@ struct AppleAssetPackBackend: AssetPackBackend {
               'Test narrator','\(String(repeating: "Sample text for testing reading position and image sharing. ", count: 35))' FROM n;
             UPDATE hadith SET arabic = 'الأعمال بالنيات', english_text = 'Actions are judged by intentions.' WHERE id = 105;
             INSERT INTO introduction VALUES (1,'bukhari',NULL,'Test introduction','مقدمة الكتاب. نص مستقل عن الأحاديث.','A separate introduction, outside narration numbering.','',0);
+            INSERT INTO collection VALUES ('openiti-Sahifa-Sajjadiyya','كتاب الدعاء التجريبي','Test supplications',1);
+            INSERT INTO book VALUES ('openiti-Sahifa-Sajjadiyya','openiti-Sahifa-Sajjadiyya','كتاب الدعاء التجريبي','Test supplications',1,'Test author','مؤلف الاختبار');
+            INSERT INTO chapter VALUES (2,'openiti-Sahifa-Sajjadiyya',1,'2.json','دعاء تجريبي','Test supplication',1);
+            INSERT INTO hadith VALUES (106,'openiti-Sahifa-Sajjadiyya',2,2,2,'نص تجريبي لاختبار حفظ الدعاء والبحث في المحفوظات.','','Sample text for testing saved supplications.');
             INSERT INTO hadith_reading SELECT id, CASE WHEN id=105 THEN 2 ELSE 280 END, id_in_book FROM hadith;
             INSERT INTO hadith_words(rowid,text) SELECT id,arabic FROM hadith;
             INSERT INTO hadith_fts(rowid,text) SELECT id,arabic FROM hadith;

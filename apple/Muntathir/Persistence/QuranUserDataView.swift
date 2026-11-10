@@ -29,10 +29,14 @@ private struct HighlightObserver<Content: View>: View {
     let store: QuranUserStore
     @ViewBuilder let content: Content
     @Query private var annotations: [HighlightRecord]
+    @Query private var bookmarks: [BookmarkRecord]
 
     var body: some View {
         content.onChange(of: annotations.map(HighlightSnapshot.init), initial: true) { _, rows in
             store.receive(rows)
+        }
+        .onChange(of: bookmarks.map(BookmarkSnapshot.init), initial: true) { _, rows in
+            store.receiveBookmarks(rows)
         }
     }
 }

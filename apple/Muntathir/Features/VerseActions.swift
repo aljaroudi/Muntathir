@@ -125,6 +125,7 @@ struct HadithActions: View {
     @State private var shared: ShareItem?
     @State private var copied = false
     @State private var editing: ReadingHighlight?
+    @State private var bookmarkFailed = false
     @Environment(\.quranUserStore) private var store
 
     private var content: HadithShareContent {
@@ -151,7 +152,7 @@ struct HadithActions: View {
                 HadithTranslationPicker()
             }
             ReadingSizeMenu(isPresented: $textSizePresented)
-            HighlightActions(source: narration.source?.key ?? "", isHadith: true, excerpt: content.body, reference: content.reference, editing: $editing)
+            HighlightActions(source: narration.source?.key ?? "", isHadith: true, excerpt: content.body, reference: content.reference, editing: $editing, bookmarkFailed: $bookmarkFailed)
         } label: {
             Label(LocalizedStringKey(narration.isSupplication ? "Supplication actions" : "Hadith actions"), systemImage: "ellipsis.circle").labelStyle(.iconOnly)
                 .frame(minWidth: 44, minHeight: 44)
@@ -162,5 +163,8 @@ struct HadithActions: View {
             HighlightEditor(highlight: value, existing: store?.highlights.contains { $0.id == value.id } == true)
         }
         .alert("Text copied", isPresented: $copied) { Button("OK", role: .cancel) {} }
+        .alert("Unable to save bookmark", isPresented: $bookmarkFailed) {
+            Button("OK", role: .cancel) {}
+        } message: { Text("Please try again.") }
     }
 }

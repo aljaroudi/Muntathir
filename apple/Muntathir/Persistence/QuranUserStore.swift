@@ -5,6 +5,7 @@ import SwiftData
 @MainActor @Observable final class QuranUserStore {
     private(set) var container: ModelContainer?
     private(set) var highlights: [ReadingHighlight] = []
+    private(set) var bookmarks: [ReadingBookmark] = []
     private(set) var unavailable = false
     @ObservationIgnored private let configuration: ModelConfiguration
     @ObservationIgnored private var installationID: String
@@ -18,13 +19,13 @@ import SwiftData
     }
 
     static func makeContainer(configuration: ModelConfiguration) throws -> ModelContainer {
-        try ModelContainer(for: HighlightRecord.self, configurations: configuration)
+        try ModelContainer(for: HighlightRecord.self, BookmarkRecord.self, configurations: configuration)
     }
 
     static func application() -> QuranUserStore {
         let arguments = ProcessInfo.processInfo.arguments
         let testing = arguments.contains("--ui-testing")
-        let schema = Schema([HighlightRecord.self])
+        let schema = Schema([HighlightRecord.self, BookmarkRecord.self])
         if testing {
             let directory = URL.applicationSupportDirectory.appending(path: "HighlightsUITests", directoryHint: .isDirectory)
             // Only an explicitly requested UI-test reset removes this isolated test store.
@@ -32,12 +33,23 @@ import SwiftData
                 try? FileManager.default.removeItem(at: directory)
             }
             try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            return QuranUserStore(configuration: ModelConfiguration("HighlightsUITests", schema: schema, url: directory.appending(path: "highlights.store"), cloudKitDatabase: .none), installationID: "ui-tests") { context in
+            let store = QuranUserStore(configuration: ModelConfiguration("HighlightsUITests", schema: schema, url: directory.appending(path: "highlights.store"), cloudKitDatabase: .none), installationID: "ui-tests") { context in
                 if arguments.contains("--ui-testing-quran-save-failure") {
                     throw QuranUserStoreError.unavailable
                 }
                 try context.save()
             }
+            if arguments.contains("--ui-testing-legacy-highlights"), !arguments.contains("--ui-testing-preserve-state") {
+                do {
+                    for note in ["First note", "Second note"] {
+                        var highlight = ReadingHighlight(source: "1:1", isHadith: false, excerpt: "Legacy whole-verse highlight", reference: "1:1")
+                        highlight.note = note
+                        highlight.color = .green
+                        try store.save(highlight)
+                    }
+                } catch { assertionFailure("Unable to seed legacy highlights: \(error)") }
+            }
+            return store
         }
         if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
             return QuranUserStore(configuration: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none), installationID: "unit-tests")
@@ -73,6 +85,7 @@ import SwiftData
             let rows = try opened.mainContext.fetch(FetchDescriptor<HighlightRecord>())
             container = opened
             receive(rows.map(HighlightSnapshot.init))
+            try receiveBookmarks(opened.mainContext.fetch(FetchDescriptor<BookmarkRecord>()).map(BookmarkSnapshot.init))
             unavailable = false
         } catch {
             container = nil
@@ -84,6 +97,57 @@ import SwiftData
         highlights = HighlightSnapshot.winners(rows).values.filter { !$0.isTombstone }.compactMap {
             try? JSONDecoder().decode(ReadingHighlight.self, from: $0.payload)
         }.sorted { $0.modifiedAt == $1.modifiedAt ? $0.id > $1.id : $0.modifiedAt > $1.modifiedAt }
+    }
+
+    func receiveBookmarks(_ rows: [BookmarkSnapshot]) {
+        bookmarks = BookmarkSnapshot.winners(rows).values.filter { !$0.isTombstone }.compactMap {
+            try? JSONDecoder().decode(ReadingBookmark.self, from: $0.payload)
+        }.sorted { $0.modifiedAt == $1.modifiedAt ? $0.id > $1.id : $0.modifiedAt > $1.modifiedAt }
+    }
+
+    func bookmark(for source: String, isHadith: Bool = false) -> ReadingBookmark? {
+        bookmarks.first { $0.source == source && $0.isHadith == isHadith }
+    }
+
+    func save(_ bookmark: ReadingBookmark, now: Date = .now) throws {
+        guard !bookmark.source.isEmpty else { throw QuranUserStoreError.invalidBookmark }
+        try update(bookmark, deleted: false, now: now)
+    }
+
+    func delete(_ bookmark: ReadingBookmark, now: Date = .now) throws {
+        try update(bookmark, deleted: true, now: now)
+    }
+
+    private func update(_ bookmark: ReadingBookmark, deleted: Bool, now: Date) throws {
+        guard let context = container?.mainContext else { throw QuranUserStoreError.unavailable }
+        do {
+            let rows = try context.fetch(FetchDescriptor<BookmarkRecord>())
+            let matching = rows.filter { $0.bookmarkID == bookmark.id }
+            let winner = BookmarkSnapshot.winners(matching.map(BookmarkSnapshot.init))[bookmark.id]
+            let local = matching.filter { $0.installationID == installationID }.sorted { $0.recordID > $1.recordID }.first
+            let row = local ?? BookmarkRecord(bookmarkID: bookmark.id, installationID: installationID)
+            if local == nil {
+                context.insert(row)
+            }
+            var value = bookmark
+            if let winner, !winner.isTombstone,
+               let existing = try? JSONDecoder().decode(ReadingBookmark.self, from: winner.payload)
+            {
+                value.createdAt = existing.createdAt
+            }
+            value.modifiedAt = max(now, (winner?.modifiedAt ?? .distantPast).addingTimeInterval(0.001))
+            row.payload = try JSONEncoder().encode(value)
+            row.modifiedAt = value.modifiedAt
+            row.isTombstone = deleted
+            try saveContext(context)
+            try receiveBookmarks(context.fetch(FetchDescriptor<BookmarkRecord>()).map(BookmarkSnapshot.init))
+        } catch {
+            context.rollback()
+            if let rows = try? context.fetch(FetchDescriptor<BookmarkRecord>()) {
+                receiveBookmarks(rows.map(BookmarkSnapshot.init))
+            }
+            throw error
+        }
     }
 
     func highlights(for source: String, isHadith: Bool = false) -> [ReadingHighlight] {
@@ -129,4 +193,4 @@ import SwiftData
     }
 }
 
-enum QuranUserStoreError: Error { case unavailable, invalidHighlight }
+enum QuranUserStoreError: Error { case unavailable, invalidHighlight, invalidBookmark }

@@ -91,8 +91,9 @@ struct SupplicationsView: View {
                 HadithSavedView(reader: reader, supplications: true)
                     .environment(\.hadithSession, nil)
             } label: {
-                Label("Highlights", systemImage: "highlighter")
+                Label("Saved", systemImage: "bookmark")
             }
+            .accessibilityIdentifier("supplication-saved")
         }
         .task(id: Search(query: query, retry: retry, translation: translation, locale: locale.identifier)) {
             loading = true

@@ -1,7 +1,7 @@
 import XCTest
 
 final class ReadingAppearanceUITests: XCTestCase {
-    @MainActor func testSharedSizeHighlightsAndTranslationMenuPersist() {
+    @MainActor func testSharedSizeBookmarksAndTranslationMenuPersist() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
@@ -13,14 +13,13 @@ final class ReadingAppearanceUITests: XCTestCase {
         let row = app.buttons["hadith-result-1"]
         XCTAssertTrue(row.waitForExistence(timeout: 10))
         row.tap()
-        let highlight = app.buttons["hadith-highlight"]
-        XCTAssertTrue(highlight.waitForExistence(timeout: 10))
+        let bookmark = app.buttons["hadith-bookmark"]
+        XCTAssertTrue(bookmark.waitForExistence(timeout: 10))
         let screenshot = XCTAttachment(screenshot: app.screenshot())
         screenshot.name = "Hadith reader typography"
         screenshot.lifetime = .keepAlways
         add(screenshot)
-        highlight.tap()
-        app.buttons["highlight-color-yellow"].tap()
+        bookmark.tap()
         XCTAssertFalse(app.buttons["hadith-translation-picker"].exists)
         app.buttons["hadith-actions"].tap()
         XCTAssertTrue(app.buttons["hadith-translation-picker"].waitForExistence(timeout: 5))
@@ -32,8 +31,8 @@ final class ReadingAppearanceUITests: XCTestCase {
         app.terminate()
         app.launchArguments.append("--ui-testing-preserve-state")
         app.launch()
-        XCTAssertTrue(highlight.waitForExistence(timeout: 15))
-        XCTAssertEqual(highlight.label, "Highlight")
+        XCTAssertTrue(bookmark.waitForExistence(timeout: 15))
+        XCTAssertEqual(bookmark.label, "Remove Bookmark")
         app.buttons["hadith-actions"].tap()
         app.buttons["reading-size"].tap()
         XCTAssertTrue(app.buttons["reading-size-increase"].waitForExistence(timeout: 5))

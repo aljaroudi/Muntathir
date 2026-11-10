@@ -6,6 +6,7 @@ struct HadithDetailView: View {
     @Environment(\.hadithAssets) private var assets
     @Environment(\.hadithSession) private var session
     @State private var textSizePresented = false
+    @State private var bookmarkFailed = false
     @State private var scrollPosition = ScrollPosition()
     @State private var offset: Double = 0
     let initialID: Int
@@ -160,7 +161,7 @@ struct HadithDetailView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 if let detail {
-                    HadithHighlightButton(narration: detail.narration)
+                    HadithBookmarkButton(narration: detail.narration, failed: $bookmarkFailed)
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
@@ -171,6 +172,9 @@ struct HadithDetailView: View {
             }
         }
         .onChange(of: translation) { _, _ in translationChanged = true }
+        .alert("Unable to save bookmark", isPresented: $bookmarkFailed) {
+            Button("OK", role: .cancel) {}
+        } message: { Text("Please try again.") }
         .onDisappear {
             if !loading {
                 session?.state.detailOffset = offset

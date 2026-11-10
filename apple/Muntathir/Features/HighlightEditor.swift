@@ -164,11 +164,10 @@ struct HighlightActions: View {
     let reference: String
     @Environment(\.quranUserStore) private var store
     @Binding var editing: ReadingHighlight?
+    @Binding var bookmarkFailed: Bool
 
     var body: some View {
-        Button("Highlight", systemImage: "highlighter") {
-            editing = ReadingHighlight(source: source, isHadith: isHadith, excerpt: excerpt, reference: reference)
-        }.disabled(source.isEmpty)
+        BookmarkButton(source: source, isHadith: isHadith, excerpt: excerpt, reference: reference, failed: $bookmarkFailed)
         ForEach(store?.highlights(for: source, isHadith: isHadith) ?? []) { highlight in
             Button {
                 editing = highlight
@@ -189,6 +188,7 @@ struct HighlightSummary: View {
 
     let highlight: ReadingHighlight
     var available = true
+    var showReference = true
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -197,11 +197,14 @@ struct HighlightSummary: View {
                 .frame(width: 4)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 8) {
-                Text(reference)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .accessibilityLabel(reference + ", " + highlight.color.title)
+                if showReference {
+                    Text(reference)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .accessibilityLabel(reference + ", " + highlight.color.title)
+                }
                 Text(highlight.excerpt)
+                    .accessibilityLabel(showReference ? highlight.excerpt : reference + ", " + highlight.color.title + ", " + highlight.excerpt)
                     .font(.body)
                     .foregroundStyle(.primary)
                     .lineLimit(4)
