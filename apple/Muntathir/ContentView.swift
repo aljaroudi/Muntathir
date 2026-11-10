@@ -96,6 +96,8 @@ struct ContentView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
                 hadithSession.save()
+                hadithAssets.cancelIntegrityCheck()
+                supplicationAssets.cancelIntegrityCheck()
             }
             if phase == .active {
                 model.reschedule()

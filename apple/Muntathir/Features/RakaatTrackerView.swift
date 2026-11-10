@@ -134,7 +134,7 @@ struct RakaatTrackerView: View {
                     if update?.complete == true {
                         Label("Count complete", systemImage: "checkmark.circle")
                             .font(.headline)
-							.labelStyle(.iconOnly)
+                            .labelStyle(.iconOnly)
                             .accessibilityIdentifier("rakaat-complete")
                     }
                 }

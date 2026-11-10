@@ -49,6 +49,10 @@ import OSLog
 
     isolated deinit { integrityWorker?.cancel() }
 
+    func cancelIntegrityCheck() {
+        integrityWorker?.cancel()
+    }
+
     func invalidateValidation() {
         integrityWorker?.cancel()
         installedSignature = nil
@@ -107,7 +111,7 @@ import OSLog
             state = .incompatible
         } catch {
             Logger(subsystem: "com.aljaroudi.Muntathir", category: "HadithAssets")
-				.error("Asset validation failed for \(self.packID, privacy: .public): \(String(describing: error), privacy: .public)")
+                .error("Asset validation failed for \(packID, privacy: .public): \(String(describing: error), privacy: .public)")
             installedSignature = nil
             defaults.removeObject(forKey: validationKey)
             state = .failed
