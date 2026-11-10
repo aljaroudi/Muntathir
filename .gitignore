@@ -24,6 +24,7 @@ apple/fastlane/Preview.html
 !/build/**/*.py
 !/build/**/*.sh
 !/build/*/schema.sql
+!/build/hadith/data/supplications.json
 
 # Python
 __pycache__

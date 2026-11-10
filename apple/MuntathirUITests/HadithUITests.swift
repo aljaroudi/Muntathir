@@ -46,6 +46,7 @@ final class HadithUITests: XCTestCase {
         search.typeText("مكارم الأخلاق\n")
         let prayer = app.buttons["supplication-20"]
         XCTAssertTrue(prayer.waitForExistence(timeout: 10))
+        XCTAssertFalse(app.descendants(matching: .any)["reading-time"].exists)
         prayer.tap()
         XCTAssertTrue(app.staticTexts["supplication-title"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.descendants(matching: .any)["hadith-full-arabic"].exists)

@@ -54,6 +54,10 @@ def validate_hadith(pack_id="hadith"):
         assert not db.execute('PRAGMA foreign_key_check').fetchall()
         prayer_count = db.execute("SELECT count(*) FROM hadith h JOIN book b ON b.id=h.book_id WHERE b.collection_id='openiti-Sahifa-Sajjadiyya'").fetchone()[0]
         assert prayer_count == (54 if pack_id == 'supplications' else 0)
+        curated_count = db.execute("SELECT count(*) FROM hadith h JOIN book b ON b.id=h.book_id WHERE b.collection_id='mafatih-supplications'").fetchone()[0]
+        assert curated_count == (3 if pack_id == 'supplications' else 0)
+        if pack_id == 'supplications':
+            assert db.execute('SELECT count(*) FROM supplication_translation').fetchone()[0] >= 3
         # Never publish experimental mappings accidentally.
         assert not db.execute("SELECT name FROM sqlite_master WHERE name IN ('word_form','root','narrator','hadith_relation')").fetchall()
         assert [r[1] for r in db.execute('PRAGMA table_info(hadith_words)')] == ['text']

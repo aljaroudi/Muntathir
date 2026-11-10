@@ -25,12 +25,39 @@ class SupplicationAssetTests(unittest.TestCase):
                 db.execute("INSERT INTO chapter(id,book_id,chapter_idx,file_name,name_ar) VALUES (?,?,0,'edition','باب')", (number, collection))
                 db.execute("INSERT INTO hadith(id,book_id,chapter_id,chapter_idx,id_in_book,arabic,url) VALUES (?,?,?,0,1,'دعاء كامل','edition#page')", (number, collection, number))
             output = Path(folder) / "supplications.db"
-            self.assertEqual(builder.extract_supplications(db, output), 1)
+            self.assertEqual(builder.extract_supplications(db, output, curated=False), 1)
             self.assertEqual(db.execute("SELECT id FROM hadith").fetchall(), [(202,)])
             with sqlite3.connect(output) as prayers:
                 self.assertEqual(prayers.execute("SELECT id,arabic,url FROM hadith").fetchall(), [(101, 'دعاء كامل', 'edition#page')])
                 self.assertEqual(prayers.execute("PRAGMA foreign_key_check").fetchall(), [])
                 self.assertEqual(prayers.execute("SELECT count(*) FROM hadith_words WHERE hadith_words MATCH 'دعاء'").fetchone(), (1,))
+
+    def test_curated_prayers_and_translations_preserve_source_keys(self):
+        source = json.loads((HERE / "data/supplications.json").read_text())
+        with sqlite3.connect(":memory:") as db:
+            builder.apply_schema(db, HERE / "schema.sql")
+            builder.import_supplications(db)
+            self.assertEqual(db.execute("SELECT count(*) FROM hadith").fetchone(), (3,))
+            self.assertEqual(db.execute("SELECT count(*) FROM supplication_translation").fetchone(), (5,))
+            self.assertEqual(db.execute("PRAGMA foreign_key_check").fetchall(), [])
+            for prayer in source["supplications"]:
+                hid, arabic = db.execute("SELECT h.id,h.arabic FROM hadith h JOIN chapter c ON c.id=h.chapter_id WHERE c.file_name=? AND h.id_in_book=?", (prayer["file_name"], prayer["id_in_book"])).fetchone()
+                self.assertEqual(arabic, prayer["arabic"])
+                self.assertLess(hid, 0)
+                for variant in prayer["texts"]:
+                    if variant["language"] != "ar":
+                        self.assertEqual(db.execute("SELECT text,attribution,url,license FROM supplication_translation WHERE hadith_id=? AND language=? AND edition=?", (hid,variant["language"],variant["edition"])).fetchone(), tuple(variant[k] for k in ("text","attribution","url","license")))
+            builder.build_fts(db)
+            self.assertTrue(db.execute("SELECT rowid FROM hadith_words WHERE hadith_words MATCH 'اللهم'").fetchall())
+
+    def test_translation_import_requires_provenance(self):
+        source = json.loads((HERE / "data/supplications.json").read_text())
+        source["supplications"][0]["texts"][1]["license"] = ""
+        with tempfile.TemporaryDirectory() as folder, sqlite3.connect(":memory:") as db:
+            (Path(folder) / "supplications.json").write_text(json.dumps(source))
+            builder.apply_schema(db, HERE / "schema.sql")
+            with patch.object(builder, "DATA", Path(folder)), self.assertRaisesRegex(ValueError, "provenance"):
+                builder.import_supplications(db)
 
 
 class ArabicChapterTests(unittest.TestCase):
@@ -493,7 +520,7 @@ class IntroductionTests(unittest.TestCase):
             builder.add_introduction(db, book, None, 'Introduction', 'مقدمة كاملة')
             builder.build_reading_metadata(db)
             output = Path(folder) / 'supplications.db'
-            self.assertEqual(builder.extract_supplications(db, output), 1)
+            self.assertEqual(builder.extract_supplications(db, output, curated=False), 1)
             with sqlite3.connect(output) as result:
                 self.assertEqual(result.execute('SELECT arabic FROM introduction').fetchall(), [('مقدمة كاملة',)])
                 self.assertEqual(result.execute('SELECT * FROM hadith_reading').fetchall(), [(2, 2, 2)])

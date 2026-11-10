@@ -22,9 +22,9 @@ actor HadithReader {
         try database.connection().query("""
         SELECT c.id, c.name_ar, c.name_en, count(h.id)
         FROM collection c JOIN book b ON b.collection_id = c.id JOIN hadith h ON h.book_id = b.id
-        WHERE c.id != ?
+        WHERE c.id NOT IN (?,?)
         GROUP BY c.id ORDER BY c.sort_order, c.id
-        """, parameters: [Hadith.supplicationCollectionID]) {
+        """, parameters: Hadith.supplicationCollectionIDs) {
             HadithCollection(id: QuranConnection.text($0, 0), arabic: QuranConnection.text($0, 1),
                              english: QuranConnection.text($0, 2), count: Int(sqlite3_column_int($0, 3)))
         }
@@ -34,9 +34,9 @@ actor HadithReader {
         try database.connection().query("""
         SELECT c.id, c.name_ar, c.name_en, \(Self.bookName("ar")), \(Self.bookName("en")), b.id, c.hadith_count, b.collection_id, c.chapter_idx, (SELECT coalesce(sum(r.words),0) FROM hadith h JOIN hadith_reading r ON r.hadith_id=h.id WHERE h.chapter_id=c.id)
         FROM chapter c JOIN book b ON b.id = c.book_id
-        WHERE c.hadith_count > 0 AND b.collection_id != ? \(collectionID == nil ? "" : "AND b.collection_id = ?")
+        WHERE c.hadith_count > 0 AND b.collection_id NOT IN (?,?) \(collectionID == nil ? "" : "AND b.collection_id = ?")
         ORDER BY b.sort_order, c.chapter_idx, c.id
-        """, parameters: [Hadith.supplicationCollectionID] + (collectionID.map { [$0] } ?? [])) { row in
+        """, parameters: Hadith.supplicationCollectionIDs + (collectionID.map { [$0] } ?? [])) { row in
             var chapter = Self.chapter(row, offset: 0)
             chapter.bookID = QuranConnection.text(row, 5)
             chapter.count = Int(sqlite3_column_int(row, 6))
@@ -83,8 +83,8 @@ actor HadithReader {
         if let number = request.number, number <= 0 {
             throw HadithDatabaseError.invalidReference
         }
-        var conditions = ["b.collection_id != ?"]
-        var scopeParameters = [Hadith.supplicationCollectionID]
+        var conditions = ["b.collection_id NOT IN (?,?)"]
+        var scopeParameters = Hadith.supplicationCollectionIDs
         if let collectionID = request.collectionID {
             conditions.append("b.collection_id = ?")
             scopeParameters.append(collectionID)
@@ -201,7 +201,7 @@ actor HadithReader {
             : "text : (" + tokens.joined(separator: " + ") + ")"
     }
 
-    func detail(id: Int, query: String = "", orderedFallback: Bool = false) throws -> HadithDetail {
+    func detail(id: Int, query: String = "", orderedFallback: Bool = false, translation: String = "auto", languages: [String] = Locale.preferredLanguages) throws -> HadithDetail {
         let connection = try database.connection()
         guard var narration = try connection.query("SELECT \(Self.columns(search: false)) \(Self.joins) WHERE h.id = CAST(? AS INTEGER)", parameters: [String(id)], row: Self.narration).first else {
             throw HadithDatabaseError.invalidReference
@@ -225,6 +225,9 @@ actor HadithReader {
                 narration.narratorDisplay = HadithText.highlighted(HadithText.markedSlice(marked, range: 0 ..< narratorEnd), marked: true)
                 narration.englishDisplay = HadithText.highlighted(HadithText.markedSlice(marked, range: bodyStart ..< max(bodyStart, source.unicodeScalars.count - leading)), marked: true)
             }
+        }
+        if narration.isSupplication {
+            narration.translation = try SupplicationTranslation.selected(from: translations(id: id), selection: translation, languages: languages)
         }
         let author = try connection.query("""
         SELECT COALESCE(b.author, ''), b.author_ar FROM hadith h JOIN book b ON b.id = h.book_id WHERE h.id = CAST(? AS INTEGER)
@@ -253,31 +256,59 @@ actor HadithReader {
                                 previousID: adjacent("<", order: "DESC"), nextID: adjacent(">", order: "ASC"))
     }
 
-    /// This small prayer collection is searched as whole texts, with title matches first.
-    /// Keep full text inside the reader actor; the list receives only short previews.
-    func supplications(query: String = "") throws -> [Hadith] {
+    func translationLanguages() throws -> [String] {
+        let connection = try database.connection()
+        guard try hasTranslations(connection) else { return [] }
+        return try connection.query("SELECT DISTINCT language FROM supplication_translation ORDER BY language") { QuranConnection.text($0, 0) }
+    }
+
+    private func hasTranslations(_ connection: HadithConnection) throws -> Bool {
+        try !connection.query("SELECT name FROM sqlite_master WHERE type='table' AND name='supplication_translation'", row: { QuranConnection.text($0, 0) }).isEmpty
+    }
+
+    func translations(id: Int) throws -> [SupplicationTranslation] {
+        let connection = try database.connection()
+        guard try hasTranslations(connection) else { return [] }
+        return try connection.query("SELECT language,edition,text FROM supplication_translation WHERE hadith_id=CAST(? AS INTEGER) ORDER BY language,edition", parameters: [String(id)]) {
+            SupplicationTranslation(language: QuranConnection.text($0, 0), edition: QuranConnection.text($0, 1), text: QuranConnection.text($0, 2))
+        }
+    }
+
+    /// Keep full texts inside the reader actor; lists receive only short matching previews.
+    func supplications(query: String = "", translation: String = "auto", languages: [String] = Locale.preferredLanguages) throws -> [Hadith] {
         let terms = QuranSearchText.terms(query)
         if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, terms.isEmpty {
             return []
         }
         let rows = try database.connection().query("""
         SELECT \(Self.columns(search: false)) \(Self.joins)
-        WHERE b.collection_id = ? AND c.chapter_idx > 0
-        ORDER BY c.chapter_idx, h.id
-        """, parameters: [Hadith.supplicationCollectionID], row: Self.narration)
+        WHERE b.collection_id IN (?,?) AND c.chapter_idx > 0
+        ORDER BY b.sort_order, c.chapter_idx, h.id
+        """, parameters: Hadith.supplicationCollectionIDs, row: Self.narration)
         guard !rows.isEmpty else { throw HadithDatabaseError.incompatible }
         var titled: [Hadith] = []
         var content: [Hadith] = []
         for row in rows {
             try Task.checkCancellation()
+            let variants = try translations(id: row.id)
             let title = QuranSearchText.normalize(row.chapter.arabic + " " + row.chapter.english).lowercased()
-            let text = title + " " + QuranSearchText.normalize(row.arabic + " " + row.english).lowercased()
-            guard terms.allSatisfy({ text.contains($0) }) else { continue }
+            func matches(_ text: String) -> Bool {
+                let normalized = title + " " + QuranSearchText.normalize(text).lowercased()
+                return terms.allSatisfy { normalized.contains($0) }
+            }
+            let titleMatch = terms.allSatisfy { title.contains($0) }
+            let selected = SupplicationTranslation.selected(from: variants, selection: translation, languages: languages)
+            let matched = selected.flatMap { matches($0.text) ? $0 : nil } ?? variants.first { matches($0.text) }
+            guard matches(row.arabic + " " + row.english) || matched != nil else { continue }
             let preview = HadithText.preview(row.arabic, terms: terms)
-            let result = Hadith(id: row.id, collectionID: row.collectionID, number: row.number,
+            var result = Hadith(id: row.id, collectionID: row.collectionID, number: row.number,
                                 chapter: row.chapter, arabic: String(preview.characters), englishNarrator: "",
                                 english: "", source: row.source, arabicDisplay: preview, readingWords: row.readingWords, readingNumber: row.readingNumber)
-            if terms.allSatisfy({ title.contains($0) }) {
+            if !terms.isEmpty, let matched, !titleMatch {
+                let excerpt = HadithText.preview(matched.text, terms: terms)
+                result.translation = SupplicationTranslation(language: matched.language, edition: matched.edition, text: String(excerpt.characters))
+            }
+            if titleMatch {
                 titled.append(result)
             } else {
                 content.append(result)

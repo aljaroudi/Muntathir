@@ -58,13 +58,18 @@ struct HadithShareContent {
         narration.chapter.title(locale: locale) + (narration.displayNumber.map { " · " + String($0) } ?? "")
     }
 
+    private var translatedTexts: [String] {
+        if narration.isSupplication { return narration.translation.map { [$0.text] } ?? [] }
+        return showEnglish ? [narration.englishNarrator, narration.english] : []
+    }
+
     var text: String {
-        ([narration.arabic] + (showEnglish ? [narration.englishNarrator, narration.english] : []) + [reference])
+        ([narration.arabic] + translatedTexts + [reference])
             .filter { !$0.isEmpty }.joined(separator: "\n\n")
     }
 
     var body: String {
-        ([narration.arabic] + (showEnglish ? [narration.englishNarrator, narration.english] : []))
+        ([narration.arabic] + translatedTexts)
             .filter { !$0.isEmpty }.map { String(HadithText.markdown($0).characters) }.joined(separator: "\n\n")
     }
 }
@@ -89,7 +94,11 @@ struct HadithShareArtwork: View {
                     .padding()
                     .environment(\.layoutDirection, .rightToLeft)
             }
-            if content.showEnglish {
+            if let translation = content.narration.translation {
+                HadithMarkdownView(text: HadithText.markdown(translation.text), adjustable: false)
+                    .environment(\.layoutDirection, translation.isRightToLeft ? .rightToLeft : .leftToRight)
+            }
+            if !content.narration.isSupplication, content.showEnglish {
                 if !content.narration.englishNarrator.isEmpty {
                     HadithMarkdownView(text: HadithText.markdown(content.narration.englishNarrator), adjustable: false)
                         .environment(\.layoutDirection, .leftToRight)

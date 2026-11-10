@@ -19,6 +19,9 @@ struct HadithDetailView: View {
         detail?.narration.isSupplication ?? supplication
     }
 
+    @AppStorage("supplicationTranslation") private var translation = "auto"
+    @State private var translationLanguages: [String] = []
+    @State private var translationChanged = false
     @AppStorage("hadithEnglishEnabled") private var showEnglish = true
     @Environment(\.locale) private var locale
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -64,7 +67,7 @@ struct HadithDetailView: View {
                                 .environment(\.layoutDirection, .rightToLeft)
                                 .accessibilityIdentifier("hadith-full-arabic")
                         }
-                        if showEnglish, !narration.englishNarrator.isEmpty {
+                        if !isSupplication, showEnglish, !narration.englishNarrator.isEmpty {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Narrator").font(.subheadline).foregroundStyle(.secondary)
                                 highlighted(narration.narratorDisplay, block: "englishNarrator", narration: narration)
@@ -72,10 +75,15 @@ struct HadithDetailView: View {
                             }
                             .accessibilityIdentifier("hadith-detail-narrator")
                         }
-                        if showEnglish, !narration.english.isEmpty {
+                        if !isSupplication, showEnglish, !narration.english.isEmpty {
                             highlighted(narration.englishDisplay, block: "english", narration: narration)
                                 .environment(\.layoutDirection, .leftToRight)
                                 .accessibilityIdentifier("hadith-full-english")
+                        }
+                        if let translation = narration.translation {
+                            highlighted(HadithText.highlighted(translation.text, terms: QuranSearchText.terms(query)), block: translation.block, narration: narration)
+                                .environment(\.layoutDirection, translation.isRightToLeft ? .rightToLeft : .leftToRight)
+                                .accessibilityIdentifier("supplication-full-translation")
                         }
                     }
                     .listRowBackground(HadithBookStyle.background(for: narration.collectionID))
@@ -146,6 +154,11 @@ struct HadithDetailView: View {
             ?? String(localized: isSupplication ? "Supplications" : "Hadith"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            if isSupplication {
+                ToolbarItem(placement: .topBarTrailing) {
+                    SupplicationTranslationPicker(languages: translationLanguages)
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 if let detail {
                     HadithHighlightButton(narration: detail.narration)
@@ -158,6 +171,7 @@ struct HadithDetailView: View {
                 }
             }
         }
+        .onChange(of: translation) { _, _ in translationChanged = true }
         .onDisappear {
             if !loading {
                 session?.state.detailOffset = offset
@@ -168,7 +182,7 @@ struct HadithDetailView: View {
                 session?.state.detailOffset = offset
             }
         }
-        .task(id: "\(currentID ?? initialID)-\(retry)") {
+        .task(id: "\(currentID ?? initialID)-\(retry)-\(translation)-\(translationChanged)-\(locale.identifier)") {
             if highlight?.block == "english" || highlight?.block == "englishNarrator" {
                 showEnglish = true
             }
@@ -176,7 +190,15 @@ struct HadithDetailView: View {
             failed = false
             detail = nil
             do {
-                let loaded = try await reader.detail(id: currentID ?? initialID, query: query, orderedFallback: orderedFallback)
+                var highlightedTranslation: String?
+                if !translationChanged, let block = highlight?.block, block.hasPrefix("translation:") {
+                    highlightedTranslation = String(block.dropFirst("translation:".count))
+                }
+                let loaded = try await reader.detail(id: currentID ?? initialID, query: query, orderedFallback: orderedFallback,
+                                                     translation: highlightedTranslation ?? translation, languages: [locale.identifier])
+                if loaded.narration.isSupplication {
+                    translationLanguages = try await reader.translationLanguages()
+                }
                 try Task.checkCancellation()
                 if session?.state.selection != loaded.narration.source {
                     session?.state.detailOffset = 0

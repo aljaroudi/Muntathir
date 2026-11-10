@@ -1024,7 +1024,44 @@ def load_openiti_books(db: sqlite3.Connection, folder: Path = OPENITI_PATH) -> i
     return db.execute("SELECT count(*) FROM hadith WHERE id > ?", (start,)).fetchone()[0]
 
 
-def extract_supplications(db: sqlite3.Connection, output: Path) -> int:
+def import_supplications(db: sqlite3.Connection) -> None:
+    """Append curated prayers without renumbering existing reading identities."""
+    source = json.loads((DATA / "supplications.json").read_text())
+    db.execute("""CREATE TABLE IF NOT EXISTS supplication_translation (
+        hadith_id INTEGER NOT NULL REFERENCES hadith(id),
+        language TEXT NOT NULL, edition TEXT NOT NULL, text TEXT NOT NULL,
+        attribution TEXT NOT NULL, url TEXT NOT NULL, license TEXT NOT NULL,
+        PRIMARY KEY(hadith_id, language, edition)
+    ) STRICT""")
+    for table in ("collection", "book"):
+        row = source[table]
+        keys = list(row)
+        db.execute(f"INSERT INTO {table} ({','.join(keys)}) VALUES ({','.join('?' for _ in keys)})", list(row.values()))
+    seen = set()
+    for prayer in source["supplications"]:
+        if prayer["id"] in seen or not prayer["arabic"].strip():
+            raise ValueError("Duplicate or empty supplication")
+        seen.add(prayer["id"])
+        # Negative IDs reserve an independent namespace; source keys remain book/file/number.
+        identity = -int.from_bytes(hashlib.sha256(prayer["id"].encode()).digest()[:3], "big")
+        db.execute("""INSERT INTO chapter
+            (id,book_id,chapter_idx,file_name,name_ar,name_en,hadith_count) VALUES (?,?,?,?,?,?,1)""",
+            (identity, source["book"]["id"], prayer["chapter_idx"], prayer["file_name"], prayer["name_ar"], prayer["name_en"]))
+        db.execute("""INSERT INTO hadith
+            (id,book_id,chapter_id,chapter_idx,id_in_book,arabic,english_text,url) VALUES (?,?,?,?,?,?,?,?)""",
+            (identity, source["book"]["id"], identity, prayer["chapter_idx"], prayer["id_in_book"],
+             prayer["arabic"], prayer.get("english_text", ""), prayer.get("url", "")))
+        db.execute("INSERT INTO hadith_reading VALUES (?,?,NULL)", (identity, reading_words(prayer["arabic"])))
+        for text in prayer.get("texts", []):
+            if text["language"] == "ar":
+                continue
+            if not all(text.get(key, "").strip() for key in ("language", "edition", "text", "attribution", "url", "license")):
+                raise ValueError(f"Incomplete translation or provenance: {prayer['id']}")
+            db.execute("INSERT INTO supplication_translation VALUES (?,?,?,?,?,?,?)",
+                       (identity, *(text[key] for key in ("language", "edition", "text", "attribution", "url", "license"))))
+
+
+def extract_supplications(db: sqlite3.Connection, output: Path, *, curated: bool = True) -> int:
     """Move the prayer collection into its own asset, preserving saved source identities."""
     collection = "openiti-Sahifa-Sajjadiyya"
     target = connect(output)
@@ -1047,6 +1084,8 @@ def extract_supplications(db: sqlite3.Connection, output: Path) -> int:
     if not count:
         target.close()
         raise ValueError("Supplications source is missing")
+    if curated:
+        import_supplications(target)
     build_fts(target)
     target.commit()
     finalize(target, "supplications.db")

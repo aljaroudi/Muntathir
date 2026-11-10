@@ -4,6 +4,8 @@ struct SupplicationsView: View {
     let reader: HadithReader
     @Environment(\.locale) private var locale
     @Environment(\.hadithAssets) private var assets
+    @AppStorage("supplicationTranslation") private var translation = "auto"
+    @State private var languages: [String] = []
     @State private var query = ""
     @State private var introductions: [HadithIntroduction] = []
     @State private var prayers: [Hadith] = []
@@ -15,6 +17,8 @@ struct SupplicationsView: View {
     private struct Search: Equatable {
         let query: String
         let retry: Int
+        let translation: String
+        let locale: String
     }
 
     var body: some View {
@@ -42,28 +46,43 @@ struct SupplicationsView: View {
                         HadithIntroductionRow(introduction: introduction, reader: reader)
                     }
                 }
-                Section(prayers[0].chapter.bookTitle(locale: locale)) {
-                    ForEach(prayers) { prayer in
-                        NavigationLink {
-                            HadithDetailView(initialID: prayer.id, reader: reader, query: query,
-                                             orderedFallback: false, supplication: true)
-                                .environment(\.hadithSession, nil)
-                        } label: {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text(prayer.chapter.chapterTitle(locale: locale))
-                                    .font(.headline)
-                                ReadingTimeHint(words: prayer.readingWords)
-                                if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                    Text(prayer.arabicDisplay)
-                                        .font(.body)
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(3)
-                                        .environment(\.layoutDirection, .rightToLeft)
+                ForEach(Hadith.supplicationCollectionIDs, id: \.self) { collectionID in
+                    let collectionPrayers = prayers.filter { $0.collectionID == collectionID }
+                    if let first = collectionPrayers.first {
+                        Section(first.chapter.bookTitle(locale: locale)) {
+                            ForEach(collectionPrayers) { prayer in
+                                NavigationLink {
+                                    HadithDetailView(initialID: prayer.id, reader: reader, query: query,
+                                                     orderedFallback: false, supplication: true)
+                                        .environment(\.hadithSession, nil)
+                                } label: {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        Text(prayer.chapter.chapterTitle(locale: locale))
+                                            .font(.headline)
+                                        if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                            ReadingTimeHint(words: prayer.readingWords)
+                                        }
+                                        if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                            if let translation = prayer.translation {
+                                                Text(HadithText.highlighted(translation.text, terms: QuranSearchText.terms(query)))
+                                                    .font(.body)
+                                                    .foregroundStyle(.secondary)
+                                                    .lineLimit(3)
+                                                    .environment(\.layoutDirection, translation.isRightToLeft ? .rightToLeft : .leftToRight)
+                                            } else {
+                                                Text(prayer.arabicDisplay)
+                                                    .font(.body)
+                                                    .foregroundStyle(.secondary)
+                                                    .lineLimit(3)
+                                                    .environment(\.layoutDirection, .rightToLeft)
+                                            }
+                                        }
+                                    }
+                                    .padding(.vertical, 4)
                                 }
+                                .accessibilityIdentifier(prayer.collectionID == Hadith.supplicationCollectionID ? "supplication-\(prayer.number - 1)" : "supplication-\(prayer.source?.key ?? String(prayer.id))")
                             }
-                            .padding(.vertical, 4)
                         }
-                        .accessibilityIdentifier("supplication-\(prayer.number - 1)")
                     }
                 }
             }
@@ -73,6 +92,7 @@ struct SupplicationsView: View {
         .autocorrectionDisabled()
         .scrollDismissesKeyboard(.interactively)
         .toolbar {
+            SupplicationTranslationPicker(languages: languages)
             NavigationLink {
                 HadithSavedView(reader: reader, supplications: true)
                     .environment(\.hadithSession, nil)
@@ -80,7 +100,7 @@ struct SupplicationsView: View {
                 Label("Highlights", systemImage: "highlighter")
             }
         }
-        .task(id: Search(query: query, retry: retry)) {
+        .task(id: Search(query: query, retry: retry, translation: translation, locale: locale.identifier)) {
             loading = true
             failed = false
             needsUpdate = false
@@ -89,7 +109,8 @@ struct SupplicationsView: View {
                     try await Task.sleep(for: .milliseconds(150))
                 }
                 introductions = try await reader.introductions(collectionID: Hadith.supplicationCollectionID)
-                let results = try await reader.supplications(query: query)
+                languages = try await reader.translationLanguages()
+                let results = try await reader.supplications(query: query, translation: translation, languages: [locale.identifier])
                 try Task.checkCancellation()
                 prayers = results
                 loading = false

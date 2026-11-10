@@ -598,7 +598,7 @@ struct HadithSavedView: View {
 
     private var highlights: [ReadingHighlight] {
         store?.highlights.filter {
-            $0.isHadith && (HadithSource(key: $0.source)?.book == Hadith.supplicationCollectionID) == supplications
+            $0.isHadith && (Hadith.supplicationCollectionIDs.contains(HadithSource(key: $0.source)?.book ?? "")) == supplications
         } ?? []
     }
 
@@ -656,7 +656,12 @@ struct HadithSavedView: View {
                     guard let source = HadithSource(key: key), let id = try await reader.resolve(source) else { continue }
                     let narration = try await reader.detail(id: id).narration
                     loaded[key] = id
-                    let blocks = narration.highlightBlocks
+                    var blocks = narration.highlightBlocks
+                    if narration.isSupplication {
+                        for translation in try await reader.translations(id: id) {
+                            blocks[translation.block] = HighlightTextContent.canonical(HadithText.markdown(translation.text))
+                        }
+                    }
                     for highlight in highlights where highlight.source == key && highlight.isAvailable(in: blocks) {
                         available.insert(highlight.id)
                     }
@@ -678,8 +683,12 @@ struct HadithSavedView: View {
 
 extension Hadith {
     var highlightBlocks: [String: String] {
-        ["arabic": HighlightTextContent.canonical(arabicDisplay),
-         "english": HighlightTextContent.canonical(englishDisplay),
-         "englishNarrator": HighlightTextContent.canonical(narratorDisplay)]
+        var blocks = ["arabic": HighlightTextContent.canonical(arabicDisplay),
+                      "english": HighlightTextContent.canonical(englishDisplay),
+                      "englishNarrator": HighlightTextContent.canonical(narratorDisplay)]
+        if let translation {
+            blocks[translation.block] = HighlightTextContent.canonical(HadithText.markdown(translation.text))
+        }
+        return blocks
     }
 }

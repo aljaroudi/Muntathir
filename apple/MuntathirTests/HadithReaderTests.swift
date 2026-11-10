@@ -39,10 +39,10 @@ struct HadithReaderTests {
     @Test func supplicationsSearchTitlesAndContentWithoutHadithNavigation() async throws {
         let reader = HadithReader(database: HadithDatabase(url: Bundle(for: HadithTestBundle.self).url(forResource: "supplications", withExtension: "db")))
         let prayers = try await reader.supplications()
-        #expect(prayers.count == 54)
+        #expect(prayers.count == 57)
         #expect(prayers.allSatisfy { $0.isSupplication } /* swiftformat:disable:this preferKeyPath */ )
         #expect(prayers.first?.chapter.arabic.hasPrefix("(1)") == true)
-        #expect(prayers.last?.chapter.arabic.hasPrefix("(54)") == true)
+        #expect(prayers.filter { $0.collectionID == Hadith.supplicationCollectionID }.last?.chapter.arabic.hasPrefix("(54)") == true)
         let titleMatches = try await reader.supplications(query: "مَكَارِم الأخْلاق")
         let prayer = try #require(titleMatches.first)
         #expect(prayer.chapter.arabic.hasPrefix("(20)"))
@@ -459,5 +459,58 @@ extension HadithReaderTests {
         #expect(detail.narration.displayNumber == 1)
         #expect(detail.narration.source?.key == original.key)
         #expect(try await reader.resolve(original) == 2)
+    }
+}
+
+extension HadithReaderTests {
+    @Test func multilingualSupplicationsSearchSelectShareAndResolve() async throws {
+        let reader = HadithReader(database: HadithDatabase(url: Bundle(for: HadithTestBundle.self).url(forResource: "supplications", withExtension: "db")))
+        #expect(try await reader.translationLanguages() == ["en", "ur"])
+        let results = try await reader.supplications(query: "embraces all things", translation: "none")
+        let prayer = try #require(results.first)
+        #expect(prayer.collectionID == "mafatih-supplications")
+        #expect(prayer.translation?.language == "en")
+        #expect(prayer.translation?.text.contains("embraces") == true)
+        let detail = try await reader.detail(id: prayer.id, translation: "ur")
+        let translated = try #require(detail.narration.translation)
+        #expect(translated.language == "ur")
+        #expect(translated.isRightToLeft)
+        #expect(detail.narration.displayNumber == nil)
+        let source = try #require(detail.narration.source)
+        #expect(try await reader.resolve(source) == prayer.id)
+        let share = HadithShareContent(narration: detail.narration, showEnglish: false, locale: Locale(identifier: "en"))
+        #expect(share.text.contains(translated.text))
+        #expect(!share.reference.contains(" · 1"))
+        let text = try #require(detail.narration.highlightBlocks[translated.block])
+        let range = try #require(HighlightRange(NSRange(location: 0, length: 10), in: text))
+        let highlight = ReadingHighlight(source: source.key, isHadith: true, block: translated.block, ranges: [range], excerpt: String(text.prefix(10)), reference: share.reference)
+        #expect(highlight.isAvailable(in: detail.narration.highlightBlocks))
+        #expect(!highlight.isAvailable(in: ["translation:en:duas.org-en": text]))
+        let restoredID = String(translated.block.dropFirst("translation:".count))
+        #expect(try await reader.detail(id: prayer.id, translation: restoredID).narration.translation == translated)
+        #expect(try await reader.detail(id: prayer.id, translation: "none").narration.translation == nil)
+        #expect(try await reader.detail(id: prayer.id, translation: "fr").narration.translation == nil)
+        #expect(try await reader.detail(id: prayer.id, languages: ["ur-PK"]).narration.translation?.language == "ur")
+        #expect(try await reader.detail(id: prayer.id, languages: ["ar", "en"]).narration.translation == nil)
+        let urdu = try await reader.supplications(query: "تیری رحمت", translation: "ur")
+        #expect(urdu.contains { $0.id == prayer.id && $0.translation?.language == "ur" })
+        #expect(try await reader.catalog().isEmpty)
+        #expect(try await reader.chapters().isEmpty)
+        #expect(try await reader.page(HadithRequest(query: "اللهم")).rows.isEmpty)
+    }
+
+    @Test func legacySupplicationsWithoutTranslationTableRemainReadable() async throws {
+        let fixture = try HadithFixture(count: 1, searchRows: """
+        UPDATE collection SET id='openiti-Sahifa-Sajjadiyya' WHERE id='merged';
+        UPDATE book SET collection_id='openiti-Sahifa-Sajjadiyya' WHERE collection_id='merged';
+        UPDATE chapter SET chapter_idx=1 WHERE id=1;
+        """)
+        defer { fixture.remove() }
+        let reader = HadithReader(database: HadithDatabase(url: fixture.url))
+        #expect(try await reader.translationLanguages().isEmpty)
+        let prayers = try await reader.supplications()
+        #expect(prayers.count == 1)
+        #expect(try await reader.detail(id: 1, translation: "ur").narration.arabic.isEmpty == false)
+        #expect(try await reader.detail(id: 1, translation: "ur").narration.translation == nil)
     }
 }

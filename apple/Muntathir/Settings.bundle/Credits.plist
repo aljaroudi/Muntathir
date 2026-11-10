@@ -156,6 +156,64 @@
 			<key>DefaultValue</key>
 			<string>https://tanzil.net/trans/ur.jawadi</string>
 		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Supplication Translations</string>
+			<key>FooterText</key>
+			<string>Free reuse permitted by Duas.org; source credit requested. https://www.duas.org/mobile/about-us.html</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Supplication of Kumayl — en — Duas.org (translator not identified in source)</string>
+			<key>Key</key>
+			<string>credit-dua-kumayl-duas.org-en</string>
+			<key>DefaultValue</key>
+			<string>https://www.duas.org/mobile/dua-kumayl-habib.html</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Supplication of Kumayl — ur — Duas.org (translator not identified in source)</string>
+			<key>Key</key>
+			<string>credit-dua-kumayl-duas.org-ur</string>
+			<key>DefaultValue</key>
+			<string>https://www.duas.org/ppt/Dua_Kumayl_5languages.pptx</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Al-Sabah Supplication — en — Duas.org (translator not identified in source)</string>
+			<key>Key</key>
+			<string>credit-dua-al-sabah-duas.org-en</string>
+			<key>DefaultValue</key>
+			<string>https://www.duas.org/mobile/dua-sabah.html</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Al-Nudba Supplication — en — Duas.org (translator not identified in source)</string>
+			<key>Key</key>
+			<string>credit-dua-al-nudba-duas.org-en</string>
+			<key>DefaultValue</key>
+			<string>https://www.duas.org/nudba.htm</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Al-Nudba Supplication — ur — Duas.org (translator not identified in source)</string>
+			<key>Key</key>
+			<string>credit-dua-al-nudba-duas.org-ur</string>
+			<key>DefaultValue</key>
+			<string>https://www.duas.org/ppt/Dua_al_Nudbah_Eng_Urdu.ppsx</string>
+		</dict>
 	</array>
 </dict>
 </plist>

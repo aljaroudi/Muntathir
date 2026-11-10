@@ -59,8 +59,10 @@ struct HadithChapter: Identifiable, Hashable, Sendable {
 struct Hadith: Identifiable, Hashable, Sendable {
     static let supplicationCollectionID = "openiti-Sahifa-Sajjadiyya"
 
+    static let supplicationCollectionIDs = [supplicationCollectionID, "mafatih-supplications"]
+
     var isSupplication: Bool {
-        collectionID == Self.supplicationCollectionID
+        Self.supplicationCollectionIDs.contains(collectionID)
     }
 
     var displayNumber: Int? {
@@ -83,6 +85,7 @@ struct Hadith: Identifiable, Hashable, Sendable {
     var narratorDisplay: AttributedString = .init()
     var readingWords = 0
     var readingNumber: Int?
+    var translation: SupplicationTranslation?
 }
 
 struct HadithPage: Sendable {
