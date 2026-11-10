@@ -32,7 +32,9 @@ struct VerseActionHost<Content: View>: View {
         let canShare = AyahImageRenderer.canShare(ayah, locale: locale, translation: translation)
         Button("Copy text", systemImage: "doc.on.doc") {
             UIPasteboard.general.string = VerseShareContent(ayah: ayah, translation: translation, locale: locale).text
-            if !contextMenu { copied = true }
+            if !contextMenu {
+                copied = true
+            }
         }
         Button("Share as image", systemImage: "square.and.arrow.up") {
             if let image = AyahImageRenderer.image(for: ayah, locale: locale, translation: translation) {
@@ -46,4 +48,3 @@ struct VerseActionHost<Content: View>: View {
         HighlightActions(source: ayah.id, isHadith: false, excerpt: ayah.text, reference: ayah.id, editing: $editing)
     }
 }
-

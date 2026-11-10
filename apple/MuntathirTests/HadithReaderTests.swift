@@ -40,7 +40,7 @@ struct HadithReaderTests {
         let reader = HadithReader(database: HadithDatabase(url: Bundle(for: HadithTestBundle.self).url(forResource: "supplications", withExtension: "db")))
         let prayers = try await reader.supplications()
         #expect(prayers.count == 54)
-        #expect(prayers.allSatisfy { $0.isSupplication })
+        #expect(prayers.allSatisfy(\.isSupplication))
         #expect(prayers.first?.chapter.arabic.hasPrefix("(1)") == true)
         #expect(prayers.last?.chapter.arabic.hasPrefix("(54)") == true)
         let titleMatches = try await reader.supplications(query: "مَكَارِم الأخْلاق")

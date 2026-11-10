@@ -7,7 +7,9 @@ struct QuranPage: Sendable {
         let index: Int
         let word: Int
         let text: String
-        var id: String { "\(index):\(word)" }
+        var id: String {
+            "\(index):\(word)"
+        }
     }
 
     struct Line: Identifiable, Sendable {
@@ -17,7 +19,9 @@ struct QuranPage: Sendable {
         let centered: Bool
         let surah: Int
         var words: [Word] = []
-        var id: Int { number }
+        var id: Int {
+            number
+        }
     }
 
     static let count = 604
@@ -29,7 +33,9 @@ struct QuranPage: Sendable {
     let hizbQuarter: Int
     let sajdas: Set<Int>
 
-    var surah: Int { lines.first { $0.kind == .ayah }?.surah ?? lines.first?.surah ?? 1 }
+    var surah: Int {
+        lines.first { $0.kind == .ayah }?.surah ?? lines.first?.surah ?? 1
+    }
 }
 
 extension QuranDatabase {
@@ -43,7 +49,8 @@ extension QuranDatabase {
         let ranges = lines.filter { $0.0.kind == .ayah }
         guard let first = ranges.first?.1, let last = ranges.last?.2 else { throw QuranDatabaseError.unavailable }
         let words = try connection.query("SELECT \"index\", word, text FROM quran_words_qpc WHERE (\"index\", word) BETWEEN (?, ?) AND (?, ?) ORDER BY \"index\", word",
-                                         parameters: [first.0, first.1, last.0, last.1].map(String.init)) { row in
+                                         parameters: [first.0, first.1, last.0, last.1].map(String.init))
+        { row in
             QuranPage.Word(index: Int(sqlite3_column_int(row, 0)), word: Int(sqlite3_column_int(row, 1)), text: QuranConnection.text(row, 2))
         }
         for offset in lines.indices where lines[offset].0.kind == .ayah {

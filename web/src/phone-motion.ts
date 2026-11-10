@@ -1,5 +1,5 @@
 function clamp(value: number) {
-  return Math.max(-1, Math.min(1, value));
+  return Math.max(-1, Math.min(1, value))
 }
 
 export function phoneTilt(

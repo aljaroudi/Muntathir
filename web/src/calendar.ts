@@ -2,22 +2,22 @@
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message)
 }
-import type { Locale } from "./site"
+import type { Locale } from './site'
 
 const dayMs = 86_400_000
-const baseline = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura-nu-latn", {
-  timeZone: "UTC",
-  year: "numeric",
-  month: "numeric",
-  day: "numeric",
+const baseline = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn', {
+  timeZone: 'UTC',
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
 })
-assert(baseline.resolvedOptions().calendar === "islamic-umalqura", "Unsupported calendar")
+assert(baseline.resolvedOptions().calendar === 'islamic-umalqura', 'Unsupported calendar')
 
 export function hijri(date: Date) {
   const parts = baseline.formatToParts(date)
   const value = (type: Intl.DateTimeFormatPartTypes) =>
     Number(parts.find(part => part.type === type)!.value)
-  return { year: value("year"), month: value("month"), day: value("day") }
+  return { year: value('year'), month: value('month'), day: value('day') }
 }
 
 const index = (month: { year: number; month: number }) => month.year * 12 + month.month - 1
@@ -33,30 +33,30 @@ export function baselineStart(month: number): number {
     else high = middle
   }
   const result = hijri(new Date(low * dayMs))
-  assert(index(result) === month && result.day === 1, "Unsupported Hijri month")
+  assert(index(result) === month && result.day === 1, 'Unsupported Hijri month')
   baselineStarts.set(month, low)
   return low
 }
 
 function record(value: unknown): Record<string, unknown> {
-  assert(value !== null && typeof value === "object" && !Array.isArray(value), "Expected object")
+  assert(value !== null && typeof value === 'object' && !Array.isArray(value), 'Expected object')
   return value as Record<string, unknown>
 }
 function integer(value: unknown, min: number, max: number): number {
   assert(
-    typeof value === "number" && Number.isInteger(value) && value >= min && value <= max,
-    "Invalid integer"
+    typeof value === 'number' && Number.isInteger(value) && value >= min && value <= max,
+    'Invalid integer'
   )
   return value
 }
 function text(value: unknown): string {
-  assert(typeof value === "string" && value.trim().length > 0, "Invalid text")
+  assert(typeof value === 'string' && value.trim().length > 0, 'Invalid text')
   assert(
     [...value].every(character => {
       const code = character.codePointAt(0)!
       return (code >= 32 && code !== 127) || [9, 10, 13].includes(code)
     }),
-    "Invalid control character"
+    'Invalid control character'
   )
   return value
 }
@@ -73,7 +73,7 @@ function civilDay(value: unknown) {
   date.setUTCFullYear(year, month - 1, day)
   assert(
     date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day,
-    "Invalid civil date"
+    'Invalid civil date'
   )
   return date.getTime() / dayMs
 }
@@ -85,7 +85,7 @@ export function calendarStarts(input: unknown): (month: number) => number {
     feed.schemaVersion === 1 &&
       Array.isArray(feed.announcements) &&
       feed.announcements.length <= 10000,
-    "Invalid corrections feed"
+    'Invalid corrections feed'
   )
   const ids = new Set<string>(),
     anchors = new Map<number, number>()
@@ -93,47 +93,47 @@ export function calendarStarts(input: unknown): (month: number) => number {
     const row = record(value),
       id = text(row.id),
       source = text(row.sourceID)
-    assert(!ids.has(id), "Duplicate announcement ID")
+    assert(!ids.has(id), 'Duplicate announcement ID')
     ids.add(id)
     integer(row.revision, 1, Number.MAX_SAFE_INTEGER)
     assert(
-      ["nakedEye", "aidedSight", "government"].includes(String(row.method)),
-      "Invalid sighting method"
+      ['nakedEye', 'aidedSight', 'government'].includes(String(row.method)),
+      'Invalid sighting method'
     )
     const coverage = record(row.coverage)
     assert(
       Array.isArray(coverage.countries) && Array.isArray(coverage.polygons),
-      "Invalid coverage"
+      'Invalid coverage'
     )
-    assert(coverage.countries.length > 0 || coverage.polygons.length > 0, "Empty coverage")
+    assert(coverage.countries.length > 0 || coverage.polygons.length > 0, 'Empty coverage')
     for (const country of coverage.countries)
       assert(
-        typeof country === "string" && country.length === 2 && country === country.toUpperCase(),
-        "Invalid country"
+        typeof country === 'string' && country.length === 2 && country === country.toUpperCase(),
+        'Invalid country'
       )
     for (const polygon of coverage.polygons) {
-      assert(Array.isArray(polygon) && polygon.length >= 3, "Invalid polygon")
+      assert(Array.isArray(polygon) && polygon.length >= 3, 'Invalid polygon')
       for (const point of polygon) {
         const p = record(point)
         assert(
-          typeof p.latitude === "number" &&
+          typeof p.latitude === 'number' &&
             Number.isFinite(p.latitude) &&
             Math.abs(p.latitude) <= 90,
-          "Invalid latitude"
+          'Invalid latitude'
         )
         assert(
-          typeof p.longitude === "number" &&
+          typeof p.longitude === 'number' &&
             Number.isFinite(p.longitude) &&
             Math.abs(p.longitude) <= 180,
-          "Invalid longitude"
+          'Invalid longitude'
         )
       }
     }
     const month = monthIndex(row.month),
       start = civilDay(row.start)
-    assert(Math.abs(start - baselineStart(month)) <= 7, "Correction exceeds seven days")
-    if (source !== "naked-eye-middle-east" || row.method !== "nakedEye") continue
-    assert(!anchors.has(month) || anchors.get(month) === start, "Conflicting month confirmations")
+    assert(Math.abs(start - baselineStart(month)) <= 7, 'Correction exceeds seven days')
+    if (source !== 'naked-eye-middle-east' || row.method !== 'nakedEye') continue
+    assert(!anchors.has(month) || anchors.get(month) === start, 'Conflicting month confirmations')
     anchors.set(month, start)
   }
   const months = [...anchors.keys()].sort((a, b) => a - b)
@@ -141,7 +141,7 @@ export function calendarStarts(input: unknown): (month: number) => number {
     const left = months[i - 1]!,
       right = months[i]!,
       days = anchors.get(right)! - anchors.get(left)!
-    assert(days >= 29 * (right - left) && days <= 30 * (right - left), "Conflicting month lengths")
+    assert(days >= 29 * (right - left) && days <= 30 * (right - left), 'Conflicting month lengths')
   }
   const cache = new Map(anchors)
   return (month: number) => {
@@ -183,18 +183,18 @@ export function calendarStarts(input: unknown): (month: number) => number {
 
 function escapeText(value: string) {
   return value
-    .replace(/\\/g, "\\\\")
-    .replace(/\r\n|\r|\n/g, "\\n")
-    .replace(/;/g, "\\;")
-    .replace(/,/g, "\\,")
+    .replace(/\\/g, '\\\\')
+    .replace(/\r\n|\r|\n/g, '\\n')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
 }
 function fold(line: string) {
-  let result = "",
+  let result = '',
     bytes = 0
   for (const character of line) {
     const size = Buffer.byteLength(character)
     if (bytes + size > 75) {
-      result += "\r\n "
+      result += '\r\n '
       bytes = 1
     }
     result += character
@@ -203,7 +203,7 @@ function fold(line: string) {
   return result
 }
 const dateValue = (day: number) =>
-  new Date(day * dayMs).toISOString().slice(0, 10).replace(/-/g, "")
+  new Date(day * dayMs).toISOString().slice(0, 10).replace(/-/g, '')
 
 export function generateCalendar(
   events: unknown,
@@ -216,40 +216,40 @@ export function generateCalendar(
   const validated = validateEvents(events, locale)
   const timestamp = now
     .toISOString()
-    .replace(/[-:]/g, "")
-    .replace(/\.\d{3}/, "")
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}/, '')
   const lines = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Muntathir//Observances//EN",
-    "CALSCALE:GREGORIAN",
-    `X-WR-CALNAME:${locale === "ar" ? "منتظِر — المناسبات الإسلامية" : "Muntathir — Islamic observances"}`,
-    "REFRESH-INTERVAL;VALUE=DURATION:PT12H",
-    "X-PUBLISHED-TTL:PT12H",
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Muntathir//Observances//EN',
+    'CALSCALE:GREGORIAN',
+    `X-WR-CALNAME:${locale === 'ar' ? 'منتظِر — المناسبات الإسلامية' : 'Muntathir — Islamic observances'}`,
+    'REFRESH-INTERVAL;VALUE=DURATION:PT12H',
+    'X-PUBLISHED-TTL:PT12H',
   ]
   for (let year = currentYear - 1; year <= currentYear + 5; year++) {
     for (const event of occurrences(validated, start, year)) {
       const { id, month, day, title, date } = event
       const description =
-        locale === "ar"
+        locale === 'ar'
           ? `التاريخ الهجري: ${day}/${month}/${year} هـ. ليست كل التواريخ مؤكدة.`
           : `Hijri date: ${day}/${month}/${year} AH. Not all dates are verified.`
       lines.push(
-        "BEGIN:VEVENT",
+        'BEGIN:VEVENT',
         `UID:${id}-${year}-${locale}@muntathir.calendar`,
         `DTSTAMP:${timestamp}`,
         `LAST-MODIFIED:${timestamp}`,
         `DTSTART;VALUE=DATE:${dateValue(date)}`,
         `DTEND;VALUE=DATE:${dateValue(date + 1)}`,
         `SUMMARY:${escapeText(title)}`,
-        `DESCRIPTION:${escapeText(description + (event.historicalYear === undefined ? "" : locale === "ar" ? `\nالسنة التاريخية: ${event.historicalYear} هـ` : `\nHistorical year: ${event.historicalYear} AH`))}`,
-        "TRANSP:TRANSPARENT",
-        "END:VEVENT"
+        `DESCRIPTION:${escapeText(description + (event.historicalYear === undefined ? '' : locale === 'ar' ? `\nالسنة التاريخية: ${event.historicalYear} هـ` : `\nHistorical year: ${event.historicalYear} AH`))}`,
+        'TRANSP:TRANSPARENT',
+        'END:VEVENT'
       )
     }
   }
-  lines.push("END:VCALENDAR")
-  return lines.map(fold).join("\r\n") + "\r\n"
+  lines.push('END:VCALENDAR')
+  return lines.map(fold).join('\r\n') + '\r\n'
 }
 
 export interface CalendarEvent {
@@ -261,17 +261,17 @@ export interface CalendarEvent {
 }
 
 export function validateEvents(input: unknown, locale: Locale): CalendarEvent[] {
-  assert(Array.isArray(input), "Invalid events")
+  assert(Array.isArray(input), 'Invalid events')
   const ids = new Set<string>()
   return input.map(value => {
     const event = record(value),
       id = text(event.id)
-    assert(/^[a-z0-9-]+$/.test(id) && !ids.has(id), "Invalid or duplicate event ID")
+    assert(/^[a-z0-9-]+$/.test(id) && !ids.has(id), 'Invalid or duplicate event ID')
     assert(
       Object.keys(event).every(key =>
-        ["id", "month", "day", "year", "title", "figure_ids"].includes(key)
+        ['id', 'month', 'day', 'year', 'title', 'figure_ids'].includes(key)
       ),
-      "Unexpected event field"
+      'Unexpected event field'
     )
     ids.add(id)
     const titles = record(event.title)

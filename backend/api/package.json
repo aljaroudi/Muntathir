@@ -5,7 +5,10 @@
   "scripts": {
     "start": "bun server.ts",
     "test": "bun test",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "format": "bun fmt",
+    "lint": "bun lint",
+    "format:check": "bun fmt --check"
   },
   "devDependencies": {
     "@types/bun": "1.3.10",
