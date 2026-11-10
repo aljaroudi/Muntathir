@@ -171,17 +171,17 @@ import Testing
         #expect(store.estimatedRemaining(at: Date()) == nil)
     }
 
-    @Test func incompatibleAndCorruptFilesAreRejected() async throws {
+    @Test(arguments: [6, 999]) func incompatibleAndCorruptFilesAreRejected(version: Int) async throws {
         let fixture = try HadithFixture(count: 1)
         defer { fixture.remove() }
         let write = try QuranConnection(path: fixture.url.path, flags: 2)
-        try write.execute("PRAGMA user_version = 999")
+        try write.execute("PRAGMA user_version = \(version)")
         let backend = TestHadithAssets(url: fixture.url)
         let store = HadithAssetStore(backend: backend)
         await store.download()
         #expect(store.state == .incompatible)
         await #expect(throws: HadithDatabaseError.self) { _ = try await store.reader.catalog() }
-        try write.execute("PRAGMA user_version = 6")
+        try write.execute("PRAGMA user_version = 7")
         await store.download()
         #expect(store.state == .ready)
         let corrupt = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

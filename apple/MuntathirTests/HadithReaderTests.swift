@@ -326,11 +326,13 @@ struct HadithFixture: Sendable {
         defer { sqlite3_close(handle) }
         let sql = """
         PRAGMA application_id = 1230262606;
-        PRAGMA user_version = 6;
+        PRAGMA user_version = 7;
         CREATE TABLE collection(id TEXT PRIMARY KEY, name_ar TEXT, name_en TEXT, sort_order INTEGER);
         CREATE TABLE book(id TEXT PRIMARY KEY, collection_id TEXT, name_ar TEXT, name_en TEXT, sort_order INTEGER, author TEXT DEFAULT 'Test Author', author_ar TEXT DEFAULT 'مؤلف');
         CREATE TABLE chapter(id INTEGER PRIMARY KEY, book_id TEXT, chapter_idx INTEGER, name_ar TEXT, name_en TEXT);
         CREATE TABLE hadith(id INTEGER PRIMARY KEY, book_id TEXT, chapter_id INTEGER, id_in_book INTEGER, arabic TEXT, english_narrator TEXT, english_text TEXT);
+        CREATE TABLE introduction(id INTEGER PRIMARY KEY, book_id TEXT, chapter_id INTEGER, title TEXT, arabic TEXT, english TEXT, url TEXT, sort_order INTEGER);
+        CREATE TABLE hadith_reading(hadith_id INTEGER PRIMARY KEY, words INTEGER, display_number INTEGER);
         CREATE TABLE grader(id TEXT PRIMARY KEY, name_ar TEXT, name_en TEXT);
         CREATE TABLE hadith_grading(id INTEGER PRIMARY KEY, hadith_id INTEGER, grader_id TEXT,
           grade_ar TEXT, grade_en TEXT, reference_ar TEXT, reference_en TEXT, status TEXT, original_text TEXT);
@@ -383,5 +385,48 @@ extension HadithReaderTests {
         #expect(sqlite3_exec(handle, "UPDATE hadith SET id = 123456 WHERE id = 1", nil, nil, nil) == SQLITE_OK)
         #expect(try await reader.resolve(source) == 123_456)
         #expect(try await reader.resolve(HadithSource(book: "missing", chapterFile: "1.json", number: 1, sourceID: 1)) == nil)
+    }
+}
+
+extension HadithReaderTests {
+    @Test func introductionsStayOutsideNarrationsAndEstimatesUseFullText() async throws {
+        let fixture = try HadithFixture(count: 2)
+        defer { fixture.remove() }
+        var handle: OpaquePointer?
+        #expect(sqlite3_open(fixture.url.path, &handle) == SQLITE_OK)
+        defer { sqlite3_close(handle) }
+        #expect(sqlite3_exec(handle, """
+        INSERT INTO introduction VALUES(1,'v1',NULL,'Introduction','نص المقدمة','','',0);
+        INSERT INTO hadith_reading VALUES(1,401,1),(2,201,2);
+        """, nil, nil, nil) == SQLITE_OK)
+        let reader = HadithReader(database: HadithDatabase(url: fixture.url))
+        let introductions = try await reader.introductions(collectionID: "merged")
+        #expect(introductions.count == 1)
+        #expect(introductions.first?.arabic.isEmpty == true)
+        #expect(try await reader.introduction(id: 1).arabic == "نص المقدمة")
+        let page = try await reader.page(HadithRequest(collectionID: "merged"))
+        #expect(page.rows.map(\.id) == [1, 2])
+        #expect(page.rows.first?.readingWords == 401)
+        #expect(page.rows.first?.arabic.count ?? 0 < 300)
+        #expect(try await reader.detail(id: 1).narration.readingWords == 401)
+        #expect(try await reader.detail(id: 1).previousID == nil)
+        #expect(try await reader.detail(id: 1).nextID == 2)
+        #expect(try await reader.chapters(collectionID: "merged").first?.readingWords == 602)
+        #expect(try await reader.page(HadithRequest(query: "المقدمة", collectionID: "merged")).rows.isEmpty)
+    }
+
+    @Test func displayNumbersDoNotChangeSavedSourceKeys() async throws {
+        let fixture = try HadithFixture(count: 2)
+        defer { fixture.remove() }
+        let reader = HadithReader(database: HadithDatabase(url: fixture.url))
+        let original = try #require(await reader.source(id: 2))
+        var handle: OpaquePointer?
+        #expect(sqlite3_open(fixture.url.path, &handle) == SQLITE_OK)
+        defer { sqlite3_close(handle) }
+        #expect(sqlite3_exec(handle, "INSERT INTO hadith_reading VALUES(2,200,1);", nil, nil, nil) == SQLITE_OK)
+        let detail = try await reader.detail(id: 2)
+        #expect(detail.narration.displayNumber == 1)
+        #expect(detail.narration.source?.key == original.key)
+        #expect(try await reader.resolve(original) == 2)
     }
 }

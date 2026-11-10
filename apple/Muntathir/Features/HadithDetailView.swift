@@ -53,13 +53,10 @@ struct HadithDetailView: View {
                                 metadata("Chapter", value: narration.chapter.chapterTitle(locale: locale))
                                     .accessibilityIdentifier("hadith-detail-chapter")
                             }
-                            if let number = narration.displayNumber {
-                                metadata("Hadith number", value: number.formatted(.number.grouping(.never)))
-                                    .accessibilityIdentifier("hadith-detail-number")
-                            }
                         }
                         .listRowBackground(HadithBookStyle.background(for: narration.collectionID))
                     }
+                    ReadingTimeHint(words: narration.readingWords)
                     Section {
                         if !narration.arabic.isEmpty {
                             highlighted(narration.arabicDisplay, block: "arabic", narration: narration, arabic: true)
@@ -145,7 +142,8 @@ struct HadithDetailView: View {
                 scrollPosition.scrollTo(y: session?.state.detailOffset ?? 0)
             }
         }
-        .navigationTitle(LocalizedStringKey(isSupplication ? "Supplications" : "Hadith"))
+        .navigationTitle(detail?.narration.displayNumber.map { $0.formatted(.number.grouping(.never)) }
+            ?? String(localized: isSupplication ? "Supplications" : "Hadith"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

@@ -106,6 +106,8 @@ import OSLog
             defaults.removeObject(forKey: validationKey)
             state = .incompatible
         } catch {
+            Logger(subsystem: "com.aljaroudi.Muntathir", category: "HadithAssets")
+                .error("Asset validation failed for \(self.packID, privacy: .public): \(String(describing: error), privacy: .public)")
             installedSignature = nil
             defaults.removeObject(forKey: validationKey)
             state = .failed
@@ -319,6 +321,8 @@ struct HadithSessionState: Codable, Equatable {
     var screen: String?
     var contentsQuery: String?
     var contentsOffset: Double?
+    var listRow: String?
+    var contentsRow: String?
 }
 
 @MainActor @Observable final class HadithSession {

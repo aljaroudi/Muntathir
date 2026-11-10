@@ -68,7 +68,7 @@ final class HadithUITests: XCTestCase {
         let row = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "hadith-result-")).firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 10))
         row.tap()
-        XCTAssertTrue(app.descendants(matching: .any)["hadith-detail-number"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.descendants(matching: .any)["hadith-full-arabic"].waitForExistence(timeout: 10))
         let judgment = app.staticTexts["Hasan Sahih"]
         for _ in 0 ..< 6 {
             if judgment.exists, judgment.isHittable {
@@ -165,7 +165,7 @@ final class HadithUITests: XCTestCase {
         let row = app.buttons["hadith-result-14646"]
         XCTAssertTrue(row.waitForExistence(timeout: 10))
         row.tap()
-        XCTAssertTrue(app.descendants(matching: .any)["hadith-detail-number"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.descendants(matching: .any)["hadith-full-arabic"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.descendants(matching: .any)["hadith-detail-book"].exists)
         XCTAssertTrue(app.descendants(matching: .any)["hadith-detail-chapter"].exists)
         XCTAssertTrue(app.descendants(matching: .any)["hadith-detail-author"].exists)
@@ -182,7 +182,7 @@ final class HadithUITests: XCTestCase {
         app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(row.waitForExistence(timeout: 5))
         row.tap()
-        XCTAssertTrue(app.descendants(matching: .any)["hadith-detail-number"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["hadith-full-arabic"].waitForExistence(timeout: 5))
         XCTAssertFalse(english.exists)
         app.buttons["hadith-actions"].tap()
         app.buttons["hadith-translation-picker"].tap()
@@ -210,7 +210,7 @@ final class HadithUITests: XCTestCase {
         let visible = row.frame.intersection(viewport)
         XCTAssertFalse(visible.isEmpty)
         app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: visible.midX, dy: visible.midY)).tap()
-        XCTAssertTrue(app.descendants(matching: .any)["hadith-detail-number"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.descendants(matching: .any)["hadith-full-arabic"].waitForExistence(timeout: 10))
         let arabic = app.descendants(matching: .any)["hadith-full-arabic"]
         for _ in 0 ..< 5 {
             if arabic.exists {
@@ -305,7 +305,7 @@ extension HadithUITests {
 extension HadithUITests {
     @MainActor func testArabicFixtureAtAccessibilitySize() {
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(ar)", "-AppleLocale", "ar_SA", "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+        app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(ar)", "-AppleLocale", "ar_SA", "-AppleInterfaceStyle", "Dark", "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         app.launch()
         app.buttons["الأدوات"].firstMatch.tap()
         app.buttons["hadith"].tap()
@@ -398,7 +398,7 @@ extension HadithUITests {
         saved.tap()
         XCTAssertTrue(text.waitForExistence(timeout: 10))
         XCTAssertTrue(text.isHittable)
-        XCTAssertFalse(app.descendants(matching: .any)["hadith-detail-number"].firstMatch.isHittable,
+        XCTAssertFalse(app.descendants(matching: .any)["hadith-detail-author"].firstMatch.isHittable,
                        "Opening a late passage must scroll beyond the narration metadata.")
         let screenshot = XCTAttachment(screenshot: app.screenshot())
         screenshot.name = "Saved hadith passage"
@@ -474,5 +474,76 @@ extension HadithUITests {
         XCTAssertFalse(chapter.exists)
         result.tap()
         XCTAssertTrue(app.buttons["hadith-actions"].waitForExistence(timeout: 10))
+    }
+}
+
+extension HadithUITests {
+    @MainActor func testNativeRowsPreviewIntroductionAndNumberTitle() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.buttons["Tools"].firstMatch.tap()
+        app.buttons["hadith"].tap()
+        let book = app.buttons["hadith-book-bukhari"]
+        XCTAssertTrue(book.waitForExistence(timeout: 15))
+        book.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+        let introduction = app.buttons["hadith-introduction-1"]
+        XCTAssertTrue(introduction.waitForExistence(timeout: 10))
+        introduction.tap()
+        XCTAssertTrue(app.navigationBars["Introduction"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["hadith-highlight"].exists)
+        XCTAssertFalse(app.buttons["hadith-next"].exists)
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.openFirstHadithChapter()
+        let row = app.buttons["hadith-result-1"]
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        row.press(forDuration: 1)
+        XCTAssertTrue(app.buttons["Open"].waitForExistence(timeout: 5))
+        let preview = XCTAttachment(screenshot: app.screenshot())
+        preview.name = "Native Hadith preview"
+        preview.lifetime = .keepAlways
+        add(preview)
+        // Dismissing a preview must leave the user in the list.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.05, dy: 0.1)).tap()
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["hadith-highlight"].exists)
+        row.press(forDuration: 1)
+        app.buttons["Open"].tap()
+        XCTAssertTrue(app.navigationBars["1"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.descendants(matching: .any)["hadith-detail-number"].exists)
+        XCTAssertTrue(app.staticTexts["reading-time"].firstMatch.exists)
+        let detail = XCTAttachment(screenshot: app.screenshot())
+        detail.name = "Hadith reader with reading time"
+        detail.lifetime = .keepAlways
+        add(detail)
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        row.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+        XCTAssertTrue(app.navigationBars["1"].waitForExistence(timeout: 5))
+    }
+}
+
+extension HadithUITests {
+    @MainActor func testListRestoresVisibleNarrationAfterRelaunch() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.buttons["Tools"].firstMatch.tap()
+        app.buttons["hadith"].tap()
+        XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 15))
+        app.buttons["hadith-book-bukhari"].tap()
+        app.openFirstHadithChapter()
+        XCTAssertTrue(app.buttons["hadith-result-1"].waitForExistence(timeout: 10))
+        app.swipeUp()
+        app.swipeUp()
+        let rows = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "hadith-result-"))
+        let visible = try XCTUnwrap(rows.allElementsBoundByIndex.first { $0.isHittable && $0.frame.minY > app.navigationBars.firstMatch.frame.maxY })
+        let identifier = visible.identifier
+        XCTAssertNotEqual(identifier, "hadith-result-1")
+        app.terminate()
+        app.launchArguments.append("--ui-testing-preserve-state")
+        app.launch()
+        let restored = app.buttons[identifier]
+        XCTAssertTrue(restored.waitForExistence(timeout: 15))
+        XCTAssertTrue(restored.isHittable)
     }
 }

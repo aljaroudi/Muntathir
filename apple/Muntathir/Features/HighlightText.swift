@@ -32,7 +32,7 @@ enum HighlightTextContent {
         let style = NSMutableParagraphStyle()
         style.alignment = alignment
         style.baseWritingDirection = arabic ? .rightToLeft : .natural
-        style.lineSpacing = max(0, size * 1.5 - font.lineHeight)
+        style.lineSpacing = max(0, size * 1.75 - font.lineHeight)
         let result = NSMutableAttributedString(string: text, attributes: [.font: font, .foregroundColor: UIColor.label, .paragraphStyle: style])
         if let markdown {
             var offset = 0

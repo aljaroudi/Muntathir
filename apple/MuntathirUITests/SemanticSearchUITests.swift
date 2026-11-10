@@ -94,7 +94,7 @@ final class SemanticSearchUITests: XCTestCase {
         let result = app.buttons["hadith-result-105"]
         XCTAssertTrue(result.waitForExistence(timeout: 5))
         result.tap()
-        XCTAssertTrue(app.descendants(matching: .any)["hadith-detail-number"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.descendants(matching: .any)["hadith-full-arabic"].waitForExistence(timeout: 10))
     }
 
     @MainActor func testProviderFailureAndQueryChangeKeepLocalSearchUsable() {

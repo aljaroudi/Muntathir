@@ -86,6 +86,7 @@ struct QuranVerseRow: View {
             HStack {
                 Text(ayah.id).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
                     .accessibilityLabel(Text("Verse \(ayah.id)"))
+                ReadingTimeHint(words: ReadingTime.words(arabic: ayah.text))
                 Spacer()
                 VerseActions(ayah: ayah, translation: translation)
             }

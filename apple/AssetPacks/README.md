@@ -12,10 +12,12 @@ From the repository root:
 
 ```sh
 uv run build/hadith/build.py --sittah --four
-python3 apple/AssetPacks/assets.py package apple/build/AssetPacks/archives --content all
+python3 apple/AssetPacks/assets.py package --content all
 ```
 
 The shared **Muntathir** scheme already sets **Run → Options → Background Asset Packs** to `build/AssetPacks/archives`. Run from Xcode, open Hadith, and tap **Download Hadith**. Keep the debug session connected until installation finishes.
+
+The packaging command defaults to the same `apple/build/AssetPacks/archives` folder used by the Run scheme and release upload lane. An explicit output path overrides that default.
 
 The folder contains packaged `.aar` files and is ignored by Git. Repackage and restart the debug session after database changes. No separate server, certificates, or manual URL override are needed for this workflow. See [Apple’s Xcode 27 release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-27-release-notes).
 
@@ -34,9 +36,9 @@ Check that progress survives leaving and reopening Hadith. After installation, t
 
 ## Database and size
 
-The selected Hadith library contains 145,488 reading entries. The separate supplications asset contains an introduction and 54 prayers. Installed and archive sizes are generated locally; Apple’s processed download sizes remain unverified.
+The selected Hadith library contains 145,479 reading entries and 9 separate introductions. Unnumbered chapters, commentary, and appendices remain reading entries; only explicitly titled prefaces are separated as introductions. The separate supplications asset contains an introduction and 54 prayers. Installed and archive sizes are generated locally; Apple’s processed download sizes remain unverified.
 
-Schema v6 and application ID `1230262606` identify compatible reader databases. `--experimental-morphology` is off by default; production packaging rejects experimental databases. Packaging regenerates `AssetDownloadSizes.json` from actual archive byte counts. All downloads use native, rounded size formatting; installed sizes come from local files.
+Schema v7 and application ID `1230262606` identify compatible reader databases. `--experimental-morphology` is off by default; production packaging rejects experimental databases. Packaging regenerates `AssetDownloadSizes.json` from actual archive byte counts. All downloads use native, rounded size formatting; installed sizes come from local files.
 
 ## Before release
 

@@ -11,6 +11,7 @@ struct QuranChapterView: View {
     @State private var visibleVerses: Set<Int> = []
     @Environment(\.locale) private var locale
     @State private var translationStore = QuranTranslationStore.shared
+    @State private var readingWords = 0
     @State private var verses: [Ayah] = []
     @State private var loading = true
     @State private var failed = false
@@ -32,23 +33,27 @@ struct QuranChapterView: View {
                         Button("Try again") { retry += 1 }
                     }
                 } else {
-                    ForEach(verses) { ayah in
-                        QuranVerseRow(ayah: ayah, translation: QuranTranslation.catalog.first { $0.id == translationStore.activeID })
-                            .onGeometryChange(for: Bool.self) { geometry in
-                                let frame = geometry.frame(in: .scrollView)
-                                return frame.maxY > 0 && frame.minY < (geometry.bounds(of: .scrollView)?.height ?? 0)
-                            } action: { visible in
-                                if visible {
-                                    visibleVerses.insert(ayah.number)
-                                } else {
-                                    visibleVerses.remove(ayah.number)
+                    Section {
+                        ForEach(verses) { ayah in
+                            QuranVerseRow(ayah: ayah, translation: QuranTranslation.catalog.first { $0.id == translationStore.activeID })
+                                .onGeometryChange(for: Bool.self) { geometry in
+                                    let frame = geometry.frame(in: .scrollView)
+                                    return frame.maxY > 0 && frame.minY < (geometry.bounds(of: .scrollView)?.height ?? 0)
+                                } action: { visible in
+                                    if visible {
+                                        visibleVerses.insert(ayah.number)
+                                    } else {
+                                        visibleVerses.remove(ayah.number)
+                                    }
+                                    if let first = visibleVerses.min() {
+                                        positionChanged(surah.id, first)
+                                    }
                                 }
-                                if let first = visibleVerses.min() {
-                                    positionChanged(surah.id, first)
-                                }
-                            }
-                            .id(ayah.number)
-                            .accessibilityIdentifier("quran-verse-\(ayah.id)")
+                                .id(ayah.number)
+                                .accessibilityIdentifier("quran-verse-\(ayah.id)")
+                        }
+                    } header: {
+                        ReadingTimeHint(words: readingWords)
                     }
                 }
             }
@@ -56,7 +61,9 @@ struct QuranChapterView: View {
                 guard !verses.isEmpty else { return }
                 await Task.yield()
                 guard !Task.isCancelled else { return }
-                proxy.scrollTo(initialVerse, anchor: .top)
+                if initialVerse != 1 {
+                    proxy.scrollTo(initialVerse, anchor: .top)
+                }
                 await Task.yield()
                 focusReady = true
             }
@@ -88,6 +95,7 @@ struct QuranChapterView: View {
             do {
                 let loaded = try await reader.verses(surah: surah.id)
                 try Task.checkCancellation()
+                readingWords = loaded.reduce(0) { $0 + ReadingTime.words(arabic: $1.text) }
                 verses = loaded
                 failed = loaded.isEmpty
                 loading = false

@@ -5,6 +5,7 @@ struct SupplicationsView: View {
     @Environment(\.locale) private var locale
     @Environment(\.hadithAssets) private var assets
     @State private var query = ""
+    @State private var introductions: [HadithIntroduction] = []
     @State private var prayers: [Hadith] = []
     @State private var loading = true
     @State private var failed = false
@@ -36,6 +37,11 @@ struct SupplicationsView: View {
                 ContentUnavailableView("No supplications found", systemImage: "magnifyingglass")
                     .accessibilityIdentifier("supplications-empty")
             } else {
+                if query.isEmpty {
+                    ForEach(introductions) { introduction in
+                        HadithIntroductionRow(introduction: introduction, reader: reader)
+                    }
+                }
                 Section(prayers[0].chapter.bookTitle(locale: locale)) {
                     ForEach(prayers) { prayer in
                         NavigationLink {
@@ -46,6 +52,7 @@ struct SupplicationsView: View {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text(prayer.chapter.chapterTitle(locale: locale))
                                     .font(.headline)
+                                ReadingTimeHint(words: prayer.readingWords)
                                 if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                                     Text(prayer.arabicDisplay)
                                         .font(.body)
@@ -81,6 +88,7 @@ struct SupplicationsView: View {
                 if !query.isEmpty {
                     try await Task.sleep(for: .milliseconds(150))
                 }
+                introductions = try await reader.introductions(collectionID: Hadith.supplicationCollectionID)
                 let results = try await reader.supplications(query: query)
                 try Task.checkCancellation()
                 prayers = results

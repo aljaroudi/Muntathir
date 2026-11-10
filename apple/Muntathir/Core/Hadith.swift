@@ -32,6 +32,7 @@ struct HadithChapter: Identifiable, Hashable, Sendable {
     var index = 0
     var bookID = ""
     var count = 0
+    var readingWords = 0
 
     func matches(_ query: String) -> Bool {
         let terms = QuranSearchText.terms(query)
@@ -66,7 +67,7 @@ struct Hadith: Identifiable, Hashable, Sendable {
         if collectionID == "openiti-wasail" || collectionID == "openiti-bihar" {
             return source?.sourceID
         }
-        return isSupplication ? nil : number
+        return isSupplication ? nil : (readingNumber ?? number)
     }
 
     let id: Int
@@ -80,6 +81,8 @@ struct Hadith: Identifiable, Hashable, Sendable {
     var arabicDisplay: AttributedString = .init()
     var englishDisplay: AttributedString = .init()
     var narratorDisplay: AttributedString = .init()
+    var readingWords = 0
+    var readingNumber: Int?
 }
 
 struct HadithPage: Sendable {

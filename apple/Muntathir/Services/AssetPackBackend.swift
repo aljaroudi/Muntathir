@@ -126,7 +126,7 @@ struct AppleAssetPackBackend: AssetPackBackend {
     /// Isolated, deterministic data for UI tests; never substitutes for hosted assets in normal launches.
     enum HadithUITestFixture {
         static func url() throws -> URL {
-            let url = URL.applicationSupportDirectory.appending(path: "hadith-ui-fixture-v3.db")
+            let url = URL.applicationSupportDirectory.appending(path: "hadith-ui-fixture-v4.db")
             if FileManager.default.fileExists(atPath: url.path) {
                 return url
             }
@@ -136,11 +136,13 @@ struct AppleAssetPackBackend: AssetPackBackend {
             defer { sqlite3_close(handle) }
             let sql = """
             PRAGMA application_id = 1230262606;
-            PRAGMA user_version = 6;
+            PRAGMA user_version = 7;
             CREATE TABLE collection(id TEXT PRIMARY KEY, name_ar TEXT, name_en TEXT, sort_order INTEGER);
             CREATE TABLE book(id TEXT PRIMARY KEY, collection_id TEXT, name_ar TEXT, name_en TEXT, sort_order INTEGER, author TEXT, author_ar TEXT);
             CREATE TABLE chapter(id INTEGER PRIMARY KEY, book_id TEXT, chapter_idx INTEGER, file_name TEXT, name_ar TEXT, name_en TEXT);
             CREATE TABLE hadith(id INTEGER PRIMARY KEY, book_id TEXT, chapter_id INTEGER, id_in_book INTEGER, source_id INTEGER, arabic TEXT, english_narrator TEXT, english_text TEXT);
+            CREATE TABLE introduction(id INTEGER PRIMARY KEY, book_id TEXT, chapter_id INTEGER, title TEXT, arabic TEXT, english TEXT, url TEXT, sort_order INTEGER);
+            CREATE TABLE hadith_reading(hadith_id INTEGER PRIMARY KEY, words INTEGER, display_number INTEGER);
             CREATE TABLE grader(id TEXT PRIMARY KEY, name_ar TEXT, name_en TEXT);
             CREATE TABLE hadith_grading(id INTEGER PRIMARY KEY, hadith_id INTEGER, grader_id TEXT, grade_ar TEXT, grade_en TEXT, reference_ar TEXT, reference_en TEXT, status TEXT, original_text TEXT);
             CREATE VIRTUAL TABLE hadith_words USING fts5(text, root, lemma, content='', prefix='2 3');
@@ -156,6 +158,8 @@ struct AppleAssetPackBackend: AssetPackBackend {
               '\(String(repeating: "نص تجريبي لاختبار عرض الحديث وحفظ موضع القراءة. ", count: 35))',
               'Test narrator','\(String(repeating: "Sample text for testing reading position and image sharing. ", count: 35))' FROM n;
             UPDATE hadith SET arabic = 'الأعمال بالنيات', english_text = 'Actions are judged by intentions.' WHERE id = 105;
+            INSERT INTO introduction VALUES (1,'bukhari',NULL,'Test introduction','مقدمة الكتاب. نص مستقل عن الأحاديث.','A separate introduction, outside narration numbering.','',0);
+            INSERT INTO hadith_reading SELECT id, CASE WHEN id=105 THEN 2 ELSE 280 END, id_in_book FROM hadith;
             INSERT INTO hadith_words(rowid,text) SELECT id,arabic FROM hadith;
             INSERT INTO hadith_fts(rowid,text) SELECT id,arabic FROM hadith;
             INSERT INTO hadith_en(rowid,text) SELECT id,text FROM hadith_english_content;

@@ -16,6 +16,17 @@ actor QuranReader {
         return (surahs, counts)
     }
 
+    func readingWordsBySurah() throws -> [Int: Int] {
+        var counts: [Int: Int] = [:]
+        let rows = try database.connection().query("SELECT sura, text FROM quran") {
+            (Int(sqlite3_column_int($0, 0)), QuranConnection.text($0, 1))
+        }
+        for (surah, text) in rows {
+            counts[surah, default: 0] += ReadingTime.words(arabic: text)
+        }
+        return counts
+    }
+
     func verses(surah: Int) throws -> [Ayah] {
         try database.verses(surah: surah)
     }

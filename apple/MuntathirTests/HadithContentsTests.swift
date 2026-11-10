@@ -34,21 +34,21 @@ struct HadithContentsTests {
         #expect(HadithContentsGroup.groups(chapters, matching: "missing").isEmpty)
     }
 
-    @Test func contentsLoadIdentityAndCounts() async throws {
+    @Test func contentsLoadNarrationChaptersWithIdentityAndCounts() async throws {
         let fixture = try HadithFixture(count: 3)
         defer { fixture.remove() }
         let chapters = try await HadithReader(database: HadithDatabase(url: fixture.url)).chapters(collectionID: "merged")
-        #expect(chapters.map(\.bookID) == ["v1", "v2"])
-        #expect(chapters.map(\.count) == [3, 0])
-        #expect(chapters.map(\.index) == [0, 0])
-        #expect(chapters.map(\.collectionID) == ["merged", "merged"])
+        #expect(chapters.map(\.bookID) == ["v1"])
+        #expect(chapters.map(\.count) == [3])
+        #expect(chapters.map(\.index) == [0])
+        #expect(chapters.map(\.collectionID) == ["merged"])
     }
 
     @Test func oldSessionsDecodeWithoutNavigationFields() throws {
         let saved = HadithSessionState(request: HadithRequest(collectionID: "bukhari", chapterID: 1))
         let data = try JSONEncoder().encode(saved)
         var object = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
-        for key in ["screen", "contentsQuery", "contentsOffset"] {
+        for key in ["screen", "contentsQuery", "contentsOffset", "listRow", "contentsRow"] {
             object.removeValue(forKey: key)
         }
         let restored = try JSONDecoder().decode(HadithSessionState.self, from: JSONSerialization.data(withJSONObject: object))

@@ -526,6 +526,7 @@ def load_books_chapters_hadiths(
     hadith_id = 0
     chapter_rows: list[tuple] = []
     hadith_rows: list[tuple] = []
+    introduction_rows: list[tuple] = []
     grading_importer = GradingImporter(db)
     grading_rows: list[tuple[int, dict, list]] = []
     sunni_count = 0
@@ -550,6 +551,10 @@ def load_books_chapters_hadiths(
             file_name = ch.get("file") or f"{ch_idx + 1}.json"
             # The source counts the author's introduction as hadith 1. It is not part of the index.
             if book_id == "alkafi-1" and file_name == "1.json":
+                opening = z.read_json(f"{sect}/{book_id}/{file_name}")
+                add_introduction(db, book_id, None, ch.get("name_en") or "Introduction",
+                                 "\n\n".join(h.get("arabic") or "" for h in opening),
+                                 "\n\n".join(english_parts(h.get("english"))[1] for h in opening))
                 continue
             chapter_id += 1
             chapter_rows.append(
@@ -604,6 +609,9 @@ def load_books_chapters_hadiths(
                         h.get("url") or "",
                     )
                 )
+                if sect == "shia" and ch.get("name_en", "").strip().lower() in {"introduction", "foreword"} and len(hadiths) == 1:
+                    introduction_rows.append(hadith_rows.pop())
+                    continue
                 resolver.register(hadith_id, book_id, ch_idx, iib)
                 if sect == "sunni":
                     sunni_count += 1
@@ -631,6 +639,9 @@ def load_books_chapters_hadiths(
             """,
             hadith_rows,
         )
+    for row in introduction_rows:
+        add_introduction(db, row[1], None, "Introduction", row[6], row[8], row[9], row[4])
+        db.execute("UPDATE chapter SET hadith_count=0 WHERE id=?", (row[2],))
     for hid, row, external in grading_rows:
         grading_importer.add(hid, row, external)
     grading_importer.report()
@@ -759,12 +770,12 @@ def load_additional_books(folder: Path, db: sqlite3.Connection, *, four: bool = 
             if not isinstance(number, int) or number <= 0 or number in source_ids:
                 raise ValueError(f"Invalid or duplicate source number in {path}: {number}")
             source_ids.add(number)
+            chapter_name = (row.get("chapter") or "").strip()
             key = (row.get("categoryId"), row.get("chapterInCategoryId"), row.get("chapter", ""))
             if key not in chapters:
                 cid += 1
                 chapter_idx = len(chapters)
                 chapters[key] = cid, chapter_idx
-                chapter_name = (row.get("chapter") or "").strip()
                 category_name = (row.get("category") or "").strip()
                 # The section title is the specific chapter. The parent kitāb is not repeated on every row.
                 title = chapter_name or category_name
@@ -776,6 +787,10 @@ def load_additional_books(folder: Path, db: sqlite3.Connection, *, four: bool = 
                            (cid, book_id, chapter_idx, path.name, heading, title))
             chapter_id, chapter_idx = chapters[key]
             hid += 1
+            if chapter_name.lower() in {"introduction", "foreword", "translator’s introduction", "translator's introduction"}:
+                add_introduction(db, book_id, None, chapter_name, row.get("arabicText") or "",
+                                 row.get("englishText") or "", row.get("URL") or "", number)
+                continue
             db.execute("""INSERT INTO hadith
                 (id, book_id, chapter_id, chapter_idx, id_in_book, source_id, arabic, english_text, url)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
@@ -878,6 +893,42 @@ def parse_openiti(text: str, kind: str) -> list[dict]:
     return records
 
 
+def add_introduction(db: sqlite3.Connection, book: str, chapter: int | None,
+                     title: str, arabic: str, english: str = "", url: str = "", order: int = 0) -> None:
+    """Keep one continuous introduction per book/volume or chapter, retaining subsection headings."""
+    existing = db.execute("SELECT id FROM introduction WHERE book_id=? AND chapter_id IS ?", (book, chapter)).fetchone()
+    if existing:
+        def section(text):
+            return ("\n\n" + title + "\n\n" + text) if text.strip() else ""
+        db.execute("UPDATE introduction SET arabic=arabic||?, english=english||? WHERE id=?",
+                   (section(arabic), section(english), existing[0]))
+    elif arabic.strip() or english.strip():
+        db.execute("INSERT INTO introduction(book_id,chapter_id,title,arabic,english,url,sort_order) VALUES (?,?,?,?,?,?,?)",
+                   (book, chapter, title, arabic, english, url, order))
+
+
+def reading_words(arabic: str, english: str = "") -> int:
+    text = arabic if arabic.strip() else english
+    text = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    text = re.sub(r"<[^>]*>", "", text)
+    return sum(any(c.isalpha() for c in word) for word in text.split())
+
+
+def build_reading_metadata(db: sqlite3.Connection) -> None:
+    db.execute("DELETE FROM hadith_reading")
+    numbers = Counter()
+    introduction_books = {r[0] for r in db.execute("SELECT DISTINCT book_id FROM introduction")}
+    rows = []
+    for hid, book, collection, number, arabic, english in db.execute(
+        "SELECT h.id,h.book_id,b.collection_id,h.id_in_book,h.arabic,h.english_text FROM hadith h JOIN book b ON b.id=h.book_id ORDER BY h.id"
+    ):
+        numbers[book] += 1
+        numbered_source = collection in {"openiti-wasail", "openiti-bihar", "openiti-Sahifa-Sajjadiyya"}
+        display = numbers[book] if book in introduction_books and not numbered_source else number
+        rows.append((hid, reading_words(arabic, english), display))
+    db.executemany("INSERT INTO hadith_reading VALUES (?,?,?)", rows)
+
+
 def load_openiti_books(db: sqlite3.Connection, folder: Path = OPENITI_PATH) -> int:
     pinned = json.loads((DATA / "openiti-editions.json").read_text())["editions"]
     hid = db.execute("SELECT coalesce(max(id), 0) FROM hadith").fetchone()[0]
@@ -925,6 +976,8 @@ def load_openiti_books(db: sqlite3.Connection, folder: Path = OPENITI_PATH) -> i
             raise ValueError(f"Duplicate OpenITI collection: {collection}")
         db.execute("INSERT INTO collection VALUES (?, ?, ?, ?)", (collection, name_ar, name_en, order))
         books, chapters, numbers = {}, {}, Counter()
+        narrated_volumes = set()
+        imported = 0
         for row in records:
             volume = row["volume"]
             if volume not in books:
@@ -949,12 +1002,26 @@ def load_openiti_books(db: sqlite3.Connection, folder: Path = OPENITI_PATH) -> i
             numbers[book_id] += 1
             period = ((int(author_uri[:4]) + 24) // 25) * 25
             url = f"https://github.com/OpenITI/{period:04}AH/blob/master/data/{author_uri}/{author_uri}.{book_uri}/{path.name}#{row['page']}"
+            if kind in {"wasail", "bihar"}:
+                # Unnumbered entries also contain complete chapters, commentary,
+                # and appendices. Only explicitly titled prefaces are introductions.
+                introduction = row["number"] == 0 and row["title"] in {"المقدمة", "مقدمة"}
+            elif kind == "sahifa":
+                introduction = not re.match(r"\(\d+\)", row["title"])
+            else:
+                introduction = row["chapter"] < 0 or row["title"] == "مقدمة المؤلف"
+            if introduction:
+                add_introduction(db, book_id, chapter_id if volume in narrated_volumes else None,
+                                 row["title"], row["text"], url=url, order=idx)
+                continue
+            narrated_volumes.add(volume)
+            imported += 1
             db.execute("""INSERT INTO hadith
                 (id,book_id,chapter_id,chapter_idx,id_in_book,arabic,url,source_id) VALUES (?,?,?,?,?,?,?,?)""",
                 (hid, book_id, chapter_id, idx, numbers[book_id], row["text"], url, row.get("number") or None))
         db.execute("UPDATE chapter SET hadith_count = (SELECT count(*) FROM hadith WHERE chapter_id=chapter.id) WHERE book_id IN (SELECT id FROM book WHERE collection_id=?)", (collection,))
         print(f"  OpenITI {edition}: {len(records)} reading entries")
-    return hid - start
+    return db.execute("SELECT count(*) FROM hadith WHERE id > ?", (start,)).fetchone()[0]
 
 
 def extract_supplications(db: sqlite3.Connection, output: Path) -> int:
@@ -967,6 +1034,8 @@ def extract_supplications(db: sqlite3.Connection, output: Path) -> int:
         "book": "collection_id = ?",
         "chapter": "book_id IN (SELECT id FROM book WHERE collection_id = ?)",
         "hadith": "book_id IN (SELECT id FROM book WHERE collection_id = ?)",
+        "introduction": "book_id IN (SELECT id FROM book WHERE collection_id = ?)",
+        "hadith_reading": "hadith_id IN (SELECT h.id FROM hadith h JOIN book b ON b.id=h.book_id WHERE b.collection_id = ?)",
     }
     count = 0
     for table, predicate in predicates.items():
@@ -1710,6 +1779,7 @@ def main(argv: list[str] | None = None) -> int:
     localize_kafi_chapters(hdb)
     localize_chapters(hdb)
     shia_count += load_openiti_books(hdb)
+    build_reading_metadata(hdb)
     shia_count -= extract_supplications(hdb, hadith_path.with_name("supplications.db"))
     report_chapter_gaps(hdb, hadith_path.with_suffix(".chapter-gaps.csv"))
     hdb.commit()

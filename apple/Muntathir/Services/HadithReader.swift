@@ -32,9 +32,9 @@ actor HadithReader {
 
     func chapters(collectionID: String? = nil) throws -> [HadithChapter] {
         try database.connection().query("""
-        SELECT c.id, c.name_ar, c.name_en, \(Self.bookName("ar")), \(Self.bookName("en")), b.id, c.hadith_count, b.collection_id, c.chapter_idx
+        SELECT c.id, c.name_ar, c.name_en, \(Self.bookName("ar")), \(Self.bookName("en")), b.id, c.hadith_count, b.collection_id, c.chapter_idx, (SELECT coalesce(sum(r.words),0) FROM hadith h JOIN hadith_reading r ON r.hadith_id=h.id WHERE h.chapter_id=c.id)
         FROM chapter c JOIN book b ON b.id = c.book_id
-        WHERE b.collection_id != ? \(collectionID == nil ? "" : "AND b.collection_id = ?")
+        WHERE c.hadith_count > 0 AND b.collection_id != ? \(collectionID == nil ? "" : "AND b.collection_id = ?")
         ORDER BY b.sort_order, c.chapter_idx, c.id
         """, parameters: [Hadith.supplicationCollectionID] + (collectionID.map { [$0] } ?? [])) { row in
             var chapter = Self.chapter(row, offset: 0)
@@ -42,8 +42,36 @@ actor HadithReader {
             chapter.count = Int(sqlite3_column_int(row, 6))
             chapter.collectionID = QuranConnection.text(row, 7)
             chapter.index = Int(sqlite3_column_int(row, 8))
+            chapter.readingWords = Int(sqlite3_column_int(row, 9))
             return chapter
         }
+    }
+
+    func introductions(collectionID: String, chapterID: Int? = nil) throws -> [HadithIntroduction] {
+        try database.connection().query("""
+        SELECT i.id, i.title, i.arabic, i.english, \(Self.bookName("ar")), \(Self.bookName("en"))
+        FROM introduction i JOIN book b ON b.id=i.book_id
+        WHERE b.collection_id=? \(chapterID == nil ? "" : "AND i.chapter_id=CAST(? AS INTEGER)")
+        ORDER BY b.sort_order, i.sort_order, i.id
+        """, parameters: [collectionID] + (chapterID.map { [String($0)] } ?? [])) {
+            HadithIntroduction(id: Int(sqlite3_column_int($0, 0)), title: QuranConnection.text($0, 1),
+                               arabic: "", english: "",
+                               bookArabic: QuranConnection.text($0, 4), bookEnglish: QuranConnection.text($0, 5),
+                               readingWords: ReadingTime.words(arabic: QuranConnection.text($0, 2), english: QuranConnection.text($0, 3)))
+        }
+    }
+
+    func introduction(id: Int) throws -> HadithIntroduction {
+        guard let result = try database.connection().query("""
+        SELECT i.id, i.title, i.arabic, i.english, \(Self.bookName("ar")), \(Self.bookName("en"))
+        FROM introduction i JOIN book b ON b.id=i.book_id WHERE i.id=CAST(? AS INTEGER)
+        """, parameters: [String(id)], row: {
+            HadithIntroduction(id: Int(sqlite3_column_int($0, 0)), title: QuranConnection.text($0, 1),
+                               arabic: QuranConnection.text($0, 2), english: QuranConnection.text($0, 3),
+                               bookArabic: QuranConnection.text($0, 4), bookEnglish: QuranConnection.text($0, 5),
+                               readingWords: ReadingTime.words(arabic: QuranConnection.text($0, 2), english: QuranConnection.text($0, 3)))
+        }).first else { throw HadithDatabaseError.invalidReference }
+        return result
     }
 
     func page(_ request: HadithRequest) throws -> HadithPage {
@@ -66,7 +94,7 @@ actor HadithReader {
             scopeParameters.append(String(chapterID))
         }
         if let number = request.number {
-            conditions.append("CASE WHEN b.collection_id IN ('openiti-wasail','openiti-bihar') THEN h.source_id ELSE h.id_in_book END = CAST(? AS INTEGER)")
+            conditions.append("CASE WHEN b.collection_id IN ('openiti-wasail','openiti-bihar') THEN h.source_id ELSE coalesce((SELECT display_number FROM hadith_reading WHERE hadith_id=h.id),h.id_in_book) END = CAST(? AS INTEGER)")
             scopeParameters.append(String(number))
         }
         let connection = try database.connection()
@@ -134,7 +162,8 @@ actor HadithReader {
             return Hadith(id: narration.id, collectionID: narration.collectionID, number: narration.number,
                           chapter: narration.chapter, arabic: String(narration.arabicDisplay.characters), englishNarrator: "",
                           english: String(narration.englishDisplay.characters),
-                          source: narration.source, arabicDisplay: narration.arabicDisplay, englishDisplay: narration.englishDisplay)
+                          source: narration.source, arabicDisplay: narration.arabicDisplay, englishDisplay: narration.englishDisplay,
+                          readingWords: narration.readingWords, readingNumber: narration.readingNumber)
         }
         let byID = Dictionary(uniqueKeysWithValues: values.map { ($0.id, $0) })
         let hasMore = selected.count > Self.pageSize
@@ -225,7 +254,7 @@ actor HadithReader {
             let preview = HadithText.preview(row.arabic, terms: terms)
             let result = Hadith(id: row.id, collectionID: row.collectionID, number: row.number,
                                 chapter: row.chapter, arabic: String(preview.characters), englishNarrator: "",
-                                english: "", source: row.source, arabicDisplay: preview)
+                                english: "", source: row.source, arabicDisplay: preview, readingWords: row.readingWords, readingNumber: row.readingNumber)
             if terms.allSatisfy({ title.contains($0) }) {
                 titled.append(result)
             } else {
@@ -300,7 +329,7 @@ actor HadithReader {
     private static func columns(search: Bool) -> String {
         // English FTS supplies exact Porter-stem spans, including matches in the narrator.
         let english = search ? "COALESCE((SELECT highlight(hadith_en, 0, char(57344), char(57345)) FROM hadith_en WHERE hadith_en MATCH ? AND rowid = h.id), h.english_text)" : "h.english_text"
-        return "h.id, b.collection_id, h.id_in_book, c.id, c.name_ar, c.name_en, \(bookName("ar")), \(bookName("en")), h.arabic, h.english_narrator, \(english), b.id, c.file_name, h.source_id"
+        return "h.id, b.collection_id, h.id_in_book, c.id, c.name_ar, c.name_en, \(bookName("ar")), \(bookName("en")), h.arabic, h.english_narrator, \(english), b.id, c.file_name, h.source_id, (SELECT words FROM hadith_reading WHERE hadith_id=h.id), (SELECT display_number FROM hadith_reading WHERE hadith_id=h.id)"
     }
 
     private static func chapter(_ row: OpaquePointer, offset: Int32) -> HadithChapter {
@@ -316,6 +345,10 @@ actor HadithReader {
                english: QuranConnection.text(row, 10),
                source: HadithSource(book: QuranConnection.text(row, 11), chapterFile: QuranConnection.text(row, 12),
                                     number: Int(sqlite3_column_int(row, 2)),
-                                    sourceID: sqlite3_column_type(row, 13) == SQLITE_NULL ? nil : Int(sqlite3_column_int(row, 13))))
+                                    sourceID: sqlite3_column_type(row, 13) == SQLITE_NULL ? nil : Int(sqlite3_column_int(row, 13))),
+               readingWords: sqlite3_column_type(row, 14) == SQLITE_NULL
+                   ? ReadingTime.words(arabic: QuranConnection.text(row, 8), english: QuranConnection.text(row, 10))
+                   : Int(sqlite3_column_int(row, 14)),
+               readingNumber: sqlite3_column_type(row, 15) == SQLITE_NULL ? nil : Int(sqlite3_column_int(row, 15)))
     }
 }

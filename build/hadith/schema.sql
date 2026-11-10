@@ -1,7 +1,7 @@
 -- Hadith reader database; experimental morphology is opt-in.
 
 PRAGMA application_id = 1230262606;
-PRAGMA user_version = 6;
+PRAGMA user_version = 7;
 PRAGMA page_size = 4096;
 PRAGMA foreign_keys = ON;
 
@@ -59,6 +59,26 @@ CREATE TABLE hadith (
 
 CREATE INDEX hadith_book_iib ON hadith (book_id, id_in_book);
 CREATE INDEX hadith_chapter ON hadith (chapter_id);
+
+-- Introductions have their own identity and never participate in narration navigation.
+CREATE TABLE introduction (
+  id INTEGER PRIMARY KEY,
+  book_id TEXT NOT NULL REFERENCES book (id),
+  chapter_id INTEGER REFERENCES chapter (id),
+  title TEXT NOT NULL DEFAULT '',
+  arabic TEXT NOT NULL DEFAULT '',
+  english TEXT NOT NULL DEFAULT '',
+  url TEXT NOT NULL DEFAULT '',
+  sort_order INTEGER NOT NULL DEFAULT 0
+) STRICT;
+CREATE INDEX introduction_book ON introduction(book_id);
+
+-- Source numbers remain immutable; only the displayed sequence excludes introductions.
+CREATE TABLE hadith_reading (
+  hadith_id INTEGER PRIMARY KEY REFERENCES hadith (id),
+  words INTEGER NOT NULL DEFAULT 0,
+  display_number INTEGER
+) STRICT;
 
 CREATE TABLE grader (
   id TEXT NOT NULL PRIMARY KEY,

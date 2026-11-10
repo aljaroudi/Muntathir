@@ -17,6 +17,7 @@ struct HadithPreviewRow: View {
                 Text(number.formatted(.number.grouping(.never)))
                     .font(.headline)
             }
+            ReadingTimeHint(words: narration.readingWords)
             if !narration.arabic.isEmpty {
                 Text(narration.arabicDisplay)
                     .readingText(arabic: true, hadith: true)

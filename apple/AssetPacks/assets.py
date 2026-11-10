@@ -49,11 +49,11 @@ def validate_hadith(pack_id="hadith"):
     with sqlite3.connect(source.as_uri() + '?mode=ro', uri=True) as db:
         assert db.execute('PRAGMA quick_check').fetchone() == ('ok',)
         assert db.execute('PRAGMA application_id').fetchone() == (1230262606,)
-        assert db.execute('PRAGMA user_version').fetchone() == (6,)
+        assert db.execute('PRAGMA user_version').fetchone() == (7,)
         assert db.execute('SELECT count(*) FROM hadith').fetchone()[0] > 0
         assert not db.execute('PRAGMA foreign_key_check').fetchall()
         prayer_count = db.execute("SELECT count(*) FROM hadith h JOIN book b ON b.id=h.book_id WHERE b.collection_id='openiti-Sahifa-Sajjadiyya'").fetchone()[0]
-        assert prayer_count == (55 if pack_id == 'supplications' else 0)
+        assert prayer_count == (54 if pack_id == 'supplications' else 0)
         # Never publish experimental mappings accidentally.
         assert not db.execute("SELECT name FROM sqlite_master WHERE name IN ('word_form','root','narrator','hadith_relation')").fetchall()
         assert [r[1] for r in db.execute('PRAGMA table_info(hadith_words)')] == ['text']
@@ -112,7 +112,7 @@ def main():
         if args.content in ('supplications', 'all'): manifests += validate_hadith('supplications')
         if args.content in ('quran', 'all'): manifests += validate_quran()
     if args.command == 'package':
-        output = Path(args.path).resolve() if args.path else ROOT / 'apple/build/AssetPacks'
+        output = Path(args.path).resolve() if args.path else ROOT / 'apple/build/AssetPacks/archives'
         output.mkdir(parents=True, exist_ok=True)
         if args.content in ('quran', 'all'):
             # Old per-language archives would collide with the new pack in Xcode local testing.
