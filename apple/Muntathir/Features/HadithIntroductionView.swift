@@ -15,7 +15,6 @@ struct HadithIntroductionRow: View {
                 if introduction.hasSpecificTitle {
                     Text(introduction.title).font(.subheadline)
                 }
-                ReadingTimeHint(words: introduction.readingWords)
             }
         }
         .accessibilityIdentifier("hadith-introduction-\(introduction.id)")
@@ -47,7 +46,6 @@ struct HadithIntroductionView: View {
                 if introduction.hasSpecificTitle {
                     Text(introduction.title).font(.subheadline)
                 }
-                ReadingTimeHint(words: introduction.readingWords)
                 if !arabic.characters.isEmpty {
                     HadithMarkdownView(text: arabic, arabic: true)
                         .environment(\.layoutDirection, .rightToLeft)

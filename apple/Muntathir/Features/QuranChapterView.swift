@@ -11,7 +11,6 @@ struct QuranChapterView: View {
     @State private var visibleVerses: Set<Int> = []
     @Environment(\.locale) private var locale
     @State private var translationStore = QuranTranslationStore.shared
-    @State private var readingWords = 0
     @State private var verses: [Ayah] = []
     @State private var loading = true
     @State private var failed = false
@@ -52,8 +51,6 @@ struct QuranChapterView: View {
                                 .id(ayah.number)
                                 .accessibilityIdentifier("quran-verse-\(ayah.id)")
                         }
-                    } header: {
-                        ReadingTimeHint(words: readingWords)
                     }
                 }
             }
@@ -95,7 +92,6 @@ struct QuranChapterView: View {
             do {
                 let loaded = try await reader.verses(surah: surah.id)
                 try Task.checkCancellation()
-                readingWords = loaded.reduce(0) { $0 + ReadingTime.words(arabic: $1.text) }
                 verses = loaded
                 failed = loaded.isEmpty
                 loading = false

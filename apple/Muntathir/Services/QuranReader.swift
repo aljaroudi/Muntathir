@@ -3,17 +3,36 @@ import SQLite3
 
 /// Keeps search off the main actor.
 actor QuranReader {
+    typealias Catalog = (surahs: [QuranSurah], counts: [Int: Int], readingWords: [Int: Int])
     let database: QuranDatabase
+    private var cachedCatalog: Catalog?
 
     init(database: QuranDatabase = QuranDatabase()) {
         self.database = database
     }
 
-    func catalog() throws -> (surahs: [QuranSurah], counts: [Int: Int]) {
+    func catalog() throws -> Catalog {
+        if let cachedCatalog { return cachedCatalog }
         let surahs = try QuranSurah.load()
-        let counts = try database.chapterCounts()
+        let (counts, readingWords) = try chapterStatistics()
         guard surahs.allSatisfy({ (counts[$0.id] ?? 0) > 0 }) else { throw QuranDatabaseError.unavailable }
-        return (surahs, counts)
+        let catalog = (surahs, counts, readingWords)
+        cachedCatalog = catalog
+        return catalog
+    }
+
+    private func chapterStatistics() throws -> (counts: [Int: Int], readingWords: [Int: Int]) {
+        let rows = try database.connection().query("SELECT sura, text FROM quran") {
+            try Task.checkCancellation()
+            return (Int(sqlite3_column_int($0, 0)), ReadingTime.words(arabic: QuranConnection.text($0, 1)))
+        }
+        var counts: [Int: Int] = [:]
+        var readingWords: [Int: Int] = [:]
+        for (surah, words) in rows {
+            counts[surah, default: 0] += 1
+            readingWords[surah, default: 0] += words
+        }
+        return (counts, readingWords)
     }
 
     func verses(surah: Int) throws -> [Ayah] {

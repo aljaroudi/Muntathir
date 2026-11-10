@@ -70,6 +70,7 @@ final class QuranUITests: XCTestCase {
     @MainActor func testChapterSearchInBothReadingModes() {
         for mode in ["Verses", "Mushaf"] {
             let app = openQuran()
+            XCTAssertTrue(app.descendants(matching: .any)["reading-time"].firstMatch.exists)
             app.buttons["quran-surah-2"].tap()
             app.buttons["quran-reading-options"].tap()
             app.buttons[mode].tap()
@@ -78,6 +79,7 @@ final class QuranUITests: XCTestCase {
             app.buttons["quran-result-2:255"].tap()
             let destination = mode == "Verses" ? "quran-verse-2:255" : "quran-page-42"
             XCTAssertTrue(app.descendants(matching: .any)[destination].firstMatch.waitForExistence(timeout: 10))
+            XCTAssertFalse(app.descendants(matching: .any)["reading-time"].firstMatch.exists)
             app.navigationBars.buttons.element(boundBy: 0).tap()
             XCTAssertTrue(app.buttons["quran-result-2:255"].waitForExistence(timeout: 5))
             search("1:1", in: app)

@@ -53,13 +53,6 @@ struct QuranDatabase: Sendable {
         guard let count, count == (6236, 1, 6236) else { throw QuranDatabaseError.unavailable }
     }
 
-    func chapterCounts() throws -> [Int: Int] {
-        let rows = try connection().query("SELECT sura, count(*) FROM quran GROUP BY sura ORDER BY sura") {
-            (Int(sqlite3_column_int($0, 0)), Int(sqlite3_column_int($0, 1)))
-        }
-        return Dictionary(uniqueKeysWithValues: rows)
-    }
-
     func verses(ids: Set<Int>) -> [Int: Ayah] {
         guard !ids.isEmpty else { return [:] }
         return (try? records(ids: ids)) ?? [:]

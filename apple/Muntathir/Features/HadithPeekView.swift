@@ -15,7 +15,6 @@ struct HadithPeekView: View {
                     if let number = narration.displayNumber {
                         Text(number.formatted(.number.grouping(.never))).font(.headline)
                     }
-                    ReadingTimeHint(words: narration.readingWords)
                     if !narration.arabic.isEmpty {
                         HadithMarkdownView(text: narration.arabicDisplay, arabic: true)
                             .environment(\.layoutDirection, .rightToLeft)

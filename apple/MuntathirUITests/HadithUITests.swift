@@ -41,6 +41,8 @@ final class HadithUITests: XCTestCase {
             throw XCTSkip("Install the supplications pack before supplication UI tests.")
         }
         XCTAssertTrue(app.buttons["supplication-1"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.descendants(matching: .any)["reading-time"].firstMatch.exists)
+        XCTAssertFalse(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "hadith-introduction-")).firstMatch.exists)
         let search = app.searchFields.firstMatch
         search.tap()
         search.typeText("مكارم الأخلاق\n")
@@ -49,6 +51,7 @@ final class HadithUITests: XCTestCase {
         XCTAssertFalse(app.descendants(matching: .any)["reading-time"].exists)
         prayer.tap()
         XCTAssertTrue(app.staticTexts["supplication-title"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.descendants(matching: .any)["reading-time"].firstMatch.exists)
         XCTAssertTrue(app.descendants(matching: .any)["hadith-full-arabic"].exists)
         XCTAssertFalse(app.descendants(matching: .any)["hadith-detail-number"].exists)
         XCTAssertFalse(app.buttons["hadith-next"].exists)
@@ -526,9 +529,9 @@ extension HadithUITests {
         app.buttons["Open"].tap()
         XCTAssertTrue(app.navigationBars["1"].waitForExistence(timeout: 10))
         XCTAssertFalse(app.descendants(matching: .any)["hadith-detail-number"].exists)
-        XCTAssertTrue(app.staticTexts["reading-time"].firstMatch.exists)
+        XCTAssertFalse(app.descendants(matching: .any)["reading-time"].firstMatch.exists)
         let detail = XCTAttachment(screenshot: app.screenshot())
-        detail.name = "Hadith reader with reading time"
+        detail.name = "Hadith reader"
         detail.lifetime = .keepAlways
         add(detail)
         app.navigationBars.buttons.element(boundBy: 0).tap()

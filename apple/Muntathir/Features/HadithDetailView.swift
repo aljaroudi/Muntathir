@@ -59,7 +59,6 @@ struct HadithDetailView: View {
                         }
                         .listRowBackground(HadithBookStyle.background(for: narration.collectionID))
                     }
-                    ReadingTimeHint(words: narration.readingWords)
                     Section {
                         if !narration.arabic.isEmpty {
                             highlighted(narration.arabicDisplay, block: "arabic", narration: narration, arabic: true)

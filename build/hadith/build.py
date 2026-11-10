@@ -957,7 +957,7 @@ def load_openiti_books(db: sqlite3.Connection, folder: Path = OPENITI_PATH) -> i
                 raise ValueError("Al-Istibsar must contain four volumes")
         elif kind == "sahifa":
             collection = "openiti-Sahifa-Sajjadiyya"
-            name_ar, name_en = "الصحيفة السجادية الكاملة", "Al-Sahifa al-Sajjadiyya"
+            name_ar, name_en = "الصحيفة السجادية", "Al-Sahifa al-Sajjadiyya"
             author = ("Imam Zayn al-Abidin", "الإمام زين العابدين", 94)
             prayers = [r for r in records if re.match(r"\(\d+\)", r["title"])]
             if [int(re.match(r"\((\d+)\)", r["title"])[1]) for r in prayers] != list(range(1, 55)):
@@ -1011,8 +1011,10 @@ def load_openiti_books(db: sqlite3.Connection, folder: Path = OPENITI_PATH) -> i
             else:
                 introduction = row["chapter"] < 0 or row["title"] == "مقدمة المؤلف"
             if introduction:
-                add_introduction(db, book_id, chapter_id if volume in narrated_volumes else None,
-                                 row["title"], row["text"], url=url, order=idx)
+                # Reserve the original IDs and prayer numbering even when dropping the Sahifa preface.
+                if kind != "sahifa":
+                    add_introduction(db, book_id, chapter_id if volume in narrated_volumes else None,
+                                     row["title"], row["text"], url=url, order=idx)
                 continue
             narrated_volumes.add(volume)
             imported += 1
@@ -1020,6 +1022,8 @@ def load_openiti_books(db: sqlite3.Connection, folder: Path = OPENITI_PATH) -> i
                 (id,book_id,chapter_id,chapter_idx,id_in_book,arabic,url,source_id) VALUES (?,?,?,?,?,?,?,?)""",
                 (hid, book_id, chapter_id, idx, numbers[book_id], row["text"], url, row.get("number") or None))
         db.execute("UPDATE chapter SET hadith_count = (SELECT count(*) FROM hadith WHERE chapter_id=chapter.id) WHERE book_id IN (SELECT id FROM book WHERE collection_id=?)", (collection,))
+        if kind == "sahifa":
+            db.execute("DELETE FROM chapter WHERE book_id = ? AND hadith_count = 0", (collection,))
         print(f"  OpenITI {edition}: {len(records)} reading entries")
     return db.execute("SELECT count(*) FROM hadith WHERE id > ?", (start,)).fetchone()[0]
 

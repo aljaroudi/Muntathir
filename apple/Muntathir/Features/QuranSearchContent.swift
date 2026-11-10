@@ -8,6 +8,7 @@ struct QuranSearchContent: View {
     var surah: QuranSurah?
     @State private var surahs: [QuranSurah] = []
     @State private var counts: [Int: Int] = [:]
+    @State private var readingWords: [Int: Int] = [:]
     @State private var results: [Ayah] = []
     @State private var limit = 50
     @State private var loading = true
@@ -63,7 +64,12 @@ struct QuranSearchContent: View {
                                 if locale.language.languageCode?.identifier != "ar" {
                                     Text(surah.arabic).environment(\.layoutDirection, .rightToLeft)
                                 }
-                                Text("\(counts[surah.id] ?? 0) verses").font(.caption).foregroundStyle(.secondary)
+                                HStack {
+                                    Text("\(counts[surah.id] ?? 0) verses").font(.caption).foregroundStyle(.secondary)
+                                    if request.query.isEmpty {
+                                        ReadingTimeHint(words: readingWords[surah.id] ?? 0)
+                                    }
+                                }
                             }
                         }
                         .accessibilityIdentifier("quran-surah-\(surah.id)")
@@ -158,6 +164,7 @@ struct QuranSearchContent: View {
                 let catalog = try await reader.catalog()
                 try Task.checkCancellation()
                 counts = catalog.counts
+                readingWords = catalog.readingWords
                 surahs = catalog.surahs
             }
             let current = request

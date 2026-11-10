@@ -20,6 +20,7 @@ struct QuranReaderTests {
         #expect(catalog.counts[114] == 6)
         let chapter = try await reader.verses(surah: 2)
         #expect(chapter.map(\.number) == Array(1 ... 286))
+        #expect(catalog.readingWords[2] == chapter.reduce(0) { $0 + ReadingTime.words(arabic: $1.text) })
         #expect(try database.verse(surah: 2, number: 255)?.id == "2:255")
         #expect(try database.verse(surah: 2, number: 287) == nil)
         #expect(catalog.surahs[0].matches("الفاتحة"))

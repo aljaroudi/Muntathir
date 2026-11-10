@@ -42,6 +42,8 @@ struct HadithReaderTests {
         #expect(prayers.count == 57)
         #expect(prayers.allSatisfy { $0.isSupplication } /* swiftformat:disable:this preferKeyPath */ )
         #expect(prayers.first?.chapter.arabic.hasPrefix("(1)") == true)
+        #expect(prayers.first?.chapter.bookTitle(locale: Locale(identifier: "ar")) == "الصحيفة السجادية")
+        #expect(prayers.first?.chapter.bookTitle(locale: Locale(identifier: "en")) == "Al-Sahifa al-Sajjadiyya")
         #expect(prayers.filter { $0.collectionID == Hadith.supplicationCollectionID }.last?.chapter.arabic.hasPrefix("(54)") == true)
         let titleMatches = try await reader.supplications(query: "مَكَارِم الأخْلاق")
         let prayer = try #require(titleMatches.first)

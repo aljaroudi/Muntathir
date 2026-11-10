@@ -7,7 +7,6 @@ struct SupplicationsView: View {
     @AppStorage("supplicationTranslation") private var translation = "auto"
     @State private var languages: [String] = []
     @State private var query = ""
-    @State private var introductions: [HadithIntroduction] = []
     @State private var prayers: [Hadith] = []
     @State private var loading = true
     @State private var failed = false
@@ -41,11 +40,6 @@ struct SupplicationsView: View {
                 ContentUnavailableView("No supplications found", systemImage: "magnifyingglass")
                     .accessibilityIdentifier("supplications-empty")
             } else {
-                if query.isEmpty {
-                    ForEach(introductions) { introduction in
-                        HadithIntroductionRow(introduction: introduction, reader: reader)
-                    }
-                }
                 ForEach(Hadith.supplicationCollectionIDs, id: \.self) { collectionID in
                     let collectionPrayers = prayers.filter { $0.collectionID == collectionID }
                     if let first = collectionPrayers.first {
@@ -108,7 +102,6 @@ struct SupplicationsView: View {
                 if !query.isEmpty {
                     try await Task.sleep(for: .milliseconds(150))
                 }
-                introductions = try await reader.introductions(collectionID: Hadith.supplicationCollectionID)
                 languages = try await reader.translationLanguages()
                 let results = try await reader.supplications(query: query, translation: translation, languages: [locale.identifier])
                 try Task.checkCancellation()

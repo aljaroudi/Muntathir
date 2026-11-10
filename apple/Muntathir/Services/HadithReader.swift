@@ -376,7 +376,8 @@ actor HadithReader {
     private static let joins = "FROM hadith h JOIN book b ON b.id = h.book_id JOIN chapter c ON c.id = h.chapter_id"
 
     private static func bookName(_ language: String) -> String {
-        "(SELECT CASE WHEN c.name_\(language) = b.name_\(language) OR c.name_\(language) = '' THEN b.name_\(language) ELSE c.name_\(language) || ' · ' || b.name_\(language) END FROM collection c WHERE c.id = b.collection_id)"
+        let sahifa = language == "ar" ? "WHEN c.id = '\(Hadith.supplicationCollectionID)' THEN 'الصحيفة السجادية' " : ""
+        return "(SELECT CASE \(sahifa)WHEN c.name_\(language) = b.name_\(language) OR c.name_\(language) = '' THEN b.name_\(language) ELSE c.name_\(language) || ' · ' || b.name_\(language) END FROM collection c WHERE c.id = b.collection_id)"
     }
 
     private static func columns(search: Bool) -> String {

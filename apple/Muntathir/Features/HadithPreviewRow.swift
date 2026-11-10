@@ -2,7 +2,6 @@ import SwiftUI
 
 struct HadithPreviewRow: View {
     let narration: Hadith
-    var showsReadingTime = true
     @AppStorage("hadithEnglishEnabled") private var showEnglish = true
     @Environment(\.locale) private var locale
 
@@ -17,9 +16,6 @@ struct HadithPreviewRow: View {
             if let number = narration.displayNumber {
                 Text(number.formatted(.number.grouping(.never)))
                     .font(.headline)
-            }
-            if showsReadingTime {
-                ReadingTimeHint(words: narration.readingWords)
             }
             if !narration.arabic.isEmpty {
                 Text(narration.arabicDisplay)

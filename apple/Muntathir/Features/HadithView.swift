@@ -316,9 +316,6 @@ struct HadithView: View {
                             Text(chapter.chapterTitle(locale: locale).isEmpty ? chapter.bookTitle(locale: locale) : chapter.chapterTitle(locale: locale))
                             Text("\(chapter.count, format: .number) narrations")
                                 .font(.caption).foregroundStyle(.secondary)
-                            if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                ReadingTimeHint(words: chapter.readingWords)
-                            }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(.rect)
@@ -488,7 +485,7 @@ struct HadithView: View {
             }
             ForEach(narrations) { narration in
                 Button { searchFocused = false; selected = narration } label: {
-                    HadithPreviewRow(narration: narration, showsReadingTime: query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    HadithPreviewRow(narration: narration)
                         .foregroundStyle(.primary)
                 }
                 .tint(.primary)
@@ -506,13 +503,7 @@ struct HadithView: View {
                 .id("hadith:" + (narration.source?.key ?? String(narration.id)))
             }
         } header: {
-            HStack {
-                Text("Hadith")
-                Spacer()
-                if query.isEmpty, let chapter = chapters.first(where: { $0.id == request.chapterID }) {
-                    ReadingTimeHint(words: chapter.readingWords)
-                }
-            }
+            Text("Hadith")
         }
     }
 
