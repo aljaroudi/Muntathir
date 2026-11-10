@@ -1,9 +1,12 @@
 import XCTest
 
 final class HadithUITests: XCTestCase {
-    @MainActor private func openHadith(arabic: Bool = false) throws -> XCUIApplication {
+    @MainActor private func openHadith(arabic: Bool = false, fixture: Bool = false) throws -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "-AppleLanguages", arabic ? "(ar)" : "(en)", "-AppleLocale", arabic ? "ar_SA" : "en_US"]
+        if fixture {
+            app.launchArguments += ["--ui-testing-hadith-fixture"]
+        }
         if arabic {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         }
@@ -15,6 +18,17 @@ final class HadithUITests: XCTestCase {
         }
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 15))
         return app
+    }
+
+    @MainActor func testSearchResultsHideReadingTime() throws {
+        let app = try openHadith(fixture: true)
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        search.typeText("intentions\n")
+        let row = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "hadith-result-")).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 15))
+        XCTAssertFalse(app.descendants(matching: .any)["reading-time"].exists)
     }
 
     @MainActor func testSupplicationsOpenDirectlyAndSearchByTitle() throws {

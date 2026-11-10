@@ -316,7 +316,9 @@ struct HadithView: View {
                             Text(chapter.chapterTitle(locale: locale).isEmpty ? chapter.bookTitle(locale: locale) : chapter.chapterTitle(locale: locale))
                             Text("\(chapter.count, format: .number) narrations")
                                 .font(.caption).foregroundStyle(.secondary)
-                            ReadingTimeHint(words: chapter.readingWords)
+                            if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                ReadingTimeHint(words: chapter.readingWords)
+                            }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(.rect)
@@ -486,7 +488,7 @@ struct HadithView: View {
             }
             ForEach(narrations) { narration in
                 Button { searchFocused = false; selected = narration } label: {
-                    HadithPreviewRow(narration: narration)
+                    HadithPreviewRow(narration: narration, showsReadingTime: query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                         .foregroundStyle(.primary)
                 }
                 .tint(.primary)

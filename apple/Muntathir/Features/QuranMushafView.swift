@@ -121,6 +121,7 @@ struct QuranMushafView: View {
 }
 
 private struct QuranPageView: View {
+    @Environment(\.locale) private var locale
     let number: Int
     let reader: QuranReader
     let revision: Int
@@ -232,7 +233,7 @@ private struct QuranPageView: View {
                 .underline(differentiate && color != nil)
         }
         .buttonStyle(.plain)
-        .accessibilityHint(Text("Verse \(ayah.id)"))
+        .accessibilityHint(Text("Verse \(QuranReference.display(ayah.id, locale: locale))"))
         .accessibilityIdentifier(word.word == 1 ? "quran-verse-\(ayah.id)" : "")
     }
 

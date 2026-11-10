@@ -32,6 +32,41 @@ final class QuranUITests: XCTestCase {
         }
     }
 
+    @MainActor func testSearchRowOpensVerseAndKeepsActionsSeparate() {
+        let app = openQuran()
+        search("2:26", in: app)
+        let row = app.buttons["quran-result-2:26"]
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        XCTAssertFalse(app.staticTexts["Read verse"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["reading-time"].exists)
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "Quran search row"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+        app.buttons["verse-actions-2:26"].tap()
+        XCTAssertTrue(app.buttons["Copy text"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.descendants(matching: .any)["quran-verse-2:26"].exists)
+        app.buttons["Copy text"].tap()
+        app.alerts.buttons["OK"].tap()
+        row.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["quran-verse-2:26"].waitForExistence(timeout: 10))
+    }
+
+    @MainActor func testArabicSearchReferenceIncludesChapterName() {
+        let app = openQuran(arabic: true)
+        search("2:26", in: app)
+        let row = app.buttons["quran-result-2:26"]
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        XCTAssertTrue(row.label.contains("البقرة"))
+        XCTAssertTrue(row.label.contains("2:26"))
+        XCTAssertFalse(app.descendants(matching: .any)["reading-time"].exists)
+        XCTAssertTrue(app.buttons["verse-actions-2:26"].label.contains("البقرة"))
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "Arabic Quran search row"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
     @MainActor func testChapterSearchInBothReadingModes() {
         for mode in ["Verses", "Mushaf"] {
             let app = openQuran()

@@ -30,7 +30,7 @@ struct DailyAyahCard: View {
                     .textSelection(.enabled)
                     .accessibilityIdentifier("daily-ayah-translation")
             }
-            Text(ayah.id)
+            Text(QuranReference.display(ayah.id, locale: locale))
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .trailing)

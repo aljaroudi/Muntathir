@@ -80,15 +80,23 @@ struct QuranVerseRow: View {
     let ayah: Ayah
     let translation: QuranTranslation?
     var preview = false
+    var showsActions = true
+    @Environment(\.locale) private var locale
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text(ayah.id).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
-                    .accessibilityLabel(Text("Verse \(ayah.id)"))
-                ReadingTimeHint(words: ReadingTime.words(arabic: ayah.text))
+                Text(QuranReference.display(ayah.id, locale: locale)).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
+                    .accessibilityLabel(Text("Verse \(QuranReference.display(ayah.id, locale: locale))"))
+                if !preview {
+                    ReadingTimeHint(words: ReadingTime.words(arabic: ayah.text))
+                }
                 Spacer()
-                VerseActions(ayah: ayah, translation: translation)
+                if showsActions {
+                    VerseActions(ayah: ayah, translation: translation)
+                } else {
+                    Color.clear.frame(width: 44, height: 28).accessibilityHidden(true)
+                }
             }
             if preview {
                 AyahText(ayah: ayah).lineLimit(3)
@@ -113,7 +121,6 @@ struct QuranVerseRow: View {
         .readingColumn()
         .padding(.vertical, 12)
         .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
-        .textSelection(.enabled)
         .accessibilityElement(children: .contain)
     }
 }

@@ -180,6 +180,13 @@ struct HighlightActions: View {
 }
 
 struct HighlightSummary: View {
+    @Environment(\.locale) private var locale
+
+    private var reference: String {
+        highlight.isHadith || locale.language.languageCode?.identifier != "ar"
+            ? highlight.reference : QuranReference.display(highlight.source, locale: locale)
+    }
+
     let highlight: ReadingHighlight
     var available = true
 
@@ -190,10 +197,10 @@ struct HighlightSummary: View {
                 .frame(width: 4)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 8) {
-                Text(highlight.reference)
+                Text(reference)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                    .accessibilityLabel(highlight.reference + ", " + highlight.color.title)
+                    .accessibilityLabel(reference + ", " + highlight.color.title)
                 Text(highlight.excerpt)
                     .font(.body)
                     .foregroundStyle(.primary)

@@ -176,7 +176,7 @@ enum HadithBookGroup: CaseIterable, Identifiable {
 }
 
 struct HadithCursor: Codable, Hashable, Sendable {
-    enum Phase: Int, Codable, Sendable { case words, substring }
+    enum Phase: Int, Codable, CaseIterable, Sendable { case words, substring, broader }
     var phase: Phase = .words
     var afterID = 0
 }

@@ -5,6 +5,15 @@ import Testing
 import UIKit
 
 struct VerseShareTests {
+    @Test func arabicReferencesPrefixNamesWithoutChangingSourceIDs() {
+        let verse = Ayah(surah: 2, number: 26, text: "")
+        #expect(QuranReference.display(verse.id, locale: Locale(identifier: "ar_SA")) == "البقرة \u{2066}2:26\u{2069}")
+        #expect(QuranReference.display("28:4", locale: Locale(identifier: "ar")) == "القصص \u{2066}28:4\u{2069}")
+        #expect(QuranReference.display(verse.id, locale: Locale(identifier: "en")) == "2:26")
+        #expect(QuranReference.display("invalid", locale: Locale(identifier: "ar")) == "invalid")
+        #expect(verse.id == "2:26")
+    }
+
     @MainActor @Test(arguments: ["zh.jian", "zh.majian"])
     func chineseTranslationSharePreview(translationID: String) throws {
         let translation = try #require(QuranTranslation.catalog.first { $0.id == translationID })
@@ -24,7 +33,7 @@ struct VerseShareTests {
         let shared = VerseShareContent(ayah: ayah, translation: english, locale: Locale(identifier: "en"))
         #expect(shared.text == "Arabic source\n\nEnglish\n\nAl-Faatiha · 1:1")
         let arabic = VerseShareContent(ayah: ayah, translation: nil, locale: Locale(identifier: "ar"))
-        #expect(arabic.text == "Arabic source\n\nالفاتحة · 1:1")
+        #expect(arabic.text == "Arabic source\n\nالفاتحة \u{2066}1:1\u{2069}")
         let missing = VerseShareContent(ayah: Ayah(surah: 1, number: 1, text: "Arabic source"), translation: english, locale: Locale(identifier: "en"))
         #expect(missing.text.contains("Ali Quli") == false)
     }

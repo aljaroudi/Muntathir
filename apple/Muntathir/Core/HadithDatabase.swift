@@ -55,9 +55,27 @@ final class HadithConnection {
             Task<Never, Never>.isCancelled ? 1 : 0
         }, nil)
         try registerOrderedMatch()
+        try registerLiteralRank()
     }
 
     deinit { sqlite3_close(handle) }
+
+    private func registerLiteralRank() throws {
+        guard sqlite3_create_function_v2(handle, "hadith_literal_rank", 3, SQLITE_UTF8 | SQLITE_DETERMINISTIC, nil, { context, _, values in
+            guard let values else { sqlite3_result_error_code(context, SQLITE_ERROR); return }
+            if Task<Never, Never>.isCancelled {
+                sqlite3_result_error_code(context, SQLITE_INTERRUPT)
+                return
+            }
+            func text(_ index: Int) -> String {
+                sqlite3_value_text(values[index]).map { String(cString: $0) } ?? ""
+            }
+            let terms = QuranSearchText.terms(text(2))
+            let arabicRank = QuranSearchText.literalRank(text(0), terms: terms, phrase: true)
+            let rank = arabicRank == 0 ? 0 : min(arabicRank, QuranSearchText.literalRank(text(1), terms: terms, phrase: true))
+            sqlite3_result_int(context, Int32(rank))
+        }, nil, nil, nil) == SQLITE_OK else { throw HadithDatabaseError.unavailable }
+    }
 
     private func registerOrderedMatch() throws {
         var statement: OpaquePointer?

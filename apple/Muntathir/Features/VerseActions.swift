@@ -12,7 +12,9 @@ struct VerseShareContent {
         self.ayah = ayah
         self.translation = translation
         let name = Self.surahs.first { $0.id == ayah.surah }?.title(locale: locale)
-        reference = [name, ayah.id].compactMap(\.self).joined(separator: " · ")
+        reference = locale.language.languageCode?.identifier == "ar"
+            ? QuranReference.display(ayah.id, locale: locale)
+            : [name, ayah.id].compactMap(\.self).joined(separator: " · ")
         if locale.language.languageCode?.identifier == "ar", let name {
             // Image references use Arabic-Indic digits regardless of the device's numbering preference.
             let number = String(ayah.number).compactMap(\.wholeNumberValue).map { String(Self.arabicDigits[$0]) }.joined()
@@ -33,6 +35,7 @@ struct VerseShareContent {
 }
 
 struct VerseActions: View {
+    @Environment(\.locale) private var locale
     let ayah: Ayah
     let translation: QuranTranslation?
     var identifier: String?
@@ -42,7 +45,7 @@ struct VerseActions: View {
                 .labelStyle(.iconOnly).frame(minWidth: 44, minHeight: 44)
         }
         .accessibilityIdentifier(identifier ?? "verse-actions-\(ayah.id)")
-        .accessibilityLabel(Text("Actions for verse \(ayah.id)"))
+        .accessibilityLabel(Text("Actions for verse \(QuranReference.display(ayah.id, locale: locale))"))
     }
 }
 

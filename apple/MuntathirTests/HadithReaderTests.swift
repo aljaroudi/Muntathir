@@ -222,16 +222,16 @@ struct HadithReaderTests {
         #expect(ordered.usedOrderedFallback)
         #expect(ordered.rows.map(\.id) == Array(1 ... 50))
         #expect(ordered.hasMore)
-        let orderedLast = try await reader.page(HadithRequest(query: "Narrator 000", cursor: HadithCursor(afterID: 99950)))
+        let orderedLast = try await reader.page(HadithRequest(query: "Narrator 000", cursor: HadithCursor(phase: .broader, afterID: 99950)))
         #expect(orderedLast.rows.map(\.id) == Array(99951 ... 100_000))
         #expect(!orderedLast.hasMore)
         #expect(orderedLast.usedOrderedFallback)
-        let second = try await reader.page(HadithRequest(query: "intent", cursor: HadithCursor(afterID: 50)))
+        let second = try await reader.page(HadithRequest(query: "intent", cursor: HadithCursor(phase: .substring, afterID: 50)))
         #expect(second.rows.map(\.id) == Array(51 ... 100))
-        let deep = try await reader.page(HadithRequest(query: "intent", cursor: HadithCursor(afterID: 99950)))
+        let deep = try await reader.page(HadithRequest(query: "intent", cursor: HadithCursor(phase: .substring, afterID: 99950)))
         #expect(deep.rows.map(\.id) == Array(99951 ... 100_000))
         #expect(!deep.hasMore)
-        #expect(try await reader.page(HadithRequest(query: "intent", cursor: HadithCursor(afterID: 100_000))).rows.isEmpty)
+        #expect(try await reader.page(HadithRequest(query: "intent", cursor: HadithCursor(phase: .substring, afterID: 100_000))).rows.isEmpty)
         let filtered = try await reader.page(HadithRequest(query: "intent", collectionID: "merged", chapterID: 2))
         #expect(filtered.rows.first?.id == 50001)
         #expect(filtered.rows.allSatisfy { $0.chapter.id == 2 })
@@ -292,6 +292,37 @@ struct HadithReaderTests {
         #expect(filtered.rows.map(\.id) == [300_000])
         // Short queries do not fall through to substring matching.
         #expect(try await reader.page(HadithRequest(query: "صل", chapterID: 2)).rows.isEmpty)
+    }
+
+    @Test func literalTiersPaginateBeforeStemmedMatches() async throws {
+        let fixture = try HadithFixture(count: 1, searchRows: """
+        WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<55)
+        INSERT INTO hadith SELECT 200000+x,'v1',1,x,'','','believers' FROM n;
+        WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<55)
+        INSERT INTO hadith SELECT 300000+x,'v1',1,x,'','','believingly' FROM n;
+        WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<55)
+        INSERT INTO hadith SELECT 400000+x,'v1',1,x,'','','believing' FROM n;
+        INSERT INTO hadith VALUES (500000,'v2',2,1,'','','believing');
+        """)
+        defer { fixture.remove() }
+        let reader = HadithReader(database: HadithDatabase(url: fixture.url))
+        var request = HadithRequest(query: "believing", chapterID: 1)
+        var ids: [Int] = []
+        var phases: [HadithCursor.Phase] = []
+        repeat {
+            let page = try await reader.page(request)
+            ids += page.rows.map(\.id)
+            guard let cursor = page.nextCursor else { break }
+            phases.append(cursor.phase)
+            request.cursor = cursor
+            #expect(ids.count <= 165)
+            if ids.count > 165 {
+                break
+            }
+        } while true
+        #expect(ids == Array(400_001 ... 400_055) + Array(300_001 ... 300_055) + Array(200_001 ... 200_055))
+        #expect(phases == [.words, .substring, .broader])
+        #expect(try await reader.page(HadithRequest(query: "believing", chapterID: 2)).rows.map(\.id) == [500_000])
     }
 
     @Test func sqliteProgressHandlerInterruptsWorkBeforeProducingRows() async throws {

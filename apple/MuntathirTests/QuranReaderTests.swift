@@ -60,6 +60,58 @@ struct QuranReaderTests {
         #expect(QuranSearchText.normalize("فى رحمة") == "في رحمه")
     }
 
+    @Test func literalArabicMatchesPrecedeRootsBeforePagination() async throws {
+        let reader = QuranReader(database: database)
+        let matches = try await reader.search("يستحي", translationID: nil, limit: 6236)
+        #expect(Array(matches.prefix(2)).map(\.id) == ["2:26", "33:53"])
+        let partial = ["2:49", "7:141", "14:6", "28:4"]
+        #expect(Array(matches.dropFirst(2).prefix(4)).map(\.id) == partial)
+        let ranks = matches.map { QuranSearchText.literalRank($0.text, terms: ["يستحي"]) }
+        #expect(ranks == ranks.sorted())
+        #expect(try await reader.search("يَسْتَحِي", translationID: nil, limit: 3).map(\.id) == Array(matches.prefix(3)).map(\.id))
+        #expect(try await reader.search("يستحي", translationID: nil, limit: 1, surah: 28).map(\.id) == ["28:4"])
+    }
+
+    @Test func literalTranslationMatchesPrecedeBroaderArabicMatches() async throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let arabicURL = folder.appendingPathComponent("quran.db")
+        let englishURL = folder.appendingPathComponent("english.db")
+        for (url, english) in [(arabicURL, false), (englishURL, true)] {
+            let connection = try QuranConnection(path: url.path, flags: SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)
+            for sql in [
+                "CREATE TABLE quran (\"index\" INTEGER PRIMARY KEY, sura INTEGER, aya INTEGER, text TEXT)",
+                "CREATE VIRTUAL TABLE quran_words USING fts5(text, root)",
+                "CREATE VIRTUAL TABLE quran_fts USING fts5(text, tokenize='trigram')",
+                "CREATE TABLE quran_roots (word TEXT, root TEXT)",
+                "INSERT INTO quran_roots VALUES ('merciful', 'رحم')",
+            ] {
+                try connection.execute(sql)
+            }
+            for (index, text) in (english ? ["mercy", "mercifully", "merciful"] : ["رحمة", "رحمة", "رحمة"]).enumerated() {
+                let id = String(index + 1)
+                try connection.execute("INSERT INTO quran VALUES (?, 1, ?, ?)", parameters: [id, id, text])
+                try connection.execute("INSERT INTO quran_words(rowid, text, root) VALUES (?, ?, ?)", parameters: [id, text, english ? "" : "رحم"])
+                try connection.execute("INSERT INTO quran_fts(rowid, text) VALUES (?, ?)", parameters: [id, text])
+            }
+        }
+        let reader = QuranReader(database: QuranDatabase(url: arabicURL, translationURLs: { ["en.qarai": englishURL] }))
+        #expect(try await reader.search("merciful", translationID: "en.qarai").map(\.id) == ["1:3", "1:2", "1:1"])
+        #expect(try await reader.search("merciful", translationID: "en.qarai", limit: 1).map(\.id) == ["1:3"])
+        #expect(try await reader.search("merciful", translationID: nil).map(\.id) == ["1:1", "1:2", "1:3"])
+    }
+
+    @Test func literalRanksRequireEveryTermAndRespectWordBoundaries() {
+        #expect(QuranSearchText.literalRank("وَيَستَحيۦ", terms: ["يستحي"]) == 1)
+        #expect(QuranSearchText.literalRank("يَستَحيۦ", terms: ["يستحي"]) == 0)
+        #expect(QuranSearchText.literalRank("رحمة الله", terms: ["الله", "رحمه"]) == 0)
+        #expect(QuranSearchText.literalRank("رحمة بالله", terms: ["الله", "رحمه"]) == 1)
+        #expect(QuranSearchText.literalRank("رحمة", terms: ["الله", "رحمه"]) == 2)
+        #expect(QuranSearchText.literalRank("believers", terms: ["believing"]) == 2)
+        #expect(QuranSearchText.literalRank("Clementísimo", terms: ["clementisimo"]) == 0)
+    }
+
     @Test func searchIndexesMatchUpdatedOpeningVerses() throws {
         let ids = try database.connection().query("SELECT rowid FROM quran_words WHERE quran_words MATCH ? ORDER BY rowid", parameters: ["text : \"بسم\""]) {
             Int(sqlite3_column_int($0, 0))

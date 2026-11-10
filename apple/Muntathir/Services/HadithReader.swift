@@ -118,34 +118,56 @@ actor HadithReader {
             usedOrderedFallback ? " AND hadith_ordered(\(table))" : ""
         }
         var selected: [(id: Int, phase: HadithCursor.Phase)] = []
-        if request.cursor.phase == .words {
-            let values = scopeParameters + [String(request.cursor.afterID)]
-            let cursor = "\(predicate) AND h.id > CAST(? AS INTEGER)"
-            let sql: String
-            let parameters: [String]
-            if terms.isEmpty {
-                sql = "SELECT h.id \(base) WHERE \(cursor) ORDER BY h.id LIMIT 51"
-                parameters = values
-            } else {
-                let arabic = "SELECT h.id \(base) JOIN hadith_words ON hadith_words.rowid = h.id WHERE \(cursor) AND hadith_words MATCH ?\(ordered("hadith_words")) ORDER BY h.id LIMIT 51"
-                let english = "SELECT h.id \(base) JOIN hadith_en ON hadith_en.rowid = h.id WHERE \(cursor) AND hadith_en MATCH ?\(ordered("hadith_en")) ORDER BY h.id LIMIT 51"
-                sql = "SELECT id FROM (\(arabic)) UNION SELECT id FROM (\(english)) ORDER BY id LIMIT 51"
-                parameters = values + [match] + values + [match]
+        if terms.isEmpty {
+            selected = try connection.query("SELECT h.id \(base) WHERE \(predicate) AND h.id > CAST(? AS INTEGER) ORDER BY h.id LIMIT 51",
+                                            parameters: scopeParameters + [String(request.cursor.afterID)])
+            {
+                (Int(sqlite3_column_int($0, 0)), .words)
             }
-            selected = try connection.query(sql, parameters: parameters) { (Int(sqlite3_column_int($0, 0)), .words) }
-        }
-        if selected.count < 51, !terms.isEmpty, terms.allSatisfy({ $0.count >= 3 && $0.unicodeScalars.contains { (0x0600 ... 0x06FF).contains($0.value) } }) {
-            let after = request.cursor.phase == .substring ? request.cursor.afterID : 0
-            let substring = terms.map { "\"\($0)\"" }.joined(separator: " AND ")
-            let sql = """
-            SELECT h.id \(base) JOIN hadith_fts ON hadith_fts.rowid = h.id
-            WHERE \(predicate) AND h.id > CAST(? AS INTEGER) AND hadith_fts MATCH ?
-              AND NOT EXISTS(SELECT 1 FROM hadith_words WHERE rowid = h.id AND hadith_words MATCH ?\(ordered("hadith_words")))
-              AND NOT EXISTS(SELECT 1 FROM hadith_en WHERE rowid = h.id AND hadith_en MATCH ?\(ordered("hadith_en")))
-            ORDER BY h.id LIMIT \(51 - selected.count)
-            """
-            selected += try connection.query(sql, parameters: scopeParameters + [String(after), substring, match, match]) {
-                (Int(sqlite3_column_int($0, 0)), .substring)
+        } else {
+            var indexes = [("hadith_words", match), ("hadith_en", match)]
+            // Keep the existing indexed substring eligibility; short queries still use word indexes.
+            let hasSubstringIndex = terms.allSatisfy { $0.count >= 3 && $0.unicodeScalars.contains { (0x0600 ... 0x06FF).contains($0.value) } }
+            if hasSubstringIndex {
+                indexes.append(("hadith_fts", terms.map { "\"\($0)\"" }.joined(separator: " AND ")))
+            }
+            // Check source text because Porter stemming cannot prove an English literal match.
+            let onlyBroaderMatches = usedOrderedFallback && !hasSubstringIndex
+            for phase in HadithCursor.Phase.allCases where phase.rawValue >= request.cursor.phase.rawValue {
+                // Without substring search, the failed phrase lookup already ruled out both literal tiers.
+                if onlyBroaderMatches, phase != .broader {
+                    continue
+                }
+                let after = phase == request.cursor.phase ? request.cursor.afterID : 0
+                let remaining = 51 - selected.count
+                var queries: [String] = []
+                var parameters: [String] = []
+                for (table, expression) in indexes {
+                    let fallback = table == "hadith_fts" ? "" : ordered(table)
+                    let literalFilter = onlyBroaderMatches ? "" : "AND hadith_literal_rank(h.arabic, h.english_narrator || ' ' || h.english_text, ?) = CAST(? AS INTEGER)"
+                    // Keep FTS outermost: chapter filters otherwise reopen its prefix scan for every narration.
+                    queries.append("""
+                    SELECT id FROM (
+                      SELECT h.id FROM \(table)
+                      CROSS JOIN hadith h ON h.id = \(table).rowid
+                      CROSS JOIN book b ON b.id = h.book_id
+                      WHERE \(predicate) AND \(table) MATCH ?\(fallback)
+                        AND \(table).rowid > CAST(? AS INTEGER)
+                        \(literalFilter)
+                      ORDER BY \(table).rowid LIMIT \(remaining))
+                    """)
+                    parameters += scopeParameters + [expression, String(after)]
+                    if !onlyBroaderMatches {
+                        parameters += [request.query, String(phase.rawValue)]
+                    }
+                }
+                let sql = queries.joined(separator: " UNION ") + " ORDER BY id LIMIT \(remaining)"
+                selected += try connection.query(sql, parameters: parameters) {
+                    (Int(sqlite3_column_int($0, 0)), phase)
+                }
+                if selected.count == 51 {
+                    break
+                }
             }
         }
         let visible = Array(selected.prefix(Self.pageSize))

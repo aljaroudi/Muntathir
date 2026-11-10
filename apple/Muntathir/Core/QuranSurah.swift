@@ -34,20 +34,36 @@ struct QuranSurah: Decodable, Identifiable, Hashable, Sendable {
     }
 }
 
+/// Display only: source IDs and stored references remain chapter:verse.
+enum QuranReference {
+    private static let names = Dictionary(uniqueKeysWithValues: ((try? QuranSurah.load()) ?? []).map { ($0.id, $0.arabic) })
+
+    static func display(_ reference: String, locale: Locale) -> String {
+        guard locale.language.languageCode?.identifier == "ar",
+              let parsed = try? QuranSearchText.reference(reference),
+              let name = names[parsed.surah] else { return reference }
+        // Isolate the numeric run so RTL surroundings cannot reverse chapter and verse.
+        return name + " " + "\u{2066}" + reference + "\u{2069}"
+    }
+}
+
 enum QuranSearchText {
     /// Search keys only. Never apply this to displayed or shared Quran text.
     /// Must match the normalization the bundled search indexes were built with.
     static func normalize(_ text: String) -> String {
-        String(text.unicodeScalars.compactMap { scalar -> String? in
+        guard !text.utf8.allSatisfy({ $0 < 128 }) else { return text }
+        var result = String.UnicodeScalarView()
+        for scalar in text.unicodeScalars {
             switch scalar.value {
             case 0x0610 ... 0x061A, 0x0640, 0x064B ... 0x065F, 0x0670, 0x06D6 ... 0x06ED:
-                nil
-            case 0x0622, 0x0623, 0x0625, 0x0671: "ا"
-            case 0x0649: "ي"
-            case 0x0629: "ه"
-            default: String(scalar)
+                continue
+            case 0x0622, 0x0623, 0x0625, 0x0671: result.append("ا")
+            case 0x0649: result.append("ي")
+            case 0x0629: result.append("ه")
+            default: result.append(scalar)
             }
-        }.joined())
+        }
+        return String(result)
     }
 
     static func number(_ text: String) -> Int? {
@@ -69,6 +85,52 @@ enum QuranSearchText {
         normalize(text).lowercased().split { character in
             !character.unicodeScalars.contains { CharacterSet.alphanumerics.contains($0) || CharacterSet.nonBaseCharacters.contains($0) }
         }.map(String.init)
+    }
+
+    /// 0: literal whole words, 1: literal substrings, 2: broader index matches.
+    /// Phrase matching is used by Hadith; Quran retains its all-terms semantics.
+    static func literalRank(_ text: String, terms: [String], phrase: Bool = false) -> Int {
+        let terms = terms.map { $0.folding(options: .diacriticInsensitive, locale: Locale(identifier: "en")) }
+        guard !terms.isEmpty else { return 2 }
+        // A single word only needs occurrence boundaries, not tokenization of the whole narration.
+        if terms.count == 1 {
+            let source = normalize(text).lowercased().folding(options: .diacriticInsensitive, locale: Locale(identifier: "en"))
+            var start = source.startIndex
+            var rank = 2
+            func wordCharacter(_ character: Character) -> Bool {
+                character.unicodeScalars.contains { CharacterSet.alphanumerics.contains($0) || CharacterSet.nonBaseCharacters.contains($0) }
+            }
+            while start < source.endIndex, let range = source.range(of: terms[0], range: start ..< source.endIndex) {
+                let beginsWord = range.lowerBound == source.startIndex || !wordCharacter(source[source.index(before: range.lowerBound)])
+                let endsWord = range.upperBound == source.endIndex || !wordCharacter(source[range.upperBound])
+                if beginsWord, endsWord {
+                    return 0
+                }
+                rank = 1
+                start = source.index(after: range.lowerBound)
+            }
+            return rank
+        }
+        let words = Self.terms(text).map { $0.folding(options: .diacriticInsensitive, locale: Locale(identifier: "en")) }
+        if phrase {
+            guard words.count >= terms.count else { return 2 }
+            var rank = 2
+            for start in 0 ... words.count - terms.count {
+                let pairs = zip(words[start ..< start + terms.count], terms)
+                if pairs.allSatisfy({ $0 == $1 }) {
+                    return 0
+                }
+                if pairs.allSatisfy({ $0.contains($1) }) {
+                    rank = 1
+                }
+            }
+            return rank
+        }
+        let wholeWords = Set(words)
+        if terms.allSatisfy(wholeWords.contains) {
+            return 0
+        }
+        return terms.allSatisfy { term in words.contains { $0.contains(term) } } ? 1 : 2
     }
 
     static func distance(_ a: String, _ b: String) -> Int {

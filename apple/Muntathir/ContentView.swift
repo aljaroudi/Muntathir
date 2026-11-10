@@ -22,36 +22,40 @@ struct ContentView: View {
             Tab("Tools", systemImage: "square.grid.2x2", value: 2) {
                 NavigationStack(path: $toolsPath) {
                     List {
-                        NavigationLink {
-                            QuranView()
-                        } label: {
-                            Label("The Holy Quran", systemImage: "book.closed")
-                        }
-                        .accessibilityIdentifier("holy-quran")
-                        NavigationLink(value: FigureRoute.hadith) {
-                            Label("Hadith", systemImage: "text.book.closed")
-                        }
-                        .accessibilityIdentifier("hadith")
-                        NavigationLink(value: FigureRoute.supplications) {
-                            Label("Supplications", systemImage: "hands.sparkles")
-                        }
-                        .accessibilityIdentifier("supplications")
+						Section {
+							NavigationLink {
+								QuranView()
+							} label: {
+								Label("The Holy Quran", systemImage: "book.closed")
+							}
+							.accessibilityIdentifier("holy-quran")
+							NavigationLink(value: FigureRoute.hadith) {
+								Label("Hadith", systemImage: "text.book.closed")
+							}
+							.accessibilityIdentifier("hadith")
+							NavigationLink(value: FigureRoute.supplications) {
+								Label("Supplications", systemImage: "hands.sparkles")
+							}
+							.accessibilityIdentifier("supplications")
+						}
                         NavigationLink(value: FigureRoute.browser) {
                             Label("Figures", systemImage: "person.2")
                         }
                         .accessibilityIdentifier("figures")
-                        NavigationLink {
-                            RakaatTrackerView()
-                        } label: {
-                            Label("Rakaat Tracker", systemImage: "camera.metering.center.weighted")
-                        }
-                        .accessibilityIdentifier("rakaat-tracker")
-                        NavigationLink {
-                            QiblaView(isCovered: settings).toolbar { settingsToolbar }
-                        } label: {
-                            Label("Qibla", systemImage: "location.north.circle")
-                        }
-                        .accessibilityIdentifier("qibla")
+						Section {
+							NavigationLink {
+								RakaatTrackerView()
+							} label: {
+								Label("Rakaat Tracker", systemImage: "camera.metering.center.weighted")
+							}
+							.accessibilityIdentifier("rakaat-tracker")
+							NavigationLink {
+								QiblaView(isCovered: settings).toolbar { settingsToolbar }
+							} label: {
+								Label("Qibla", systemImage: "location.north.circle")
+							}
+							.accessibilityIdentifier("qibla")
+						}
                     }
                     .navigationTitle("Tools")
                     .figureDestinations(hadithAssets: hadithAssets, supplicationAssets: supplicationAssets)

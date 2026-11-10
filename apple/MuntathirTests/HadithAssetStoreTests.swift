@@ -302,6 +302,30 @@ extension HadithAssetStoreTests {
         #expect(defaults.string(forKey: "hadith.validated.v1") == nil)
     }
 
+    @Test func oldSearchSessionRestartsPaginationAndKeepsScope() throws {
+        let suite = "HadithSessionTests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        var saved = HadithSessionState()
+        saved.request = HadithRequest(query: "mercy", collectionID: "bukhari", chapterID: 3, cursor: HadithCursor(phase: .substring, afterID: 99))
+        saved.history = [HadithCursor()]
+        saved.listOffset = 120
+        saved.listRow = "hadith:old"
+        var json = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(saved)) as? [String: Any])
+        json.removeValue(forKey: "searchRankingVersion")
+        try defaults.set(JSONSerialization.data(withJSONObject: json), forKey: "hadith.session.v1")
+        let restored = HadithSession(defaults: defaults).state
+        #expect(restored.request.query == "mercy")
+        #expect(restored.request.collectionID == "bukhari")
+        #expect(restored.request.chapterID == 3)
+        #expect(restored.request.cursor == HadithCursor())
+        #expect(restored.history.isEmpty)
+        #expect(restored.cursorSources.isEmpty)
+        #expect(restored.listOffset == 0)
+        #expect(restored.listRow == nil)
+        #expect(restored.searchRankingVersion == 1)
+    }
+
     @Test func readingSessionRoundTripsWithoutTheLibrary() throws {
         let suite = "HadithSessionTests.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))

@@ -7,7 +7,6 @@ struct QuranSearchContent: View {
     let reader: QuranReader
     var surah: QuranSurah?
     @State private var surahs: [QuranSurah] = []
-    @State private var readingWords: [Int: Int] = [:]
     @State private var counts: [Int: Int] = [:]
     @State private var results: [Ayah] = []
     @State private var limit = 50
@@ -65,7 +64,6 @@ struct QuranSearchContent: View {
                                     Text(surah.arabic).environment(\.layoutDirection, .rightToLeft)
                                 }
                                 Text("\(counts[surah.id] ?? 0) verses").font(.caption).foregroundStyle(.secondary)
-                                ReadingTimeHint(words: readingWords[surah.id] ?? 0)
                             }
                         }
                         .accessibilityIdentifier("quran-surah-\(surah.id)")
@@ -122,12 +120,21 @@ struct QuranSearchContent: View {
         Section("Verses") {
             ForEach(verses) { ayah in
                 if let surah = surahs.first(where: { $0.id == ayah.surah }) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        QuranVerseRow(ayah: ayah, translation: QuranTranslation.catalog.first { $0.id == translationStore.activeID }, preview: true)
-                        NavigationLink {
-                            QuranReadingView(surah: surah, initialVerse: ayah.number, reader: reader)
-                        } label: { Label("Read verse", systemImage: "book") }
-                            .accessibilityIdentifier("quran-result-\(ayah.id)")
+                    let translation = QuranTranslation.catalog.first { $0.id == translationStore.activeID }
+                    NavigationLink {
+                        QuranReadingView(surah: surah, initialVerse: ayah.number, reader: reader)
+                    } label: {
+                        QuranVerseRow(ayah: ayah, translation: translation, preview: true, showsActions: false)
+                            .contentShape(.rect)
+                    }
+                    .accessibilityIdentifier("quran-result-\(ayah.id)")
+                    .accessibilityLabel(Text("Verse \(QuranReference.display(ayah.id, locale: locale))"))
+                    .accessibilityValue(ayah.text)
+                    .overlay(alignment: .topTrailing) {
+                        VerseActions(ayah: ayah, translation: translation)
+                            .buttonStyle(.borderless)
+                            .padding(.top, 12)
+                            .padding(.trailing, 28)
                     }
                 }
             }
@@ -150,7 +157,6 @@ struct QuranSearchContent: View {
             if surahs.isEmpty {
                 let catalog = try await reader.catalog()
                 try Task.checkCancellation()
-                readingWords = try await reader.readingWordsBySurah()
                 counts = catalog.counts
                 surahs = catalog.surahs
             }
