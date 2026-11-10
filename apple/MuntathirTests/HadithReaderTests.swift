@@ -516,3 +516,18 @@ extension HadithReaderTests {
         #expect(try await reader.detail(id: 1, translation: "ur").narration.translation == nil)
     }
 }
+
+extension HadithReaderTests {
+    @Test func onlyFirstIntroductionAcrossVolumesIsShown() async throws {
+        let fixture = try HadithFixture(count: 2, searchRows: """
+        INSERT INTO introduction VALUES(9,'v1',NULL,'Introduction','المقدمة الأولى','','',0);
+        INSERT INTO introduction VALUES(10,'v1',1,'Fragment','جملة قصيرة','','',1);
+        INSERT INTO introduction VALUES(11,'v2',2,'Volume','جملة أخرى','','',0);
+        """)
+        defer { fixture.remove() }
+        let reader = HadithReader(database: HadithDatabase(url: fixture.url))
+        #expect(try await reader.introductions(collectionID: "merged").map(\.id) == [9])
+        #expect(try await reader.introductions(collectionID: "merged", chapterID: 2).isEmpty)
+        #expect(try await reader.detail(id: 1).narration.id == 1)
+    }
+}

@@ -914,6 +914,17 @@ def reading_words(arabic: str, english: str = "") -> int:
     return sum(any(c.isalpha() for c in word) for word in text.split())
 
 
+def retain_first_introductions(db: sqlite3.Connection) -> None:
+    # A title spanning volumes has one opening introduction, not chapter fragments.
+    db.execute("""DELETE FROM introduction WHERE id NOT IN (
+        SELECT id FROM (
+            SELECT i.id, row_number() OVER (
+                PARTITION BY b.collection_id ORDER BY b.sort_order, i.sort_order, i.id
+            ) AS position FROM introduction i JOIN book b ON b.id=i.book_id
+        ) WHERE position=1
+    )""")
+
+
 def build_reading_metadata(db: sqlite3.Connection) -> None:
     db.execute("DELETE FROM hadith_reading")
     numbers = Counter()
@@ -1823,6 +1834,7 @@ def main(argv: list[str] | None = None) -> int:
     localize_chapters(hdb)
     shia_count += load_openiti_books(hdb)
     build_reading_metadata(hdb)
+    retain_first_introductions(hdb)
     shia_count -= extract_supplications(hdb, hadith_path.with_name("supplications.db"))
     report_chapter_gaps(hdb, hadith_path.with_suffix(".chapter-gaps.csv"))
     hdb.commit()

@@ -157,6 +157,21 @@ import Testing
         #expect(store.state == .ready)
     }
 
+    @Test func progressDoesNotRegressWhenAnOlderEventArrives() async {
+        let store = HadithAssetStore(backend: TestHadithAssets(url: URL(filePath: "/unused")))
+        await store.receive(.began)
+        #expect(store.isDownloading)
+        #expect(store.downloadProgress == nil)
+        #expect(!store.preparingDownload)
+        let current = Progress(totalUnitCount: 100)
+        current.completedUnitCount = 60
+        await store.receive(.progress(current))
+        let older = Progress(totalUnitCount: 100)
+        older.completedUnitCount = 30
+        await store.receive(.progress(older))
+        #expect(store.progress == 0.6)
+    }
+
     @Test func estimatedRemainingUsesLiveProgress() async throws {
         let store = HadithAssetStore(backend: TestHadithAssets(url: URL(filePath: "/unused")))
         let progress = Progress(totalUnitCount: 100)
@@ -426,5 +441,38 @@ extension HadithAssetStoreTests {
         let report = "Apple asset locator: \(started.duration(to: .now)); installed=\(local != nil)"
         print(report)
         Attachment.record(report, named: "Apple asset locator timing")
+    }
+}
+
+extension HadithAssetStoreTests {
+    @Test func managedPackMigratesAndRestoresOneTitle() async throws {
+        let fixture = try HadithFixture(count: 3)
+        defer { fixture.remove() }
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let suite = "OwnedAssets.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let backend = TestHadithAssets(url: fixture.url)
+        await backend.setInstalled(true)
+        let library = HadithLocalLibrary(root: root)
+        let store = HadithAssetStore(backend: backend, defaults: defaults, library: library)
+        await store.refresh()
+        #expect(store.state == .ready)
+        #expect(await backend.localURL() == nil)
+        #expect(store.books.filter(\.installed).count == 2)
+        await store.remove(title: "merged")
+        #expect(!store.storageError)
+        #expect(store.books.filter(\.installed).map(\.id) == ["other"])
+        await store.download(title: "merged")
+        #expect(store.state == .ready)
+        #expect(store.books.filter(\.installed).count == 2)
+        #expect(await backend.downloads == 1)
+        #expect(await backend.localURL() == nil)
+        await store.receive(.progress(Progress(totalUnitCount: 100)))
+        #expect(store.state == .ready)
+        await store.remove()
+        #expect(store.state == .missing)
+        #expect(await library.localURL() == nil)
     }
 }

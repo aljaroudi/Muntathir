@@ -105,7 +105,13 @@ struct RakaatTrackerView: View {
             .accessibilityHidden(true)
 
             VStack(spacing: 20) {
-                if denied || failed {
+                if let failure = update?.failure {
+                    Label(failure == .tooDark ? LocalizedStringKey("Too dark to count reliably") : LocalizedStringKey("Unable to calibrate"), systemImage: "exclamationmark.triangle")
+                        .font(.title2.bold())
+                    Text(failure == .tooDark ? LocalizedStringKey("Increase the light and keep the camera uncovered, then try again.") : LocalizedStringKey("Keep the phone still in steady light, then try again."))
+                    Button("Try again") { Task { await returnToSelection() } }
+                        .buttonStyle(.bordered)
+                } else if denied || failed {
                     Label("Camera unavailable", systemImage: "camera")
                         .font(.title2.bold())
                     if denied {
@@ -230,6 +236,11 @@ struct RakaatTrackerView: View {
             if ProcessInfo.processInfo.arguments.contains("--ui-testing"), ProcessInfo.processInfo.arguments.contains("--rakaat-denied") {
                 denied = true; ended = true; return
             }
+            if ProcessInfo.processInfo.arguments.contains("--ui-testing"), ProcessInfo.processInfo.arguments.contains("--rakaat-dark") {
+                update = .init(preview: nil, count: 0, countdown: 0, calibrated: false, complete: false, failure: .tooDark)
+                ended = true
+                return
+            }
             if ProcessInfo.processInfo.arguments.contains("--ui-testing"), ProcessInfo.processInfo.arguments.contains("--rakaat-demo") {
                 update = .init(preview: nil, count: 0, countdown: 5, calibrated: false, complete: false)
                 do { try await Task.sleep(for: .seconds(2)) } catch { return }
@@ -256,7 +267,7 @@ struct RakaatTrackerView: View {
             for await value in stream {
                 guard !Task.isCancelled, !ended else { break }
                 update = value
-                if value.complete {
+                if value.complete || value.failure != nil {
                     ended = true
                 }
             }

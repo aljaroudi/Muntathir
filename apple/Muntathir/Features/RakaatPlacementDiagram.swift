@@ -26,6 +26,9 @@ struct RakaatPlacementDiagram: View {
                 fringe.addLine(to: CGPoint(x: x, y: 252))
             }
             context.stroke(fringe, with: .color(.accentColor), style: StrokeStyle(lineWidth: 2, lineCap: .round))
+            context.translateBy(x: 120, y: 105.5)
+            context.rotate(by: .degrees(180))
+            context.translateBy(x: -120, y: -105.5)
             let phone = Path(roundedRect: CGRect(x: 103, y: 73, width: 34, height: 65), cornerRadius: 6)
             context.fill(phone, with: .color(.black))
             context.stroke(phone, with: .foreground, lineWidth: 1)

@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 import SQLite3
 
@@ -11,11 +12,20 @@ actor HadithReader {
 
     /// Actor serialization drains an active synchronous query before replacing/removing its file.
     func install(_ url: URL?, fullValidation: Bool = true) throws {
-        database = HadithDatabase(url: nil)
-        guard let url else { return }
+        guard let url else { database = HadithDatabase(url: nil); return }
         let candidate = HadithDatabase(url: url)
         try candidate.validate(full: fullValidation)
         database = candidate
+    }
+
+    /// Queries and the final atomic replacement share this actor's executor.
+    func commit(_ staged: URL, to destination: URL) throws {
+        try HadithDatabase(url: staged).validate()
+        try Task.checkCancellation()
+        guard rename(staged.path, destination.path) == 0 else {
+            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+        }
+        database = HadithDatabase(url: destination)
     }
 
     func catalog() throws -> [HadithCollection] {
@@ -51,7 +61,10 @@ actor HadithReader {
         try database.connection().query("""
         SELECT i.id, i.title, i.arabic, i.english, \(Self.bookName("ar")), \(Self.bookName("en"))
         FROM introduction i JOIN book b ON b.id=i.book_id
-        WHERE b.collection_id=? \(chapterID == nil ? "" : "AND i.chapter_id=CAST(? AS INTEGER)")
+        WHERE b.collection_id=? AND i.id=(
+            SELECT first.id FROM introduction first JOIN book volume ON volume.id=first.book_id
+            WHERE volume.collection_id=b.collection_id ORDER BY volume.sort_order, first.sort_order, first.id LIMIT 1
+        ) \(chapterID == nil ? "" : "AND i.chapter_id=CAST(? AS INTEGER)")
         ORDER BY b.sort_order, i.sort_order, i.id
         """, parameters: [collectionID] + (chapterID.map { [String($0)] } ?? [])) {
             HadithIntroduction(id: Int(sqlite3_column_int($0, 0)), title: QuranConnection.text($0, 1),

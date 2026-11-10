@@ -287,9 +287,13 @@ extension HadithUITests {
         app.buttons["Done"].tap()
         app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(app.buttons["hadith-result-51"].waitForExistence(timeout: 5))
-        if app.buttons["hadith-library-menu"].exists {
-            app.buttons["hadith-library-menu"].tap()
+        for _ in 0 ..< 3 {
+            if app.buttons["hadith-saved"].exists {
+                break
+            }
+            app.navigationBars.buttons.element(boundBy: 0).tap()
         }
+        XCTAssertTrue(app.buttons["hadith-saved"].waitForExistence(timeout: 5))
         app.buttons["hadith-saved"].tap()
         XCTAssertTrue(app.staticTexts["Saved Hadith note"].waitForExistence(timeout: 5))
     }
@@ -354,33 +358,20 @@ extension HadithUITests {
 }
 
 extension HadithUITests {
-    @MainActor func testLibraryToolbarAdaptsAndKeepsSavedItemsOutOfContent() {
+    @MainActor func testLibrarySavedRowMatchesQuranPlacement() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
         app.buttons["Tools"].firstMatch.tap()
         app.buttons["hadith"].tap()
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 10))
-        XCTAssertFalse(app.scrollViews.buttons["hadith-saved"].exists)
-        XCTAssertFalse(app.scrollViews.buttons["hadith-notes"].exists)
-        XCTAssertFalse(app.buttons["Remove download"].exists)
-        let compact = app.buttons["hadith-library-menu"]
-        if compact.exists {
-            XCTAssertLessThanOrEqual(compact.frame.width, 60, "The collapsed toolbar must fit one button, without an empty wide pill.")
-            let compactScreenshot = XCTAttachment(screenshot: app.screenshot())
-            compactScreenshot.name = "Compact Hadith toolbar"
-            compactScreenshot.lifetime = .keepAlways
-            add(compactScreenshot)
-            compact.tap()
-        }
-        XCTAssertTrue(app.buttons["hadith-saved"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["hadith-notes"].exists)
+        let saved = app.buttons["hadith-saved"]
+        XCTAssertTrue(saved.exists)
+        XCTAssertLessThan(saved.frame.minY, app.buttons["hadith-book-bukhari"].frame.minY)
+        app.buttons["hadith-library-menu"].tap()
         XCTAssertTrue(app.buttons["hadith-translation-picker"].exists)
-        let screenshot = XCTAttachment(screenshot: app.screenshot())
-        screenshot.name = "Adaptive Hadith toolbar"
-        screenshot.lifetime = .keepAlways
-        add(screenshot)
-        app.buttons["hadith-saved"].tap()
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.1, dy: 0.5)).tap()
+        saved.tap()
         XCTAssertTrue(app.staticTexts["No highlights yet"].waitForExistence(timeout: 5))
     }
 }
@@ -411,9 +402,13 @@ extension HadithUITests {
         XCTAssertTrue(app.buttons["highlight-color-yellow"].waitForExistence(timeout: 5))
         app.buttons["highlight-color-yellow"].tap()
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        if app.buttons["hadith-library-menu"].exists {
-            app.buttons["hadith-library-menu"].tap()
+        for _ in 0 ..< 3 {
+            if app.buttons["hadith-saved"].exists {
+                break
+            }
+            app.navigationBars.buttons.element(boundBy: 0).tap()
         }
+        XCTAssertTrue(app.buttons["hadith-saved"].waitForExistence(timeout: 5))
         app.buttons["hadith-saved"].tap()
         let saved = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "saved-hadith-")).firstMatch
         XCTAssertTrue(saved.waitForExistence(timeout: 10))
@@ -531,7 +526,7 @@ extension HadithUITests {
         XCTAssertFalse(app.buttons["hadith-bookmark"].exists)
         row.press(forDuration: 1)
         app.buttons["Open"].tap()
-        XCTAssertTrue(app.navigationBars["1"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.navigationBars["Narration 1"].waitForExistence(timeout: 10))
         XCTAssertFalse(app.descendants(matching: .any)["hadith-detail-number"].exists)
         XCTAssertFalse(app.descendants(matching: .any)["reading-time"].firstMatch.exists)
         let detail = XCTAttachment(screenshot: app.screenshot())
@@ -540,7 +535,7 @@ extension HadithUITests {
         add(detail)
         app.navigationBars.buttons.element(boundBy: 0).tap()
         row.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
-        XCTAssertTrue(app.navigationBars["1"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["Narration 1"].waitForExistence(timeout: 5))
     }
 }
 

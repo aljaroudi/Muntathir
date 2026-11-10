@@ -46,6 +46,15 @@ final class RakaatTrackerUITests: XCTestCase {
         XCTAssertFalse(app.staticTexts["Turn the phone’s top edge toward Qibla"].exists)
     }
 
+    @MainActor func testDarknessExplainsFailureAndAllowsRetry() {
+        let app = open("--rakaat-dark")
+        app.buttons["rakaat-target-2"].tap()
+        XCTAssertTrue(app.staticTexts["Too dark to count reliably"].waitForExistence(timeout: 3))
+        XCTAssertFalse(app.staticTexts["Camera unavailable"].exists)
+        app.buttons["Try again"].tap()
+        XCTAssertTrue(app.buttons["rakaat-target-2"].waitForExistence(timeout: 3))
+    }
+
     @MainActor func testCameraPermissionDenied() {
         let app = open("--rakaat-denied")
         app.buttons["rakaat-target-2"].tap()

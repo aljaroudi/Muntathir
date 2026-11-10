@@ -83,6 +83,12 @@ struct HadithView: View {
     var body: some View {
         ScrollViewReader { proxy in
             List {
+                if query.isEmpty, request.collectionID == nil, request.chapterID == nil {
+                    Section {
+                        NavigationLink { HadithSavedView(reader: reader) } label: { Label("Saved", systemImage: "bookmark") }
+                            .accessibilityIdentifier("hadith-saved")
+                    }
+                }
                 if !matchingBooks.isEmpty {
                     ForEach(HadithBookGroup.allCases) { group in
                         let books = matchingBooks.filter { $0.group == group }.sorted {
@@ -285,9 +291,7 @@ struct HadithView: View {
         }
     }
 
-    @ViewBuilder private var toolbarActions: some View {
-        NavigationLink { HadithSavedView(reader: reader) } label: { Label("Saved", systemImage: "bookmark") }
-            .accessibilityIdentifier("hadith-saved")
+    private var toolbarActions: some View {
         HadithTranslationPicker()
     }
 

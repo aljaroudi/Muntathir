@@ -87,9 +87,13 @@ final class SavedUITests: XCTestCase {
         app.buttons["hadith-bookmark"].tap()
         XCTAssertEqual(app.buttons["hadith-bookmark"].label, "Remove Bookmark")
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        if app.buttons["hadith-library-menu"].exists {
-            app.buttons["hadith-library-menu"].tap()
+        for _ in 0 ..< 3 {
+            if app.buttons["hadith-saved"].exists {
+                break
+            }
+            app.navigationBars.buttons.element(boundBy: 0).tap()
         }
+        XCTAssertTrue(app.buttons["hadith-saved"].waitForExistence(timeout: 5))
         app.buttons["hadith-saved"].tap()
         app.segmentedControls.buttons["Bookmarks"].tap()
         let row = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "saved-hadith-")).firstMatch
@@ -120,9 +124,13 @@ final class SavedUITests: XCTestCase {
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.buttons["hadith"].tap()
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 10))
-        if app.buttons["hadith-library-menu"].exists {
-            app.buttons["hadith-library-menu"].tap()
+        for _ in 0 ..< 3 {
+            if app.buttons["hadith-saved"].exists {
+                break
+            }
+            app.navigationBars.buttons.element(boundBy: 0).tap()
         }
+        XCTAssertTrue(app.buttons["hadith-saved"].waitForExistence(timeout: 5))
         app.buttons["hadith-saved"].tap()
         app.segmentedControls.buttons["Bookmarks"].tap()
         XCTAssertTrue(app.staticTexts["No bookmarks yet"].waitForExistence(timeout: 10))

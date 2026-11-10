@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct HadithLibraryView: View {
-    let assets: HadithAssetStore
+    @Bindable var assets: HadithAssetStore
     var supplications = false
     @State private var operation: Task<Void, Never>?
 
@@ -22,7 +22,7 @@ struct HadithLibraryView: View {
                 switch assets.state {
                 case .checking:
                     Text(LocalizedStringKey(supplications ? "Checking supplications download…" : "Checking Hadith download…"))
-                case .downloading:
+                case .downloading, .installing:
                     Text(LocalizedStringKey(supplications ? "Downloading supplications…" : "Downloading Hadith…"))
                 case .failed:
                     Text(LocalizedStringKey(supplications ? "Unable to download supplications. Check your connection and try again." : "Unable to download Hadith. Check your connection and try again."))
@@ -36,21 +36,10 @@ struct HadithLibraryView: View {
                     }
                 }
             } actions: {
-                if assets.state == .downloading {
-                    TimelineView(.periodic(from: .now, by: 1)) { context in
-                        VStack(spacing: 8) {
-                            ProgressView(value: assets.progress)
-                                .accessibilityLabel(Text(LocalizedStringKey(supplications ? "Downloading supplications…" : "Downloading Hadith…")))
-                            if assets.progress >= 1 {
-                                Text(LocalizedStringKey(supplications ? "Checking supplications download…" : "Checking Hadith download…"))
-                            } else if let seconds = assets.estimatedRemaining(at: context.date) {
-                                Text("About \(Duration.seconds(seconds).formatted(.units(allowed: [.hours, .minutes, .seconds], width: .abbreviated, maximumUnitCount: 1))) remaining")
-                            }
-                        }
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: 240)
+                if assets.isDownloading {
+                    AssetDownloadProgress(progress: assets.downloadProgress, installing: assets.state == .installing,
+                                          preparing: assets.preparingDownload, remaining: assets.estimatedRemaining)
+                        .frame(maxWidth: 300)
                 } else if assets.state == .checking {
                     ProgressView()
                 } else {
@@ -62,6 +51,9 @@ struct HadithLibraryView: View {
                 }
             }
             .navigationTitle(LocalizedStringKey(supplications ? "Supplications" : "Hadith"))
+            .alert("Unable to finish storage cleanup", isPresented: $assets.storageError) {
+                Button("OK", role: .cancel) {}
+            } message: { Text(assets.storageErrorMessage) }
         }
     }
 }

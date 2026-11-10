@@ -15,6 +15,8 @@ actor RakaatCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     private var firstTime: Double?
     private var lastTime = -Double.infinity
     private var exposureLocked = false
+    private var preparation = RakaatPreparation()
+    private var preparationTimeout: Task<Void, Never>?
     private var continuation: AsyncStream<Update>.Continuation?
 
     struct Update: Sendable {
@@ -23,6 +25,7 @@ actor RakaatCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         let countdown: Int
         let calibrated: Bool
         let complete: Bool
+        var failure: RakaatPreparation.Failure?
     }
 
     enum Failure: Error { case unavailable }
@@ -33,6 +36,7 @@ actor RakaatCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         firstTime = nil
         lastTime = -.infinity
         exposureLocked = false
+        preparation = RakaatPreparation()
         capture.beginConfiguration()
         for input in capture.inputs {
             capture.removeInput(input)
@@ -71,6 +75,8 @@ actor RakaatCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     }
 
     func stop() {
+        preparationTimeout?.cancel()
+        preparationTimeout = nil
         if capture.isRunning {
             capture.stopRunning()
         }
@@ -91,6 +97,11 @@ actor RakaatCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         lastTime = time
         if firstTime == nil {
             firstTime = time
+            // A stalled capture must not leave calibration waiting for another frame.
+            preparationTimeout = Task { [weak self] in
+                do { try await Task.sleep(for: .seconds(10)) } catch { return }
+                await self?.expirePreparation()
+            }
         }
         let elapsed = time - (firstTime ?? time)
         CVPixelBufferLockBaseAddress(buffer, .readOnly)
@@ -110,6 +121,15 @@ actor RakaatCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
             }
         }
         CVPixelBufferUnlockBaseAddress(buffer, .readOnly)
+        let light = sum / max(count, 1) / 255
+        if detector.baseline == nil,
+           let failure = preparation.sample(light, elapsed: elapsed)
+        {
+            continuation?.yield(Update(preview: nil, count: 0, countdown: 0, calibrated: false,
+                                       complete: false, failure: failure))
+            finish()
+            return
+        }
         if elapsed >= 5 {
             if !exposureLocked, let device {
                 // Exposure compensation would otherwise erase the shadow we are measuring.
@@ -123,7 +143,11 @@ actor RakaatCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
                     exposureLocked = true
                 } catch { finish(); return }
             }
-            detector.sample(sum / max(count, 1) / 255, at: time)
+            detector.sample(light, at: time)
+            if detector.baseline != nil {
+                preparationTimeout?.cancel()
+                preparationTimeout = nil
+            }
         }
         let source = CIImage(cvPixelBuffer: buffer).oriented(.leftMirrored)
         let tiny = source.transformed(by: CGAffineTransform(scaleX: 24 / source.extent.width, y: 24 / source.extent.width))
@@ -136,7 +160,16 @@ actor RakaatCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         }
     }
 
+    private func expirePreparation() {
+        guard !Task.isCancelled, continuation != nil, detector.baseline == nil else { return }
+        continuation?.yield(Update(preview: nil, count: 0, countdown: 0, calibrated: false,
+                                   complete: false, failure: .unstable))
+        finish()
+    }
+
     private func finish() {
+        preparationTimeout?.cancel()
+        preparationTimeout = nil
         continuation?.finish()
         continuation = nil
     }

@@ -150,7 +150,7 @@ struct HadithDetailView: View {
                 scrollPosition.scrollTo(y: session?.state.detailOffset ?? 0)
             }
         }
-        .navigationTitle(detail?.narration.displayNumber.map { $0.formatted(.number.grouping(.never)) }
+        .navigationTitle(detail?.narration.displayNumber.map { isSupplication ? String(localized: "Supplication \($0)") : String(localized: "Narration \($0)") }
             ?? String(localized: isSupplication ? "Supplications" : "Hadith"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

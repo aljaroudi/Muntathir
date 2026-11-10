@@ -83,3 +83,26 @@ struct RakaatDetectorTests {
         #expect((detector.baseline ?? 1) < 0.8)
     }
 }
+
+struct RakaatPreparationTests {
+    @Test func darknessRequiresSustainedSamplesAfterCountdown() {
+        var preparation = RakaatPreparation()
+        #expect(preparation.sample(0.01, elapsed: 4.9) == nil)
+        for index in 0 ..< 10 {
+            #expect(preparation.sample(0.01, elapsed: 5 + Double(index) / 10) == nil)
+        }
+        #expect(preparation.sample(0.01, elapsed: 6) == .tooDark)
+    }
+
+    @Test func changingLightAndFrameGapsDoNotReportDarkness() {
+        var preparation = RakaatPreparation()
+        #expect(preparation.sample(0.01, elapsed: 5) == nil)
+        #expect(preparation.sample(0.01, elapsed: 7) == nil)
+        #expect(preparation.sample(0.8, elapsed: 7.1) == nil)
+        #expect(preparation.sample(0.01, elapsed: 7.2) == nil)
+        #expect(preparation.sample(.nan, elapsed: 8) == nil)
+        #expect(preparation.sample(0.8, elapsed: 10) == .unstable)
+        var retry = RakaatPreparation()
+        #expect(retry.sample(0.8, elapsed: 5) == nil)
+    }
+}

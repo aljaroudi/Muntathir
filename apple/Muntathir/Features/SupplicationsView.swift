@@ -22,6 +22,17 @@ struct SupplicationsView: View {
 
     var body: some View {
         List {
+            if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Section {
+                    NavigationLink {
+                        HadithSavedView(reader: reader, supplications: true)
+                            .environment(\.hadithSession, nil)
+                    } label: {
+                        Label("Saved", systemImage: "bookmark")
+                    }
+                    .accessibilityIdentifier("supplication-saved")
+                }
+            }
             if loading {
                 ProgressView()
             } else if needsUpdate {
@@ -87,13 +98,6 @@ struct SupplicationsView: View {
         .scrollDismissesKeyboard(.interactively)
         .toolbar {
             SupplicationTranslationPicker(languages: languages)
-            NavigationLink {
-                HadithSavedView(reader: reader, supplications: true)
-                    .environment(\.hadithSession, nil)
-            } label: {
-                Label("Saved", systemImage: "bookmark")
-            }
-            .accessibilityIdentifier("supplication-saved")
         }
         .task(id: Search(query: query, retry: retry, translation: translation, locale: locale.identifier)) {
             loading = true

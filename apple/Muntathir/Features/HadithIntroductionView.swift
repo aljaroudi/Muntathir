@@ -11,7 +11,6 @@ struct HadithIntroductionRow: View {
         } label: {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Introduction").font(.headline)
-                Text(introduction.bookTitle(locale: locale)).font(.caption).foregroundStyle(.secondary)
                 if introduction.hasSpecificTitle {
                     Text(introduction.title).font(.subheadline)
                 }
@@ -42,7 +41,6 @@ struct HadithIntroductionView: View {
                 } else if failed {
                     HadithLoadError { retry += 1 }
                 }
-                Text(introduction.bookTitle(locale: locale)).font(.headline)
                 if introduction.hasSpecificTitle {
                     Text(introduction.title).font(.subheadline)
                 }
