@@ -32,9 +32,8 @@ struct HadithDownloadsSection: View {
                     Spacer()
                     if book.installed {
                         if let bytes = book.estimatedBytes {
-                            Text(verbatim: "≈ " + ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file))
+                            AssetSizeText(bytes: bytes, isEstimated: true)
                                 .font(.subheadline).foregroundStyle(.secondary)
-                                .accessibilityLabel(Text("Estimated size: \(ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file))"))
                         }
                     } else {
                         Button("Download", systemImage: "arrow.down.circle") {
