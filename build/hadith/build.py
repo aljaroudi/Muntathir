@@ -978,7 +978,7 @@ def load_openiti_books(db: sqlite3.Connection, folder: Path = OPENITI_PATH) -> i
         else:
             collection = f"openiti-{kind}"
             if kind == "wasail":
-                name_ar, name_en = "وسائل الشيعة", "Wasa'il al-Shia"
+                name_ar, name_en = "الوسائل", "Wasa'il al-Shia"
                 author = ("Al-Hurr al-Amili", "الحر العاملي", 1104)
             else:
                 name_ar, name_en = "بحار الأنوار", "Bihar al-Anwar"

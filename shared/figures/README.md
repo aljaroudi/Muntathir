@@ -1,8 +1,8 @@
 # Religious figures
 
-Use JSON as the editable source format, matching `shared/events.json`. The web build serves the published subset of the canonical dataset at `/figures/figures.json` and its schema at `/figures/schema.json`. The app downloads figures on first use and keeps the last valid download for offline use.
+Use JSON as the editable source format, matching `shared/events.json`. The web build serves the published subset of the canonical dataset at `/figures/figures.json` and its schema at `/figures/schema.json`. The app bundles the dataset and loads it offline. New data ships with app updates. The web feed retains legacy string notes and required citation arrays for previously released apps.
 
-The web route’s `publishedIDs` list controls which records are served. Add IDs after review. The source stays valid JSON, so editors with JSON Schema support can still check all records.
+Set `verified: true` on a person after review. Missing or false flags exclude that person from app browsing and the web feed. Relationships involving excluded people are also omitted. The source stays valid JSON, so editors with JSON Schema support can still check all records.
 
 - `figures.json`: production dataset, starting with the Prophet Muhammad and his family.
 - `schema.json`: JSON Schema (Draft 2020-12) describing the format.
@@ -47,6 +47,6 @@ Do not silently convert Hijri dates to Gregorian or collapse differing calendars
 
 Parentages, unions, and date claims carry `status` (`accepted`, `disputed`, or `unreviewed`) and a `citations` array. Status is an editorial assessment, not a claim of universal agreement. Each citation links to a source ID and a `locator` (page, volume, section, or other precise reference); an optional short quote preserves relevant wording. Sources can record title, author, edition, URL, and notes.
 
-An empty citations array is allowed while collecting data. Keep unsourced entries `unreviewed`. Record differing traditions and interpretations in notes and preserve their respective citations.
+Date citations may be omitted; Swift treats them as an empty array. Claim notes map language tags to text. An empty citations array is allowed while collecting data. Keep unsourced entries `unreviewed`. Record differing traditions and interpretations in notes and preserve their respective citations.
 
 Open `figures.json` in an editor with JSON Schema support. Its `$schema` points to the adjacent schema. Review cross-record references and historical date ranges when editing.

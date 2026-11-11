@@ -48,7 +48,7 @@ struct FigureBrowser: View {
         }
         .navigationTitle("Figures")
         .task {
-            library = await FigureFeed.shared.load()
+            library = await FigureStore.shared.load()
         }
     }
 }
@@ -78,7 +78,7 @@ struct FigureDestination: View {
             }
         }
         .task {
-            library = await FigureFeed.shared.load()
+            library = await FigureStore.shared.load()
         }
     }
 }
@@ -126,7 +126,7 @@ struct FigureObservanceRow: View {
         .task(id: event.figureIDs) {
             ids = []
             guard !event.figureIDs.isEmpty,
-                  let library = try? await FigureFeed.shared.load().get() else { return }
+                  let library = try? await FigureStore.shared.load().get() else { return }
             ids = event.figureIDs.filter { library.byID[$0] != nil }
         }
     }
@@ -164,7 +164,7 @@ private struct ObservanceFigurePicker: View {
         }
         .navigationTitle("Figures")
         .task {
-            library = await FigureFeed.shared.load()
+            library = await FigureStore.shared.load()
         }
     }
 }

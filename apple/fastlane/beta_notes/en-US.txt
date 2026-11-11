@@ -1,3 +1,5 @@
+Test the new Hadith library downloads by book, including pause, retry, removal and offline reading. Try the separate supplications download and translations, Quran reading and search, and saved bookmarks and highlights. Test the prayer tracker and camera placement.
+
 Find Quran verses and Hadith by meaning. When local search finds nothing, try online search from the same search bar. Your selected book and chapter stay in scope. Local text search remains available offline.
 
 Highlight Quran and Hadith passages and revisit them in Highlights.

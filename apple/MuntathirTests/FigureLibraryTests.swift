@@ -21,13 +21,13 @@ struct FigureLibraryTests {
         let prophet = try #require(library.byID["prophet-muhammad"])
         #expect(prophet.names(.personal, locale: Locale(identifier: "ar")) == ["محمد"])
         #expect(prophet.names(.full, locale: Locale(identifier: "ar")) == ["محمد بن عبد الله"])
-        #expect(library.people.filter { FigureGroup.group(for: $0.id) == .infallibles }.count == 14)
-        #expect(library.people.filter { FigureGroup.group(for: $0.id) == .companions }.count == 4)
+        #expect(library.people.filter { FigureGroup.group(for: $0.id) == .infallibles }.count == 5)
+        #expect(library.people.filter { FigureGroup.group(for: $0.id) == .companions }.count == 1)
         #expect(library.people.filter { FigureGroup.group(for: $0.id) == .prophets }.count == 3)
     }
 
     @Test func exampleDerivesFullAndHalfSiblingsAndGroupsChildren() throws {
-        let library = try FigureLibrary(data: exampleData())
+        let library = try FigureLibrary(data: exampleData(), verifiedOnly: false)
         let id = "example-child-a"
         let claim = try #require(library.parents[id]?.first)
         let siblings = library.siblings(of: id, account: claim)
@@ -43,7 +43,7 @@ struct FigureLibraryTests {
         parentages[2]["mother_id"] = NSNull()
         parentages[2].removeValue(forKey: "union_id")
         dataset["parentages"] = parentages
-        let unknown = try FigureLibrary(data: JSONSerialization.data(withJSONObject: dataset))
+        let unknown = try FigureLibrary(data: JSONSerialization.data(withJSONObject: dataset), verifiedOnly: false)
         let first = try #require(unknown.parents["example-child-a"]?.first)
         #expect(unknown.siblings(of: first.childId, account: first)[.unknown]?.map(\.id) == ["example-child-c"])
 
@@ -52,7 +52,7 @@ struct FigureLibraryTests {
         alternative["mother_id"] = "example-mother-a"
         parentages.append(alternative)
         dataset["parentages"] = parentages
-        let conflict = try FigureLibrary(data: JSONSerialization.data(withJSONObject: dataset))
+        let conflict = try FigureLibrary(data: JSONSerialization.data(withJSONObject: dataset), verifiedOnly: false)
         #expect(conflict.childGroups(of: "example-father").flatMap(\.self).count == 2)
         #expect(conflict.childGroups(of: "example-father", choices: ["example-child-c": "alternate-parentage"])
             .flatMap(\.self).count == 3)
@@ -60,7 +60,41 @@ struct FigureLibraryTests {
         parentages[2]["father_id"] = "missing-person"
         dataset["parentages"] = parentages
         let invalid = try JSONSerialization.data(withJSONObject: dataset)
-        #expect(throws: FigureLibrary.Failure.invalidRelationships) { try FigureLibrary(data: invalid) }
+        #expect(throws: FigureLibrary.Failure.invalidRelationships) { try FigureLibrary(data: invalid, verifiedOnly: false) }
+    }
+
+    @Test func bundledStoreLoadsWithoutNetwork() async throws {
+        let library = try await FigureStore().load().get()
+        #expect(!library.people.isEmpty)
+        #expect(library.people.allSatisfy { $0.verified == true })
+        #expect(library.byID["abbas-ibn-ali"]?.deathDates.first?.citations.isEmpty == true)
+    }
+
+    @Test func unverifiedPeopleAndTheirRelationshipsAreExcluded() throws {
+        var dataset = try #require(JSONSerialization.jsonObject(with: exampleData()) as? [String: Any])
+        var people = try #require(dataset["people"] as? [[String: Any]])
+        #expect(try FigureLibrary(data: exampleData()).people.isEmpty)
+        for index in people.indices {
+            people[index]["verified"] = true
+        }
+        people[0]["verified"] = false
+        let excluded = try #require(people[0]["id"] as? String)
+        dataset["people"] = people
+        let library = try FigureLibrary(data: JSONSerialization.data(withJSONObject: dataset))
+        #expect(library.byID[excluded] == nil)
+        #expect(library.parents.values.flatMap(\.self).allSatisfy {
+            $0.childId != excluded && !$0.parentIDs.contains(excluded)
+        })
+        #expect(library.partners.values.flatMap(\.self).allSatisfy { !$0.partnerIds.contains(excluded) })
+    }
+
+    @Test func claimNotesAcceptLocalizedAndLegacyTextAndCitationsCanBeAbsent() throws {
+        let base = #"{"calendar":"hijri","era":"AH","precision":"exact","start":{"year":61,"month":1,"day":10},"original":"61 AH","status":"accepted","notes":NOTES}"#
+        for notes in [#"{"ar":"ملاحظة","en":"Note"}"#, #""Note""#] {
+            let date = try JSONDecoder().decode(FigureDate.self, from: Data(base.replacingOccurrences(of: "NOTES", with: notes).utf8))
+            #expect(date.citations.isEmpty)
+            #expect(date.notes?.values["en"] == "Note")
+        }
     }
 
     private func productionLibrary() throws -> FigureLibrary {

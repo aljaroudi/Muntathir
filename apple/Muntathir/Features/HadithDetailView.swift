@@ -58,7 +58,7 @@ struct HadithDetailView: View {
                                     .accessibilityIdentifier("hadith-detail-chapter")
                             }
                         }
-                        .listRowBackground(HadithBookStyle.background(for: narration.collectionID))
+                        .readingRowBackground()
                     }
                     Section {
                         if !narration.arabic.isEmpty {
@@ -86,7 +86,7 @@ struct HadithDetailView: View {
                                 .accessibilityIdentifier("supplication-full-translation")
                         }
                     }
-                    .listRowBackground(HadithBookStyle.background(for: narration.collectionID))
+                    .readingRowBackground()
                     let gradings = detail.gradings.filter {
                         $0.status == "judgment" && !$0.judgment(locale: locale).isEmpty
                     }
@@ -131,11 +131,7 @@ struct HadithDetailView: View {
             .padding(.horizontal, 20)
             .padding(.vertical)
         }
-        .background {
-            if let detail {
-                HadithBookStyle.background(for: detail.narration.collectionID).ignoresSafeArea()
-            }
-        }
+        .readingBackground()
         .textSelection(.enabled)
         .environment(\.focusedHighlight, highlight)
         .scrollPosition($scrollPosition)
@@ -154,11 +150,6 @@ struct HadithDetailView: View {
             ?? String(localized: isSupplication ? "Supplications" : "Hadith"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if isSupplication {
-                ToolbarItem(placement: .topBarTrailing) {
-                    SupplicationTranslationPicker(languages: translationLanguages)
-                }
-            }
             ToolbarItem(placement: .topBarTrailing) {
                 if let detail {
                     HadithBookmarkButton(narration: detail.narration, failed: $bookmarkFailed)
@@ -166,7 +157,7 @@ struct HadithDetailView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 if let detail {
-                    HadithActions(textSizePresented: $textSizePresented, narration: detail.narration)
+                    HadithActions(textSizePresented: $textSizePresented, narration: detail.narration, translationLanguages: translationLanguages)
                         .readingSizePresentation(isPresented: $textSizePresented, compact: sizeClass != .regular)
                 }
             }

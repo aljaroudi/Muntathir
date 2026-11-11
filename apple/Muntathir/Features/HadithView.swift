@@ -111,7 +111,7 @@ struct HadithView: View {
                                     }
                                     .accessibilityIdentifier("hadith-book-\(book.id)")
                                     .tint(.primary)
-                                    .listRowBackground(HadithBookStyle.background(for: book.id))
+                                    .readingRowBackground()
                                     .modifier(HadithListAnchor(id: "book:" + book.id, visibleRows: $visibleRows))
                                     .id("book:" + book.id)
                                 }
@@ -123,7 +123,7 @@ struct HadithView: View {
                     Section("Introduction") {
                         ForEach(introductions) { introduction in
                             HadithIntroductionRow(introduction: introduction, reader: reader)
-                                .listRowBackground(HadithBookStyle.background(for: request.collectionID ?? ""))
+                                .readingRowBackground()
                                 .modifier(HadithListAnchor(id: "introduction:\(introduction.id)", visibleRows: $visibleRows))
                                 .id("introduction:\(introduction.id)")
                         }
@@ -228,6 +228,7 @@ struct HadithView: View {
                 .background(.bar)
             }
         }
+        .readingBackground()
         .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search Hadith")
@@ -291,8 +292,9 @@ struct HadithView: View {
         }
     }
 
-    private var toolbarActions: some View {
+    @ViewBuilder private var toolbarActions: some View {
         HadithTranslationPicker()
+        ReadingBackgroundPicker()
     }
 
     @ViewBuilder private var chapterResults: some View {
@@ -326,7 +328,7 @@ struct HadithView: View {
                         .foregroundStyle(.primary)
                     }
                     .tint(.primary)
-                    .listRowBackground(HadithBookStyle.background(for: chapter.collectionID))
+                    .readingRowBackground()
                     .accessibilityIdentifier("hadith-chapter-\(chapter.id)")
                     .modifier(HadithListAnchor(id: "chapter:\(chapter.bookID):\(chapter.index)", visibleRows: $visibleRows))
                     .id("chapter:\(chapter.bookID):\(chapter.index)")
@@ -493,7 +495,7 @@ struct HadithView: View {
                         .foregroundStyle(.primary)
                 }
                 .tint(.primary)
-                .listRowBackground(HadithBookStyle.background(for: narration.collectionID))
+                .readingRowBackground()
                 .contextMenu {
                     Button("Open", systemImage: "arrow.up.forward") {
                         searchFocused = false
@@ -635,6 +637,7 @@ struct HadithSavedView: View {
                 }
             }
         }
+        .readingBackground()
         .navigationTitle("Saved")
         .task(id: highlights.map { $0.id + String($0.modifiedAt.timeIntervalSince1970) }.joined(separator: "|") + bookmarks.map(\.id).joined(separator: "|") + "-\(retry)") {
             loading = true

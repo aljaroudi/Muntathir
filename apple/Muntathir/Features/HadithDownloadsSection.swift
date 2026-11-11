@@ -31,12 +31,11 @@ struct HadithDownloadsSection: View {
                     Text(book.title(locale: locale))
                     Spacer()
                     if book.installed {
-                        Button("Remove download", systemImage: "trash", role: .destructive) {
-                            removal = book.id
-                            confirming = true
+                        if let bytes = book.estimatedBytes {
+                            Text(verbatim: "≈ " + ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file))
+                                .font(.subheadline).foregroundStyle(.secondary)
+                                .accessibilityLabel(Text("Estimated size: \(ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file))"))
                         }
-                        .accessibilityLabel(Text("Remove \(book.title(locale: locale))"))
-                        .accessibilityIdentifier("downloads-remove-book-\(book.id)")
                     } else {
                         Button("Download", systemImage: "arrow.down.circle") {
                             Task { await assets.download(title: book.id) }
@@ -45,18 +44,23 @@ struct HadithDownloadsSection: View {
                         .accessibilityIdentifier("downloads-get-book-\(book.id)")
                     }
                 }
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    if book.installed {
+                        Button("Remove download", systemImage: "trash", role: .destructive) {
+                            removal = book.id
+                            confirming = true
+                        }
+                        .accessibilityIdentifier("downloads-remove-book-\(book.id)")
+                        .disabled(assets.busy || assets.isDownloading)
+                    }
+                }
                 .labelStyle(.iconOnly)
                 .disabled(assets.busy || assets.isDownloading)
             }
-            if assets.hasLocalAsset {
-                Button("Remove download", systemImage: "trash", role: .destructive) {
-                    removal = nil
-                    confirming = true
-                }
-                .disabled(assets.busy || assets.isDownloading)
-                .accessibilityIdentifier("downloads-remove-\(assets.packID)")
-            }
         } header: { Text(title) } footer: {
+            if assets.books.contains(where: { $0.estimatedBytes != nil }) {
+                Text("Book sizes are estimates. Shared library storage may affect the space freed.")
+            }
             if assets.books.contains(where: { !$0.installed }) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Restoring a book downloads the full library temporarily. Only your selected books are kept.")

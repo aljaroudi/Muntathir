@@ -59,7 +59,9 @@ struct HadithShareContent {
     }
 
     private var translatedTexts: [String] {
-        if narration.isSupplication { return narration.translation.map { [$0.text] } ?? [] }
+        if narration.isSupplication {
+            return narration.translation.map { [$0.text] } ?? []
+        }
         return showEnglish ? [narration.englishNarrator, narration.english] : []
     }
 
@@ -115,6 +117,7 @@ struct HadithShareArtwork: View {
 struct HadithActions: View {
     @Binding var textSizePresented: Bool
     let narration: Hadith
+    var translationLanguages: [String] = []
     @Environment(\.locale) private var locale
     @AppStorage("hadithEnglishEnabled") private var showEnglish = true
     private struct ShareItem: Identifiable {
@@ -124,9 +127,7 @@ struct HadithActions: View {
 
     @State private var shared: ShareItem?
     @State private var copied = false
-    @State private var editing: ReadingHighlight?
     @State private var bookmarkFailed = false
-    @Environment(\.quranUserStore) private var store
 
     private var content: HadithShareContent {
         .init(narration: narration, showEnglish: showEnglish, locale: locale)
@@ -148,20 +149,20 @@ struct HadithActions: View {
                 }
             }
             Divider()
-            if !narration.isSupplication {
+            if narration.isSupplication {
+                SupplicationTranslationPicker(languages: translationLanguages)
+            } else {
                 HadithTranslationPicker()
             }
+            ReadingBackgroundPicker()
             ReadingSizeMenu(isPresented: $textSizePresented)
-            HighlightActions(source: narration.source?.key ?? "", isHadith: true, excerpt: content.body, reference: content.reference, editing: $editing, bookmarkFailed: $bookmarkFailed)
+            BookmarkButton(source: narration.source?.key ?? "", isHadith: true, excerpt: content.body, reference: content.reference, failed: $bookmarkFailed)
         } label: {
             Label(LocalizedStringKey(narration.isSupplication ? "Supplication actions" : "Hadith actions"), systemImage: "ellipsis.circle").labelStyle(.iconOnly)
                 .frame(minWidth: 44, minHeight: 44)
         }
         .accessibilityIdentifier("hadith-actions")
         .sheet(item: $shared) { AyahShareSheet(items: $0.items) }
-        .sheet(item: $editing) { value in
-            HighlightEditor(highlight: value, existing: store?.highlights.contains { $0.id == value.id } == true)
-        }
         .alert("Text copied", isPresented: $copied) { Button("OK", role: .cancel) {} }
         .alert("Unable to save bookmark", isPresented: $bookmarkFailed) {
             Button("OK", role: .cancel) {}

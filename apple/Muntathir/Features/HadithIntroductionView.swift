@@ -56,12 +56,14 @@ struct HadithIntroductionView: View {
             .readingColumn()
             .padding()
         }
+        .readingBackground()
         .navigationTitle("Introduction")
         .navigationBarTitleDisplayMode(.inline)
         .accessibilityIdentifier("hadith-introduction-reader")
         .toolbar {
             Menu {
                 HadithTranslationPicker()
+                ReadingBackgroundPicker()
                 ReadingSizeMenu(isPresented: $textSizePresented)
             } label: {
                 Label("Reading options", systemImage: "textformat")

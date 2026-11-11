@@ -1,3 +1,5 @@
+Teste Hadith-Downloads für einzelne Bücher, einschließlich Pausieren, erneutem Versuch, Entfernen und Offline-Lesen. Prüfe den separaten Download der Bittgebete und Übersetzungen, Koranlesen und Suche sowie Lesezeichen und Markierungen. Teste den Gebetstracker und die Kameraposition.
+
 Finde Koranverse und Hadithe nach ihrer Bedeutung. Wenn die lokale Suche nichts findet, probiere die Onlinesuche in derselben Suchleiste. Das gewählte Buch und Kapitel bleiben berücksichtigt. Die lokale Textsuche bleibt offline verfügbar.
 
 Markiere Passagen im Koran und in Hadithen und finde sie unter Markierungen wieder.

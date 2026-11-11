@@ -1,3 +1,5 @@
+Uji muat turun buku hadis, termasuk jeda, cuba semula, buang dan bacaan luar talian. Cuba muat turun doa yang berasingan dan terjemahannya, bacaan dan carian al-Quran, serta penanda buku dan sorotan. Uji penjejak solat dan kedudukan kamera.
+
 Cari ayat al-Quran dan hadis mengikut makna. Jika carian setempat tidak menemui hasil, cuba carian dalam talian dari bar yang sama. Buku dan bab yang dipilih dikekalkan. Carian teks setempat masih tersedia di luar talian.
 
 Serlahkan petikan al-Quran dan hadis, kemudian baca semula dalam Sorotan.

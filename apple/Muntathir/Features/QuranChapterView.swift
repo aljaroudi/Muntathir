@@ -50,6 +50,7 @@ struct QuranChapterView: View {
                                 }
                                 .id(ayah.number)
                                 .accessibilityIdentifier("quran-verse-\(ayah.id)")
+                                .readingRowBackground()
                         }
                     }
                 }
@@ -66,12 +67,14 @@ struct QuranChapterView: View {
             }
         }
         .environment(\.focusedHighlight, focusReady ? highlight : nil)
+        .readingBackground()
         .navigationTitle(surah.title(locale: locale))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     QuranReadingModePicker()
+                    ReadingBackgroundPicker()
                     QuranTranslationPicker()
                     ReadingSizeMenu(isPresented: $textSizePresented)
                 } label: {

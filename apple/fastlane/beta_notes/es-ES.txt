@@ -1,3 +1,5 @@
+Prueba las descargas de libros de hadices, incluida la pausa, el reintento, la eliminación y la lectura sin conexión. Prueba la descarga independiente de súplicas y sus traducciones, la lectura y búsqueda del Corán, los marcadores y resaltados. Comprueba el seguimiento de la oración y la posición de la cámara.
+
 Encuentra aleyas del Corán y hadices por su significado. Si la búsqueda local no encuentra nada, prueba la búsqueda en línea desde la misma barra. Se mantienen el libro y el capítulo seleccionados. La búsqueda de texto local sigue disponible sin conexión.
 
 Resalta pasajes del Corán y de los hadices y vuelve a ellos en Resaltados.

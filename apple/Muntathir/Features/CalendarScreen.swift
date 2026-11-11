@@ -80,13 +80,19 @@ struct CalendarScreen: View {
                     }.labelStyle(.iconOnly).accessibilityIdentifier("calendar-jump")
                 }
             }
-            .sheet(item: $pickerMonth, onDismiss: {
+            .sheet(isPresented: Binding(get: { pickerMonth != nil }, set: {
+                if !$0 {
+                    pickerMonth = nil
+                }
+            }), onDismiss: {
                 if let day = pendingDay {
                     scroll(to: Self.jumpTarget(day, eventDays: model.content.events.filter { $0.month == day.month.month }.map(\.day), engine: engine), proxy: proxy)
                     pendingDay = nil
                 }
-            }) { month in
-                datePicker(month, engine: engine)
+            }) {
+                if let month = pickerMonth {
+                    datePicker(month, engine: engine)
+                }
             }
         }
         .frame(maxWidth: 760).frame(maxWidth: .infinity)

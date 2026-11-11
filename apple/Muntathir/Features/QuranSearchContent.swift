@@ -72,6 +72,7 @@ struct QuranSearchContent: View {
                                 }
                             }
                         }
+                        .readingRowBackground()
                         .accessibilityIdentifier("quran-surah-\(surah.id)")
                     }
                 }
@@ -133,6 +134,7 @@ struct QuranSearchContent: View {
                         QuranVerseRow(ayah: ayah, translation: translation, preview: true, showsActions: false)
                             .contentShape(.rect)
                     }
+                    .readingRowBackground()
                     .accessibilityIdentifier("quran-result-\(ayah.id)")
                     .accessibilityLabel(Text("Verse \(QuranReference.display(ayah.id, locale: locale))"))
                     .accessibilityValue(ayah.text)

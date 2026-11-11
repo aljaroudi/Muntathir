@@ -37,6 +37,7 @@
     {
       "path": "<PROJECT>/../shared/figures/figures.json",
       "target-membership": [
+        "Muntathir/resources",
         "MuntathirTests/resources",
         "MuntathirUITests/resources",
       ],

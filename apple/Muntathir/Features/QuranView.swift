@@ -18,12 +18,18 @@ struct QuranView: View {
 
     var body: some View {
         QuranSearchContent(query: $query, reader: reader)
+            .readingBackground()
             .navigationTitle("The Holy Quran")
             .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Surah, 2:255, or Quran text")
             .autocorrectionDisabled()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    QuranTranslationPicker()
+                    Menu {
+                        QuranTranslationPicker()
+                        ReadingBackgroundPicker()
+                    } label: {
+                        Label("Reading options", systemImage: "textformat")
+                    }.accessibilityIdentifier("quran-reading-options")
                 }
             }
     }

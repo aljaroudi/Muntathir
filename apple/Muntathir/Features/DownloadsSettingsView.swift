@@ -8,10 +8,12 @@ struct DownloadsSettingsView: View {
     @State private var removal: Removal?
 
     private enum Removal: Identifiable {
-        case translations, language(String)
+        case translations, language(String), hadith, supplications
         var id: String {
             switch self {
             case .translations: "translations"
+            case .hadith: "hadith"
+            case .supplications: "supplications"
             case let .language(id): id
             }
         }
@@ -26,8 +28,6 @@ struct DownloadsSettingsView: View {
                 HadithDownloadsSection(assets: supplications, title: "Supplications")
             }
             Section {
-                LabeledContent("Arabic", value: String(localized: "Included"))
-                    .accessibilityIdentifier("downloads-bundled-ar")
                 LabeledContent("English", value: String(localized: "Included"))
                     .accessibilityIdentifier("downloads-bundled-en")
                 ForEach(QuranTranslation.downloadable) { translation in
@@ -36,18 +36,21 @@ struct DownloadsSettingsView: View {
                         Spacer()
                         if let size = quran.installedSizes[translation.id] {
                             AssetSizeText(bytes: size).foregroundStyle(.secondary)
-                            Button("Remove download", systemImage: "trash", role: .destructive) {
-                                removal = .language(translation.id)
-                            }
-                            .labelStyle(.iconOnly)
-                            .accessibilityLabel(Text("Remove \(locale.localizedString(forIdentifier: translation.language) ?? translation.language)"))
-                            .accessibilityIdentifier("downloads-remove-\(translation.id)")
                         } else {
                             Button(quran.downloadState == .failed ? LocalizedStringKey("Try again") : LocalizedStringKey("Download"), systemImage: "arrow.down.circle") {
                                 Task { await quran.download(requested: translation.id) }
                             }
                             .labelStyle(.iconOnly)
                             .accessibilityIdentifier("downloads-get-\(translation.id)")
+                        }
+                    }
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        if quran.installedSizes[translation.id] != nil {
+                            Button("Remove download", systemImage: "trash", role: .destructive) {
+                                removal = .language(translation.id)
+                            }
+                            .accessibilityIdentifier("downloads-remove-\(translation.id)")
+                            .disabled(quran.busy || quran.isDownloading)
                         }
                     }
                     .disabled(quran.busy || quran.isDownloading)
@@ -57,14 +60,31 @@ struct DownloadsSettingsView: View {
                 } else if quran.downloadState == .failed {
                     Text("Unable to download. Please try again.").foregroundStyle(.secondary)
                 }
+            } header: { Text("Quran translations") }
+        }
+        .navigationTitle("Downloads")
+        .toolbar {
+            Menu {
+                if let hadith, hadith.hasLocalAsset {
+                    Button("Remove Hadith downloads", systemImage: "trash", role: .destructive) { removal = .hadith }
+                        .accessibilityIdentifier("downloads-remove-hadith")
+                        .disabled(hadith.busy || hadith.isDownloading)
+                }
+                if let supplications, supplications.hasLocalAsset {
+                    Button("Remove Supplication downloads", systemImage: "trash", role: .destructive) { removal = .supplications }
+                        .disabled(supplications.busy || supplications.isDownloading)
+                }
                 if !quran.installedSizes.isEmpty {
                     Button("Remove all translations", systemImage: "trash", role: .destructive) { removal = .translations }
                         .disabled(quran.busy || quran.isDownloading)
                         .accessibilityIdentifier("downloads-remove-translations")
                 }
-            } header: { Text("Quran translations") }
+            } label: {
+                Label("Download actions", systemImage: "ellipsis.circle")
+            }
+            .accessibilityIdentifier("downloads-actions")
+            .disabled(quran.installedSizes.isEmpty && hadith?.hasLocalAsset != true && supplications?.hasLocalAsset != true)
         }
-        .navigationTitle("Downloads")
         .task { await quran.refresh() }
         .confirmationDialog("Remove downloaded content?", isPresented: Binding(get: { removal != nil }, set: {
             if !$0 {
@@ -75,6 +95,8 @@ struct DownloadsSettingsView: View {
                 Button("Remove download", role: .destructive) {
                     Task {
                         switch removal {
+                        case .hadith: await hadith?.remove()
+                        case .supplications: await supplications?.remove()
                         case .translations: await quran.remove(QuranTranslation.downloadable.map(\.id))
                         case let .language(id): await quran.remove([id])
                         }

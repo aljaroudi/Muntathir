@@ -41745,6 +41745,861 @@
           }
         }
       }
+    },
+    "System" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "النظام"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistema"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سیستم"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Système"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistem"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistema"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistem"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Система"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistem"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سسٹم"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系统"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系統"
+          }
+        }
+      }
+    },
+    "Background" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Background"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الخلفية"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hintergrund"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fondo"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "پس‌زمینه"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrière-plan"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Latar belakang"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sfondo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背景"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Latar belakang"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фон"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arka plan"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "پس منظر"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背景"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背景"
+          }
+        }
+      }
+    },
+    "Warm Paper" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warm Paper"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ورق دافئ"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warmes Papier"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Papel cálido"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "کاغذ گرم"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Papier chaud"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kertas hangat"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carta calda"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暖かい紙色"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kertas hangat"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тёплая бумага"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sıcak kâğıt"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "گرم کاغذی رنگ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暖纸色"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暖紙色"
+          }
+        }
+      }
+    },
+    "Soft Gray" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soft Gray"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "رمادي هادئ"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sanftes Grau"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gris suave"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "خاکستری ملایم"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gris doux"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abu-abu lembut"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grigio tenue"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "柔らかなグレー"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kelabu lembut"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мягкий серый"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yumuşak gri"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ہلکا سرمئی"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "柔灰色"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "柔灰色"
+          }
+        }
+      }
+    },
+    "Download actions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download actions"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إجراءات التنزيلات"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download-Aktionen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acciones de descargas"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عملیات دانلودها"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actions des téléchargements"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tindakan unduhan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azioni download"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダウンロード操作"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tindakan muat turun"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Действия с загрузками"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İndirme işlemleri"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ڈاؤن لوڈ کے اقدامات"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下载操作"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載操作"
+          }
+        }
+      }
+    },
+    "Remove Hadith downloads" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove Hadith downloads"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إزالة تنزيلات الحديث"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hadith-Downloads entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar descargas de hadices"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حذف دانلودهای حدیث"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer les hadiths téléchargés"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hapus unduhan hadis"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi i hadith scaricati"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ハディースのダウンロードを削除"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Padam muat turun hadis"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить загруженные хадисы"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hadis indirmelerini kaldır"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حدیث کے ڈاؤن لوڈ حذف کریں"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除已下载的圣训"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除已下載的聖訓"
+          }
+        }
+      }
+    },
+    "Remove Supplication downloads" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove Supplication downloads"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إزالة تنزيلات الأدعية"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bittgebet-Downloads entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar descargas de súplicas"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حذف دانلودهای دعا"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer les invocations téléchargées"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hapus unduhan doa"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi le suppliche scaricate"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "祈願のダウンロードを削除"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Padam muat turun doa"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить загруженные дуа"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dua indirmelerini kaldır"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "دعاؤں کے ڈاؤن لوڈ حذف کریں"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除已下载的祈祷"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除已下載的祈禱"
+          }
+        }
+      }
+    },
+    "Estimated size: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimated size: %@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الحجم التقديري: %@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geschätzte Größe: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamaño estimado: %@"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حجم تقریبی: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taille estimée : %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perkiraan ukuran: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensione stimata: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "推定サイズ：%@"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anggaran saiz: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Примерный размер: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tahmini boyut: %@"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تخمینی حجم: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "估计大小：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "估計大小：%@"
+          }
+        }
+      }
+    },
+    "Book sizes are estimates. Shared library storage may affect the space freed." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Book sizes are estimates. Shared library storage may affect the space freed."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أحجام الكتب تقديرية. قد يؤثر التخزين المشترك للمكتبة في المساحة المُحرَّرة."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buchgrößen sind Schätzungen. Gemeinsam genutzter Speicher kann den freigegebenen Platz beeinflussen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los tamaños son estimados. El almacenamiento compartido puede afectar al espacio liberado."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حجم کتاب‌ها تقریبی است. فضای مشترک کتابخانه ممکن است بر فضای آزادشده تأثیر بگذارد."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les tailles sont estimées. Le stockage partagé peut modifier l’espace libéré."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ukuran buku adalah perkiraan. Penyimpanan bersama dapat memengaruhi ruang yang dibebaskan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le dimensioni sono stimate. Lo spazio condiviso può influire sullo spazio liberato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本のサイズは推定値です。共有ストレージにより解放される容量が変わる場合があります。"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saiz buku ialah anggaran. Storan bersama boleh mempengaruhi ruang yang dikosongkan."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Размеры книг приблизительные. Общее хранилище может влиять на освобождаемое место."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kitap boyutları tahminidir. Paylaşılan depolama, boşaltılan alanı etkileyebilir."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "کتابوں کے حجم تخمینی ہیں۔ مشترکہ ذخیرہ خالی ہونے والی جگہ پر اثر ڈال سکتا ہے۔"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "书籍大小为估计值。共享存储可能影响释放的空间。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "書籍大小為估計值。共享儲存可能影響釋放的空間。"
+          }
+        }
+      }
     }
   },
   "version" : "1.3"

@@ -33,6 +33,7 @@ struct QuranReadingView: View {
                 QuranSearchContent(query: $query, reader: reader, surah: searchSurah ?? currentSurah)
             }
         }
+        .readingBackground()
         .searchable(text: $query, isPresented: $searchPresented,
                     placement: .navigationBarDrawer(displayMode: .always), prompt: "Verse number or Quran text")
         .searchFocused($searchFocused)

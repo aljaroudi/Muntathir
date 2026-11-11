@@ -16,17 +16,58 @@ actor HadithLocalLibrary {
         FileManager.default.fileExists(atPath: url.path) ? url : nil
     }
 
-    func books() throws -> [DownloadedBook] {
+    func books(includeEstimates: Bool = true) throws -> [DownloadedBook] {
         guard FileManager.default.fileExists(atPath: url.path) else { return [] }
         let db = try QuranConnection(path: url.path, flags: SQLITE_OPEN_READONLY)
+        let weights = includeEstimates ? try contentSizes(db) : [:]
+        let total = weights.values.reduce(Int64(0), +)
+        let bytes = try Int64(url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0)
         return try db.query("""
         SELECT c.id,c.name_ar,c.name_en, EXISTS(
             SELECT 1 FROM hadith h JOIN book b ON b.id=h.book_id WHERE b.collection_id=c.id
         ) FROM download_catalog c ORDER BY c.sort_order,c.id
         """) {
             DownloadedBook(id: QuranConnection.text($0, 0), arabic: QuranConnection.text($0, 1),
-                           english: QuranConnection.text($0, 2), installed: sqlite3_column_int($0, 3) != 0)
+                           english: QuranConnection.text($0, 2), installed: sqlite3_column_int($0, 3) != 0,
+                           estimatedBytes: total > 0 && sqlite3_column_int($0, 3) != 0
+                               ? Int64(Double(bytes) * Double(weights[QuranConnection.text($0, 0), default: 0]) / Double(total)) : nil)
         }
+    }
+
+    /// Books share pages and search indexes; apportion actual storage by content bytes.
+    private func contentSizes(_ db: QuranConnection) throws -> [String: Int64] {
+        let tables = try db.query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'") {
+            QuranConnection.text($0, 0)
+        }
+        func quoted(_ name: String) -> String {
+            "\"" + name.replacingOccurrences(of: "\"", with: "\"\"") + "\""
+        }
+        let installed = try Set(db.query("SELECT DISTINCT b.collection_id FROM hadith h JOIN book b ON b.id=h.book_id") {
+            QuranConnection.text($0, 0)
+        })
+        var sizes: [String: Int64] = [:]
+        for table in tables {
+            try Task.checkCancellation()
+            let name = quoted(table)
+            let columns = try db.query("PRAGMA table_info(\(name))") { QuranConnection.text($0, 1) }
+            let join: String
+            switch table {
+            case "hadith": join = "JOIN book b ON b.id=t.book_id"
+            case "book": join = "JOIN book b ON b.id=t.id"
+            case "chapter", "introduction": join = "JOIN book b ON b.id=t.book_id"
+            default:
+                guard columns.contains("hadith_id") else { continue }
+                join = "JOIN hadith h ON h.id=t.hadith_id JOIN book b ON b.id=h.book_id"
+            }
+            let weight = columns.map { "COALESCE(length(CAST(t.\(quoted($0)) AS BLOB)),0)" }.joined(separator: "+")
+            let rows = try db.query("SELECT b.collection_id,SUM(\(weight)) FROM \(name) t \(join) GROUP BY b.collection_id") {
+                (QuranConnection.text($0, 0), sqlite3_column_int64($0, 1))
+            }
+            for (id, bytes) in rows where installed.contains(id) {
+                sizes[id, default: 0] += bytes
+            }
+        }
+        return sizes
     }
 
     func prepare(source: URL, restoring title: String? = nil, removing: String? = nil) throws -> URL {
@@ -42,7 +83,7 @@ actor HadithLocalLibrary {
         let stage = root.appending(path: "staging-\(UUID().uuidString).db")
         // The previous database remains usable until this entire replacement is validated.
         do {
-            var excluded = try Set(books().filter { !$0.installed }.map(\.id))
+            var excluded = try Set(books(includeEstimates: false).filter { !$0.installed }.map(\.id))
             if let title {
                 excluded.remove(title)
             }

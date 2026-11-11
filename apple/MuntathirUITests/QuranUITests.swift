@@ -292,14 +292,30 @@ final class QuranUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["quran-verse-1:1"].exists)
     }
 
+    @MainActor func testReadingBackgroundPersistsAcrossModes() {
+        let app = openQuran()
+        app.buttons["quran-surah-2"].tap()
+        app.buttons["quran-reading-options"].tap()
+        app.buttons["reading-background"].tap()
+        app.buttons["Soft Gray"].tap()
+        app.buttons["quran-reading-options"].tap()
+        app.buttons["Mushaf"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["quran-page-2"].waitForExistence(timeout: 10))
+        app.buttons["quran-reading-options"].tap()
+        XCTAssertTrue(app.buttons["reading-background"].exists)
+        XCTAssertTrue(app.buttons["quran-translation-picker"].exists)
+        XCTAssertFalse(app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Edit highlight")).firstMatch.exists)
+    }
+
     @MainActor func testSettingsOffersDownloadManagement() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
         app.buttons["settings"].firstMatch.tap()
         app.buttons["settings-downloads"].tap()
-        XCTAssertTrue(app.buttons["downloads-remove-hadith"].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.descendants(matching: .any)["downloads-bundled-ar"].firstMatch.exists)
+        XCTAssertTrue(app.buttons["downloads-actions"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["downloads-remove-hadith"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["downloads-bundled-ar"].firstMatch.exists)
         XCTAssertTrue(app.descendants(matching: .any)["downloads-bundled-en"].firstMatch.exists)
         XCTAssertTrue(app.buttons["downloads-get-de.bubenheim"].exists)
         let screenshot = XCTAttachment(screenshot: app.screenshot())

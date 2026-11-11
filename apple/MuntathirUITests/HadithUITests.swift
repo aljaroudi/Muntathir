@@ -282,9 +282,8 @@ extension HadithUITests {
         XCTAssertTrue(arabic.waitForExistence(timeout: 5))
         XCTAssertEqual(arabic.frame.minY, before, accuracy: 30)
         app.buttons["hadith-actions"].tap()
-        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Edit highlight")).firstMatch.tap()
-        XCTAssertEqual(app.staticTexts["highlight-note-preview"].label, "Saved Hadith note")
-        app.buttons["Done"].tap()
+        XCTAssertFalse(app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Edit highlight")).firstMatch.exists)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.1, dy: 0.5)).tap()
         app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(app.buttons["hadith-result-51"].waitForExistence(timeout: 5))
         for _ in 0 ..< 3 {
@@ -353,7 +352,7 @@ extension HadithUITests {
         image.lifetime = .keepAlways
         add(image)
         app.buttons["hadith-actions"].tap()
-        XCTAssertTrue(app.buttons["تظليل"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["نسخ النص"].waitForExistence(timeout: 5))
     }
 }
 

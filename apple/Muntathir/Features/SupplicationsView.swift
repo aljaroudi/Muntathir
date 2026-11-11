@@ -85,6 +85,7 @@ struct SupplicationsView: View {
                                     }
                                     .padding(.vertical, 4)
                                 }
+                                .readingRowBackground()
                                 .accessibilityIdentifier(prayer.collectionID == Hadith.supplicationCollectionID ? "supplication-\(prayer.number - 1)" : "supplication-\(prayer.source?.key ?? String(prayer.id))")
                             }
                         }
@@ -92,12 +93,19 @@ struct SupplicationsView: View {
                 }
             }
         }
+        .readingBackground()
         .navigationTitle("Supplications")
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search supplications")
         .autocorrectionDisabled()
         .scrollDismissesKeyboard(.interactively)
         .toolbar {
-            SupplicationTranslationPicker(languages: languages)
+            Menu {
+                SupplicationTranslationPicker(languages: languages)
+                ReadingBackgroundPicker()
+            } label: {
+                Label("Reading options", systemImage: "textformat")
+            }
+            .accessibilityIdentifier("supplication-reading-options")
         }
         .task(id: Search(query: query, retry: retry, translation: translation, locale: locale.identifier)) {
             loading = true

@@ -1,3 +1,5 @@
+Testez le téléchargement des livres de hadiths, la pause, la reprise, la suppression et la lecture hors ligne. Essayez le téléchargement séparé des invocations et leurs traductions, la lecture et la recherche du Coran, les signets et les passages surlignés. Vérifiez le suivi de prière et le placement de la caméra.
+
 Trouvez des versets du Coran et des hadiths par leur sens. Si la recherche locale ne trouve rien, essayez la recherche en ligne depuis la même barre. Le livre et le chapitre sélectionnés sont conservés. La recherche textuelle locale reste disponible hors ligne.
 
 Surlignez des passages du Coran et des hadiths et retrouvez-les dans les surlignages.

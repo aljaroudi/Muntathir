@@ -1,54 +1,80 @@
 import SwiftUI
 
+@MainActor @Observable final class VerseActionState {
+    var sharedImage: SharedAyah?
+    var copied = false
+    var editing: ReadingHighlight?
+    var bookmarkFailed = false
+    var shareFailed = false
+}
+
 struct VerseActionHost<Content: View>: View {
     let ayah: Ayah
     let translation: QuranTranslation?
     var contextMenu = true
     @ViewBuilder var content: () -> Content
-    @Environment(\.locale) private var locale
-    @State private var sharedImage: SharedAyah?
-    @State private var copied = false
-    @State private var editing: ReadingHighlight?
-    @State private var bookmarkFailed = false
-    @Environment(\.quranUserStore) private var store
-    @State private var shareFailed = false
+    @State private var actions = VerseActionState()
 
     var body: some View {
         Group {
             if contextMenu {
-                content().contextMenu { actions }
+                content().contextMenu { menu }
             } else {
-                Menu { actions } label: { content() }
+                Menu { menu } label: { content() }
             }
         }
-        .sheet(item: $sharedImage) { AyahShareSheet(image: $0.image) }
-        .sheet(item: $editing) { value in
-            HighlightEditor(highlight: value, existing: store?.highlights.contains { $0.id == value.id } == true)
-        }
-        .alert("Text copied", isPresented: $copied) { Button("OK", role: .cancel) {} }
-        .alert("Unable to save bookmark", isPresented: $bookmarkFailed) {
-            Button("OK", role: .cancel) {}
-        } message: { Text("Please try again.") }
-        .alert("Unable to create image", isPresented: $shareFailed) { Button("OK", role: .cancel) {} }
+        .modifier(VerseActionPresentation(actions: actions))
     }
 
-    @ViewBuilder private var actions: some View {
-        let canShare = AyahImageRenderer.canShare(ayah, locale: locale, translation: translation)
+    private var menu: some View {
+        VerseActionMenu(ayah: ayah, translation: translation, contextMenu: contextMenu, actions: actions)
+    }
+}
+
+struct VerseActionPresentation: ViewModifier {
+    @Bindable var actions: VerseActionState
+    @Environment(\.quranUserStore) private var store
+
+    func body(content: Content) -> some View {
+        content
+            .sheet(item: $actions.sharedImage) { AyahShareSheet(image: $0.image) }
+            .sheet(item: $actions.editing) { value in
+                HighlightEditor(highlight: value, existing: store?.highlights.contains { $0.id == value.id } == true)
+            }
+            .alert("Text copied", isPresented: $actions.copied) { Button("OK", role: .cancel) {} }
+            .alert("Unable to save bookmark", isPresented: $actions.bookmarkFailed) { Button("OK", role: .cancel) {} }
+            message: { Text("Please try again.") }
+            .alert("Unable to create image", isPresented: $actions.shareFailed) { Button("OK", role: .cancel) {} }
+    }
+}
+
+struct VerseActionMenu: View {
+    let ayah: Ayah
+    let translation: QuranTranslation?
+    var contextMenu = true
+    @Bindable var actions: VerseActionState
+    @Environment(\.locale) private var locale
+
+    var body: some View {
         Button("Copy text", systemImage: "doc.on.doc") {
             UIPasteboard.general.string = VerseShareContent(ayah: ayah, translation: translation, locale: locale).text
             if !contextMenu {
-                copied = true
+                actions.copied = true
             }
         }
         Button("Share as image", systemImage: "square.and.arrow.up") {
             if let image = AyahImageRenderer.image(for: ayah, locale: locale, translation: translation) {
-                sharedImage = SharedAyah(image: image)
+                actions.sharedImage = SharedAyah(image: image)
             } else {
-                shareFailed = true
+                actions.shareFailed = true
             }
         }
-        .disabled(!canShare)
         Divider()
-        HighlightActions(source: ayah.id, isHadith: false, excerpt: ayah.text, reference: ayah.id, editing: $editing, bookmarkFailed: $bookmarkFailed)
+        if contextMenu {
+            HighlightActions(source: ayah.id, isHadith: false, excerpt: ayah.text, reference: ayah.id,
+                             editing: $actions.editing, bookmarkFailed: $actions.bookmarkFailed)
+        } else {
+            BookmarkButton(source: ayah.id, isHadith: false, excerpt: ayah.text, reference: ayah.id, failed: $actions.bookmarkFailed)
+        }
     }
 }
