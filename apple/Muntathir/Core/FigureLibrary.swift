@@ -52,9 +52,28 @@ struct Figure: Decodable, Identifiable, Sendable {
     let verified: Bool?
     let displayNames: [String: String]
     let names: [String: Names]
+    let birthPlace: [String: String]?
+    let deathPlace: [String: String]?
     let birthDates: [FigureDate]
     let deathDates: [FigureDate]
     let notes: [String: String]?
+
+    /// Year-based estimate in the recorded calendar, not a claim of completed birthdays.
+    var age: Int? {
+        let births = birthDates.filter { $0.status == .accepted }
+        let deaths = deathDates.filter { $0.status == .accepted }
+        for birth in births.isEmpty ? birthDates : births {
+            for death in deaths.isEmpty ? deathDates : deaths where birth.calendar == death.calendar {
+                let birthYear = birth.era == .bh || birth.era == .bce ? 1 - birth.start.year : birth.start.year
+                let deathYear = death.era == .bh || death.era == .bce ? 1 - death.start.year : death.start.year
+                let years = deathYear - birthYear
+                if years >= 0 {
+                    return years
+                }
+            }
+        }
+        return nil
+    }
 
     func title(_ locale: Locale) -> String {
         Self.localized(displayNames, locale) ?? id

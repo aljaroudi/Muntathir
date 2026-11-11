@@ -15,14 +15,10 @@ struct FigureDateView: View {
                     Text("From \(start) to \(point(end))")
                 }
             }
-            HStack {
-                switch date.calendar {
-                case .hijri: Text("Hijri")
-                case .gregorian: Text("Gregorian")
-                case .julian: Text("Julian")
-                }
+            if date.calendar != .hijri {
+                Text(date.calendar == .gregorian ? "Gregorian" : "Julian")
+                    .font(.caption).foregroundStyle(.secondary)
             }
-            .font(.caption).foregroundStyle(.secondary)
         }
     }
 

@@ -25,9 +25,15 @@ describe("legacy figures feed", () => {
   test("flattens localized claim notes when a person becomes verified", () => {
     const source = structuredClone(dataset)
     const person = source.people.find(person => person.id === "ali-al-ridha")!
-    Object.assign(person, { verified: true })
+    Object.assign(person, {
+      verified: true,
+      birth_place: { en: "Birthplace" },
+      death_place: { en: "Deathplace" },
+    })
     const published = legacyDataset(source).people.find(person => person.id === "ali-al-ridha")!
     expect(published.death_dates[0].notes).toBe("The last day of Safar.")
+    expect("birth_place" in published).toBe(false)
+    expect("death_place" in published).toBe(false)
   })
 
   test("keeps notes and citations compatible with released decoders", () => {

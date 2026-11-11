@@ -335,6 +335,12 @@
           "type": "boolean",
           "default": false,
           "description": "Reviewed for publication in the app and legacy feed."
+        },
+        "birth_place": {
+          "$ref": "#/$defs/localizedText"
+        },
+        "death_place": {
+          "$ref": "#/$defs/localizedText"
         }
       },
       "required": [

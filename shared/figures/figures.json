@@ -1300,7 +1300,7 @@
     {
       "id": "zaynab-bint-ali",
       "display_names": {
-        "ar": "السيدة زينب",
+        "ar": "زينب بنت علي",
         "en": "Lady Zaynab"
       },
       "names": {
@@ -2179,10 +2179,6 @@
           ]
         }
       ],
-      "notes": {
-        "en": "One of the four early Shi'a pillars with Abu Dharr, Miqdad, and Ammar. Prophet: 'Salman is of us, the Ahl al-Bayt'.",
-        "ar": "أحد الأركان الأربعة الأوائل مع أبي ذر والمقداد وعمار. قال النبي: سلمان منا أهل البيت."
-      },
       "verified": true
     },
     {
@@ -2242,7 +2238,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "miqdad-ibn-al-aswad",
@@ -2299,7 +2296,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "ammar-ibn-yasir",
@@ -2335,7 +2333,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     }
   ],
   "parentages": [

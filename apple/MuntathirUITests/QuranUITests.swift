@@ -32,6 +32,18 @@ final class QuranUITests: XCTestCase {
         }
     }
 
+    @MainActor func testQuranListShowsDistinctReadingTime() {
+        let app = openQuran()
+        let surah = app.buttons["quran-surah-2"]
+        XCTAssertTrue(surah.waitForExistence(timeout: 10))
+        XCTAssertTrue(surah.label.contains("286 verses"))
+        XCTAssertTrue(surah.label.contains("Estimated reading time:"))
+        let image = XCTAttachment(screenshot: app.screenshot())
+        image.name = "Quran list default paper and reading times"
+        image.lifetime = .keepAlways
+        add(image)
+    }
+
     @MainActor func testSearchRowOpensVerseAndKeepsActionsSeparate() {
         let app = openQuran()
         search("2:26", in: app)

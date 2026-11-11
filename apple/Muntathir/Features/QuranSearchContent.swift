@@ -45,6 +45,7 @@ struct QuranSearchContent: View {
                         QuranSavedVersesView(reader: reader, surahs: surahs)
                     } label: { Label("Saved", systemImage: "bookmark") }
                         .accessibilityIdentifier("quran-saved")
+                        .readingRowBackground()
                 }
             }
             if !matchingSurahs.isEmpty {
@@ -64,16 +65,16 @@ struct QuranSearchContent: View {
                                 if locale.language.languageCode?.identifier != "ar" {
                                     Text(surah.arabic).environment(\.layoutDirection, .rightToLeft)
                                 }
-                                HStack {
+                                HStack(spacing: 12) {
                                     Text("\(counts[surah.id] ?? 0) verses").font(.caption).foregroundStyle(.secondary)
                                     if request.query.isEmpty {
-                                        ReadingTimeHint(words: readingWords[surah.id] ?? 0)
+                                        ReadingTimeHint(words: readingWords[surah.id] ?? 0, showsIcon: true)
                                     }
                                 }
                             }
                         }
-                        .readingRowBackground()
                         .accessibilityIdentifier("quran-surah-\(surah.id)")
+                        .readingRowBackground()
                     }
                 }
             }
@@ -118,6 +119,7 @@ struct QuranSearchContent: View {
                 .id("\(request.surah ?? 0):\(request.query):\(request.translationID):\(request.translationRevision)")
             }
         }
+        .readingBackground()
         .onChange(of: query) { limit = 50 }
         .onChange(of: translationStore.activeID) { limit = 50 }
         .task(id: request) { await load() }

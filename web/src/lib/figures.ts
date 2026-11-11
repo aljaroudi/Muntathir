@@ -22,7 +22,16 @@ export function legacyDataset(source = dataset) {
   const people = source.people
     .filter(person => "verified" in person && person.verified === true)
     .map(person => {
-      const { verified: _, ...published } = person as typeof person & { verified?: boolean }
+      const {
+        verified: _,
+        birth_place: _birthPlace,
+        death_place: _deathPlace,
+        ...published
+      } = person as typeof person & {
+        verified?: boolean
+        birth_place?: Record<string, string>
+        death_place?: Record<string, string>
+      }
       return {
         ...published,
         birth_dates: person.birth_dates.map(legacyClaim),
@@ -66,6 +75,8 @@ export function legacySchema() {
     { properties: Record<string, unknown>; required?: string[] }
   >
   delete definitions.person.properties.verified
+  delete definitions.person.properties.birth_place
+  delete definitions.person.properties.death_place
   for (const name of ["dateClaim", "parentage", "union"]) {
     definitions[name].properties.notes = { type: "string" }
   }

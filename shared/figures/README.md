@@ -13,6 +13,8 @@ Assign every person a permanent, unique ID, for example `prophet-muhammad`. Reus
 
 `display_names` maps language tags to reader-facing names, such as `ar` and `en`. `names` groups arrays of strings by language tag and name kind: `name`, `full_name`, `surname`, `kunya`, `laqab`, `nisba`, `nickname`, or `title`. A historical figure need not have a modern surname. Arabic spellings and transliterations can coexist under separate language keys (for example `ar` and `ar-Latn`). Person `notes` maps language tags to reader-facing notes. The `name` and `full_name` fields contain one string each. Other name kinds contain string arrays.
 
+Optional `birth_place` and `death_place` map language tags to place names. Omit unknown places. The app computes a numeric age estimate from the first accepted birth/death year pair in the same calendar (falling back to recorded alternatives when none are accepted). The calculation accounts for the absence of year zero and does not convert lunar years to solar years. Missing or incompatible dates show no age.
+
 ## Family links
 
 Each `parentages` entry records one claim about a child's parent pair. `father_id` and `mother_id` reference people; either can be `null` when unknown, but not both. `kind` distinguishes biological, adoptive, and foster relationships. A parent must never be their own child, and ancestry must not contain cycles.

@@ -170,17 +170,33 @@ private struct ObservanceFigurePicker: View {
 }
 
 enum FigureGroup: CaseIterable {
-    case infallibles, prophets, companions, other
+    case infallibles, otherInfallibles, messengers, prophets, prophetRelatives, companions, otherCompanions, other
 
     static func group(for id: String) -> Self {
         if infallibleIDs.contains(id) {
             return .infallibles
         }
+        if ["abbas-ibn-ali", "ali-al-akbar", "zaynab-bint-ali", "fatima-al-masuma"].contains(id) {
+            return .otherInfallibles
+        }
+        if ["prophet-ibrahim", "prophet-musa", "prophet-isa"].contains(id) {
+            return .messengers
+        }
         if id.hasPrefix("prophet-") {
             return .prophets
         }
+        if ["abd-al-muttalib", "abdullah-ibn-abd-al-muttalib", "amina-bint-wahb", "abu-talib",
+            "hamza-ibn-abd-al-muttalib", "khadija-bint-khuwaylid", "umm-kulthum-bint-ali",
+            "umm-al-banin", "ruqayya-bint-al-husayn", "sukayna-bint-al-husayn", "qasim-ibn-al-hasan",
+            "qasim-ibn-al-kadhim", "muslim-ibn-aqil"].contains(id)
+        {
+            return .prophetRelatives
+        }
         if companionIDs.contains(id) {
             return .companions
+        }
+        if ["jabir-ibn-abdullah", "hani-ibn-urwa", "abu-bakr"].contains(id) {
+            return .otherCompanions
         }
         return .other
     }

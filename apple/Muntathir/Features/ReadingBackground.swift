@@ -24,7 +24,7 @@ enum ReadingBackground: String, CaseIterable {
 }
 
 struct ReadingBackgroundPicker: View {
-    @AppStorage("readingBackground") private var background: ReadingBackground = .system
+    @AppStorage("readingBackground") private var background: ReadingBackground = .warmPaper
 
     var body: some View {
         Picker("Background", selection: $background) {
@@ -39,7 +39,7 @@ struct ReadingBackgroundPicker: View {
 }
 
 private struct ReadingBackgroundColor: View {
-    @AppStorage("readingBackground") private var background: ReadingBackground = .system
+    @AppStorage("readingBackground") private var background: ReadingBackground = .warmPaper
     @Environment(\.colorScheme) private var scheme
 
     var body: some View { background.color(for: scheme) }
