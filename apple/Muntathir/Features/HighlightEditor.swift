@@ -12,9 +12,22 @@ extension HighlightColor {
         case .red: .red
         case .mint: .mint
         case .teal: .teal
-        case .cyan: .cyan
+        case .cyan: Color(red: 0.67, green: 0.66, blue: 0.88)
         case .indigo: .indigo
         case .brown: .brown
+        }
+    }
+
+    var fillStyle: AnyShapeStyle {
+        if self == .cyan {
+            AnyShapeStyle(LinearGradient(
+                colors: [Color(red: 0.66, green: 0.82, blue: 0.96),
+                         Color(red: 0.85, green: 0.80, blue: 0.95),
+                         Color(red: 0.72, green: 0.69, blue: 0.90)],
+                startPoint: .topLeading, endPoint: .bottomTrailing
+            ))
+        } else {
+            AnyShapeStyle(color)
         }
     }
 
@@ -48,7 +61,7 @@ extension HighlightColor {
         case .red: String(localized: "Red")
         case .mint: String(localized: "Mint")
         case .teal: String(localized: "Teal")
-        case .cyan: String(localized: "Cyan")
+        case .cyan: String(localized: "Pearl")
         case .indigo: String(localized: "Indigo")
         case .brown: String(localized: "Brown")
         }
@@ -88,14 +101,7 @@ struct HighlightEditor: View {
                                     save()
                                 }
                             } label: {
-                                Circle().fill(color.color)
-                                    .overlay { Circle().strokeBorder(.primary.opacity(0.6), lineWidth: 1) }
-                                    .frame(width: 36, height: 36)
-                                    .overlay {
-                                        if draft.color == color {
-                                            Image(systemName: "checkmark").font(.body.bold()).foregroundStyle(color == .indigo || color == .brown || color == .blue || color == .purple ? .white : .black)
-                                        }
-                                    }
+                                HighlightSwatch(color: color, size: 36, isSelected: draft.color == color)
                                     .frame(minWidth: 44, minHeight: 44)
                             }
                             .buttonStyle(.plain)
@@ -196,8 +202,7 @@ struct HighlightSummary: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Capsule()
-                .fill(highlight.color.color)
+            HighlightMarker(color: highlight.color)
                 .frame(width: 4)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 8) {

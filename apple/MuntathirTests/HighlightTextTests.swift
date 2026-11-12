@@ -5,6 +5,30 @@ import Testing
 import UIKit
 
 @MainActor struct HighlightTextTests {
+    @Test func pearlSheenFollowsVisibleHighlightColor() {
+        let pearl = ReadingHighlight(source: "1:1", isHadith: false, excerpt: "mercy", reference: "1:1", color: .cyan)
+        var newer = pearl
+        newer.id = "newer"
+        newer.color = .yellow
+        newer.modifiedAt = pearl.modifiedAt.addingTimeInterval(1)
+        let text = NSAttributedString(string: "mercy")
+        let shining = HighlightTextContent.applying([pearl], to: text, block: "arabic")
+        #expect(shining.attribute(HighlightTextContent.pearlAttribute, at: 0, effectiveRange: nil) as? Bool == true)
+        let covered = HighlightTextContent.applying([newer, pearl], to: text, block: "arabic")
+        #expect(covered.attribute(HighlightTextContent.pearlAttribute, at: 0, effectiveRange: nil) as? Bool == false)
+        #expect(covered.string == text.string)
+    }
+
+    @Test func pearlPreservesSavedCyanIdentityAndPaletteOrder() throws {
+        let decoded = try JSONDecoder().decode(HighlightColor.self, from: Data("\"cyan\"".utf8))
+        #expect(decoded == .cyan)
+        #expect(try JSONEncoder().encode(decoded) == Data("\"cyan\"".utf8))
+        let order = "cyan,yellow,green,blue,pink,purple,orange,red,mint,teal,indigo,brown"
+        #expect(HighlightPalette.validOrder(order))
+        #expect(HighlightPalette.colors(order: order, count: 2) == [.cyan, .yellow])
+        #expect(HighlightColor.allCases.count == 12)
+    }
+
     @Test func searchUnderlinesCoexistWithSavedColorsAndKeepSourceText() {
         let raw = "رَحْمَةٌ ورحمة — mercy mercy"
         let query = "رحمة mercy"

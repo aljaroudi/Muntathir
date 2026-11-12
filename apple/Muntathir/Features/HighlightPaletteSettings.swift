@@ -16,9 +16,7 @@ struct HighlightPaletteSettings: View {
             Section {
                 ForEach(HighlightPalette.colors(order: order), id: \.self) { color in
                     HStack {
-                        Circle().fill(color.color)
-                            .overlay { Circle().strokeBorder(.primary.opacity(0.6), lineWidth: 1) }
-                            .frame(width: 32, height: 32)
+                        HighlightSwatch(color: color, size: 32)
                         Spacer()
                     }
                     .frame(minHeight: 44)

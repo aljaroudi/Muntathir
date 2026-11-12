@@ -8,6 +8,7 @@ extension EnvironmentValues {
 
 /// A stable, visible representation shared by range storage, validation, and text rendering.
 enum HighlightTextContent {
+    static let pearlAttribute = NSAttributedString.Key("MuntathirPearl")
     static func canonical(_ markdown: AttributedString) -> String {
         HadithText.paragraphs(markdown).map { paragraph in
             (paragraph.marker.map { $0 + " " } ?? "") + (paragraph.quoted ? "│ " : "") + String(paragraph.text.characters)
@@ -20,6 +21,7 @@ enum HighlightTextContent {
         for highlight in highlights.sorted(by: { $0.modifiedAt == $1.modifiedAt ? $0.id < $1.id : $0.modifiedAt < $1.modifiedAt }) {
             for range in mappedRanges?[highlight.id] ?? highlight.ranges(in: rendered.string, block: block) {
                 rendered.addAttribute(.backgroundColor, value: highlight.color.textBackground, range: range)
+                rendered.addAttribute(pearlAttribute, value: highlight.color == .cyan, range: range)
                 if differentiate {
                     rendered.enumerateAttribute(.underlineStyle, in: range) { style, subrange, _ in
                         if style == nil {
@@ -141,6 +143,8 @@ struct HighlightText: View {
 }
 
 struct SelectableHighlightText: UIViewRepresentable {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
     let attributed: NSMutableAttributedString
     let highlights: [ReadingHighlight]
     let block: String
@@ -186,6 +190,7 @@ struct SelectableHighlightText: UIViewRepresentable {
     func updateUIView(_ view: HighlightUITextView, context: Context) {
         context.coordinator.parent = self
         let rendered = HighlightTextContent.applying(highlights, to: attributed, block: block, differentiate: differentiate, mappedRanges: mappedRanges)
+        view.sheenEnabled = !reduceMotion && scenePhase == .active
         view.setRenderedText(rendered)
         if let focused, let range = ranges(for: focused).first {
             view.focusID = focused.id
@@ -295,12 +300,70 @@ private final class ReaderUnderlineLayoutManager: NSLayoutManager {
 
 final class HighlightUITextView: UITextView {
     private var renderedText: NSAttributedString?
+    private let sheen = CAGradientLayer()
+    private var needsSheen = true
+    var sheenEnabled = true {
+        didSet {
+            if !sheenEnabled { sheen.removeAllAnimations(); sheen.removeFromSuperlayer() }
+            if sheenEnabled != oldValue { setNeedsLayout() }
+        }
+    }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if window == nil {
+            sheen.removeAllAnimations()
+            sheen.removeFromSuperlayer()
+            needsSheen = true
+        } else {
+            setNeedsLayout()
+        }
+    }
+
+    private func playPearlSheen() {
+        guard needsSheen, sheenEnabled, window != nil, bounds.width > 0,
+              let renderedText, renderedText.length > 0 else { return }
+        let path = UIBezierPath()
+        renderedText.enumerateAttribute(HighlightTextContent.pearlAttribute,
+                                       in: NSRange(location: 0, length: renderedText.length)) { value, range, _ in
+            guard value as? Bool == true,
+                  let start = position(from: beginningOfDocument, offset: range.location),
+                  let end = position(from: start, offset: range.length),
+                  let textRange = textRange(from: start, to: end) else { return }
+            for selection in selectionRects(for: textRange) where !selection.rect.isEmpty {
+                path.append(UIBezierPath(rect: selection.rect))
+            }
+        }
+        guard !path.isEmpty else { return }
+        needsSheen = false
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        sheen.frame = bounds
+        sheen.colors = [UIColor.clear.cgColor, UIColor.white.withAlphaComponent(0.18).cgColor, UIColor.clear.cgColor]
+        sheen.startPoint = CGPoint(x: 0, y: 0.5)
+        sheen.endPoint = CGPoint(x: 1, y: 0.5)
+        sheen.locations = [1, 1.1, 1.2]
+        let mask = CAShapeLayer()
+        mask.path = path.cgPath
+        sheen.mask = mask
+        layer.addSublayer(sheen)
+        CATransaction.commit()
+        let animation = CABasicAnimation(keyPath: "locations")
+        animation.fromValue = [-0.2, -0.1, 0]
+        animation.toValue = [1, 1.1, 1.2]
+        animation.duration = 1.5
+        sheen.add(animation, forKey: "pearlSheen")
+    }
+
 
     func setRenderedText(_ rendered: NSAttributedString) {
         // UIKit normalizes paragraph attributes; comparing its text storage resets selection on SwiftUI updates.
         guard renderedText != rendered else { return }
         let selection = selectedRange
         let sameText = text == rendered.string
+        needsSheen = true
+        sheen.removeAllAnimations()
+        sheen.removeFromSuperlayer()
         renderedText = NSAttributedString(attributedString: rendered)
         attributedText = rendered
         if sameText {
@@ -314,6 +377,7 @@ final class HighlightUITextView: UITextView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
+        playPearlSheen()
         guard window != nil, bounds.width > 0, let focusRange, let focusID, scrolledID != focusID,
               let start = position(from: beginningOfDocument, offset: focusRange.location),
               let end = position(from: start, offset: min(focusRange.length, 1)),
