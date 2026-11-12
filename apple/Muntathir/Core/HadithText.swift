@@ -39,28 +39,12 @@ enum HadithText {
             }
         } else if !terms.isEmpty {
             let raw = String(text.characters)
-            // Map normalized UTF-16 positions back to complete source graphemes, including Arabic diacritics.
-            var normalized = ""
-            var originalRanges: [Range<String.Index>] = []
-            for index in raw.indices {
-                let end = raw.index(after: index)
-                let key = QuranSearchText.normalize(String(raw[index ..< end])).folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "en"))
-                normalized += key
-                originalRanges.append(contentsOf: repeatElement(index ..< end, count: key.utf16.count))
-            }
-            let searchable = normalized as NSString
-            for term in terms {
-                let key = term.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "en"))
-                var offset = 0
-                while offset < searchable.length {
-                    let found = searchable.range(of: key, range: NSRange(location: offset, length: searchable.length - offset))
-                    guard found.location != NSNotFound, found.length > 0 else { break }
-                    let lower = originalRanges[found.location].lowerBound
-                    let upper = originalRanges[found.location + found.length - 1].upperBound
-                    if let start = AttributedString.Index(lower, within: text), let end = AttributedString.Index(upper, within: text) {
-                        emphasize(&text, range: start ..< end)
-                    }
-                    offset = found.location + found.length
+            for range in SearchMatch.ranges(in: raw, terms: terms) {
+                if let indices = Range(range, in: raw),
+                   let start = AttributedString.Index(indices.lowerBound, within: text),
+                   let end = AttributedString.Index(indices.upperBound, within: text)
+                {
+                    emphasize(&text, range: start ..< end)
                 }
             }
         }
@@ -97,22 +81,11 @@ enum HadithText {
 
     static func preview(_ source: String, terms: [String] = [], marked: Bool = false) -> AttributedString {
         let text = flattened(highlighted(source, terms: terms, marked: marked))
-        let firstHit = text.runs.first { $0.backgroundColor != nil }?.range.lowerBound ?? text.startIndex
-        let distance = text.characters.distance(from: text.startIndex, to: firstHit)
-        let start = text.characters.index(text.startIndex, offsetBy: max(0, distance - 45))
-        let end = text.characters.index(start, offsetBy: 260, limitedBy: text.endIndex) ?? text.endIndex
-        var result = AttributedString(text[start ..< end])
-        if start > text.startIndex {
-            result = AttributedString("… ") + result
-        }
-        if end < text.endIndex {
-            result.append(AttributedString(" …"))
-        }
-        return result
+        return SearchMatch.preview(text)
     }
 
     private static func emphasize(_ text: inout AttributedString, range: Range<AttributedString.Index>) {
-        text[range].backgroundColor = .yellow.opacity(0.35)
+        text[range].underlineStyle = Text.LineStyle(pattern: .solid, color: .accentColor)
         // Weight also distinguishes matches without relying only on color.
         for run in Array(text[range].runs) {
             var intent = run.inlinePresentationIntent ?? []
@@ -151,5 +124,60 @@ struct HadithParagraph: Identifiable {
 
     var quoted: Bool {
         intent?.components.contains { $0.kind == .blockQuote } ?? false
+    }
+}
+
+/// Temporary search styling. Source text and saved highlights stay unchanged.
+enum SearchMatch {
+    static func ranges(in raw: String, terms: [String]) -> [NSRange] {
+        guard !terms.isEmpty else { return [] }
+        var normalized = ""
+        var originalRanges: [NSRange] = []
+        for index in raw.indices {
+            let end = raw.index(after: index)
+            let key = QuranSearchText.normalize(String(raw[index ..< end])).folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "en"))
+            normalized += key
+            originalRanges.append(contentsOf: repeatElement(NSRange(index ..< end, in: raw), count: key.utf16.count))
+        }
+        let searchable = normalized as NSString
+        var ranges: [NSRange] = []
+        for term in terms {
+            let key = QuranSearchText.normalize(term).folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "en"))
+            guard !key.isEmpty else { continue }
+            var offset = 0
+            while offset < searchable.length {
+                let found = searchable.range(of: key, range: NSRange(location: offset, length: searchable.length - offset))
+                guard found.location != NSNotFound, found.length > 0 else { break }
+                ranges.append(NSUnionRange(originalRanges[found.location], originalRanges[NSMaxRange(found) - 1]))
+                offset = NSMaxRange(found)
+            }
+        }
+        return ranges
+    }
+
+    static func preview(_ text: AttributedString) -> AttributedString {
+        let firstHit = text.runs.first { $0.underlineStyle != nil }?.range.lowerBound ?? text.startIndex
+        let distance = text.characters.distance(from: text.startIndex, to: firstHit)
+        let start = text.characters.index(text.startIndex, offsetBy: max(0, distance - 45))
+        let end = text.characters.index(start, offsetBy: 260, limitedBy: text.endIndex) ?? text.endIndex
+        var result = AttributedString(text[start ..< end])
+        if start > text.startIndex {
+            result = AttributedString("… ") + result
+        }
+        if end < text.endIndex {
+            result.append(AttributedString(" …"))
+        }
+        return result
+    }
+
+    static func text(_ raw: String, query: String) -> AttributedString {
+        var text = AttributedString(raw)
+        for range in ranges(in: raw, terms: QuranSearchText.terms(query)) {
+            guard let indices = Range(range, in: raw),
+                  let start = AttributedString.Index(indices.lowerBound, within: text),
+                  let end = AttributedString.Index(indices.upperBound, within: text) else { continue }
+            text[start ..< end].underlineStyle = Text.LineStyle(pattern: .solid, color: .accentColor)
+        }
+        return text
     }
 }

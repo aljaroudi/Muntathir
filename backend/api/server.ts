@@ -1,5 +1,6 @@
 import { hash, MODEL, parseRequest, PROFILE, reference, validVector } from './core.ts'
 import { Qdrant, retrieve } from './search.ts'
+import { Reranker } from './rerank.ts'
 import { Store } from './store.ts'
 
 function isIP(ip: string) {
@@ -14,6 +15,7 @@ export function createHandler(
   db: Qdrant,
   env: Record<string, string | undefined> = Bun.env,
 ) {
+  const reranker = new Reranker(env)
   const inflight = new Map<string, Promise<number[]>>()
   function number(key: string, fallback: number) {
     const n = Number(env[key] ?? fallback)
@@ -101,7 +103,7 @@ export function createHandler(
         return reply(429, { error: 'rate_limited' })
       stage = 'revision'
       const collection = await db.active()
-      const key = `result:${await hash(JSON.stringify({ input, collection, profile: PROFILE, pipeline: 'qdrant-bm25-all-terms-rrf60-v1' }))}`
+      const key = `result:${await hash(JSON.stringify({ input, collection, profile: PROFILE, pipeline: 'literal-eligible-rerank-v2', reranker: direct ? null : reranker.config }))}`
       const cached = disabled ? undefined : store.get(key)
       if (cached) {
         console.log(
@@ -165,10 +167,18 @@ export function createHandler(
       }
       stage = 'retrieval'
       const start = performance.now()
-      const { results } = await retrieve(db, collection, input, vector, direct)
+      const retrieved = await retrieve(db, collection, input, vector, direct, !!reranker.config)
       const retrievalMs = performance.now() - start
-      const payload = { results }
-      if (!disabled) store.put(key, payload, 300)
+      const ranked =
+        !direct && retrieved.candidates
+          ? await reranker.rank(
+              input.query,
+              retrieved.candidates,
+              Math.max(0, Math.floor(14_000 - (performance.now() - started))),
+            )
+          : { results: retrieved.results, outcome: 'skipped', cacheable: true }
+      const payload = { results: ranked.results }
+      if (!disabled && ranked.cacheable) store.put(key, payload, 300)
       console.log(
         JSON.stringify({
           event: 'search',
@@ -177,6 +187,7 @@ export function createHandler(
           embedding_tokens: tokens,
           provider_ms: providerMs,
           retrieval_ms: retrievalMs,
+          rerank: ranked.outcome,
           total_ms: performance.now() - started,
         }),
       )

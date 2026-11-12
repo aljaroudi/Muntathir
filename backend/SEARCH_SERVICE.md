@@ -32,15 +32,15 @@ Deploy Quran chapter-filter support before releasing chapter-scoped search in th
 Hadith results use `kind`, `book`, `chapter` (stable chapter file), `number`, and
 `score`. Dua results reserve `kind`, `id`, optional `passage`, and `score`.
 Scores are cosine similarities, not confidence. Explicit references return null.
-Array order is hybrid RRF rank, so scores need not decrease monotonically.
+Array order is hybrid RRF rank, optionally reranked by LM Studio, so scores need not decrease monotonically.
 Keyword candidates must contain every normalized query term, matching the previous
 search semantics; native BM25 ranks those candidates.
 Duplicate translations/passages collapse to a content item; the reported score is
 the maximum cosine among its retrieved candidate passages. Clients may filter
 scores but cannot recover omitted results; no default threshold is applied.
 HTTP 400/413 indicate invalid input, 429 quota exhaustion, 503 unavailability.
-The app hydrates reader text from local assets. Local search runs first; only an
-empty completed search offers **Search by meaning**, with an online consent button.
+The app hydrates reader text from local assets. Local search runs first; every
+completed text search offers **Search by meaning**, with an online consent button.
 Typing alone never calls Gemini. Query/scope changes cancel and reset online results.
 Translation preferences control local previews; online retrieval remains multilingual.
 There is no separate Search tab.
@@ -117,3 +117,54 @@ one hour for embeddings, five minutes for results, with ten-minute cleanup.
 
 This host and internet connection remain single points of failure. Reboot recovery,
 public latency, and expert relevance review must be reported separately from tests.
+
+## Literal search and optional reranking
+
+The app ranks normalized whole-word phrases before literal substrings. Root, typo,
+and stem-only matches are delegated to explicit **Search by meaning**. API results
+remain below local results, with duplicates removed. Questions use the same input.
+Search underlines are temporary and are never saved or exported.
+
+Quran text/meaning searches exclude verses with fewer than seven normalized Arabic
+letters, including when searching translations. Explicit references still work.
+Before running this API revision against an existing collection, backfill metadata:
+
+```sh
+python3 backend/qdrant_import.py backfill-eligibility --workdir backend/work/full
+```
+
+This updates payloads only; it never regenerates embeddings. New imports populate
+`search_eligible` automatically. The new pipeline cache key invalidates old results.
+Regenerate exhaustive reference files with `exact_reference.py` before the ordinary
+quality check; old references include short verses and are explicitly rejected.
+
+Reranking is disabled unless both environment variables are configured:
+
+```dotenv
+SEARCH_RERANK_URL=http://192.168.7.55:1234/v1
+SEARCH_RERANK_MODEL=google/gemma-4-26b-a4b-qat
+SEARCH_RERANK_TIMEOUT_MS=2000
+```
+
+Do not enable until evaluation passes. The server sends the original query and up
+to 20 retrieved excerpts (1,000 characters each) to the configured LAN service.
+It accepts only a complete permutation of candidate IDs. References and cosine
+scores do not change. Direct references bypass the model. One request runs at a
+time; busy, invalid, unavailable, or timed-out requests return baseline ranking.
+Failures trigger a 30-second cooldown. Timeout is bounded to 1–2,000 ms,
+and inference is shortened or skipped when the app request budget is nearly spent.
+Transient fallbacks are not stored as successful reranked cache entries.
+
+Compare both rankings using saved embeddings and existing Arabic/English fixtures,
+including question queries:
+
+```sh
+bun backend/api/verify.ts rerank backend/work/rerank-evaluation.json
+```
+
+Set the variables in the benchmark environment, not production, until the gate
+passes. The gate requires a completed evaluation and improved mean NDCG@10.
+Gemma 4 26B A4B QAT timed out at two seconds on its first evaluation request.
+The other 149 requests used baseline ranking during cooldown, so the run could
+not establish a relevance gain. Reranking remains disabled. Inspect outcome
+counts as well as aggregate latency.

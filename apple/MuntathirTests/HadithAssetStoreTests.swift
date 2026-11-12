@@ -338,7 +338,7 @@ extension HadithAssetStoreTests {
         #expect(restored.cursorSources.isEmpty)
         #expect(restored.listOffset == 0)
         #expect(restored.listRow == nil)
-        #expect(restored.searchRankingVersion == 1)
+        #expect(restored.searchRankingVersion == 2)
     }
 
     @Test func readingSessionRoundTripsWithoutTheLibrary() throws {

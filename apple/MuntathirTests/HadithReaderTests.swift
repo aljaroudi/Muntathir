@@ -123,8 +123,8 @@ struct HadithReaderTests {
         #expect(plain.rows.map(\.id) == vocalized.rows.map(\.id))
         let english = try await reader.page(HadithRequest(query: "intentions"))
         #expect(!english.rows.isEmpty)
-        #expect(english.rows.allSatisfy { $0.englishDisplay.runs.contains { $0.backgroundColor != nil } })
-        #expect(plain.rows.allSatisfy { $0.arabicDisplay.runs.contains { $0.backgroundColor != nil } })
+        #expect(english.rows.allSatisfy { $0.englishDisplay.runs.contains { $0.underlineStyle != nil } })
+        #expect(plain.rows.allSatisfy { $0.arabicDisplay.runs.contains { $0.underlineStyle != nil } })
         #expect(books.contains { $0.id == "additional-Tahdhib-al-Ahkam-Tusi" })
         let extra = try await reader.page(HadithRequest(collectionID: "additional-Tahdhib-al-Ahkam-Tusi"))
         #expect(!extra.rows.isEmpty)
@@ -157,7 +157,7 @@ struct HadithReaderTests {
         }
     }
 
-    @Test func phrasesPrecedeOrderedFallbackAcrossFiltersAndPages() async throws {
+    @Test func phrasesPrecedeLiteralSubstringsAcrossFiltersAndPages() async throws {
         let fixture = try HadithFixture(count: 1, searchRows: """
         INSERT INTO hadith VALUES
           (200001,'v1',1,2,'book is','A narrator','books is useful'),
@@ -173,42 +173,42 @@ struct HadithReaderTests {
         defer { fixture.remove() }
         let reader = HadithReader(database: HadithDatabase(url: fixture.url))
         let adjacent = try await reader.page(HadithRequest(query: "book is"))
-        #expect(adjacent.rows.map(\.id) == [200_001])
+        #expect(adjacent.rows.map(\.id) == [200_001, 200_002, 200_003])
         #expect(!adjacent.usedOrderedFallback)
-        #expect(adjacent.rows[0].englishDisplay.runs.contains { $0.backgroundColor != nil })
+        #expect(adjacent.rows[0].englishDisplay.runs.contains { $0.underlineStyle != nil })
         let full = try await reader.detail(id: 200_001, query: "book is")
         #expect(full.author == "Test Author")
         #expect(String(full.narration.englishDisplay.characters) == "books is useful")
         #expect(String(full.narration.narratorDisplay.characters) == "A narrator")
-        #expect(full.narration.englishDisplay.runs.contains { $0.backgroundColor != nil })
+        #expect(full.narration.englishDisplay.runs.contains { $0.underlineStyle != nil })
         let acrossBoundary = try await reader.detail(id: 200_001, query: "narrator book")
-        #expect(acrossBoundary.narration.narratorDisplay.runs.contains { $0.backgroundColor != nil })
-        #expect(acrossBoundary.narration.englishDisplay.runs.contains { $0.backgroundColor != nil })
+        #expect(acrossBoundary.narration.narratorDisplay.runs.contains { $0.underlineStyle != nil })
+        #expect(acrossBoundary.narration.englishDisplay.runs.contains { $0.underlineStyle != nil })
         #expect(!String(acrossBoundary.narration.englishDisplay.characters).contains(HadithText.startMarker))
         let exhausted = try await reader.page(HadithRequest(query: "book is", cursor: HadithCursor(afterID: 200_001)))
-        #expect(exhausted.rows.isEmpty)
+        #expect(exhausted.rows.map(\.id) == [200_002, 200_003])
         #expect(!exhausted.usedOrderedFallback)
         let fallback = try await reader.page(HadithRequest(query: "book is", chapterID: 2))
-        #expect(fallback.rows.map(\.id) == [200_002])
-        #expect(fallback.usedOrderedFallback)
+        #expect(fallback.rows.map(\.id) == [200_002, 200_003])
+        #expect(!fallback.usedOrderedFallback)
         let fullFallback = try await reader.detail(id: 200_002, query: "book is", orderedFallback: true)
-        #expect(fullFallback.narration.englishDisplay.runs.filter { $0.backgroundColor != nil }.count == 2)
+        #expect(fullFallback.narration.englishDisplay.runs.filter { $0.underlineStyle != nil }.count == 2)
         let plainDetail = try await reader.detail(id: 200_002)
-        #expect(plainDetail.narration.englishDisplay.runs.allSatisfy { $0.backgroundColor == nil })
-        #expect(fallback.rows[0].englishDisplay.runs.contains { $0.backgroundColor != nil })
-        #expect(try await reader.page(HadithRequest(query: "book book")).rows.map(\.id) == [200_005])
-        #expect(try await reader.page(HadithRequest(query: "book book book")).rows.isEmpty)
+        #expect(plainDetail.narration.englishDisplay.runs.allSatisfy { $0.underlineStyle == nil })
+        #expect(fallback.rows[0].englishDisplay.runs.contains { $0.underlineStyle != nil })
+        #expect(try await reader.page(HadithRequest(query: "book book")).rows.map(\.id) == [200_001, 200_002, 200_003, 200_004, 200_005, 200_009])
+        #expect(try await reader.page(HadithRequest(query: "book book book")).rows.count == 6)
         #expect(try await reader.page(HadithRequest(query: "book are")).rows.map(\.id) == [200_009])
-        #expect(try await reader.page(HadithRequest(query: "book, is!")).rows.map(\.id) == [200_001])
-        #expect(try await reader.page(HadithRequest(query: "book OR is")).rows.isEmpty)
+        #expect(try await reader.page(HadithRequest(query: "book, is!")).rows.map(\.id) == [200_001, 200_002, 200_003])
+        #expect(try await reader.page(HadithRequest(query: "book OR is")).rows.map(\.id) == [200_001, 200_003])
         #expect(try await reader.page(HadithRequest(query: "*():")).rows.isEmpty)
         let arabic = try await reader.page(HadithRequest(query: "إِنَّمَا الأَعْمَالُ"))
         #expect(arabic.rows.map(\.id) == [200_007, 200_006, 200_008])
         #expect(!arabic.usedOrderedFallback)
         let arabicGaps = try await reader.page(HadithRequest(query: "إِنَّمَا الأَعْمَالُ", chapterID: 2))
         #expect(arabicGaps.rows.map(\.id) == [200_006, 200_008])
-        #expect(arabicGaps.usedOrderedFallback)
-        #expect(try await reader.page(HadithRequest(query: "book is", number: 2, cursor: HadithCursor(afterID: 200_001))).rows.isEmpty)
+        #expect(!arabicGaps.usedOrderedFallback)
+        #expect(try await reader.page(HadithRequest(query: "book is", number: 2, cursor: HadithCursor(afterID: 200_001))).rows.map(\.id) == [200_002])
     }
 
     @Test func pagingIsBoundedAndCompleteAcrossOneHundredThousandNarrations() async throws {
@@ -221,13 +221,13 @@ struct HadithReaderTests {
         #expect(first.rows.map(\.id) == Array(1 ... 50))
         #expect(first.rows.allSatisfy { $0.arabic.count <= 300 && $0.english.count <= 300 && $0.englishNarrator.isEmpty })
         let ordered = try await reader.page(HadithRequest(query: "Narrator 000"))
-        #expect(ordered.usedOrderedFallback)
+        #expect(!ordered.usedOrderedFallback)
         #expect(ordered.rows.map(\.id) == Array(1 ... 50))
         #expect(ordered.hasMore)
-        let orderedLast = try await reader.page(HadithRequest(query: "Narrator 000", cursor: HadithCursor(phase: .broader, afterID: 99950)))
+        let orderedLast = try await reader.page(HadithRequest(query: "Narrator 000", cursor: HadithCursor(phase: .substring, afterID: 99950)))
         #expect(orderedLast.rows.map(\.id) == Array(99951 ... 100_000))
         #expect(!orderedLast.hasMore)
-        #expect(orderedLast.usedOrderedFallback)
+        #expect(!orderedLast.usedOrderedFallback)
         let second = try await reader.page(HadithRequest(query: "intent", cursor: HadithCursor(phase: .substring, afterID: 50)))
         #expect(second.rows.map(\.id) == Array(51 ... 100))
         let deep = try await reader.page(HadithRequest(query: "intent", cursor: HadithCursor(phase: .substring, afterID: 99950)))
@@ -287,16 +287,26 @@ struct HadithReaderTests {
         let second = try await reader.page(request)
         #expect(second.rows.map(\.id) == Array(200_051 ... 200_075))
         #expect(!second.hasMore)
-        #expect(second.rows.allSatisfy { $0.arabicDisplay.runs.contains { $0.backgroundColor != nil } })
+        #expect(second.rows.allSatisfy { $0.arabicDisplay.runs.contains { $0.underlineStyle != nil } })
         let detail = try await reader.detail(id: 200_051, query: "صلاة")
-        #expect(detail.narration.arabicDisplay.runs.contains { $0.backgroundColor != nil })
+        #expect(detail.narration.arabicDisplay.runs.contains { $0.underlineStyle != nil })
         let filtered = try await reader.page(HadithRequest(query: "صلاة", chapterID: 2))
         #expect(filtered.rows.map(\.id) == [300_000])
-        // Short queries do not fall through to substring matching.
-        #expect(try await reader.page(HadithRequest(query: "صل", chapterID: 2)).rows.isEmpty)
+        // Short literal infixes are eligible even without a trigram candidate.
+        #expect(try await reader.page(HadithRequest(query: "صل", chapterID: 2)).rows.map(\.id) == [300_000])
     }
 
-    @Test func literalTiersPaginateBeforeStemmedMatches() async throws {
+    @Test func arabicInfixInEnglishTextIsNotLostByArabicCandidateIndex() async throws {
+        let fixture = try HadithFixture(count: 1, searchRows: "INSERT INTO hadith VALUES (200001,'v1',1,2,'','','بالصلاه');")
+        defer { fixture.remove() }
+        let reader = HadithReader(database: HadithDatabase(url: fixture.url))
+        let page = try await reader.page(HadithRequest(query: "صلا"))
+        #expect(page.rows.map(\.id) == [200_001])
+        let first = try #require(page.rows.first)
+        #expect(first.englishDisplay.runs.contains { $0.underlineStyle != nil })
+    }
+
+    @Test func literalTiersPaginateWithoutStemmedMatches() async throws {
         let fixture = try HadithFixture(count: 1, searchRows: """
         WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<55)
         INSERT INTO hadith SELECT 200000+x,'v1',1,x,'','','believers' FROM n;
@@ -322,8 +332,8 @@ struct HadithReaderTests {
                 break
             }
         } while true
-        #expect(ids == Array(400_001 ... 400_055) + Array(300_001 ... 300_055) + Array(200_001 ... 200_055))
-        #expect(phases == [.words, .substring, .broader])
+        #expect(ids == Array(400_001 ... 400_055) + Array(300_001 ... 300_055))
+        #expect(phases == [.words, .substring])
         #expect(try await reader.page(HadithRequest(query: "believing", chapterID: 2)).rows.map(\.id) == [500_000])
     }
 

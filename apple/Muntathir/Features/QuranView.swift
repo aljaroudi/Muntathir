@@ -84,6 +84,7 @@ struct QuranTranslationPicker: View {
 struct QuranVerseRow: View {
     let ayah: Ayah
     let translation: QuranTranslation?
+    var searchQuery = ""
     var preview = false
     var showsActions = true
     @Environment(\.locale) private var locale
@@ -101,7 +102,7 @@ struct QuranVerseRow: View {
                 }
             }
             if preview {
-                AyahText(ayah: ayah).lineLimit(3)
+                Text(SearchMatch.preview(SearchMatch.text(ayah.text, query: searchQuery))).readingText(arabic: true).frame(maxWidth: .infinity, alignment: .leading).fixedSize(horizontal: false, vertical: true).environment(\.layoutDirection, .rightToLeft).lineLimit(3)
             } else {
                 HighlightText(text: ayah.text, source: ayah.id, block: "arabic", arabic: true)
                     .accessibilityIdentifier("quran-arabic-\(ayah.id)")
@@ -109,7 +110,7 @@ struct QuranVerseRow: View {
             if let translation, let text = ayah.translations[translation.id] {
                 Group {
                     if preview {
-                        Text(text).readingText().lineLimit(3)
+                        Text(SearchMatch.preview(SearchMatch.text(text, query: searchQuery))).readingText().lineLimit(3)
                     } else {
                         HighlightText(text: text, source: ayah.id, block: translation.id)
                     }

@@ -50,6 +50,16 @@ struct AppleAssetPackBackend: AssetPackBackend {
     }
 
     func isDownloading() async -> Bool {
+        #if DEBUG
+            let arguments = ProcessInfo.processInfo.arguments
+            if arguments.contains("--ui-testing"),
+               arguments.contains("--marketing-capture") ||
+               (identifier == Self.packID && arguments.contains("--ui-testing-hadith-fixture")) ||
+               (identifier == "supplications" && arguments.contains("--ui-testing-supplications-fixture"))
+            {
+                return false
+            }
+        #endif
         // localStatus reports installed content, not queued or active transfers.
         // Inspect the local queue without fetching a manifest or starting a download.
         guard let downloads = try? await BADownloadManager.shared.currentDownloads else { return false }

@@ -348,8 +348,7 @@
           "$ref": "#/$defs/localizedText"
         },
         "verified": {
-          "type": "boolean",
-          "default": false,
+          "const": true,
           "description": "Reviewed for publication in the app and legacy feed."
         },
         "birth_place": {

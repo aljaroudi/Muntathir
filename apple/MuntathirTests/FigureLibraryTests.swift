@@ -135,16 +135,15 @@ struct FigureLibraryTests {
         let library = try FigureLibrary(data: data, verifiedOnly: false)
         let ids = library.people.map(\.id)
         var dataset = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
-        let groups: [[String: Any]]
-        switch problem {
+        let groups: [[String: Any]] = switch problem {
         case "duplicate group":
-            groups = [["id": "group", "figure_ids": ids], ["id": "group", "figure_ids": [String]()]]
+            [["id": "group", "figure_ids": ids], ["id": "group", "figure_ids": [String]()]]
         case "duplicate figure":
-            groups = [["id": "group", "figure_ids": ids + [ids[0]]]]
+            [["id": "group", "figure_ids": ids + [ids[0]]]]
         case "unknown figure":
-            groups = [["id": "group", "figure_ids": Array(ids.dropFirst()) + ["missing-figure"]]]
+            [["id": "group", "figure_ids": Array(ids.dropFirst()) + ["missing-figure"]]]
         default:
-            groups = [["id": "group", "figure_ids": Array(ids.dropFirst())]]
+            [["id": "group", "figure_ids": Array(ids.dropFirst())]]
         }
         dataset["browser_groups"] = groups
         let invalid = try JSONSerialization.data(withJSONObject: dataset)
@@ -177,8 +176,12 @@ struct FigureLibraryTests {
         }
         func date(_ year: Int, month: Int? = nil, day: Int? = nil, era: String = "AH", calendar: String = "hijri") -> String {
             var point = #""year":\#(year)"#
-            if let month { point += #","month":\#(month)"# }
-            if let day { point += #","day":\#(day)"# }
+            if let month {
+                point += #","month":\#(month)"#
+            }
+            if let day {
+                point += #","day":\#(day)"#
+            }
             return """
             [{"calendar":"\(calendar)","era":"\(era)","precision":"approximate","start":{\(point)},"original":"estimate","status":"accepted"}]
             """

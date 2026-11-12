@@ -80,8 +80,7 @@
     {
       "id": "other",
       "figure_ids": [
-        "ali-ibn-muhammad-al-samarri",
-        "yazid-ibn-muawiya"
+        "ali-ibn-muhammad-al-samarri"
       ]
     }
   ],
@@ -683,7 +682,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "jafar-al-sadiq",
@@ -744,7 +744,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "musa-al-kadhim",
@@ -806,7 +807,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "ali-al-ridha",
@@ -934,7 +936,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "ali-al-hadi",
@@ -996,7 +999,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "hasan-al-askari",
@@ -1057,7 +1061,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "muhammad-al-mahdi",
@@ -1092,17 +1097,11 @@
             "day": 15
           },
           "original": "Sha'ban 15, 255 AH",
-          "status": "accepted",
-          "citations": [
-            {
-              "source_id": "wikishia-imams",
-              "locator": "Table",
-              "quote": "Birth 15 Sha'ban 255"
-            }
-          ]
+          "status": "accepted"
         }
       ],
-      "death_dates": []
+      "death_dates": [],
+      "verified": true
     },
     {
       "id": "abd-al-muttalib",
@@ -1760,7 +1759,8 @@
       "notes": {
         "en": "No exact birthday is recorded. Her name is given as Amina; she is known as Sukayna. Majority death report: Rabi' I 5, 117 AH.",
         "ar": "لا يُروى تاريخ مولد محدد. اسمها آمنة، وتُعرف بسكينة. وفاتها في المشهور ٥ ربيع الأول ١١٧ هـ."
-      }
+      },
+      "verified": true
     },
     {
       "id": "qasim-ibn-al-hasan",
@@ -1799,7 +1799,8 @@
       "notes": {
         "en": "WikiShia: no record of his birthday. Martyred on Ashura; some reports say he had not reached puberty, others that he was 16.",
         "ar": "ويكي شيعة: لا يُذكر تاريخ مولده. استُشهد يوم عاشوراء، وقيل لم يبلغ الحلم، وقيل كان في السادسة عشرة."
-      }
+      },
+      "verified": true
     },
     {
       "id": "fatima-al-masuma",
@@ -1858,7 +1859,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "qasim-ibn-al-kadhim",
@@ -1895,7 +1897,8 @@
       "notes": {
         "en": "Arabic WikiShia: sources do not record his birth or death year. One report says he was born about 150 AH. The old Jumada I 22, 189 date is not in WikiShia.",
         "ar": "ويكي شيعة: لم تُذكر سنة ولادته ووفاته، وقيل وُلد سنة ١٥٠ هـ."
-      }
+      },
+      "verified": true
     },
     {
       "id": "muslim-ibn-aqil",
@@ -2011,49 +2014,6 @@
       "verified": true
     },
     {
-      "id": "ali-ibn-muhammad-al-samarri",
-      "display_names": {
-        "ar": "علي بن محمد السمري",
-        "en": "Ali ibn Muhammad al-Samarri"
-      },
-      "names": {
-        "ar": {
-          "kunya": [
-            "أبو الحسن"
-          ],
-          "name": "علي",
-          "full_name": "علي بن محمد السمري"
-        },
-        "en": {
-          "title": [
-            "Fourth Special Deputy"
-          ]
-        }
-      },
-      "birth_dates": [],
-      "death_dates": [
-        {
-          "calendar": "hijri",
-          "era": "AH",
-          "precision": "exact",
-          "start": {
-            "year": 329,
-            "month": 8,
-            "day": 15
-          },
-          "original": "Sha'ban 15, 329 AH",
-          "status": "accepted",
-          "citations": [
-            {
-              "source_id": "wikishia-four-deputies",
-              "locator": "Ali b. Muhammad al-Samuri",
-              "quote": "d. 329/941"
-            }
-          ]
-        }
-      ]
-    },
-    {
       "id": "prophet-ibrahim",
       "display_names": {
         "ar": "رسول الله إبراهيم",
@@ -2163,41 +2123,6 @@
               "source_id": "wikishia-abu-bakr",
               "locator": "Death",
               "quote": "Death of Abu Bakr"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "yazid-ibn-muawiya",
-      "display_names": {
-        "ar": "يزيد بن معاوية",
-        "en": "Yazid ibn Muawiya"
-      },
-      "names": {
-        "ar": {
-          "name": "يزيد",
-          "full_name": "يزيد بن معاوية"
-        }
-      },
-      "birth_dates": [],
-      "death_dates": [
-        {
-          "calendar": "hijri",
-          "era": "AH",
-          "precision": "exact",
-          "start": {
-            "year": 64,
-            "month": 3,
-            "day": 14
-          },
-          "original": "Rabi' I 14, 64 AH",
-          "status": "accepted",
-          "citations": [
-            {
-              "source_id": "wikishia-yazid",
-              "locator": "Death",
-              "quote": "Death of Yazid ibn Muawiya"
             }
           ]
         }
@@ -3087,12 +3012,6 @@
       "id": "wikishia-ammar",
       "title": "Ammar b. Yasir",
       "url": "https://en.wikishia.net/view/Ammar_b._Yasir",
-      "notes": "WikiShia"
-    },
-    {
-      "id": "wikishia-yazid",
-      "title": "Yazid b. Muawiya",
-      "url": "https://en.wikishia.net/view/Yazid_b._Muawiya",
       "notes": "WikiShia"
     },
     {

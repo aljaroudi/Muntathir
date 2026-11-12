@@ -8,7 +8,7 @@ export type Hit = Reference & { score: number | null }
 export type Point = {
   id: string
   score: number
-  payload: { item_id: string; ref: Reference }
+  payload: { item_id: string; ref: Reference; text?: string }
   vector?: number[]
 }
 export class Qdrant {
@@ -109,6 +109,7 @@ export async function retrieve(
   input: SearchRequest,
   vector: number[] | null,
   direct: Record<string, unknown> | null,
+  includePassages = false,
 ) {
   const selected = filter(input)
   if (direct) {
@@ -147,10 +148,16 @@ export async function retrieve(
     }
   }
   if (!vector) throw new Error('Missing query embedding')
+  selected.must.push({
+    should: [
+      { key: 'kind', match: { any: ['hadith', 'dua'] } },
+      { key: 'search_eligible', match: { value: true } },
+    ],
+  })
   const common = {
     filter: selected,
     limit: 100,
-    with_payload: ['item_id', 'ref'],
+    with_payload: includePassages ? ['item_id', 'ref', 'text'] : ['item_id', 'ref'],
     with_vector: false,
   }
   const [rawSemantic, lexical] = await Promise.all([
@@ -185,6 +192,13 @@ export async function retrieve(
   const ranked = fuse(semantic, lexical, scores, input.limit)
   return {
     results: ranked.map((p) => ({ ...p.ref, score: p.score })),
+    candidates: ranked.map((p) => ({
+      id: p.id,
+      hit: { ...p.ref, score: p.score },
+      text:
+        [...semantic, ...lexical].find((point) => point.payload.item_id === p.id)?.payload.text ??
+        '',
+    })),
     itemIDs: ranked.map((p) => p.id),
     semanticIDs: semantic.map((p) => p.id),
   }

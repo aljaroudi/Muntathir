@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 
 extension EnvironmentValues {
+    @Entry var searchMatchQuery = ""
     @Entry var focusedHighlight: ReadingHighlight? = nil
 }
 
@@ -54,6 +55,9 @@ enum HighlightTextContent {
                     if run.inlinePresentationIntent?.contains(.strikethrough) == true {
                         result.addAttribute(.strikethroughStyle, value: NSUnderlineStyle.single.rawValue, range: NSRange(location: offset, length: length))
                     }
+                    if run.underlineStyle != nil {
+                        result.addAttributes([.underlineStyle: NSUnderlineStyle.single.rawValue, .underlineColor: UIColor(Color.accentColor)], range: NSRange(location: offset, length: length))
+                    }
                     if let background = run.backgroundColor {
                         result.addAttribute(.backgroundColor, value: UIColor(background), range: NSRange(location: offset, length: length))
                     }
@@ -82,6 +86,7 @@ struct HighlightText: View {
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiate
     @Environment(\.quranUserStore) private var store
     @Environment(\.focusedHighlight) private var focused
+    @Environment(\.searchMatchQuery) private var searchQuery
     @AppStorage("readingSizePercent") private var percent = 100
     @ScaledMetric(relativeTo: .body) private var bodySize = 17
     @ScaledMetric(relativeTo: .title2) private var arabicSize = 28
@@ -93,7 +98,7 @@ struct HighlightText: View {
         let size = (arabic ? arabicSize : bodySize) * CGFloat(min(160, max(80, percent))) / 100
         let highlights = store?.highlights(for: source, isHadith: isHadith) ?? []
         SelectableHighlightText(
-            attributed: HighlightTextContent.attributed(text: text, markdown: markdown, arabic: arabic, hadith: isHadith, size: size, alignment: centered ? .center : .natural),
+            attributed: SearchMatch.applying(to: HighlightTextContent.attributed(text: text, markdown: markdown, arabic: arabic, hadith: isHadith, size: size, alignment: centered ? .center : .natural), query: searchQuery),
             highlights: highlights, block: block, focused: focused?.source == source && focused?.isHadith == isHadith && (focused?.block != nil || block == "arabic" || focusWholeItem) ? focused : nil,
             differentiate: differentiate, select: { ranges in
                 let saved = ranges.compactMap { HighlightRange($0, in: text) }
@@ -289,5 +294,14 @@ final class HighlightUITextView: UITextView {
             }
             ancestor = current.superview
         }
+    }
+}
+
+extension SearchMatch {
+    static func applying(to text: NSMutableAttributedString, query: String) -> NSMutableAttributedString {
+        for range in ranges(in: text.string, terms: QuranSearchText.terms(query)) {
+            text.addAttributes([.underlineStyle: NSUnderlineStyle.single.rawValue, .underlineColor: UIColor(Color.accentColor)], range: range)
+        }
+        return text
     }
 }

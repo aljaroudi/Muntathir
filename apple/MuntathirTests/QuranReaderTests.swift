@@ -61,7 +61,7 @@ struct QuranReaderTests {
         #expect(QuranSearchText.normalize("فى رحمة") == "في رحمه")
     }
 
-    @Test func literalArabicMatchesPrecedeRootsBeforePagination() async throws {
+    @Test func literalArabicMatchesPrecedeSubstringsBeforePagination() async throws {
         let reader = QuranReader(database: database)
         let matches = try await reader.search("يستحي", translationID: nil, limit: 6236)
         #expect(Array(matches.prefix(2)).map(\.id) == ["2:26", "33:53"])
@@ -73,7 +73,7 @@ struct QuranReaderTests {
         #expect(try await reader.search("يستحي", translationID: nil, limit: 1, surah: 28).map(\.id) == ["28:4"])
     }
 
-    @Test func literalTranslationMatchesPrecedeBroaderArabicMatches() async throws {
+    @Test func literalTranslationMatchesExcludeBroaderArabicMatches() async throws {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: folder) }
@@ -90,7 +90,7 @@ struct QuranReaderTests {
             ] {
                 try connection.execute(sql)
             }
-            for (index, text) in (english ? ["mercy", "mercifully", "merciful"] : ["رحمة", "رحمة", "رحمة"]).enumerated() {
+            for (index, text) in (english ? ["mercy", "mercifully", "merciful"] : ["رحمة واسعة", "رحمة واسعة", "رحمة واسعة"]).enumerated() {
                 let id = String(index + 1)
                 try connection.execute("INSERT INTO quran VALUES (?, 1, ?, ?)", parameters: [id, id, text])
                 try connection.execute("INSERT INTO quran_words(rowid, text, root) VALUES (?, ?, ?)", parameters: [id, text, english ? "" : "رحم"])
@@ -98,19 +98,28 @@ struct QuranReaderTests {
             }
         }
         let reader = QuranReader(database: QuranDatabase(url: arabicURL, translationURLs: { ["en.qarai": englishURL] }))
-        #expect(try await reader.search("merciful", translationID: "en.qarai").map(\.id) == ["1:3", "1:2", "1:1"])
+        #expect(try await reader.search("merciful", translationID: "en.qarai").map(\.id) == ["1:3", "1:2"])
         #expect(try await reader.search("merciful", translationID: "en.qarai", limit: 1).map(\.id) == ["1:3"])
-        #expect(try await reader.search("merciful", translationID: nil).map(\.id) == ["1:1", "1:2", "1:3"])
+        #expect(try await reader.search("merciful", translationID: nil).isEmpty)
     }
 
     @Test func literalRanksRequireEveryTermAndRespectWordBoundaries() {
         #expect(QuranSearchText.literalRank("وَيَستَحيۦ", terms: ["يستحي"]) == 1)
         #expect(QuranSearchText.literalRank("يَستَحيۦ", terms: ["يستحي"]) == 0)
-        #expect(QuranSearchText.literalRank("رحمة الله", terms: ["الله", "رحمه"]) == 0)
+        #expect(QuranSearchText.literalRank("رحمة الله", terms: ["الله", "رحمه"]) == 1)
         #expect(QuranSearchText.literalRank("رحمة بالله", terms: ["الله", "رحمه"]) == 1)
         #expect(QuranSearchText.literalRank("رحمة", terms: ["الله", "رحمه"]) == 2)
         #expect(QuranSearchText.literalRank("believers", terms: ["believing"]) == 2)
         #expect(QuranSearchText.literalRank("Clementísimo", terms: ["clementisimo"]) == 0)
+    }
+
+    @Test func shortVersesAreExcludedExceptForReferences() async throws {
+        #expect(!QuranSearchText.isSearchableVerse("أَبْجَدْ هَوَ"))
+        #expect(QuranSearchText.isSearchableVerse("أَبْجَدْ هَوَزَ"))
+        let reader = QuranReader(database: database)
+        #expect(try await reader.search("الم", translationID: nil, limit: 6236).allSatisfy { QuranSearchText.isSearchableVerse($0.text) })
+        #expect(try await reader.search("2:1", translationID: nil).map(\.id) == ["2:1"])
+        #expect(try await reader.search("1", translationID: nil, surah: 2).map(\.id) == ["2:1"])
     }
 
     @Test func searchIndexesMatchUpdatedOpeningVerses() throws {
@@ -121,13 +130,13 @@ struct QuranReaderTests {
         #expect(matches.map(\.1.id) == ["1:1", "11:41", "27:30"])
     }
 
-    @Test func arabicSearchFindsContainedWordsRootsTyposAndShortWords() async throws {
+    @Test func arabicSearchFindsLiteralWordsAndExcludesRootsAndTypos() async throws {
         let reader = QuranReader(database: database)
         #expect(try await reader.search("صوم", translationID: nil, limit: 6236).map(\.id).contains("19:26"))
         #expect(try await reader.search("كتب", translationID: nil, limit: 6236).map(\.id).contains("2:79"))
-        #expect(try await reader.search("يكتبون", translationID: nil, limit: 6236).map(\.id).contains("2:2"))
-        #expect(try await reader.search("الرحمم", translationID: nil, limit: 6236).map(\.id).contains("1:1"))
-        #expect(try await reader.search("الصلاة", translationID: nil).isEmpty == false)
+        #expect(try await reader.search("يكتبون", translationID: nil, limit: 6236).map(\.id).contains("2:2") == false)
+        #expect(try await reader.search("الرحمم", translationID: nil, limit: 6236).map(\.id).contains("1:1") == false)
+        #expect(try await reader.search("الصلوة", translationID: nil).isEmpty == false)
         #expect(try await reader.search("في", translationID: nil).isEmpty == false)
         let exact = try await reader.search("الرحيم", translationID: nil, limit: 6236)
         #expect(exact.first.map { QuranSearchText.normalize($0.text).contains("الرحيم") } == true)
@@ -140,7 +149,7 @@ struct QuranReaderTests {
         let translated = try await reader.search("merciful", translationID: "en.qarai")
         #expect(translated.isEmpty == false)
         #expect(translated.allSatisfy { $0.translations["en.qarai"]?.localizedCaseInsensitiveContains("merc") == true })
-        #expect(try await reader.search("believing", translationID: "en.qarai").contains { $0.translations["en.qarai"]?.contains("believers") == true })
+        #expect(try await reader.search("believing", translationID: "en.qarai").allSatisfy { QuranSearchText.literalRank($0.translations["en.qarai"] ?? "", terms: ["believing"]) < 2 })
         #expect(try await reader.search("Clementísimo", translationID: "es.bornez").map(\.id).contains("1:1"))
         #expect(try await reader.search("真主", translationID: "zh.jian").isEmpty == false)
         let first = try await reader.search("الله", translationID: nil, limit: 50)
@@ -169,12 +178,11 @@ struct QuranReaderTests {
         let plain = try await reader.search("merciful", translationID: "en.qarai")
         #expect(quoted.map(\.id) == plain.map(\.id))
         #expect(QuranSearchText.terms("Mercy OR forgiveness") == ["mercy", "or", "forgiveness"])
-        #expect(QuranSearchText.distance("الرحمم", "الرحمن") == 1)
     }
 
     @Test func chapterSearchPreservesRankingAndFiltersBeforePagination() async throws {
         let reader = QuranReader(database: database)
-        for (query, translation, chapter) in [("الله", "", 2), ("كتب", "", 2), ("الرحمم", "", 1),
+        for (query, translation, chapter) in [("الله", "", 2), ("كتب", "", 2), ("الرحمن", "", 1),
                                               ("merciful", "en.qarai", 1), ("真主", "zh.jian", 1)]
         {
             let global = try await reader.search(query, translationID: translation, limit: 6236)

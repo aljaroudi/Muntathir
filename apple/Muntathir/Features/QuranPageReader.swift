@@ -6,6 +6,7 @@ struct QuranPageReader: View {
     let surahs: [QuranSurah]
     let highlight: ReadingHighlight?
     let select: (Ayah) -> Void
+    @Environment(\.searchMatchQuery) private var searchQuery
     @Environment(\.quranUserStore) private var store
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiate
     @Environment(\.locale) private var locale
@@ -25,7 +26,7 @@ struct QuranPageReader: View {
         GeometryReader { geometry in
             let lineHeight = max(1, geometry.size.height / 15)
             SelectableHighlightText(
-                attributed: Self.attributed(content, width: geometry.size.width, lineHeight: lineHeight),
+                attributed: SearchMatch.applying(to: Self.attributed(content, width: geometry.size.width, lineHeight: lineHeight), query: searchQuery),
                 highlights: highlights, block: "arabic", focused: highlight,
                 differentiate: differentiate,
                 select: { selection in

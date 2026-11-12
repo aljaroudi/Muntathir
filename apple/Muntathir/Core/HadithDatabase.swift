@@ -54,7 +54,6 @@ final class HadithConnection {
         sqlite3_progress_handler(handle, 1000, { _ in
             Task<Never, Never>.isCancelled ? 1 : 0
         }, nil)
-        try registerOrderedMatch()
         try registerLiteralRank()
     }
 
@@ -71,49 +70,10 @@ final class HadithConnection {
                 sqlite3_value_text(values[index]).map { String(cString: $0) } ?? ""
             }
             let terms = QuranSearchText.terms(text(2))
-            let arabicRank = QuranSearchText.literalRank(text(0), terms: terms, phrase: true)
-            let rank = arabicRank == 0 ? 0 : min(arabicRank, QuranSearchText.literalRank(text(1), terms: terms, phrase: true))
+            let arabicRank = QuranSearchText.literalRank(text(0), terms: terms)
+            let rank = arabicRank == 0 ? 0 : min(arabicRank, QuranSearchText.literalRank(text(1), terms: terms))
             sqlite3_result_int(context, Int32(rank))
         }, nil, nil, nil) == SQLITE_OK else { throw HadithDatabaseError.unavailable }
-    }
-
-    private func registerOrderedMatch() throws {
-        var statement: OpaquePointer?
-        guard sqlite3_prepare_v2(handle, "SELECT fts5(?)", -1, &statement, nil) == SQLITE_OK else {
-            throw HadithDatabaseError.unavailable
-        }
-        defer { sqlite3_finalize(statement) }
-        var api: UnsafeMutablePointer<fts5_api>?
-        let status = withUnsafeMutablePointer(to: &api) { pointer in
-            "fts5_api_ptr".withCString { name in
-                sqlite3_bind_pointer(statement, 1, pointer, name, nil)
-                return sqlite3_step(statement)
-            }
-        }
-        guard status == SQLITE_ROW, let api,
-              api.pointee.xCreateFunction(api, "hadith_ordered", nil, { api, context, result, _, _ in
-                  guard let api else { sqlite3_result_error_code(result, SQLITE_ERROR); return }
-                  var previous: Int32 = -1
-                  for phrase in 0 ..< api.pointee.xPhraseCount(context) {
-                      if Task<Never, Never>.isCancelled {
-                          sqlite3_result_error_code(result, SQLITE_INTERRUPT)
-                          return
-                      }
-                      var iterator = Fts5PhraseIter()
-                      var column: Int32 = -1
-                      var offset: Int32 = -1
-                      let status = api.pointee.xPhraseFirst(context, phrase, &iterator, &column, &offset)
-                      guard status == SQLITE_OK else { sqlite3_result_error_code(result, status); return }
-                      // Choose the earliest occurrence after the previous term; one position cannot satisfy two terms.
-                      while column >= 0, column != 0 || offset <= previous {
-                          api.pointee.xPhraseNext(context, &iterator, &column, &offset)
-                      }
-                      guard column == 0 else { sqlite3_result_int(result, 0); return }
-                      previous = offset
-                  }
-                  sqlite3_result_int(result, 1)
-              }, nil) == SQLITE_OK
-        else { throw HadithDatabaseError.unavailable }
     }
 
     func query<T>(_ sql: String, parameters: [String] = [], row: (OpaquePointer) throws -> T) throws -> [T] {

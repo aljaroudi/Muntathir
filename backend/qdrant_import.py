@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import urllib.request
 import uuid
-from ingest import PROFILE, digest, atomic_json, validate_vector
+from ingest import PROFILE, digest, atomic_json, validate_vector, normalize
 
 SERVING_PROFILE = 'gemini-embedding-2:1536:search-v1'
 
@@ -40,8 +40,41 @@ def load_manifest(work):
     uuid.UUID(manifest['revision'])
     return manifest
 
+def search_eligibility(manifest):
+    arabic = {t['item_id']: t['full_text'] for t in manifest['texts'] if t['language'] == 'ar'}
+    result = {}
+    for item in manifest['items']:
+        if item['kind'] != 'quran':
+            result[item['id']] = True
+            continue
+        if item['id'] not in arabic:
+            raise ValueError('Missing canonical Arabic Quran text')
+        result[item['id']] = sum(c.isalpha() and '\u0600' <= c <= '\u06ff' for c in normalize(arabic[item['id']])) >= 7
+    return result
+
+
+def backfill_eligibility(work, client, collection=None):
+    manifest = load_manifest(work)
+    eligibility = search_eligibility(manifest)
+    if collection is None:
+        aliases = client.call('GET', '/aliases')['aliases']
+        collection = next(a['collection_name'] for a in aliases if a['alias_name'] == 'search')
+    # Validate revision before mutating a serving collection.
+    page = client.call('POST', f'/collections/{collection}/points/scroll', {'limit': 1, 'with_payload': ['revision'], 'with_vector': False})
+    if not page['points'] or page['points'][0]['payload']['revision'] != manifest['revision']:
+        raise ValueError('Collection revision differs from manifest')
+    client.call('PUT', f'/collections/{collection}/index?wait=true', {'field_name': 'search_eligible', 'field_schema': 'bool'})
+    texts = {t['id']: t for t in manifest['texts']}
+    quran_ids = {i['id'] for i in manifest['items'] if i['kind'] == 'quran'}
+    for eligible in (True, False):
+        ids = [p['id'] for p in manifest['passages'] if texts[p['text_id']]['item_id'] in quran_ids and eligibility[texts[p['text_id']]['item_id']] == eligible]
+        for start in range(0, len(ids), 256):
+            client.call('POST', f'/collections/{collection}/points/payload?wait=true', {'points': ids[start:start + 256], 'payload': {'search_eligible': eligible}})
+    return collection
+
 def import_corpus(work, client):
     manifest=load_manifest(work)
+    eligibility=search_eligibility(manifest)
     fingerprint=digest(json.dumps({k:manifest[k] for k in ('revision','profile','items','sources','texts','passages')},sort_keys=True,ensure_ascii=False))
     collection='search_'+manifest['revision'].replace('-','')+'_'+fingerprint[:12]
     items={r['id']:r for r in manifest['items']};texts={r['id']:r for r in manifest['texts']};sources={r['id']:r for r in manifest['sources']}
@@ -60,7 +93,7 @@ def import_corpus(work, client):
             if text['revision_id']!=manifest['revision'] or text['full_text'][p['start_offset']:p['end_offset']]!=p['text']:raise ValueError('Invalid passage offsets/revision')
             if digest(PROFILE+':'+p['input'])!=p['input_hash']:raise ValueError('Changed embedding input')
             vector=project(json.loads((work/'vectors'/(p['input_hash']+'.json')).read_text()))
-            payload={**p,'item_id':item['id'],'kind':item['kind'],'source_id':item['source_id'],'language':text['language'],
+            payload={**p,'search_eligible':eligibility[item['id']],'item_id':item['id'],'kind':item['kind'],'source_id':item['source_id'],'language':text['language'],
                 'ref':compact(item),'revision':manifest['revision'],'profile':SERVING_PROFILE,'manifest_hash':fingerprint,
                 'text_revision':text,'source':sources[item['source_id']],'title':item['title'],'reference':item['reference']}
             points.append({'id':p['id'],'vector':vector,'payload':payload})
@@ -68,7 +101,7 @@ def import_corpus(work, client):
         progress={'hash':fingerprint,'url':client.url,'collection':collection,'offset':start+len(points),'validated':False}
         atomic_json(path,progress)
         if start%4096==0:print(f"Imported {progress['offset']}/{len(manifest['passages'])}",flush=True)
-    for field,schema in [('kind','keyword'),('source_id','keyword'),('language','keyword'),('item_id','keyword'),('ref.book','keyword'),('ref.chapter','integer'),('ref.verse','integer'),('ref.number','integer'),('search_text',{'type':'text','tokenizer':'word','lowercase':True,'scoring':True})]:
+    for field,schema in [('search_eligible','bool'),('kind','keyword'),('source_id','keyword'),('language','keyword'),('item_id','keyword'),('ref.book','keyword'),('ref.chapter','integer'),('ref.verse','integer'),('ref.number','integer'),('search_text',{'type':'text','tokenizer':'word','lowercase':True,'scoring':True})]:
         # ref.chapter is numeric for Quran, string for Hadith; only Quran reference lookup uses this index.
         client.call('PUT',f'/collections/{collection}/index?wait=true',{'field_name':field,'field_schema':schema})
     expected={p['id']:p['input_hash'] for p in manifest['passages']};seen=set();cursor=None
@@ -80,6 +113,7 @@ def import_corpus(work, client):
         cursor=page['next_page_offset']
         if cursor is None:break
     if seen!=set(expected):raise ValueError('Collection incomplete')
+    backfill_eligibility(work, client, collection)
     progress['validated']=True;atomic_json(path,progress)
     print(json.dumps({'collection':collection,'points':len(seen),'validated':True}),flush=True)
     return collection
@@ -100,6 +134,6 @@ def activate(work,client):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command',choices=['import','activate']);parser.add_argument('--workdir',required=True);parser.add_argument('--url')
+    parser.add_argument('command',choices=['import','activate','backfill-eligibility']);parser.add_argument('--workdir',required=True);parser.add_argument('--url')
     args=parser.parse_args();client=Client(args.url)
-    (import_corpus if args.command=='import' else activate)(Path(args.workdir),client)
+    {'import': import_corpus, 'activate': activate, 'backfill-eligibility': backfill_eligibility}[args.command](Path(args.workdir),client)

@@ -3,7 +3,7 @@ import unittest
 import json
 from pathlib import Path
 from unittest.mock import patch
-from qdrant_import import project, compact, import_corpus, activate
+from qdrant_import import project, compact, import_corpus, activate, search_eligibility, backfill_eligibility
 from ingest import PROFILE, digest
 
 class Fake:
@@ -16,6 +16,9 @@ class Fake:
             self.aliases=[body['actions'][-1]['create_alias']];return True
         if path.endswith('/points/count'):return {'count':len(self.points)}
         if path.endswith('/points/scroll'):return {'points':list(self.points.values()),'next_page_offset':None}
+        if '/points/payload?' in path:
+            for id in body['points']: self.points[id]['payload'].update(body['payload'])
+            return True
         if '/points?' in path:
             for p in body['points']:self.points[p['id']]=p
             if self.fail:self.fail=False;raise OSError('Interrupted after write')
@@ -43,6 +46,21 @@ class ImportTests(unittest.TestCase):
             with self.assertRaises(OSError):import_corpus(work,db)
             import_corpus(work,db);self.assertEqual(len(db.points),1)
             activate(work,db);self.assertEqual(db.aliases[0]['alias_name'],'search')
+            before = {key: list(point['vector']) for key, point in db.points.items()}
+            for point in db.points.values(): point['payload'].pop('search_eligible')
+            backfill_eligibility(work, db)
+            self.assertTrue(all(point['payload']['search_eligible'] is False for point in db.points.values()))
+            self.assertEqual(before, {key: point['vector'] for key, point in db.points.items()})
             manifest['items'][0]['title']='changed';(work/'manifest.json').write_text(json.dumps(manifest))
             with self.assertRaises(ValueError):activate(work,db)
             with self.assertRaises(ValueError):import_corpus(work,db)
+
+class EligibilityTests(unittest.TestCase):
+    def test_canonical_arabic_controls_all_translations(self):
+        manifest = {'items': [{'id': 'short', 'kind': 'quran'}, {'id': 'long', 'kind': 'quran'}, {'id': 'hadith', 'kind': 'hadith'}],
+                    'texts': [{'item_id': 'short', 'language': 'ar', 'full_text': 'أَبْجَدْ هَوَ'},
+                              {'item_id': 'short', 'language': 'en', 'full_text': 'A very long translated text'},
+                              {'item_id': 'long', 'language': 'ar', 'full_text': 'أَبْجَدْ هَوَزَ'}]}
+        self.assertEqual(search_eligibility(manifest), {'short': False, 'long': True, 'hadith': True})
+        manifest['texts'] = manifest['texts'][1:]
+        with self.assertRaises(ValueError): search_eligibility(manifest)

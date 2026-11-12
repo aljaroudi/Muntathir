@@ -1,5 +1,6 @@
 // Uses saved embeddings only; never sends evaluation fixtures to Gemini.
 import { Qdrant, retrieve } from './search.ts'
+import { Reranker } from './rerank.ts'
 import { hash, PROFILE } from './core.ts'
 const [
   mode = 'quality',
@@ -26,10 +27,63 @@ const input = (q: any, limit = 100) => ({
 })
 const percentile = (values: number[]) =>
   values.sort((a, b) => a - b)[Math.max(0, Math.ceil(values.length * 0.95) - 1)]
-if (mode === 'quality') {
+if (mode === 'rerank') {
+  const ranker = new Reranker(Bun.env)
+  if (!ranker.config) throw new Error('Configure SEARCH_RERANK_URL and SEARCH_RERANK_MODEL')
+  const details: any[] = []
+  const ndcg = (ids: string[], relevant: Record<string, number>) => {
+    const dcg = (values: number[]) =>
+      values.reduce((sum, grade, i) => sum + (2 ** grade - 1) / Math.log2(i + 2), 0)
+    const ideal = dcg(
+      Object.values(relevant)
+        .sort((a, b) => b - a)
+        .slice(0, 10),
+    )
+    return ideal ? dcg(ids.slice(0, 10).map((id) => relevant[id] ?? 0)) / ideal : null
+  }
+  for (let i = 0; i < queries.length; i++) {
+    const q = queries[i]
+    const found = await retrieve(db, collection, input(q, 20), vectors[i], null, true)
+    const start = performance.now()
+    const ranked = await ranker.rank(q.query, found.candidates!)
+    const ids = ranked.results.map((hit) => found.candidates!.find((c) => c.hit === hit)!.id)
+    details.push({
+      id: q.id,
+      outcome: ranked.outcome,
+      ms: performance.now() - start,
+      baseline: ndcg(found.itemIDs!, q.relevant),
+      reranked: ndcg(ids, q.relevant),
+    })
+  }
+  const judged = details.filter((d) => d.baseline !== null)
+  const baseline = judged.reduce((sum, d) => sum + d.baseline, 0) / judged.length
+  const reranked = judged.reduce((sum, d) => sum + d.reranked, 0) / judged.length
+  const gate_passed =
+    details.every((d) => d.outcome === 'success' || d.outcome === 'skipped') && reranked > baseline
+  const report = {
+    model: ranker.config.model,
+    baseline_ndcg_at_10: baseline,
+    reranked_ndcg_at_10: reranked,
+    p95_rerank_ms: percentile(details.map((d) => d.ms)),
+    attempted: details.filter((d) => ['success', 'failed'].includes(d.outcome)).length,
+    outcomes: Object.fromEntries(
+      ['success', 'failed', 'cooldown', 'skipped'].map((outcome) => [
+        outcome,
+        details.filter((d) => d.outcome === outcome).length,
+      ]),
+    ),
+    gate_passed,
+    details,
+  }
+  await Bun.write(output, JSON.stringify(report, null, 2))
+  console.log(JSON.stringify({ ...report, details: undefined }))
+  if (!gate_passed) process.exitCode = 1
+} else if (mode === 'quality') {
   const reference = await Bun.file(referencePath).json()
   const details: any[] = []
   if (reference.dimensions !== 1536) throw new Error('Reference dimensions mismatch')
+  if (reference.eligibility !== 'quran-seven-letters-v1')
+    throw new Error('Regenerate exact references with the current Quran eligibility policy')
   for (let i = 0; i < queries.length; i++) {
     const q = queries[i],
       start = performance.now()

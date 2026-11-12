@@ -420,7 +420,7 @@ import OSLog
 }
 
 struct HadithSessionState: Codable, Equatable {
-    var searchRankingVersion: Int? = 1
+    var searchRankingVersion: Int? = 2
     var active = false
     var request = HadithRequest()
     var history: [HadithCursor] = []
@@ -448,8 +448,8 @@ struct HadithSessionState: Codable, Equatable {
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         state = defaults.data(forKey: key).flatMap { try? JSONDecoder().decode(HadithSessionState.self, from: $0) } ?? HadithSessionState()
-        if state.searchRankingVersion != 1 {
-            state.searchRankingVersion = 1
+        if state.searchRankingVersion != 2 {
+            state.searchRankingVersion = 2
             if !state.request.query.isEmpty {
                 state.request.cursor = HadithCursor()
                 state.history = []

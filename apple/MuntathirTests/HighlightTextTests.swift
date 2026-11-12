@@ -5,6 +5,25 @@ import Testing
 import UIKit
 
 @MainActor struct HighlightTextTests {
+    @Test func searchUnderlinesCoexistWithSavedColorsAndKeepSourceText() {
+        let raw = "رَحْمَةٌ ورحمة — mercy mercy"
+        let query = "رحمة mercy"
+        let ranges = SearchMatch.ranges(in: raw, terms: QuranSearchText.terms(query))
+        #expect(ranges.count == 4)
+        #expect((raw as NSString).substring(with: ranges[0]) == "رَحْمَةٌ")
+        let highlighted = SearchMatch.applying(to: NSMutableAttributedString(string: raw), query: query)
+        let saved = ReadingHighlight(source: "1:1", isHadith: false, excerpt: raw, reference: "1:1", color: .yellow)
+        let rendered = HighlightTextContent.applying([saved], to: highlighted, block: "arabic")
+        #expect(rendered.string == raw)
+        for range in ranges {
+            #expect(rendered.attribute(.underlineStyle, at: range.location, effectiveRange: nil) != nil)
+            #expect(rendered.attribute(.backgroundColor, at: range.location, effectiveRange: nil) != nil)
+        }
+        #expect(SearchMatch.ranges(in: raw, terms: ["unrelated"]).isEmpty)
+        let plain = SearchMatch.applying(to: NSMutableAttributedString(string: raw), query: "")
+        #expect(plain.attribute(.underlineStyle, at: 0, effectiveRange: nil) == nil)
+    }
+
     @Test func nativeSelectionSurvivesRenderingAndHighlightUpdates() throws {
         let database = QuranDatabase(url: Bundle.main.url(forResource: "quran", withExtension: "db"))
         let content = try QuranPageText(page: database.page(2), surahs: QuranSurah.load())

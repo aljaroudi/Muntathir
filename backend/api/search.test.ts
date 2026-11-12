@@ -226,3 +226,102 @@ test('Quran chapter scopes validate and filter before every retrieval limit', as
     match: { value: 1 },
   })
 })
+
+test('short Quran eligibility filters both candidate paths, but not direct lookup', async () => {
+  const db = new Qdrant('unused')
+  const requests: any[] = []
+  db.query = async (_, body) => {
+    requests.push(body)
+    return []
+  }
+  db.call = async (_, body) => {
+    requests.push(body)
+    return { points: [], next_page_offset: null }
+  }
+  const input = parseRequest({ query: 'patience', kinds: ['quran'] })
+  await retrieve(db, 'test', input, [1, 0], null)
+  expect(requests).toHaveLength(2)
+  for (const request of requests)
+    expect(JSON.stringify(request.filter)).toContain('search_eligible')
+  requests.length = 0
+  await retrieve(db, 'test', input, null, { chapter: 2, verse: 1 })
+  expect(JSON.stringify(requests[0].filter)).not.toContain('search_eligible')
+})
+
+test('reranking cache separates models, skips references and never caches failures', async () => {
+  const store = new Store(':memory:')
+  const db = new Qdrant('unused')
+  db.active = async () => 'revision'
+  const a = point('a', 'item-a'),
+    b = point('b', 'item-b')
+  b.payload.ref = { kind: 'quran', chapter: 2, verse: 2 }
+  db.query = async () => [a, b]
+  db.call = async () => ({ points: [a], next_page_offset: null })
+  const original = globalThis.fetch
+  let calls = 0,
+    fail = false
+  try {
+    globalThis.fetch = Object.assign(
+      async (url: any) => {
+        if (!String(url).includes('localhost:1234'))
+          return Response.json({
+            embedding: { values: Array(1536).fill(0.1) },
+          })
+        calls++
+        return fail
+          ? new Response('', { status: 503 })
+          : Response.json({
+              choices: [
+                {
+                  message: {
+                    content: JSON.stringify({ ids: ['item-b', 'item-a'] }),
+                  },
+                },
+              ],
+            })
+      },
+      { preconnect: original.preconnect },
+    )
+    const env = {
+      GEMINI_API_KEY: 'test',
+      SEARCH_RATE_SALT: 'test',
+      SEARCH_RERANK_URL: 'http://localhost:1234/v1',
+      SEARCH_RERANK_MODEL: 'one',
+    }
+    const request = (query: string) =>
+      new Request('http://localhost/v1/search', {
+        method: 'POST',
+        body: JSON.stringify({ query }),
+      })
+    const handler = createHandler(store, db, env)
+    const result = (await (await handler(request('patience'), '127.0.0.1')).json()) as any
+    expect(result.results.map((r: any) => r.verse)).toEqual([2, 1])
+    expect(result.results[0].score).toBe(0.9)
+    await handler(request('patience'), '127.0.0.1')
+    expect(calls).toBe(1)
+    const other = createHandler(store, db, {
+      ...env,
+      SEARCH_RERANK_MODEL: 'two',
+    })
+    await other(request('patience'), '127.0.0.1')
+    expect(calls).toBe(2)
+    await other(request('2:1'), '127.0.0.1')
+    expect(calls).toBe(2)
+    fail = true
+    const failed = createHandler(store, db, {
+      ...env,
+      SEARCH_RERANK_MODEL: 'three',
+    })
+    expect((await failed(request('patience'), '127.0.0.1')).status).toBe(200)
+    fail = false
+    const recovered = createHandler(store, db, {
+      ...env,
+      SEARCH_RERANK_MODEL: 'three',
+    })
+    await recovered(request('patience'), '127.0.0.1')
+    expect(calls).toBe(4)
+  } finally {
+    globalThis.fetch = original
+    store.db.close()
+  }
+})

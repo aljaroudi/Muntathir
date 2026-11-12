@@ -5,7 +5,7 @@ struct DownloadedBook: Identifiable, Sendable {
     let arabic: String
     let english: String
     let installed: Bool
-    var estimatedBytes: Int64? = nil
+    var estimatedBytes: Int64?
 
     func title(locale: Locale) -> String {
         locale.language.languageCode?.identifier == "ar" || english.isEmpty ? arabic : english

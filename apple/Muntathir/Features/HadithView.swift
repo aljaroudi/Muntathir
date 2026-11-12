@@ -135,25 +135,27 @@ struct HadithView: View {
                     ProgressView("Loading Hadith…").frame(maxWidth: .infinity)
                 } else if failed {
                     HadithLoadError { Task { await assets?.refresh(); retry += 1 } }
-                } else if !query.isEmpty, completedRequest == request, page.rows.isEmpty, matchingBooks.isEmpty, matchingChapters.isEmpty {
+                } else if !query.isEmpty, completedRequest == request, HadithSearch.number(query) == nil, HadithSearch.chapter(query) == nil {
                     Group {
-                        MeaningSearchResults(query: query, emptyIdentifier: "hadith-empty-results") {
+                        MeaningSearchResults(query: query, hasLocalResults: !page.rows.isEmpty || !matchingBooks.isEmpty || !matchingChapters.isEmpty, emptyIdentifier: "hadith-empty-results") {
                             guard let client = SemanticSearchClient.configured else { throw URLError(.unsupportedURL) }
                             let scope = try await reader.meaningSearchScope(request)
                             let matches = try await client.search(query, kind: "hadith", sources: scope.sources, chapter: scope.chapter)
                             var narrations: [Hadith] = []
+                            var seen = Set<Int>()
                             for match in matches {
                                 guard case let .hadith(book, chapter, number) = match.reference,
-                                      let id = try await reader.resolveSearch(book: book, chapter: chapter, number: number) else { continue }
+                                      let id = try await reader.resolveSearch(book: book, chapter: chapter, number: number),
+                                      seen.insert(id).inserted else { continue }
                                 try Task.checkCancellation()
-                                let narration = try await reader.detail(id: id).narration
+                                let narration = try await reader.detail(id: id, query: query).narration
                                 if !narration.isSupplication {
                                     narrations.append(narration)
                                 }
                             }
                             return narrations
                         } resultsContent: { narrations in
-                            narrationResults(narrations)
+                            narrationResults(narrations.filter { narration in !page.rows.contains { $0.id == narration.id } }, online: true)
                         }
                         .id(request)
                         if request.collectionID != nil {
@@ -164,6 +166,9 @@ struct HadithView: View {
                             .accessibilityIdentifier("hadith-search-all")
                         }
                     }
+                } else if !query.isEmpty, completedRequest == request, page.rows.isEmpty, matchingBooks.isEmpty, matchingChapters.isEmpty {
+                    ContentUnavailableView.search(text: query)
+                        .accessibilityIdentifier("hadith-empty-results")
                 }
             }
             .id(request)
@@ -430,7 +435,7 @@ struct HadithView: View {
                 request = restoredRequest
                 history = restoredHistory
                 if let source = saved.selection, let id = try await reader.resolve(source) {
-                    selected = try await reader.detail(id: id).narration
+                    selected = try await reader.detail(id: id, query: query).narration
                 } else if saved.selection != nil {
                     session?.state.selection = nil
                     session?.state.detailOffset = 0
@@ -473,7 +478,7 @@ struct HadithView: View {
         } catch { /* Keep the previous complete session if a query fails. */ }
     }
 
-    private func narrationResults(_ narrations: [Hadith], orderedFallback: Bool = false) -> some View {
+    private func narrationResults(_ narrations: [Hadith], orderedFallback: Bool = false, online: Bool = false) -> some View {
         Section {
             if orderedFallback, !narrations.isEmpty {
                 Text("No exact phrase found.")
@@ -500,7 +505,7 @@ struct HadithView: View {
                 .id("hadith:" + (narration.source?.key ?? String(narration.id)))
             }
         } header: {
-            Text("Hadith")
+            Text(online ? LocalizedStringKey("Search by meaning") : LocalizedStringKey("Hadith"))
         }
     }
 

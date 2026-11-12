@@ -87,62 +87,43 @@ enum QuranSearchText {
         }.map(String.init)
     }
 
-    /// 0: literal whole words, 1: literal substrings, 2: broader index matches.
-    /// Phrase matching is used by Hadith; Quran retains its all-terms semantics.
-    static func literalRank(_ text: String, terms: [String], phrase: Bool = false) -> Int {
+    /// 0: contiguous whole-word phrase, 1: every term occurs literally, 2: no match.
+    static func literalRank(_ text: String, terms: [String]) -> Int {
         let terms = terms.map { $0.folding(options: .diacriticInsensitive, locale: Locale(identifier: "en")) }
         guard !terms.isEmpty else { return 2 }
-        // A single word only needs occurrence boundaries, not tokenization of the whole narration.
+        // Latin queries cannot match Arabic-only text; avoid normalizing entire narrations.
+        for term in terms.sorted(by: { $0.count > $1.count }) where term.utf8.allSatisfy({ $0 < 128 }) {
+            if text.range(of: term, options: [.caseInsensitive, .diacriticInsensitive]) == nil {
+                return 2
+            }
+        }
         if terms.count == 1 {
-            let source = normalize(text).lowercased().folding(options: .diacriticInsensitive, locale: Locale(identifier: "en"))
+            let source = terms[0].utf8.allSatisfy { $0 < 128 } ? text : normalize(text)
             var start = source.startIndex
             var rank = 2
-            func wordCharacter(_ character: Character) -> Bool {
-                character.unicodeScalars.contains { CharacterSet.alphanumerics.contains($0) || CharacterSet.nonBaseCharacters.contains($0) }
-            }
-            while start < source.endIndex, let range = source.range(of: terms[0], range: start ..< source.endIndex) {
-                let beginsWord = range.lowerBound == source.startIndex || !wordCharacter(source[source.index(before: range.lowerBound)])
-                let endsWord = range.upperBound == source.endIndex || !wordCharacter(source[range.upperBound])
-                if beginsWord, endsWord {
+            while start < source.endIndex, let range = source.range(of: terms[0], options: [.caseInsensitive, .diacriticInsensitive], range: start ..< source.endIndex) {
+                let begins = range.lowerBound == source.startIndex || !source[source.index(before: range.lowerBound)].isLetter && !source[source.index(before: range.lowerBound)].isNumber
+                let ends = range.upperBound == source.endIndex || !source[range.upperBound].isLetter && !source[range.upperBound].isNumber
+                if begins, ends {
                     return 0
                 }
                 rank = 1
-                start = source.index(after: range.lowerBound)
+                start = range.upperBound
             }
             return rank
         }
         let words = Self.terms(text).map { $0.folding(options: .diacriticInsensitive, locale: Locale(identifier: "en")) }
-        if phrase {
-            guard words.count >= terms.count else { return 2 }
-            var rank = 2
+        if words.count >= terms.count {
             for start in 0 ... words.count - terms.count {
-                let pairs = zip(words[start ..< start + terms.count], terms)
-                if pairs.allSatisfy({ $0 == $1 }) {
+                if Array(words[start ..< start + terms.count]) == terms {
                     return 0
                 }
-                if pairs.allSatisfy({ $0.contains($1) }) {
-                    rank = 1
-                }
             }
-            return rank
-        }
-        let wholeWords = Set(words)
-        if terms.allSatisfy(wholeWords.contains) {
-            return 0
         }
         return terms.allSatisfy { term in words.contains { $0.contains(term) } } ? 1 : 2
     }
 
-    static func distance(_ a: String, _ b: String) -> Int {
-        let a = Array(a), b = Array(b)
-        var previous = Array(0 ... b.count)
-        for (i, x) in a.enumerated() {
-            var current = [i + 1]
-            for (j, y) in b.enumerated() {
-                current.append(min(previous[j + 1] + 1, current[j] + 1, previous[j] + (x == y ? 0 : 1)))
-            }
-            previous = current
-        }
-        return previous[b.count]
+    static func isSearchableVerse(_ text: String) -> Bool {
+        normalize(text).unicodeScalars.filter { (0x0600 ... 0x06FF).contains($0.value) && CharacterSet.letters.contains($0) }.count >= 7
     }
 }

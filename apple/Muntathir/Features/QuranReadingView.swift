@@ -5,6 +5,7 @@ struct QuranReadingView: View {
     var initialVerse = 1
     let reader: QuranReader
     var highlight: ReadingHighlight?
+    var searchQuery = ""
     @AppStorage("quranReadingMode") private var mode: QuranReadingMode = .verses
     @State private var position: (surah: Int, verse: Int)?
     @State private var query = ""
@@ -33,6 +34,7 @@ struct QuranReadingView: View {
                 QuranSearchContent(query: $query, reader: reader, surah: searchSurah ?? currentSurah)
             }
         }
+        .environment(\.searchMatchQuery, searchQuery)
         .readingBackground()
         .searchable(text: $query, isPresented: $searchPresented,
                     placement: .navigationBarDrawer(displayMode: .always), prompt: "Verse number or Quran text")
