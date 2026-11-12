@@ -19,9 +19,13 @@ enum HighlightTextContent {
         // Apply oldest first; the newest color wins without removing any saved notes.
         for highlight in highlights.sorted(by: { $0.modifiedAt == $1.modifiedAt ? $0.id < $1.id : $0.modifiedAt < $1.modifiedAt }) {
             for range in mappedRanges?[highlight.id] ?? highlight.ranges(in: rendered.string, block: block) {
-                rendered.addAttribute(.backgroundColor, value: UIColor(highlight.color.color).withAlphaComponent(0.3), range: range)
+                rendered.addAttribute(.backgroundColor, value: highlight.color.textBackground, range: range)
                 if differentiate {
-                    rendered.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: range)
+                    rendered.enumerateAttribute(.underlineStyle, in: range) { style, subrange, _ in
+                        if style == nil {
+                            rendered.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: subrange)
+                        }
+                    }
                 }
             }
         }
@@ -56,7 +60,7 @@ enum HighlightTextContent {
                         result.addAttribute(.strikethroughStyle, value: NSUnderlineStyle.single.rawValue, range: NSRange(location: offset, length: length))
                     }
                     if run.underlineStyle != nil {
-                        result.addAttributes([.underlineStyle: NSUnderlineStyle.single.rawValue, .underlineColor: UIColor(Color.accentColor)], range: NSRange(location: offset, length: length))
+                        result.addAttributes([.underlineStyle: NSUnderlineStyle.thick.rawValue, .underlineColor: UIColor(Color.accentColor)], range: NSRange(location: offset, length: length))
                     }
                     if let background = run.backgroundColor {
                         result.addAttribute(.backgroundColor, value: UIColor(background), range: NSRange(location: offset, length: length))
@@ -158,7 +162,12 @@ struct SelectableHighlightText: UIViewRepresentable {
     }
 
     func makeUIView(context: Context) -> HighlightUITextView {
-        let view = HighlightUITextView()
+        let storage = NSTextStorage()
+        let layout = ReaderUnderlineLayoutManager()
+        storage.addLayoutManager(layout)
+        let container = NSTextContainer()
+        layout.addTextContainer(container)
+        let view = HighlightUITextView(frame: .zero, textContainer: container)
         view.isEditable = false
         view.isSelectable = true
         view.isScrollEnabled = false
@@ -254,6 +263,36 @@ struct SelectableHighlightText: UIViewRepresentable {
     }
 }
 
+private final class ReaderUnderlineLayoutManager: NSLayoutManager {
+    override func drawUnderline(forGlyphRange glyphRange: NSRange, underlineType: NSUnderlineStyle,
+                                baselineOffset: CGFloat, lineFragmentRect lineRect: CGRect,
+                                lineFragmentGlyphRange lineGlyphRange: NSRange, containerOrigin: CGPoint) {
+        guard underlineType == .thick, let container = textContainers.first,
+              let context = UIGraphicsGetCurrentContext(), let storage = textStorage else {
+            super.drawUnderline(forGlyphRange: glyphRange, underlineType: underlineType,
+                                baselineOffset: baselineOffset, lineFragmentRect: lineRect,
+                                lineFragmentGlyphRange: lineGlyphRange, containerOrigin: containerOrigin)
+            return
+        }
+
+        let index = characterIndexForGlyph(at: glyphRange.location)
+        let font = storage.attribute(.font, at: index, effectiveRange: nil) as? UIFont
+        let color = storage.attribute(.underlineColor, at: index, effectiveRange: nil) as? UIColor
+        let thickness = max(2, (font?.lineHeight ?? 0) * 0.055)
+        let baseline = lineRect.minY + location(forGlyphAt: glyphRange.location).y
+        let bottom = baseline - (font?.descender ?? -thickness)
+        context.saveGState()
+        context.setFillColor((color ?? UIColor(Color.accentColor)).cgColor)
+        enumerateEnclosingRects(forGlyphRange: glyphRange,
+                                withinSelectedGlyphRange: NSRange(location: NSNotFound, length: 0),
+                                in: container) { rect, _ in
+            context.fill(CGRect(x: rect.minX + containerOrigin.x, y: bottom - thickness + containerOrigin.y,
+                                width: rect.width, height: thickness))
+        }
+        context.restoreGState()
+    }
+}
+
 final class HighlightUITextView: UITextView {
     private var renderedText: NSAttributedString?
 
@@ -300,7 +339,7 @@ final class HighlightUITextView: UITextView {
 extension SearchMatch {
     static func applying(to text: NSMutableAttributedString, query: String) -> NSMutableAttributedString {
         for range in ranges(in: text.string, terms: QuranSearchText.terms(query)) {
-            text.addAttributes([.underlineStyle: NSUnderlineStyle.single.rawValue, .underlineColor: UIColor(Color.accentColor)], range: range)
+            text.addAttributes([.underlineStyle: NSUnderlineStyle.thick.rawValue, .underlineColor: UIColor(Color.accentColor)], range: range)
         }
         return text
     }

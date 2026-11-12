@@ -75,7 +75,7 @@ struct SupplicationsView: View {
                                                     .lineLimit(3)
                                                     .environment(\.layoutDirection, translation.isRightToLeft ? .rightToLeft : .leftToRight)
                                             } else {
-                                                Text(prayer.arabicDisplay)
+                                                SearchMatchText(prayer.arabicDisplay)
                                                     .font(.body)
                                                     .foregroundStyle(.secondary)
                                                     .lineLimit(3)

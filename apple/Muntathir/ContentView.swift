@@ -1,5 +1,16 @@
 import SwiftUI
 
+extension AppTool {
+    @ViewBuilder var listIcon: some View {
+        if let emoji {
+            Text(verbatim: emoji)
+                .accessibilityHidden(true)
+        } else {
+            Image(systemName: symbol)
+        }
+    }
+}
+
 struct ContentView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
@@ -31,13 +42,7 @@ struct ContentView: View {
                                 Section {
                                     ForEach(tools) { tool in
                                         NavigationLink(value: FigureRoute.tool(tool)) {
-                                            Label { Text(tool.title) } icon: {
-                                                if tool == .tasbih {
-                                                    Text(verbatim: "📿")
-                                                } else {
-                                                    Image(systemName: tool.symbol)
-                                                }
-                                            }
+                                            Label { Text(tool.title) } icon: { tool.listIcon }
                                         }
                                         .accessibilityIdentifier(tool.accessibilityID)
                                     }

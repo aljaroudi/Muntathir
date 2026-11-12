@@ -10,7 +10,7 @@ struct TabsSettingsView: View {
             }
             Section {
                 ForEach(model.preferences.tabShortcuts) { tool in
-                    Label { Text(tool.title) } icon: { Image(systemName: tool.symbol) }
+                    Label { Text(tool.title) } icon: { tool.listIcon }
                         .accessibilityIdentifier("tab-shortcut-\(tool.rawValue)")
                 }
                 .onDelete { indices in

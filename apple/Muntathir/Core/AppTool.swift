@@ -11,7 +11,7 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
         switch self {
         case .calendar: "Calendar"
         case .events: "Events"
-        case .quran: "The Holy Quran"
+        case .quran: "Holy Quran"
         case .hadith: "Hadith"
         case .supplications: "Supplications"
         case .figures: "Figures"
@@ -32,6 +32,17 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
         case .tasbih: "circle.dotted"
         case .rakaat: "camera.metering.center.weighted"
         case .qibla: "location.north.circle"
+        }
+    }
+
+    var emoji: String? {
+        switch self {
+        case .supplications: "🙏"
+		case .calendar: "🗓️"
+        case .tasbih: "📿"
+        case .rakaat: "🧎"
+        case .qibla: "🕋"
+        default: nil
         }
     }
 

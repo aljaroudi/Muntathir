@@ -20,6 +20,29 @@ final class HadithUITests: XCTestCase {
         return app
     }
 
+    @MainActor func testLargeSearchScrollPerformance() throws {
+        let app = try openHadith(fixture: true)
+        let search = app.searchFields.firstMatch
+        search.tap()
+        search.typeText("Sample\n")
+        XCTAssertTrue(app.buttons["hadith-result-1"].waitForExistence(timeout: 10))
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "Hadith search match underlines"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+        let options = XCTMeasureOptions()
+        options.iterationCount = 3
+        measure(metrics: [XCTOSSignpostMetric.scrollingAndDecelerationMetric, XCTCPUMetric(application: app)], options: options) {
+            for _ in 0 ..< 3 {
+                app.swipeUp()
+            }
+            for _ in 0 ..< 3 {
+                app.swipeDown()
+            }
+        }
+        XCTAssertTrue(app.buttons["hadith-result-1"].isHittable)
+    }
+
     @MainActor func testSearchResultsHideReadingTime() throws {
         let app = try openHadith(fixture: true)
         let search = app.searchFields.firstMatch

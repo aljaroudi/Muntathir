@@ -16,6 +16,7 @@ struct EventsView: View {
     }
 
     var body: some View {
+        let months = monthNames
         List {
             ForEach(1 ... 12, id: \.self) { month in
                 Section {
@@ -24,21 +25,27 @@ struct EventsView: View {
                         Text("No events").foregroundStyle(.secondary)
                     }
                     ForEach(events) { event in
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(verbatim: event.day.formatted(.number.locale(locale)) + " " + monthNames[month - 1])
-                                .font(.subheadline).foregroundStyle(.secondary)
+                        let day = event.day.formatted(.number.locale(locale))
+                        HStack(alignment: .top, spacing: 12) {
+                            Text(verbatim: day)
+                                .font(.title2.weight(.semibold).monospacedDigit())
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(.secondary.opacity(0.1), in: .rect(cornerRadius: 8))
+                                .fixedSize()
+                                .accessibilityLabel(Text(verbatim: "\(day) \(months[month - 1])"))
                             FigureObservanceRow(event: event)
                         }
                         .accessibilityElement(children: .contain)
                         .accessibilityIdentifier("event-\(event.id)")
                     }
                 } header: {
-                    Text(verbatim: monthNames[month - 1])
+                    Text(verbatim: months[month - 1])
                         .accessibilityIdentifier("events-month-\(month)")
                 }
             }
         }
-        .listStyle(.insetGrouped)
+        .listStyle(.plain)
         .navigationTitle("Events")
     }
 }

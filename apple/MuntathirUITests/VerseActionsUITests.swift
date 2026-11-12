@@ -165,6 +165,10 @@ final class VerseActionsUITests: XCTestCase {
         let count = app.steppers["highlight-color-count"]
         XCTAssertTrue(count.waitForExistence(timeout: 5))
         XCTAssertEqual(count.value as? String, "6")
+        let paletteScreenshot = XCTAttachment(screenshot: app.screenshot())
+        paletteScreenshot.name = "Reorderable highlight swatches"
+        paletteScreenshot.lifetime = .keepAlways
+        add(paletteScreenshot)
         count.buttons.element(boundBy: 1).tap()
         let orange = app.cells.containing(.any, identifier: "palette-color-orange").firstMatch
         let yellow = app.cells.containing(.any, identifier: "palette-color-yellow").firstMatch

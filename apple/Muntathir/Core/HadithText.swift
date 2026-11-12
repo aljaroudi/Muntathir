@@ -181,3 +181,45 @@ enum SearchMatch {
         return text
     }
 }
+
+/// Use the prepared match ranges; scrolling never normalizes or searches the source again.
+struct SearchMatchText: View {
+    let text: AttributedString
+
+    init(_ text: AttributedString) {
+        self.text = text
+    }
+
+    var body: some View {
+        rendered.textRenderer(MatchRenderer())
+    }
+
+    private var rendered: Text {
+        text.runs.reduce(Text("")) { result, run in
+            var segment = AttributedString(text[run.range])
+            let matched = segment.underlineStyle != nil
+            segment.underlineStyle = nil
+            let part = Text(segment)
+            if matched {
+                return Text("\(result)\(part.customAttribute(MatchUnderline()))")
+            }
+            return Text("\(result)\(part)")
+        }
+    }
+
+    private struct MatchUnderline: TextAttribute {}
+
+    private struct MatchRenderer: TextRenderer {
+        func draw(layout: Text.Layout, in context: inout GraphicsContext) {
+            for line in layout {
+                context.draw(line)
+                for run in line where run[MatchUnderline.self] != nil {
+                    let rect = run.typographicBounds.rect
+                    let thickness = max(2, rect.height * 0.055)
+                    context.fill(Path(CGRect(x: rect.minX, y: rect.maxY - thickness,
+                                             width: rect.width, height: thickness)), with: .color(.accentColor))
+                }
+            }
+        }
+    }
+}

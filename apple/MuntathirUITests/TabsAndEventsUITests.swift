@@ -87,7 +87,7 @@ final class TabsAndEventsUITests: XCTestCase {
         app.buttons["add-tab-quran"].tap()
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        app.buttons["The Holy Quran"].firstMatch.tap()
+        app.buttons["Holy Quran"].firstMatch.tap()
         XCTAssertTrue(app.buttons["quran-saved"].waitForExistence(timeout: 10))
         app.buttons["quran-saved"].tap()
         XCTAssertTrue(app.navigationBars["Saved"].waitForExistence(timeout: 5))
@@ -95,7 +95,7 @@ final class TabsAndEventsUITests: XCTestCase {
         app.buttons["settings-tabs"].tap()
         let reorder = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] 'Reorder'"))
         reorder.element(boundBy: 1).press(forDuration: 1, thenDragTo: reorder.element(boundBy: 0))
-        app.buttons["The Holy Quran"].firstMatch.tap()
+        app.buttons["Holy Quran"].firstMatch.tap()
         XCTAssertTrue(app.navigationBars["Saved"].waitForExistence(timeout: 5))
     }
 

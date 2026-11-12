@@ -19,7 +19,7 @@ struct QuranView: View {
     var body: some View {
         QuranSearchContent(query: $query, reader: reader)
             .readingBackground()
-            .navigationTitle("The Holy Quran")
+            .navigationTitle("Holy Quran")
             .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Surah, 2:255, or Quran text")
             .autocorrectionDisabled()
             .toolbar {
@@ -102,7 +102,7 @@ struct QuranVerseRow: View {
                 }
             }
             if preview {
-                Text(SearchMatch.preview(SearchMatch.text(ayah.text, query: searchQuery))).readingText(arabic: true).frame(maxWidth: .infinity, alignment: .leading).fixedSize(horizontal: false, vertical: true).environment(\.layoutDirection, .rightToLeft).lineLimit(3)
+                SearchMatchText(SearchMatch.preview(SearchMatch.text(ayah.text, query: searchQuery))).readingText(arabic: true).frame(maxWidth: .infinity, alignment: .leading).fixedSize(horizontal: false, vertical: true).environment(\.layoutDirection, .rightToLeft).lineLimit(3)
             } else {
                 HighlightText(text: ayah.text, source: ayah.id, block: "arabic", arabic: true)
                     .accessibilityIdentifier("quran-arabic-\(ayah.id)")
@@ -110,7 +110,7 @@ struct QuranVerseRow: View {
             if let translation, let text = ayah.translations[translation.id] {
                 Group {
                     if preview {
-                        Text(SearchMatch.preview(SearchMatch.text(text, query: searchQuery))).readingText().lineLimit(3)
+                        SearchMatchText(SearchMatch.preview(SearchMatch.text(text, query: searchQuery))).readingText().lineLimit(3)
                     } else {
                         HighlightText(text: text, source: ayah.id, block: translation.id)
                     }

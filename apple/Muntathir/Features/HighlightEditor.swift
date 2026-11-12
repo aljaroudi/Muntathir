@@ -18,6 +18,25 @@ extension HighlightColor {
         }
     }
 
+    /// Opaque pastel/deep fills keep label text readable independently of the reading surface.
+    var textBackground: UIColor {
+        Self.textBackgrounds[self]!
+    }
+
+    /// Reuse dynamic color objects so unchanged attributed text compares equal across view updates.
+    private static let textBackgrounds = Dictionary(uniqueKeysWithValues: allCases.map { color in
+        let swatch = UIColor(color.color)
+        return (color, UIColor { traits in
+            var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+            swatch.resolvedColor(with: traits).getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+            let dark = traits.userInterfaceStyle == .dark
+            let fraction: CGFloat = traits.accessibilityContrast == .high ? 0.22 : 0.28
+            let base: CGFloat = dark ? 0 : 1 - fraction
+            return UIColor(red: base + red * fraction, green: base + green * fraction,
+                           blue: base + blue * fraction, alpha: 1)
+        })
+    })
+
     var title: String {
         switch self {
         case .yellow: String(localized: "Yellow")
@@ -70,6 +89,7 @@ struct HighlightEditor: View {
                                 }
                             } label: {
                                 Circle().fill(color.color)
+                                    .overlay { Circle().strokeBorder(.primary.opacity(0.6), lineWidth: 1) }
                                     .frame(width: 36, height: 36)
                                     .overlay {
                                         if draft.color == color {

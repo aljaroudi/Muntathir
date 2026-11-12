@@ -18,14 +18,14 @@ struct HadithPreviewRow: View {
                     .font(.headline)
             }
             if !narration.arabic.isEmpty {
-                Text(narration.arabicDisplay)
+                SearchMatchText(narration.arabicDisplay)
                     .readingText(arabic: true, hadith: true)
                     .lineLimit(5)
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .environment(\.layoutDirection, .rightToLeft)
             }
             if showEnglish, !narration.english.isEmpty {
-                Text(narration.englishDisplay)
+                SearchMatchText(narration.englishDisplay)
                     .readingText()
                     .lineLimit(5)
                     .accessibilityIdentifier("hadith-preview-english-\(narration.id)")

@@ -15,11 +15,15 @@ struct HighlightPaletteSettings: View {
             }
             Section {
                 ForEach(HighlightPalette.colors(order: order), id: \.self) { color in
-                    Label {
-                        Text(color.title)
-                    } icon: {
-                        Circle().fill(color.color).frame(width: 24, height: 24)
+                    HStack {
+                        Circle().fill(color.color)
+                            .overlay { Circle().strokeBorder(.primary.opacity(0.6), lineWidth: 1) }
+                            .frame(width: 32, height: 32)
+                        Spacer()
                     }
+                    .frame(minHeight: 44)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(color.title)
                     .accessibilityIdentifier("palette-color-\(color.rawValue)")
                 }
                 .onMove { source, destination in
