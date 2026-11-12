@@ -20,7 +20,7 @@ See [widgets](../MuntathirWidgets/), [calendar and content](../Shared/), and [Ap
 
 ## Tasbih
 
-Open **Tools → Tasbih**. Pull the front strand of the native 3D bead loop down; the rear strand rises. Each downward pull over 40 points counts once, regardless of its length. The counter follows 34 الله أكبر, 33 الحمد لله, then 33 سبحان الله and stops at 100. Restart begins another round; Reset clears an unfinished round after confirmation. Leaving the screen starts the next visit at zero. Backgrounding preserves the open round. VoiceOver provides a “Count one bead” action, and Reduce Motion removes bead travel animations.
+Open **Tools → Tasbih**. Pull the front strand of the native 3D bead loop down; the rear strand rises. Each downward pull over 40 points counts once, regardless of its length. The counter follows 34 الله أكبر, 33 الحمد لله, then 33 سبحان الله and stops at 100. Leaving the screen starts the next visit at zero. Backgrounding preserves the open round. VoiceOver provides a “Count one bead” action, and Reduce Motion removes bead travel animations.
 
 ## Qibla map
 

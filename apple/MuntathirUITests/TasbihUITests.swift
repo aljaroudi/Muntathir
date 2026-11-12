@@ -27,7 +27,7 @@ final class TasbihUITests: XCTestCase {
         start.press(forDuration: 0.05, thenDragTo: start.withOffset(CGVector(dx: dx, dy: dy)))
     }
 
-    @MainActor func testPullValidationResetAndFreshVisit() {
+    @MainActor func testPullValidationAndFreshVisit() {
         let app = open()
         pull(app, dy: 25)
         pull(app, dy: -80)
@@ -35,20 +35,12 @@ final class TasbihUITests: XCTestCase {
         XCTAssertEqual(stageCounter(app).label, "0 / 34")
         pull(app, dy: 180)
         XCTAssertEqual(stageCounter(app).label, "1 / 34")
-        app.buttons["tasbih-reset"].tap()
-        app.buttons["Cancel"].tap()
-        XCTAssertEqual(stageCounter(app).label, "1 / 34")
-        app.buttons["tasbih-reset"].tap()
-        app.alerts.buttons["Reset"].tap()
-        XCTAssertTrue(app.alerts.firstMatch.waitForNonExistence(timeout: 5))
-        XCTAssertTrue(stageCounter(app).wait(for: \.label, toEqual: "0 / 34", timeout: 5))
-        pull(app)
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.buttons["tasbih"].tap()
         XCTAssertEqual(stageCounter(app).label, "0 / 34")
     }
 
-    @MainActor func testStagesCompletionAndRestart() {
+    @MainActor func testStagesCompletion() {
         let app = open()
         for count in 1 ... 100 {
             pull(app)
@@ -63,7 +55,8 @@ final class TasbihUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["tasbih-complete"].firstMatch.exists)
         pull(app)
         XCTAssertEqual(stageCounter(app).label, "33 / 33")
-        app.buttons["tasbih-restart"].tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.buttons["tasbih"].tap()
         XCTAssertEqual(stageCounter(app).label, "0 / 34")
     }
 
@@ -73,9 +66,6 @@ final class TasbihUITests: XCTestCase {
         XCTAssertTrue(hint.exists)
         pull(app)
         XCTAssertEqual(stageCounter(app).label, "1 / 34")
-        XCTAssertFalse(hint.exists)
-        app.buttons["tasbih-reset"].tap()
-        app.alerts.buttons["Reset"].tap()
         XCTAssertFalse(hint.exists)
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.buttons["tasbih"].tap()

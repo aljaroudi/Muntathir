@@ -9,7 +9,6 @@ struct TasbihView: View {
     @State private var beads = TasbihBeadScene()
     @State private var pull: Float = 0
     @State private var settling = false
-    @State private var confirmingReset = false
     @State private var showingSwipeHint = false
     @GestureState private var dragging = false
 
@@ -20,18 +19,13 @@ struct TasbihView: View {
                     .frame(height: max(320, geometry.size.height))
             }
             if session.complete {
-                VStack(spacing: 16) {
-                    Label("Count complete", systemImage: "checkmark.circle.fill")
-                        .foregroundStyle(.tint)
-                        .accessibilityIdentifier("tasbih-complete")
-                    Button("Restart", action: reset)
-                        .buttonStyle(.borderedProminent)
-                        .accessibilityIdentifier("tasbih-restart")
-                }
-                .fixedSize(horizontal: false, vertical: true)
-                .layoutPriority(1)
-                .frame(maxWidth: .infinity)
-                .background(Color(.systemGroupedBackground))
+                Label("Count complete", systemImage: "checkmark.circle.fill")
+                    .foregroundStyle(.tint)
+                    .accessibilityIdentifier("tasbih-complete")
+                    .fixedSize(horizontal: false, vertical: true)
+                    .layoutPriority(1)
+                    .frame(maxWidth: .infinity)
+                    .background(Color(.systemGroupedBackground))
             }
         }
         .padding(24)
@@ -40,17 +34,6 @@ struct TasbihView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle(Text("\(session.count) / \(session.target)"))
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Reset", systemImage: "arrow.counterclockwise") { confirmingReset = true }
-                    .disabled(session.total == 0 || session.complete || settling)
-                    .accessibilityIdentifier("tasbih-reset")
-            }
-        }
-        .alert("Reset Tasbih?", isPresented: $confirmingReset) {
-            Button("Reset", role: .destructive, action: reset)
-            Button("Cancel", role: .cancel) {}
-        }
         .sensoryFeedback(trigger: session) { old, new in
             guard new.total > old.total else { return nil }
             return old.phrase == new.phrase ? .impact(weight: .light) : .success
