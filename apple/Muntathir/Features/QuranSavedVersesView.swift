@@ -9,7 +9,6 @@ struct QuranSavedVersesView: View {
     @State private var loading = true
     @State private var failed = false
     @State private var retry = 0
-    @State private var editing: ReadingHighlight?
 
     private struct Request: Equatable {
         let ids: [String]
@@ -21,55 +20,52 @@ struct QuranSavedVersesView: View {
         store?.highlights.filter { !$0.isHadith } ?? []
     }
 
+    private var bookmarks: [ReadingBookmark] {
+        store?.bookmarks.filter { !$0.isHadith } ?? []
+    }
+
     private var savedIDs: [String] {
-        Array(Set(highlights.map(\.source))).sorted()
+        Array(Set(highlights.map(\.source) + bookmarks.map(\.source))).sorted()
     }
 
     var body: some View {
-        List {
-            if store?.unavailable != false {
-                ContentUnavailableView {
-                    Label("Highlights unavailable", systemImage: "exclamationmark.triangle")
-                } description: { Text("Your saved data could not be opened. Please try again.") }
-                    actions: { Button("Try again") { store?.reopen() } }
-            } else if loading {
-                ProgressView("Loading Quran…")
-            } else if failed {
-                ContentUnavailableView {
-                    Label("Unable to load Quran", systemImage: "exclamationmark.triangle")
-                } actions: { Button("Try again") { retry += 1 } }
-            } else if highlights.isEmpty {
-                ContentUnavailableView("No highlights yet", systemImage: "highlighter", description: Text("Select text or use a verse’s actions to highlight it."))
-            } else {
-                ForEach(highlights) { highlight in
-                    let ayah = verses.first { $0.id == highlight.source }
-                    let available = ayah.map { highlight.isAvailable(in: $0.translations.merging(["arabic": $0.text]) { _, source in source }) } ?? false
+        SavedList(highlights: highlights, bookmarks: bookmarks, canOpen: { entry in
+            verses.contains { ayah in ayah.id == entry.source && surahs.contains(where: { $0.id == ayah.surah }) }
+        }, available: { highlight in
+            verses.first { $0.id == highlight.source }.map {
+                highlight.isAvailable(in: $0.translations.merging(["arabic": $0.text]) { _, source in source })
+            } ?? false
+        }) { entry in
+            if let ayah = verses.first(where: { $0.id == entry.source }),
+               let surah = surahs.first(where: { $0.id == ayah.surah })
+            {
+                QuranReadingView(surah: surah, initialVerse: ayah.number, reader: reader, highlight: entry.highlight)
+            }
+        }
+        .accessibilityHidden(store?.unavailable != false || loading || failed)
+        .allowsHitTesting(store?.unavailable == false && !loading && !failed)
+        .overlay {
+            if store?.unavailable != false || loading || failed {
+                ZStack {
+                    Color(uiColor: .systemGroupedBackground).ignoresSafeArea()
                     Group {
-                        if let ayah, let surah = surahs.first(where: { $0.id == ayah.surah }) {
-                            NavigationLink {
-                                QuranChapterView(surah: surah, initialVerse: ayah.number, reader: reader, highlight: highlight)
-                            } label: { HighlightSummary(highlight: highlight, available: available) }
-                                .accessibilityIdentifier("saved-verse-\(ayah.id)")
-                        } else {
-                            Button { editing = highlight } label: {
-                                HighlightSummary(highlight: highlight, available: false)
-                            }
-                            .tint(.primary)
+                        if store?.unavailable != false {
+                            ContentUnavailableView {
+                                Label("Saved unavailable", systemImage: "exclamationmark.triangle")
+                            } description: { Text("Your saved data could not be opened. Please try again.") }
+                                actions: { Button("Try again") { store?.reopen() } }
+                        } else if loading {
+                            ProgressView("Loading Quran…")
+                        } else if failed {
+                            ContentUnavailableView {
+                                Label("Unable to load Quran", systemImage: "exclamationmark.triangle")
+                            } actions: { Button("Try again") { retry += 1 } }
                         }
-                    }
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button("Edit highlight", systemImage: "pencil") { editing = highlight }
-                            .tint(.accentColor)
-                    }
-                    .contextMenu {
-                        Button("Edit highlight", systemImage: "pencil") { editing = highlight }
                     }
                 }
             }
         }
-        .listStyle(.insetGrouped)
-        .navigationTitle("Highlights")
-        .sheet(item: $editing) { HighlightEditor(highlight: $0, existing: true) }
+        .navigationTitle("Saved")
         .task(id: Request(ids: savedIDs, retry: retry, translationRevision: translationStore.revision)) { await load() }
     }
 

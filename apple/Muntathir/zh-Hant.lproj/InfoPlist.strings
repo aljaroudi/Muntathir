@@ -3,3 +3,5 @@
 "QiblaPreciseLocation" = "您的精確位置用於在地圖上顯示您所在的位置和克爾白方向。";
 
 "NSPhotoLibraryAddUsageDescription" = "將分享的古蘭經和聖訓圖片儲存到照片圖庫。";
+
+"NSCameraUsageDescription" = "前置相機透過偵測光線變化計算叩頭次數。影像絕不會被儲存或分享。";

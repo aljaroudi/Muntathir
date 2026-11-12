@@ -602,32 +602,6 @@
     ]
   },
   {
-    "id": "yazid-death",
-    "month": 3,
-    "day": 14,
-    "year": 64,
-    "title": {
-      "ar": "وفاة يزيد بن معاوية",
-      "de": "Tod Yazids ibn Muawiya",
-      "en": "Death of Yazid ibn Muawiya",
-      "es": "Muerte de Yazid ibn Muawiya",
-      "fa": "وفات یزید بن معاویه",
-      "fr": "Décès de Yazid ibn Muawiya",
-      "id": "Wafat Yazid bin Muawiyah",
-      "it": "Morte di Yazid ibn Muawiya",
-      "ja": "ヤズィード・イブン・ムアーウィヤの死去",
-      "ms": "Kewafatan Yazid bin Muawiyah",
-      "ru": "Кончина Язида ибн Муавии",
-      "tr": "Yezid b. Muaviye’nın vefatı",
-      "ur": "وفاتِ یزید بن معاویہ",
-      "zh-Hans": "叶齐德·本·穆阿维叶逝世",
-      "zh-Hant": "葉齊德·本·穆阿維葉逝世"
-    },
-    "figure_ids": [
-      "yazid-ibn-muawiya"
-    ]
-  },
-  {
     "id": "prophet-birth",
     "month": 3,
     "day": 17,
@@ -1756,10 +1730,7 @@
       "ur": "وفاتِ چوتھا سفیر",
       "zh-Hans": "第四代特使逝世",
       "zh-Hant": "第四代特使逝世"
-    },
-    "figure_ids": [
-      "ali-ibn-muhammad-al-samarri"
-    ]
+    }
   },
   {
     "id": "mahdi-birth",

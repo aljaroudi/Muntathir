@@ -363,20 +363,25 @@ extension CalendarTests {
         }
     }
 
-    @Test func productionAnnouncementsResolveConfirmedMonth() throws {
+    @Test func productionAnnouncementsResolveConfirmedMonths() throws {
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         let data = try Data(contentsOf: root.appendingPathComponent("web/public/calendar/corrections-v1.json"))
         let feed = try CorrectionsFeed.decode(data)
-        #expect(feed.announcements.count == 2)
         let location = SavedLocation(latitude: 21.4, longitude: 39.8, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh")
-        let month = HijriMonth(year: 1448, month: 5)
-        let start = CivilDate(year: 2026, month: 10, day: 13)
-        for source in [CalendarSource.middleEast, "government-SA"] {
+        let octoberStart = CivilDate(year: 2026, month: 10, day: 13)
+        let novemberStart = CivilDate(year: 2026, month: 11, day: 12)
+        for (source, starts) in [
+            (CalendarSource.middleEast, [octoberStart, novemberStart]),
+            ("government-SA", [octoberStart]),
+        ] {
             let rows = try feed.matching(location: location, sourceID: source)
-            #expect(rows.count == 1)
+            #expect(rows.count == starts.count)
             let engine = try CalendarEngine(timeZone: zone, confirmed: rows.map(\.correction))
-            #expect(CivilDate(engine.start(of: month), in: zone) == start)
-            #expect(try engine.resolve(#require(start.date(in: zone))).provenance == .confirmed)
+            for (offset, start) in starts.enumerated() {
+                let month = HijriMonth(year: 1448, month: 5 + offset)
+                #expect(CivilDate(engine.start(of: month), in: zone) == start)
+                #expect(try engine.resolve(#require(start.date(in: zone))).provenance == .confirmed)
+            }
         }
     }
 

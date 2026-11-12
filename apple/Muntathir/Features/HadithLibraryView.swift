@@ -1,56 +1,59 @@
 import SwiftUI
 
 struct HadithLibraryView: View {
-    let assets: HadithAssetStore
+    @Bindable var assets: HadithAssetStore
+    var supplications = false
     @State private var operation: Task<Void, Never>?
 
     var body: some View {
         if assets.state == .ready {
-            HadithView(reader: assets.reader)
-                .id(assets.revision)
+            Group {
+                if supplications {
+                    SupplicationsView(reader: assets.reader)
+                } else {
+                    HadithView(reader: assets.reader)
+                }
+            }
+            .id(assets.revision)
         } else {
             ContentUnavailableView {
-                Label("Hadith", systemImage: "books.vertical")
+                Label(LocalizedStringKey(supplications ? "Supplications" : "Hadith"), systemImage: "books.vertical")
             } description: {
                 switch assets.state {
                 case .checking:
-                    Text("Checking Hadith download…")
-                case .downloading:
-                    Text("Downloading Hadith…")
+                    Text(LocalizedStringKey(supplications ? "Checking supplications download…" : "Checking Hadith download…"))
+                case .downloading, .installing:
+                    Text(LocalizedStringKey(supplications ? "Downloading supplications…" : "Downloading Hadith…"))
                 case .failed:
-                    Text("Unable to download Hadith. Check your connection and try again.")
+                    Text(LocalizedStringKey(supplications ? "Unable to download supplications. Check your connection and try again." : "Unable to download Hadith. Check your connection and try again."))
                 case .incompatible:
                     Text("This download needs an update.")
                 default:
-                    Text("Read and search Hadith offline.")
+                    if supplications {
+                        Text("Read and search supplications offline.")
+                    } else {
+                        Text("Read and search Hadith offline.")
+                    }
                 }
             } actions: {
-                if assets.state == .downloading {
-                    TimelineView(.periodic(from: .now, by: 1)) { context in
-                        VStack(spacing: 8) {
-                            ProgressView(value: assets.progress)
-                                .accessibilityLabel("Downloading Hadith…")
-                            if assets.progress >= 1 {
-                                Text("Checking Hadith download…")
-                            } else if let seconds = assets.estimatedRemaining(at: context.date) {
-                                Text("About \(Duration.seconds(seconds).formatted(.units(allowed: [.hours, .minutes, .seconds], width: .abbreviated, maximumUnitCount: 1))) remaining")
-                            }
-                        }
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: 240)
+                if assets.isDownloading {
+                    AssetDownloadProgress(progress: assets.downloadProgress, installing: assets.state == .installing,
+                                          preparing: assets.preparingDownload, remaining: assets.estimatedRemaining)
+                        .frame(maxWidth: 300)
                 } else if assets.state == .checking {
                     ProgressView()
                 } else {
-                    AssetDownloadButton(pack: "hadith", retry: assets.state != .missing) {
+                    AssetDownloadButton(pack: assets.packID, retry: assets.state != .missing) {
                         operation = Task { await assets.download() }
                     }
                     .disabled(assets.busy)
-                    .accessibilityIdentifier("hadith-download")
+                    .accessibilityIdentifier(supplications ? "supplications-download" : "hadith-download")
                 }
             }
-            .navigationTitle("Hadith")
+            .navigationTitle(LocalizedStringKey(supplications ? "Supplications" : "Hadith"))
+            .alert("Unable to finish storage cleanup", isPresented: $assets.storageError) {
+                Button("OK", role: .cancel) {}
+            } message: { Text(assets.storageErrorMessage) }
         }
     }
 }

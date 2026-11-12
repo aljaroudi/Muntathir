@@ -6,6 +6,7 @@ enum FigureRoute: Hashable {
     case tree(String)
     case observance(eventID: String, figureIDs: [String])
     case hadith
+    case supplications
 }
 
 struct FigureBrowser: View {
@@ -17,25 +18,22 @@ struct FigureBrowser: View {
         Group {
             switch library {
             case let .success(library):
-                let matches = library.search(query, locale: locale)
+                let sections = library.browserSections(matching: query, locale: locale)
                 List {
-                    ForEach(FigureGroup.allCases, id: \.self) { group in
-                        let people = matches.filter { FigureGroup.group(for: $0.id) == group }
-                        if !people.isEmpty {
-                            Section {
-                                ForEach(people) { person in
-                                    NavigationLink(value: FigureRoute.profile(person.id)) {
-                                        Text(verbatim: person.title(locale))
-                                    }
-                                    .accessibilityIdentifier("figure-\(person.id)")
+                    ForEach(sections) { section in
+                        Section {
+                            ForEach(section.figures) { person in
+                                NavigationLink(value: FigureRoute.profile(person.id)) {
+                                    Text(verbatim: person.title(locale))
                                 }
+                                .accessibilityIdentifier("figure-\(person.id)")
                             }
                         }
                     }
                 }
                 .searchable(text: $query)
                 .overlay {
-                    if matches.isEmpty {
+                    if sections.isEmpty {
                         ContentUnavailableView("No figures found", systemImage: "person.crop.circle.badge.questionmark")
                     }
                 }
@@ -47,7 +45,7 @@ struct FigureBrowser: View {
         }
         .navigationTitle("Figures")
         .task {
-            library = await FigureFeed.shared.load()
+            library = await FigureStore.shared.load()
         }
     }
 }
@@ -77,13 +75,13 @@ struct FigureDestination: View {
             }
         }
         .task {
-            library = await FigureFeed.shared.load()
+            library = await FigureStore.shared.load()
         }
     }
 }
 
 extension View {
-    func figureDestinations(hadithAssets: HadithAssetStore? = nil) -> some View {
+    func figureDestinations(hadithAssets: HadithAssetStore? = nil, supplicationAssets: HadithAssetStore? = nil) -> some View {
         navigationDestination(for: FigureRoute.self) { route in
             switch route {
             case .browser: FigureBrowser()
@@ -93,6 +91,12 @@ extension View {
             case .hadith:
                 if let hadithAssets {
                     HadithLibraryView(assets: hadithAssets)
+                }
+            case .supplications:
+                if let supplicationAssets {
+                    HadithLibraryView(assets: supplicationAssets, supplications: true)
+                        .environment(\.hadithAssets, supplicationAssets)
+                        .environment(\.hadithSession, nil)
                 }
             }
         }
@@ -119,7 +123,7 @@ struct FigureObservanceRow: View {
         .task(id: event.figureIDs) {
             ids = []
             guard !event.figureIDs.isEmpty,
-                  let library = try? await FigureFeed.shared.load().get() else { return }
+                  let library = try? await FigureStore.shared.load().get() else { return }
             ids = event.figureIDs.filter { library.byID[$0] != nil }
         }
     }
@@ -157,34 +161,7 @@ private struct ObservanceFigurePicker: View {
         }
         .navigationTitle("Figures")
         .task {
-            library = await FigureFeed.shared.load()
+            library = await FigureStore.shared.load()
         }
     }
-}
-
-enum FigureGroup: CaseIterable {
-    case infallibles, prophets, companions, other
-
-    static func group(for id: String) -> Self {
-        if infallibleIDs.contains(id) {
-            return .infallibles
-        }
-        if id.hasPrefix("prophet-") {
-            return .prophets
-        }
-        if companionIDs.contains(id) {
-            return .companions
-        }
-        return .other
-    }
-
-    private static let infallibleIDs: Set<String> = [
-        "prophet-muhammad", "fatima-al-zahra", "ali-ibn-abi-talib", "hasan-ibn-ali",
-        "husayn-ibn-ali", "ali-zayn-al-abidin", "muhammad-al-baqir", "jafar-al-sadiq",
-        "musa-al-kadhim", "ali-al-ridha", "muhammad-al-jawad", "ali-al-hadi",
-        "hasan-al-askari", "muhammad-al-mahdi",
-    ]
-    private static let companionIDs: Set<String> = [
-        "salman-al-muhammadi", "abu-dharr-al-ghifari", "miqdad-ibn-al-aswad", "ammar-ibn-yasir",
-    ]
 }

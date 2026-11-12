@@ -1,8 +1,8 @@
 # Semantic search
 
 Qdrant + Gemini Embedding 2, served by a TypeScript Bun API on this Mac through
-Cloudflare Tunnel. The Swift app searches locally first in its Quran/Hadith readers. When no local
-match exists, it offers **Search by meaning** in the same search bar. Online requests
+Cloudflare Tunnel. The Swift app searches locally first in its Quran/Hadith readers. After local
+text search, it offers **Search by meaning** in the same search bar. Online requests
 require a tap, retain the current collection/chapter, and hydrate compact references
 from local reader data. PostgreSQL and Supabase are no
 longer used by this feature.

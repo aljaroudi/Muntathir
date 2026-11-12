@@ -22,6 +22,8 @@ FileUtils.rm_rf(File.join(app, "PlugIns/MuntathirTests.xctest"))
 MuntathirRelease.run!("python3", "AssetPacks/assets.py", "validate", "--content", "all")
 FileUtils.mkdir_p(File.join(app, "Hadith"))
 FileUtils.cp("../build/hadith/dist/hadith.db", File.join(app, "Hadith/hadith.db"))
+FileUtils.mkdir_p(File.join(app, "Supplications"))
+FileUtils.cp("../build/hadith/dist/supplications.db", File.join(app, "Supplications/supplications.db"))
 FileUtils.mkdir_p(File.join(app, "MarketingQuran"))
 Dir.glob("Muntathir/Resources/Quran/*.db").reject { |path| %w[quran.db en.qarai.db].include?(File.basename(path)) }.each do |path|
   FileUtils.cp(path, File.join(app, "MarketingQuran", File.basename(path)))

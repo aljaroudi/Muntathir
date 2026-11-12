@@ -1,6 +1,4 @@
 import { describe, expect, test } from "bun:test"
-import { existsSync, readFileSync } from "node:fs"
-import { join } from "node:path"
 import { calendarYears, calendarPath } from "../src/calendar-view"
 import { translations } from "../src/i18n"
 import { appStore, site, paths, isPreview, type Locale } from "../src/site"
@@ -21,8 +19,9 @@ test("both languages have complete, nonempty translation trees", () => {
 
 for (const locale of ["ar", "en"] satisfies Locale[]) {
   describe(locale, () => {
-    const html = readFileSync(join("dist", paths[locale], "index.html"), "utf8")
-    test("renders localized content and accessible document structure without JavaScript", () => {
+    const page = () => Bun.file(`dist${paths[locale]}index.html`).text()
+    test("renders localized content and accessible document structure without JavaScript", async () => {
+      const html = await page()
       expect(html).toContain(`lang="${locale}"`)
       expect(html).toContain(`dir="${locale === "ar" ? "rtl" : "ltr"}"`)
       expect(html).toContain(translations[locale].hero.first)
@@ -33,7 +32,8 @@ for (const locale of ["ar", "en"] satisfies Locale[]) {
       expect(html).toContain('lang="en" hreflang="en"')
       expect(html).not.toContain("undefined")
     })
-    test("provides canonical, reciprocal language links and factual structured data", () => {
+    test("provides canonical, reciprocal language links and factual structured data", async () => {
+      const html = await page()
       expect(html).toContain(`rel="canonical" href="${new URL(paths[locale], site).href}"`)
       for (const [language, path] of Object.entries(paths)) {
         expect(html).toContain(`hreflang="${language}" href="${new URL(path, site).href}"`)
@@ -48,45 +48,62 @@ for (const locale of ["ar", "en"] satisfies Locale[]) {
       expect(schema.aggregateRating).toBeUndefined()
       expect(html).toContain(`href="${appStore}"`)
     })
-    test("local links, anchors and assets exist", () => {
+    test("local links, anchors and assets exist", async () => {
+      const html = await page()
       for (const match of html.matchAll(/(?:href|src)="([^"]+)"/g)) {
         const value = match[1]
         if (value.startsWith("#")) {
           expect(html).toContain(`id="${value.slice(1)}"`)
         } else if (value.startsWith("/")) {
-          const target = join("dist", value.endsWith("/") ? `${value}index.html` : value)
-          expect(existsSync(target)).toBe(true)
+          const target = `dist${value.endsWith("/") ? `${value}index.html` : value}`
+          expect(await Bun.file(target).exists()).toBe(true)
         }
       }
-      const image = readFileSync(`dist/social/${locale}.png`)
-      expect(image.readUInt32BE(16)).toBe(1200)
-      expect(image.readUInt32BE(20)).toBe(630)
+      const image = new DataView(await Bun.file(`dist/social/${locale}.png`).arrayBuffer())
+      expect(image.getUint32(16)).toBe(1200)
+      expect(image.getUint32(20)).toBe(630)
     })
-    test("preview builds are noindex; production builds are indexable", () => {
-      expect(html.includes('name="robots" content="noindex, nofollow"')).toBe(isPreview)
+    test("preview builds are noindex; production builds are indexable", async () => {
+      expect((await page()).includes('name="robots" content="noindex, nofollow"')).toBe(isPreview)
     })
   })
 }
 
-test("sitemap and robots agree with production URLs and environment", () => {
-  const robots = readFileSync("dist/robots.txt", "utf8")
-  const sitemap = readFileSync("dist/sitemap.xml", "utf8")
+test("sitemap and robots agree with production URLs and environment", async () => {
+  const robots = await Bun.file("dist/robots.txt").text()
+  const sitemap = await Bun.file("dist/sitemap.xml").text()
   expect(robots).toContain(isPreview ? "Disallow: /" : `Sitemap: ${site.href}sitemap.xml`)
   for (const path of Object.values(paths)) {
     expect(sitemap).toContain(`<loc>${new URL(path, site).href}</loc>`)
   }
 })
 
-test("publishes confirmed calendar starts for both supported sources", () => {
-  const feed = JSON.parse(readFileSync("dist/calendar/corrections-v1.json", "utf8"))
+test("publishes confirmed calendar starts for both supported sources", async () => {
+  const feed = await Bun.file("dist/calendar/corrections-v1.json").json()
   expect(feed.schemaVersion).toBe(1)
-  expect(feed.announcements).toHaveLength(2)
-  for (const [sourceID, method] of [
-    ["naked-eye-middle-east", "nakedEye"],
-    ["government-SA", "government"],
+  expect(feed.announcements).toHaveLength(3)
+  for (const { sourceID, method, month, start } of [
+    {
+      sourceID: "naked-eye-middle-east",
+      method: "nakedEye",
+      month: 5,
+      start: { year: 2026, month: 10, day: 13 },
+    },
+    {
+      sourceID: "naked-eye-middle-east",
+      method: "nakedEye",
+      month: 6,
+      start: { year: 2026, month: 11, day: 12 },
+    },
+    {
+      sourceID: "government-SA",
+      method: "government",
+      month: 5,
+      start: { year: 2026, month: 10, day: 13 },
+    },
   ]) {
     expect(feed.announcements).toContainEqual({
-      id: `${sourceID}-1448-05`,
+      id: `${sourceID}-1448-${String(month).padStart(2, "0")}`,
       revision: 1,
       sourceID,
       method,
@@ -94,14 +111,14 @@ test("publishes confirmed calendar starts for both supported sources", () => {
         countries: sourceID === "government-SA" ? ["SA"] : ["SA", "KW", "BH", "OM", "AE", "QA"],
         polygons: [],
       },
-      month: { year: 1448, month: 5 },
-      start: { year: 2026, month: 10, day: 13 },
+      month: { year: 1448, month },
+      start,
     })
   }
 })
 
-test("privacy pages and support redirect are ready before deployment", () => {
-  const config = JSON.parse(readFileSync("vercel.json", "utf8"))
+test("privacy pages and support redirect are ready before deployment", async () => {
+  const config = await Bun.file("vercel.json").json()
   const target =
     "https://docs.google.com/forms/d/e/1FAIpQLSdDOEiaLaS2_-cI-n5ZDNVMjHyv6OX2IPECM_dboG1qFj8bsA/viewform?usp=header"
   for (const path of ["/support", "/support/", "/en/support", "/en/support/"]) {
@@ -113,7 +130,7 @@ test("privacy pages and support redirect are ready before deployment", () => {
     ["privacy", "ar"],
     ["en/privacy", "en"],
   ]) {
-    const html = readFileSync(join("dist", path, "index.html"), "utf8")
+    const html = await Bun.file(`dist/${path}/index.html`).text()
     expect(html).toContain(`lang="${language}"`)
     expect(html).toContain("iCloud")
     expect(html).toContain("Google")
@@ -122,9 +139,9 @@ test("privacy pages and support redirect are ready before deployment", () => {
 })
 
 for (const locale of ["ar", "en"] as const) {
-  test(`${locale} event calendar is complete and accessible without JavaScript`, () => {
+  test(`${locale} event calendar is complete and accessible without JavaScript`, async () => {
     const path = locale === "ar" ? "/calendar/" : "/en/calendar/"
-    const html = readFileSync(join("dist", path, "index.html"), "utf8")
+    const html = await Bun.file(`dist${path}index.html`).text()
     expect(html).toContain(`lang="${locale}"`)
     expect(html).toContain(`dir="${locale === "ar" ? "rtl" : "ltr"}"`)
     expect(html.match(/<h1\b/g)).toHaveLength(1)
@@ -147,10 +164,10 @@ for (const locale of ["ar", "en"] as const) {
     expect(html).toContain(`href="webcal://${site.host}/calendar/${locale}.ics"`)
     expect(html.includes('name="robots" content="noindex, nofollow"')).toBe(isPreview)
     expect(html).not.toContain("undefined")
-    expect(readFileSync("dist/sitemap.xml", "utf8")).toContain(
+    expect(await Bun.file("dist/sitemap.xml").text()).toContain(
       `<loc>${new URL(calendarPath(locale, year), site).href}</loc>`
     )
-    const landing = readFileSync(join("dist", paths[locale], "index.html"), "utf8")
+    const landing = await Bun.file(`dist${paths[locale]}index.html`).text()
     expect(landing).toContain(`href="${path}"`)
     expect(landing).toContain(".webp")
     expect(landing).toContain("srcset=")
@@ -160,12 +177,12 @@ for (const locale of ["ar", "en"] as const) {
   })
 }
 
-test("every supported year has crawlable bilingual HTML, headings, anchors, and canonical metadata", () => {
-  const sitemap = readFileSync("dist/sitemap.xml", "utf8")
+test("every supported year has crawlable bilingual HTML, headings, anchors, and canonical metadata", async () => {
+  const sitemap = await Bun.file("dist/sitemap.xml").text()
   for (const locale of ["ar", "en"] as const) {
     for (const year of calendarYears) {
       const path = calendarPath(locale, year)
-      const html = readFileSync(join("dist", path, "index.html"), "utf8")
+      const html = await Bun.file(`dist${path}index.html`).text()
       expect(html).toContain(`data-year-value="${year}"`)
       expect(html).toContain(`data-fixed-year="${year}"`)
       expect(html).toContain(`rel="canonical" href="${new URL(path, site).href}"`)
@@ -178,6 +195,6 @@ test("every supported year has crawlable bilingual HTML, headings, anchors, and 
       expect(html.includes('name="robots" content="noindex, nofollow"')).toBe(isPreview)
     }
   }
-  expect(existsSync("dist/calendar/1349/index.html")).toBe(false)
-  expect(existsSync("dist/en/calendar/1501/index.html")).toBe(false)
+  expect(await Bun.file("dist/calendar/1349/index.html").exists()).toBe(false)
+  expect(await Bun.file("dist/en/calendar/1501/index.html").exists()).toBe(false)
 })

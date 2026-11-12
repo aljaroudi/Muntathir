@@ -4,11 +4,33 @@ import OSLog
 
 @MainActor @Observable final class HadithAssetStore {
     enum State: Equatable {
-        case checking, missing, downloading, ready, failed, incompatible
+        case checking, missing, downloading, installing, ready, failed, incompatible
     }
 
+    private let library: HadithLocalLibrary?
+    private(set) var books: [DownloadedBook] = []
+    var storageError = false
+    private(set) var storageErrorMessage = ""
+    var isDownloading: Bool {
+        state == .downloading || state == .installing
+    }
+
+    private var restorationKey: String {
+        "\(packID).restoring"
+    }
+
+    private var cleanupKey: String {
+        "\(packID).cleanup"
+    }
+
+    let packID: String
     let reader: HadithReader
     private(set) var state: State = .checking
+    private(set) var downloadStarted = false
+    var preparingDownload: Bool {
+        isDownloading && !downloadStarted && downloadProgress == nil
+    }
+
     private(set) var downloadProgress: Progress?
     var progress: Double {
         downloadProgress?.fractionCompleted ?? 0
@@ -23,7 +45,10 @@ import OSLog
     private var integrityWorker: Task<Void, Error>?
     private let validateIntegrity: @Sendable (URL) async throws -> Void
     private let defaults: UserDefaults
-    private let validationKey = "hadith.validated.v1"
+    private var validationKey: String {
+        "\(packID).validated.v1"
+    }
+
     private let backend: any AssetPackBackend
     private var installedSignature: String?
     private var refreshPending = false
@@ -33,9 +58,12 @@ import OSLog
     private var progressSample: (date: Date, fraction: Double)?
     private var transferFinishedAt: Date?
 
-    init(backend: any AssetPackBackend = AppleAssetPackBackend(), reader: HadithReader = HadithReader(), defaults: UserDefaults = .standard,
+    init(backend: any AssetPackBackend = AppleAssetPackBackend(), packID: String = "hadith", reader: HadithReader = HadithReader(), defaults: UserDefaults = .standard, library: HadithLocalLibrary? = nil,
          validateIntegrity: @escaping @Sendable (URL) async throws -> Void = { try HadithDatabase(url: $0).validate() })
     {
+        self.library = library ?? (backend is AppleAssetPackBackend && !ProcessInfo.processInfo.arguments.contains("--ui-testing")
+            ? HadithLocalLibrary(root: URL.applicationSupportDirectory.appending(path: "Libraries/\(packID)")) : nil)
+        self.packID = packID
         self.validateIntegrity = validateIntegrity
         self.defaults = defaults
         self.backend = backend
@@ -43,6 +71,10 @@ import OSLog
     }
 
     isolated deinit { integrityWorker?.cancel() }
+
+    func cancelIntegrityCheck() {
+        integrityWorker?.cancel()
+    }
 
     func invalidateValidation() {
         integrityWorker?.cancel()
@@ -60,7 +92,31 @@ import OSLog
     private func resolve() async {
         do {
             let lookupStarted = ContinuousClock.now
-            let localURL = try await backend.localURL()
+            var localURL = await library?.localURL()
+            if library == nil || localURL == nil || defaults.string(forKey: restorationKey) != nil {
+                if let managed = try await backend.localURL() {
+                    if let library {
+                        state = .installing
+                        let staged = try await library.prepare(source: managed, restoring: defaults.string(forKey: restorationKey))
+                        defer { try? FileManager.default.removeItem(at: staged) }
+                        defaults.set(true, forKey: cleanupKey)
+                        try await reader.commit(staged, to: library.url)
+                        localURL = library.url
+                        defaults.removeObject(forKey: restorationKey)
+                    } else {
+                        localURL = managed
+                    }
+                }
+            }
+            if let library {
+                books = try await library.books()
+                if defaults.bool(forKey: cleanupKey) {
+                    do {
+                        try await backend.remove()
+                        defaults.removeObject(forKey: cleanupKey)
+                    } catch { storageErrorMessage = error.localizedDescription; storageError = true }
+                }
+            }
             Logger(subsystem: "com.aljaroudi.Muntathir", category: "HadithAssets")
                 .debug("Hadith local URL lookup: \(lookupStarted.duration(to: .now))")
             guard let url = localURL else {
@@ -71,6 +127,9 @@ import OSLog
                 installedSignature = nil
                 defaults.removeObject(forKey: validationKey)
                 let downloading = await backend.isDownloading()
+                if downloading {
+                    downloadStarted = true
+                }
                 state = downloading || pendingDownload != nil ? .downloading : .missing
                 return
             }
@@ -95,12 +154,24 @@ import OSLog
                     startIntegrityCheck(url: url, signature: signature)
                 }
             }
-            state = .ready
+            let downloading = await backend.isDownloading()
+            if defaults.string(forKey: restorationKey) != nil {
+                state = pendingDownload != nil || downloading ? .downloading : .failed
+            } else {
+                state = .ready
+            }
         } catch HadithDatabaseError.incompatible {
             installedSignature = nil
             defaults.removeObject(forKey: validationKey)
             state = .incompatible
         } catch {
+            if library != nil {
+                storageErrorMessage = error.localizedDescription
+                storageError = true
+            }
+            let packID = packID
+            Logger(subsystem: "com.aljaroudi.Muntathir", category: "HadithAssets")
+                .error("Asset validation failed for \(packID, privacy: .public): \(String(describing: error), privacy: .public)")
             installedSignature = nil
             defaults.removeObject(forKey: validationKey)
             state = .failed
@@ -127,12 +198,20 @@ import OSLog
         }
     }
 
-    func download() async {
-        guard !busy, state != .ready, pendingDownload == nil else { return }
+    func download(title: String? = nil) async {
+        guard !busy, state != .ready || title != nil, pendingDownload == nil else { return }
+        if let title {
+            defaults.set(title, forKey: restorationKey)
+        } else if library != nil, state == .failed || state == .incompatible,
+                  defaults.string(forKey: restorationKey) == nil
+        {
+            defaults.set("", forKey: restorationKey)
+        }
         let replaceInvalid = state == .incompatible || state == .failed
         busy = true
         state = .downloading
         downloadProgress = nil
+        downloadStarted = false
         progressSample = nil
         transferFinishedAt = nil
         downloadGeneration += 1
@@ -142,7 +221,9 @@ import OSLog
             if replaceInvalid, try await backend.localURL() != nil {
                 installedSignature = nil
                 defaults.removeObject(forKey: validationKey)
-                try await reader.install(nil)
+                if library == nil {
+                    try await reader.install(nil)
+                }
                 try await backend.remove()
                 installedSignature = nil
                 defaults.removeObject(forKey: validationKey)
@@ -179,10 +260,27 @@ import OSLog
             }
             // An older compatible pack remains useful if an update fails offline.
             await refresh()
-            if state != .ready, state != .incompatible {
+            if defaults.string(forKey: restorationKey) != nil || (state != .ready && state != .incompatible) {
                 state = .failed
             }
         }
+    }
+
+    func remove(title: String) async {
+        guard let library, !busy, !isDownloading, books.contains(where: { $0.id == title && $0.installed }) else { return }
+        busy = true
+        storageError = false
+        integrityWorker?.cancel()
+        do {
+            guard let source = await library.localURL() else { throw HadithDatabaseError.unavailable }
+            let staged = try await library.prepare(source: source, removing: title)
+            defer { try? FileManager.default.removeItem(at: staged) }
+            try await reader.commit(staged, to: library.url)
+            installedSignature = nil
+            defaults.removeObject(forKey: validationKey)
+            await resolve()
+        } catch { storageErrorMessage = error.localizedDescription; storageError = true }
+        await finishOperation()
     }
 
     func remove() async {
@@ -199,13 +297,23 @@ import OSLog
             installedSignature = nil
             defaults.removeObject(forKey: validationKey)
             try await reader.install(nil)
-            try await backend.remove()
+            let managed = try await backend.localURL()
+            let downloading = await backend.isDownloading()
+            if library == nil || managed != nil || downloading {
+                try await backend.remove()
+            }
+            try await library?.remove()
+            defaults.removeObject(forKey: restorationKey)
+            defaults.removeObject(forKey: cleanupKey)
+            books = []
             installedSignature = nil
             defaults.removeObject(forKey: validationKey)
             hasLocalAsset = false
             installedBytes = 0
             state = .missing
         } catch {
+            storageErrorMessage = error.localizedDescription
+            storageError = true
             await resolve()
             if state != .ready {
                 state = .failed
@@ -225,10 +333,19 @@ import OSLog
     func receive(_ event: AssetPackEvent) async {
         switch event {
         case .began:
-            if state != .ready {
+            downloadStarted = true
+            if state != .ready, state != .installing {
+                if state != .downloading {
+                    downloadProgress = nil; progressSample = nil
+                }
                 state = .downloading
             }
         case let .progress(value):
+            guard state != .ready, state != .installing else { return }
+            if state == .downloading, value.fractionCompleted < progress {
+                return
+            }
+            downloadStarted = true
             if progressSample == nil {
                 progressSample = (Date(), value.fractionCompleted)
             }
@@ -266,7 +383,7 @@ import OSLog
     }
 
     func reconcileDownload(at date: Date = Date()) async {
-        guard state == .downloading else { return }
+        guard isDownloading else { return }
         await refresh()
         guard state == .downloading, progress >= 1 else { return }
         if transferFinishedAt == nil {
@@ -285,6 +402,7 @@ import OSLog
     }
 
     func monitor() async {
+        await refresh()
         await withTaskGroup(of: Void.self) { group in
             group.addTask { [backend] in
                 for await event in backend.updates() {
@@ -302,6 +420,7 @@ import OSLog
 }
 
 struct HadithSessionState: Codable, Equatable {
+    var searchRankingVersion: Int? = 2
     var active = false
     var request = HadithRequest()
     var history: [HadithCursor] = []
@@ -314,6 +433,8 @@ struct HadithSessionState: Codable, Equatable {
     var screen: String?
     var contentsQuery: String?
     var contentsOffset: Double?
+    var listRow: String?
+    var contentsRow: String?
 }
 
 @MainActor @Observable final class HadithSession {
@@ -327,6 +448,16 @@ struct HadithSessionState: Codable, Equatable {
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         state = defaults.data(forKey: key).flatMap { try? JSONDecoder().decode(HadithSessionState.self, from: $0) } ?? HadithSessionState()
+        if state.searchRankingVersion != 2 {
+            state.searchRankingVersion = 2
+            if !state.request.query.isEmpty {
+                state.request.cursor = HadithCursor()
+                state.history = []
+                state.cursorSources = []
+                state.listOffset = 0
+                state.listRow = nil
+            }
+        }
     }
 
     func save() {

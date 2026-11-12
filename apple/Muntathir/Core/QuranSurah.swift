@@ -34,20 +34,36 @@ struct QuranSurah: Decodable, Identifiable, Hashable, Sendable {
     }
 }
 
+/// Display only: source IDs and stored references remain chapter:verse.
+enum QuranReference {
+    private static let names = Dictionary(uniqueKeysWithValues: ((try? QuranSurah.load()) ?? []).map { ($0.id, $0.arabic) })
+
+    static func display(_ reference: String, locale: Locale) -> String {
+        guard locale.language.languageCode?.identifier == "ar",
+              let parsed = try? QuranSearchText.reference(reference),
+              let name = names[parsed.surah] else { return reference }
+        // Isolate the numeric run so RTL surroundings cannot reverse chapter and verse.
+        return name + " " + "\u{2066}" + reference + "\u{2069}"
+    }
+}
+
 enum QuranSearchText {
     /// Search keys only. Never apply this to displayed or shared Quran text.
     /// Must match the normalization the bundled search indexes were built with.
     static func normalize(_ text: String) -> String {
-        String(text.unicodeScalars.compactMap { scalar -> String? in
+        guard !text.utf8.allSatisfy({ $0 < 128 }) else { return text }
+        var result = String.UnicodeScalarView()
+        for scalar in text.unicodeScalars {
             switch scalar.value {
             case 0x0610 ... 0x061A, 0x0640, 0x064B ... 0x065F, 0x0670, 0x06D6 ... 0x06ED:
-                nil
-            case 0x0622, 0x0623, 0x0625, 0x0671: "ا"
-            case 0x0649: "ي"
-            case 0x0629: "ه"
-            default: String(scalar)
+                continue
+            case 0x0622, 0x0623, 0x0625, 0x0671: result.append("ا")
+            case 0x0649: result.append("ي")
+            case 0x0629: result.append("ه")
+            default: result.append(scalar)
             }
-        }.joined())
+        }
+        return String(result)
     }
 
     static func number(_ text: String) -> Int? {
@@ -71,16 +87,43 @@ enum QuranSearchText {
         }.map(String.init)
     }
 
-    static func distance(_ a: String, _ b: String) -> Int {
-        let a = Array(a), b = Array(b)
-        var previous = Array(0 ... b.count)
-        for (i, x) in a.enumerated() {
-            var current = [i + 1]
-            for (j, y) in b.enumerated() {
-                current.append(min(previous[j + 1] + 1, current[j] + 1, previous[j] + (x == y ? 0 : 1)))
+    /// 0: contiguous whole-word phrase, 1: every term occurs literally, 2: no match.
+    static func literalRank(_ text: String, terms: [String]) -> Int {
+        let terms = terms.map { $0.folding(options: .diacriticInsensitive, locale: Locale(identifier: "en")) }
+        guard !terms.isEmpty else { return 2 }
+        // Latin queries cannot match Arabic-only text; avoid normalizing entire narrations.
+        for term in terms.sorted(by: { $0.count > $1.count }) where term.utf8.allSatisfy({ $0 < 128 }) {
+            if text.range(of: term, options: [.caseInsensitive, .diacriticInsensitive]) == nil {
+                return 2
             }
-            previous = current
         }
-        return previous[b.count]
+        if terms.count == 1 {
+            let source = terms[0].utf8.allSatisfy { $0 < 128 } ? text : normalize(text)
+            var start = source.startIndex
+            var rank = 2
+            while start < source.endIndex, let range = source.range(of: terms[0], options: [.caseInsensitive, .diacriticInsensitive], range: start ..< source.endIndex) {
+                let begins = range.lowerBound == source.startIndex || !source[source.index(before: range.lowerBound)].isLetter && !source[source.index(before: range.lowerBound)].isNumber
+                let ends = range.upperBound == source.endIndex || !source[range.upperBound].isLetter && !source[range.upperBound].isNumber
+                if begins, ends {
+                    return 0
+                }
+                rank = 1
+                start = range.upperBound
+            }
+            return rank
+        }
+        let words = Self.terms(text).map { $0.folding(options: .diacriticInsensitive, locale: Locale(identifier: "en")) }
+        if words.count >= terms.count {
+            for start in 0 ... words.count - terms.count {
+                if Array(words[start ..< start + terms.count]) == terms {
+                    return 0
+                }
+            }
+        }
+        return terms.allSatisfy { term in words.contains { $0.contains(term) } } ? 1 : 2
+    }
+
+    static func isSearchableVerse(_ text: String) -> Bool {
+        normalize(text).unicodeScalars.filter { (0x0600 ... 0x06FF).contains($0.value) && CharacterSet.letters.contains($0) }.count >= 7
     }
 }

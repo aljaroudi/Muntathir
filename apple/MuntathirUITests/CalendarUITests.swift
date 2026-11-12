@@ -13,9 +13,31 @@ final class CalendarUITests: XCTestCase {
         link.tap()
     }
 
-    @MainActor func testSettingsMonthAdjustmentSaveResetAndDiscard() {
+    @MainActor func testDatePickerChangesMonthWithoutReplacingSheet() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.buttons["Calendar"].firstMatch.tap()
+        app.buttons["calendar-jump"].tap()
+        let title = app.staticTexts["calendar-month-title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        let original = title.label
+        let frame = app.navigationBars["Jump to date"].frame
+        for _ in 0 ..< 3 {
+            app.buttons["Next month"].tap()
+            XCTAssertTrue(app.navigationBars["Jump to date"].exists)
+            XCTAssertNotEqual(title.label, original)
+            XCTAssertEqual(app.navigationBars["Jump to date"].frame, frame)
+            app.buttons["Previous month"].tap()
+            XCTAssertEqual(title.label, original)
+        }
+        app.buttons["Done"].tap()
+        XCTAssertFalse(title.exists)
+    }
+
+    @MainActor func testSettingsMonthAdjustmentSaveResetAndDiscard() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "--sky-date", "2026-10-23T06:00:00Z", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
         openAdjustments(app)
         let stepper = app.steppers["month-offset"]

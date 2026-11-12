@@ -13,8 +13,10 @@ struct HadithPreviewRow: View {
                 Text(narration.chapter.chapterTitle(locale: locale))
                     .font(.caption).foregroundStyle(.secondary)
             }
-            Text(narration.number.formatted(.number.grouping(.never)))
-                .font(.headline)
+            if let number = narration.displayNumber {
+                Text(number.formatted(.number.grouping(.never)))
+                    .font(.headline)
+            }
             if !narration.arabic.isEmpty {
                 Text(narration.arabicDisplay)
                     .readingText(arabic: true, hadith: true)

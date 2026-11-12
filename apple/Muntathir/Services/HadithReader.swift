@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 import SQLite3
 
@@ -11,19 +12,29 @@ actor HadithReader {
 
     /// Actor serialization drains an active synchronous query before replacing/removing its file.
     func install(_ url: URL?, fullValidation: Bool = true) throws {
-        database = HadithDatabase(url: nil)
-        guard let url else { return }
+        guard let url else { database = HadithDatabase(url: nil); return }
         let candidate = HadithDatabase(url: url)
         try candidate.validate(full: fullValidation)
         database = candidate
+    }
+
+    /// Queries and the final atomic replacement share this actor's executor.
+    func commit(_ staged: URL, to destination: URL) throws {
+        try HadithDatabase(url: staged).validate()
+        try Task.checkCancellation()
+        guard rename(staged.path, destination.path) == 0 else {
+            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+        }
+        database = HadithDatabase(url: destination)
     }
 
     func catalog() throws -> [HadithCollection] {
         try database.connection().query("""
         SELECT c.id, c.name_ar, c.name_en, count(h.id)
         FROM collection c JOIN book b ON b.collection_id = c.id JOIN hadith h ON h.book_id = b.id
+        WHERE c.id NOT IN (?,?)
         GROUP BY c.id ORDER BY c.sort_order, c.id
-        """) {
+        """, parameters: Hadith.supplicationCollectionIDs) {
             HadithCollection(id: QuranConnection.text($0, 0), arabic: QuranConnection.text($0, 1),
                              english: QuranConnection.text($0, 2), count: Int(sqlite3_column_int($0, 3)))
         }
@@ -31,18 +42,49 @@ actor HadithReader {
 
     func chapters(collectionID: String? = nil) throws -> [HadithChapter] {
         try database.connection().query("""
-        SELECT c.id, c.name_ar, c.name_en, b.name_ar, b.name_en, b.id, c.hadith_count, b.collection_id, c.chapter_idx
+        SELECT c.id, c.name_ar, c.name_en, \(Self.bookName("ar")), \(Self.bookName("en")), b.id, c.hadith_count, b.collection_id, c.chapter_idx, (SELECT coalesce(sum(r.words),0) FROM hadith h JOIN hadith_reading r ON r.hadith_id=h.id WHERE h.chapter_id=c.id)
         FROM chapter c JOIN book b ON b.id = c.book_id
-        \(collectionID == nil ? "" : "WHERE b.collection_id = ?")
+        WHERE c.hadith_count > 0 AND b.collection_id NOT IN (?,?) \(collectionID == nil ? "" : "AND b.collection_id = ?")
         ORDER BY b.sort_order, c.chapter_idx, c.id
-        """, parameters: collectionID.map { [$0] } ?? []) { row in
+        """, parameters: Hadith.supplicationCollectionIDs + (collectionID.map { [$0] } ?? [])) { row in
             var chapter = Self.chapter(row, offset: 0)
             chapter.bookID = QuranConnection.text(row, 5)
             chapter.count = Int(sqlite3_column_int(row, 6))
             chapter.collectionID = QuranConnection.text(row, 7)
             chapter.index = Int(sqlite3_column_int(row, 8))
+            chapter.readingWords = Int(sqlite3_column_int(row, 9))
             return chapter
         }
+    }
+
+    func introductions(collectionID: String, chapterID: Int? = nil) throws -> [HadithIntroduction] {
+        try database.connection().query("""
+        SELECT i.id, i.title, i.arabic, i.english, \(Self.bookName("ar")), \(Self.bookName("en"))
+        FROM introduction i JOIN book b ON b.id=i.book_id
+        WHERE b.collection_id=? AND i.id=(
+            SELECT first.id FROM introduction first JOIN book volume ON volume.id=first.book_id
+            WHERE volume.collection_id=b.collection_id ORDER BY volume.sort_order, first.sort_order, first.id LIMIT 1
+        ) \(chapterID == nil ? "" : "AND i.chapter_id=CAST(? AS INTEGER)")
+        ORDER BY b.sort_order, i.sort_order, i.id
+        """, parameters: [collectionID] + (chapterID.map { [String($0)] } ?? [])) {
+            HadithIntroduction(id: Int(sqlite3_column_int($0, 0)), title: QuranConnection.text($0, 1),
+                               arabic: "", english: "",
+                               bookArabic: QuranConnection.text($0, 4), bookEnglish: QuranConnection.text($0, 5),
+                               readingWords: ReadingTime.words(arabic: QuranConnection.text($0, 2), english: QuranConnection.text($0, 3)))
+        }
+    }
+
+    func introduction(id: Int) throws -> HadithIntroduction {
+        guard let result = try database.connection().query("""
+        SELECT i.id, i.title, i.arabic, i.english, \(Self.bookName("ar")), \(Self.bookName("en"))
+        FROM introduction i JOIN book b ON b.id=i.book_id WHERE i.id=CAST(? AS INTEGER)
+        """, parameters: [String(id)], row: {
+            HadithIntroduction(id: Int(sqlite3_column_int($0, 0)), title: QuranConnection.text($0, 1),
+                               arabic: QuranConnection.text($0, 2), english: QuranConnection.text($0, 3),
+                               bookArabic: QuranConnection.text($0, 4), bookEnglish: QuranConnection.text($0, 5),
+                               readingWords: ReadingTime.words(arabic: QuranConnection.text($0, 2), english: QuranConnection.text($0, 3)))
+        }).first else { throw HadithDatabaseError.invalidReference }
+        return result
     }
 
     func page(_ request: HadithRequest) throws -> HadithPage {
@@ -54,8 +96,8 @@ actor HadithReader {
         if let number = request.number, number <= 0 {
             throw HadithDatabaseError.invalidReference
         }
-        var conditions = ["1 = 1"]
-        var scopeParameters: [String] = []
+        var conditions = ["b.collection_id NOT IN (?,?)"]
+        var scopeParameters = Hadith.supplicationCollectionIDs
         if let collectionID = request.collectionID {
             conditions.append("b.collection_id = ?")
             scopeParameters.append(collectionID)
@@ -65,75 +107,63 @@ actor HadithReader {
             scopeParameters.append(String(chapterID))
         }
         if let number = request.number {
-            conditions.append("h.id_in_book = CAST(? AS INTEGER)")
+            conditions.append("CASE WHEN b.collection_id IN ('openiti-wasail','openiti-bihar') THEN h.source_id ELSE coalesce((SELECT display_number FROM hadith_reading WHERE hadith_id=h.id),h.id_in_book) END = CAST(? AS INTEGER)")
             scopeParameters.append(String(number))
         }
         let connection = try database.connection()
         let predicate = conditions.joined(separator: " AND ")
         let base = "FROM hadith h JOIN book b ON b.id = h.book_id"
-        var match = Self.match(terms, orderedFallback: false)
-        var usedOrderedFallback = false
-        if terms.count > 1 {
-            let exists = try connection.query("""
-            SELECT EXISTS(SELECT 1 \(base) JOIN hadith_words ON hadith_words.rowid = h.id
-              WHERE \(predicate) AND hadith_words MATCH ?)
-              OR EXISTS(SELECT 1 \(base) JOIN hadith_en ON hadith_en.rowid = h.id
-              WHERE \(predicate) AND hadith_en MATCH ?)
-            """, parameters: scopeParameters + [match] + scopeParameters + [match]) { sqlite3_column_int($0, 0) != 0 }.first == true
-            if !exists {
-                usedOrderedFallback = true
-                match = Self.match(terms, orderedFallback: true)
-            }
-        }
-        func ordered(_ table: String) -> String {
-            usedOrderedFallback ? " AND hadith_ordered(\(table))" : ""
-        }
+        let usedOrderedFallback = false
         var selected: [(id: Int, phase: HadithCursor.Phase)] = []
-        if request.cursor.phase == .words {
-            let values = scopeParameters + [String(request.cursor.afterID)]
-            let cursor = "\(predicate) AND h.id > CAST(? AS INTEGER)"
-            let sql: String
-            let parameters: [String]
-            if terms.isEmpty {
-                sql = "SELECT h.id \(base) WHERE \(cursor) ORDER BY h.id LIMIT 51"
-                parameters = values
-            } else {
-                let arabic = "SELECT h.id \(base) JOIN hadith_words ON hadith_words.rowid = h.id WHERE \(cursor) AND hadith_words MATCH ?\(ordered("hadith_words")) ORDER BY h.id LIMIT 51"
-                let english = "SELECT h.id \(base) JOIN hadith_en ON hadith_en.rowid = h.id WHERE \(cursor) AND hadith_en MATCH ?\(ordered("hadith_en")) ORDER BY h.id LIMIT 51"
-                sql = "SELECT id FROM (\(arabic)) UNION SELECT id FROM (\(english)) ORDER BY id LIMIT 51"
-                parameters = values + [match] + values + [match]
+        if terms.isEmpty {
+            selected = try connection.query("SELECT h.id \(base) WHERE \(predicate) AND h.id > CAST(? AS INTEGER) ORDER BY h.id LIMIT 51",
+                                            parameters: scopeParameters + [String(request.cursor.afterID)])
+            {
+                (Int(sqlite3_column_int($0, 0)), .words)
             }
-            selected = try connection.query(sql, parameters: parameters) { (Int(sqlite3_column_int($0, 0)), .words) }
-        }
-        if selected.count < 51, !terms.isEmpty, terms.allSatisfy({ $0.count >= 3 && $0.unicodeScalars.contains { (0x0600 ... 0x06FF).contains($0.value) } }) {
-            let after = request.cursor.phase == .substring ? request.cursor.afterID : 0
-            let substring = terms.map { "\"\($0)\"" }.joined(separator: " AND ")
-            let sql = """
-            SELECT h.id \(base) JOIN hadith_fts ON hadith_fts.rowid = h.id
-            WHERE \(predicate) AND h.id > CAST(? AS INTEGER) AND hadith_fts MATCH ?
-              AND NOT EXISTS(SELECT 1 FROM hadith_words WHERE rowid = h.id AND hadith_words MATCH ?\(ordered("hadith_words")))
-              AND NOT EXISTS(SELECT 1 FROM hadith_en WHERE rowid = h.id AND hadith_en MATCH ?\(ordered("hadith_en")))
-            ORDER BY h.id LIMIT \(51 - selected.count)
-            """
-            selected += try connection.query(sql, parameters: scopeParameters + [String(after), substring, match, match]) {
-                (Int(sqlite3_column_int($0, 0)), .substring)
+        } else {
+            let indexed = terms.filter { $0.count >= 3 && $0.unicodeScalars.contains { (0x0600 ... 0x06FF).contains($0.value) } }
+            // The shipped trigram index covers Arabic. English/short infixes need source verification.
+            let candidates = indexed.isEmpty ? "" : "AND (h.id IN (SELECT rowid FROM hadith_fts WHERE hadith_fts MATCH ?) OR (h.english_narrator || h.english_text) GLOB '*[\u{0600}-\u{06FF}]*')"
+            let candidateParameters = indexed.isEmpty ? [] : [indexed.map { "\"\($0)\"" }.joined(separator: " AND ")]
+            for phase in HadithCursor.Phase.allCases where phase != .broader && phase.rawValue >= request.cursor.phase.rawValue {
+                let after = phase == request.cursor.phase ? request.cursor.afterID : 0
+                let remaining = 51 - selected.count
+                let phrase = "text : (" + terms.map { "\"\($0)\"" }.joined(separator: " + ") + ")"
+                // FTS is a candidate index only: source verification rejects stem-only hits.
+                let phaseCandidates = phase == .words
+                    ? "AND h.id IN (SELECT rowid FROM hadith_words WHERE hadith_words MATCH ? UNION SELECT rowid FROM hadith_en WHERE hadith_en MATCH ?)"
+                    : candidates
+                let phaseParameters = phase == .words ? [phrase, phrase] : candidateParameters
+                selected += try connection.query("""
+                SELECT h.id \(base) WHERE \(predicate) AND h.id > CAST(? AS INTEGER)
+                  \(phaseCandidates)
+                  AND hadith_literal_rank(h.arabic, h.english_narrator || ' ' || h.english_text, ?) = CAST(? AS INTEGER)
+                ORDER BY h.id LIMIT \(remaining)
+                """, parameters: scopeParameters + [String(after)] + phaseParameters + [request.query, String(phase.rawValue)]) {
+                    (Int(sqlite3_column_int($0, 0)), phase)
+                }
+                if selected.count == 51 {
+                    break
+                }
             }
         }
         let visible = Array(selected.prefix(Self.pageSize))
         guard !visible.isEmpty else { return HadithPage(rows: [], hasMore: false, usedOrderedFallback: usedOrderedFallback) }
         let placeholders = visible.map { _ in "?" }.joined(separator: ",")
-        let parameters = (terms.isEmpty ? [] : [match]) + visible.map { String($0.id) }
+        let parameters = visible.map { String($0.id) }
         let values = try connection.query("""
-        SELECT \(Self.columns(search: !terms.isEmpty)) \(Self.joins)
+        SELECT \(Self.columns) \(Self.joins)
         WHERE h.id IN (\(placeholders))
         """, parameters: parameters) { row in
             var narration = Self.narration(row)
             narration.arabicDisplay = HadithText.preview(narration.arabic, terms: terms)
-            narration.englishDisplay = HadithText.preview(narration.english, marked: !terms.isEmpty)
+            narration.englishDisplay = HadithText.preview(narration.englishNarrator + " " + narration.english, terms: terms)
             return Hadith(id: narration.id, collectionID: narration.collectionID, number: narration.number,
                           chapter: narration.chapter, arabic: String(narration.arabicDisplay.characters), englishNarrator: "",
                           english: String(narration.englishDisplay.characters),
-                          source: narration.source, arabicDisplay: narration.arabicDisplay, englishDisplay: narration.englishDisplay)
+                          source: narration.source, arabicDisplay: narration.arabicDisplay, englishDisplay: narration.englishDisplay,
+                          readingWords: narration.readingWords, readingNumber: narration.readingNumber)
         }
         let byID = Dictionary(uniqueKeysWithValues: values.map { ($0.id, $0) })
         let hasMore = selected.count > Self.pageSize
@@ -143,36 +173,17 @@ actor HadithReader {
                           nextCursor: hasMore ? HadithCursor(phase: last.phase, afterID: last.id) : nil)
     }
 
-    private static func match(_ terms: [String], orderedFallback: Bool) -> String {
-        let tokens = terms.map { "\"\($0)\"*" }
-        return orderedFallback ? tokens.map { "text : \($0)" }.joined(separator: " AND ")
-            : "text : (" + tokens.joined(separator: " + ") + ")"
-    }
-
-    func detail(id: Int, query: String = "", orderedFallback: Bool = false) throws -> HadithDetail {
+    func detail(id: Int, query: String = "", orderedFallback _: Bool = false, translation: String = "auto", languages: [String] = Locale.preferredLanguages) throws -> HadithDetail {
         let connection = try database.connection()
-        guard var narration = try connection.query("SELECT \(Self.columns(search: false)) \(Self.joins) WHERE h.id = CAST(? AS INTEGER)", parameters: [String(id)], row: Self.narration).first else {
+        guard var narration = try connection.query("SELECT \(Self.columns) \(Self.joins) WHERE h.id = CAST(? AS INTEGER)", parameters: [String(id)], row: Self.narration).first else {
             throw HadithDatabaseError.invalidReference
         }
         let terms = QuranSearchText.terms(query)
         narration.arabicDisplay = HadithText.highlighted(narration.arabic, terms: terms)
-        narration.englishDisplay = HadithText.markdown(narration.english)
-        narration.narratorDisplay = HadithText.markdown(narration.englishNarrator)
-        if !terms.isEmpty {
-            let marked = try connection.query("""
-            SELECT highlight(hadith_en, 0, char(57344), char(57345))
-            FROM hadith_en WHERE hadith_en MATCH ? AND rowid = CAST(? AS INTEGER)
-            """, parameters: [Self.match(terms, orderedFallback: orderedFallback), String(id)]) { QuranConnection.text($0, 0) }.first
-            if let marked {
-                // The English index trims ASCII spaces around narrator + separator + body.
-                let source = narration.englishNarrator + " " + narration.english
-                let leading = source.unicodeScalars.prefix { $0.value == 32 }.count
-                let boundary = narration.englishNarrator.unicodeScalars.count
-                let narratorEnd = max(0, boundary - leading)
-                let bodyStart = max(0, boundary + 1 - leading)
-                narration.narratorDisplay = HadithText.highlighted(HadithText.markedSlice(marked, range: 0 ..< narratorEnd), marked: true)
-                narration.englishDisplay = HadithText.highlighted(HadithText.markedSlice(marked, range: bodyStart ..< max(bodyStart, source.unicodeScalars.count - leading)), marked: true)
-            }
+        narration.englishDisplay = HadithText.highlighted(narration.english, terms: terms)
+        narration.narratorDisplay = HadithText.highlighted(narration.englishNarrator, terms: terms)
+        if narration.isSupplication {
+            narration.translation = try SupplicationTranslation.selected(from: translations(id: id), selection: translation, languages: languages)
         }
         let author = try connection.query("""
         SELECT COALESCE(b.author, ''), b.author_ar FROM hadith h JOIN book b ON b.id = h.book_id WHERE h.id = CAST(? AS INTEGER)
@@ -199,6 +210,67 @@ actor HadithReader {
         }
         return try HadithDetail(narration: narration, author: author.0, authorArabic: author.1, gradings: gradings,
                                 previousID: adjacent("<", order: "DESC"), nextID: adjacent(">", order: "ASC"))
+    }
+
+    func translationLanguages() throws -> [String] {
+        let connection = try database.connection()
+        guard try hasTranslations(connection) else { return [] }
+        return try connection.query("SELECT DISTINCT language FROM supplication_translation ORDER BY language") { QuranConnection.text($0, 0) }
+    }
+
+    private func hasTranslations(_ connection: HadithConnection) throws -> Bool {
+        try !connection.query("SELECT name FROM sqlite_master WHERE type='table' AND name='supplication_translation'", row: { QuranConnection.text($0, 0) }).isEmpty
+    }
+
+    func translations(id: Int) throws -> [SupplicationTranslation] {
+        let connection = try database.connection()
+        guard try hasTranslations(connection) else { return [] }
+        return try connection.query("SELECT language,edition,text FROM supplication_translation WHERE hadith_id=CAST(? AS INTEGER) ORDER BY language,edition", parameters: [String(id)]) {
+            SupplicationTranslation(language: QuranConnection.text($0, 0), edition: QuranConnection.text($0, 1), text: QuranConnection.text($0, 2))
+        }
+    }
+
+    /// Keep full texts inside the reader actor; lists receive only short matching previews.
+    func supplications(query: String = "", translation: String = "auto", languages: [String] = Locale.preferredLanguages) throws -> [Hadith] {
+        let terms = QuranSearchText.terms(query)
+        if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, terms.isEmpty {
+            return []
+        }
+        let rows = try database.connection().query("""
+        SELECT \(Self.columns) \(Self.joins)
+        WHERE b.collection_id IN (?,?) AND c.chapter_idx > 0
+        ORDER BY b.sort_order, c.chapter_idx, h.id
+        """, parameters: Hadith.supplicationCollectionIDs, row: Self.narration)
+        guard !rows.isEmpty else { throw HadithDatabaseError.incompatible }
+        var titled: [Hadith] = []
+        var content: [Hadith] = []
+        for row in rows {
+            try Task.checkCancellation()
+            let variants = try translations(id: row.id)
+            let title = QuranSearchText.normalize(row.chapter.arabic + " " + row.chapter.english).lowercased()
+            func matches(_ text: String) -> Bool {
+                let normalized = title + " " + QuranSearchText.normalize(text).lowercased()
+                return terms.allSatisfy { normalized.contains($0) }
+            }
+            let titleMatch = terms.allSatisfy { title.contains($0) }
+            let selected = SupplicationTranslation.selected(from: variants, selection: translation, languages: languages)
+            let matched = selected.flatMap { matches($0.text) ? $0 : nil } ?? variants.first { matches($0.text) }
+            guard matches(row.arabic + " " + row.english) || matched != nil else { continue }
+            let preview = HadithText.preview(row.arabic, terms: terms)
+            var result = Hadith(id: row.id, collectionID: row.collectionID, number: row.number,
+                                chapter: row.chapter, arabic: String(preview.characters), englishNarrator: "",
+                                english: "", source: row.source, arabicDisplay: preview, readingWords: row.readingWords, readingNumber: row.readingNumber)
+            if !terms.isEmpty, let matched, !titleMatch {
+                let excerpt = HadithText.preview(matched.text, terms: terms)
+                result.translation = SupplicationTranslation(language: matched.language, edition: matched.edition, text: String(excerpt.characters))
+            }
+            if titleMatch {
+                titled.append(result)
+            } else {
+                content.append(result)
+            }
+        }
+        return titled + content
     }
 
     func source(id: Int) throws -> HadithSource? {
@@ -259,10 +331,13 @@ actor HadithReader {
 
     private static let joins = "FROM hadith h JOIN book b ON b.id = h.book_id JOIN chapter c ON c.id = h.chapter_id"
 
-    private static func columns(search: Bool) -> String {
-        // English FTS supplies exact Porter-stem spans, including matches in the narrator.
-        let english = search ? "COALESCE((SELECT highlight(hadith_en, 0, char(57344), char(57345)) FROM hadith_en WHERE hadith_en MATCH ? AND rowid = h.id), h.english_text)" : "h.english_text"
-        return "h.id, b.collection_id, h.id_in_book, c.id, c.name_ar, c.name_en, b.name_ar, b.name_en, h.arabic, h.english_narrator, \(english), b.id, c.file_name, h.source_id"
+    private static func bookName(_ language: String) -> String {
+        let sahifa = language == "ar" ? "WHEN c.id = '\(Hadith.supplicationCollectionID)' THEN 'الصحيفة السجادية' " : ""
+        return "(SELECT CASE \(sahifa)WHEN c.name_\(language) = b.name_\(language) OR c.name_\(language) = '' THEN b.name_\(language) ELSE c.name_\(language) || ' · ' || b.name_\(language) END FROM collection c WHERE c.id = b.collection_id)"
+    }
+
+    private static var columns: String {
+        "h.id, b.collection_id, h.id_in_book, c.id, c.name_ar, c.name_en, \(bookName("ar")), \(bookName("en")), h.arabic, h.english_narrator, h.english_text, b.id, c.file_name, h.source_id, (SELECT words FROM hadith_reading WHERE hadith_id=h.id), (SELECT display_number FROM hadith_reading WHERE hadith_id=h.id)"
     }
 
     private static func chapter(_ row: OpaquePointer, offset: Int32) -> HadithChapter {
@@ -278,6 +353,10 @@ actor HadithReader {
                english: QuranConnection.text(row, 10),
                source: HadithSource(book: QuranConnection.text(row, 11), chapterFile: QuranConnection.text(row, 12),
                                     number: Int(sqlite3_column_int(row, 2)),
-                                    sourceID: sqlite3_column_type(row, 13) == SQLITE_NULL ? nil : Int(sqlite3_column_int(row, 13))))
+                                    sourceID: sqlite3_column_type(row, 13) == SQLITE_NULL ? nil : Int(sqlite3_column_int(row, 13))),
+               readingWords: sqlite3_column_type(row, 14) == SQLITE_NULL
+                   ? ReadingTime.words(arabic: QuranConnection.text(row, 8), english: QuranConnection.text(row, 10))
+                   : Int(sqlite3_column_int(row, 14)),
+               readingNumber: sqlite3_column_type(row, 15) == SQLITE_NULL ? nil : Int(sqlite3_column_int(row, 15)))
     }
 }

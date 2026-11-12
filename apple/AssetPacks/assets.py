@@ -35,22 +35,29 @@ def validate_quran():
     return [path]
 
 
-def validate_hadith():
-    path = MANIFESTS / 'hadith.json'
+def validate_hadith(pack_id="hadith"):
+    folder = "Hadith" if pack_id == "hadith" else "Supplications"
+    path = MANIFESTS / f'{pack_id}.json'
     pack = json.loads(path.read_text())
     selector, = pack['fileSelectors']
     source = (path.parent / pack['sourceRoot'] / selector['fileSource']).resolve()
-    assert pack['assetPackID'] == 'hadith'
+    assert pack['assetPackID'] == pack_id
     assert pack['downloadPolicy'] == {'onDemand': {}} and 'language' not in pack
     assert pack['platforms'] == ['iOS']
-    assert source == ROOT / 'build/hadith/dist/hadith.db'
-    assert selector['fileDestination'] == 'Hadith/hadith.db'
+    assert source == ROOT / f'build/hadith/dist/{pack_id}.db'
+    assert selector['fileDestination'] == f'{folder}/{pack_id}.db'
     with sqlite3.connect(source.as_uri() + '?mode=ro', uri=True) as db:
         assert db.execute('PRAGMA quick_check').fetchone() == ('ok',)
         assert db.execute('PRAGMA application_id').fetchone() == (1230262606,)
-        assert db.execute('PRAGMA user_version').fetchone() == (6,)
+        assert db.execute('PRAGMA user_version').fetchone() == (7,)
         assert db.execute('SELECT count(*) FROM hadith').fetchone()[0] > 0
         assert not db.execute('PRAGMA foreign_key_check').fetchall()
+        prayer_count = db.execute("SELECT count(*) FROM hadith h JOIN book b ON b.id=h.book_id WHERE b.collection_id='openiti-Sahifa-Sajjadiyya'").fetchone()[0]
+        assert prayer_count == (54 if pack_id == 'supplications' else 0)
+        curated_count = db.execute("SELECT count(*) FROM hadith h JOIN book b ON b.id=h.book_id WHERE b.collection_id='mafatih-supplications'").fetchone()[0]
+        assert curated_count == (3 if pack_id == 'supplications' else 0)
+        if pack_id == 'supplications':
+            assert db.execute('SELECT count(*) FROM supplication_translation').fetchone()[0] >= 3
         # Never publish experimental mappings accidentally.
         assert not db.execute("SELECT name FROM sqlite_master WHERE name IN ('word_form','root','narrator','hadith_relation')").fetchall()
         assert [r[1] for r in db.execute('PRAGMA table_info(hadith_words)')] == ['text']
@@ -85,7 +92,7 @@ def check_bundle(path):
             sizes = json.loads(archive.read(size_file))
     else:
         sizes = json.loads((path / 'AssetDownloadSizes.json').read_text())
-    assert all(isinstance(sizes.get(pack), int) and sizes[pack] > 0 for pack in ('hadith', 'quran-translations')), 'Missing download size estimates'
+    assert all(isinstance(sizes.get(pack), int) and sizes[pack] > 0 for pack in ('hadith', 'supplications', 'quran-translations')), 'Missing download size estimates'
     info = metadata('Info.plist')
     downloader = metadata('Extensions/MuntathirAssetDownloader.appex/Info.plist')
     assert downloader.get('CFBundleDisplayName'), 'Missing downloader display name required by App Store validation'
@@ -93,7 +100,7 @@ def check_bundle(path):
     assert info.get('BAUsesAppleHosting') is True
     assert info.get('BAAppGroupID') == 'group.com.aljaroudi.Muntathir'
 
-    assert not any(Path(f).name in {'hadith.db', 'rijal.db'} for f in files if '.xctest/' not in f), 'Content DB bundled unexpectedly'
+    assert not any(Path(f).name in {'hadith.db', 'supplications.db', 'rijal.db'} for f in files if '.xctest/' not in f), 'Content DB bundled unexpectedly'
     print('Verified only Arabic and English are bundled in app and widget')
 
 
@@ -101,14 +108,15 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=['validate', 'package', 'check-bundle'])
     parser.add_argument('path', nargs='?')
-    parser.add_argument('--content', choices=['hadith', 'quran', 'all'], default='hadith')
+    parser.add_argument('--content', choices=['hadith', 'supplications', 'quran', 'all'], default='hadith')
     args = parser.parse_args()
     manifests = []
     if args.command != 'check-bundle':
         if args.content in ('hadith', 'all'): manifests += validate_hadith()
+        if args.content in ('supplications', 'all'): manifests += validate_hadith('supplications')
         if args.content in ('quran', 'all'): manifests += validate_quran()
     if args.command == 'package':
-        output = Path(args.path).resolve() if args.path else ROOT / 'apple/build/AssetPacks'
+        output = Path(args.path).resolve() if args.path else ROOT / 'apple/build/AssetPacks/archives'
         output.mkdir(parents=True, exist_ok=True)
         if args.content in ('quran', 'all'):
             # Old per-language archives would collide with the new pack in Xcode local testing.

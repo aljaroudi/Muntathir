@@ -5,6 +5,64 @@ import SwiftUI
 import Testing
 
 struct HadithReaderTests {
+    @Test func bookLabelsIncludeCollectionAndVolume() async throws {
+        let fixture = try HadithFixture(count: 1)
+        defer { fixture.remove() }
+        let reader = HadithReader(database: HadithDatabase(url: fixture.url))
+        let detail = try await reader.detail(id: 1)
+        #expect(detail.narration.chapter.bookTitle(locale: Locale(identifier: "en")) == "Book · Volume 1")
+        #expect(detail.narration.chapter.bookTitle(locale: Locale(identifier: "ar")) == "كتاب · المجلد الأول")
+        let chapters = try await reader.chapters(collectionID: "merged")
+        #expect(chapters.first?.bookEnglish == "Book · Volume 1")
+        let page = try await reader.page(HadithRequest(collectionID: "merged"))
+        #expect(page.rows.first?.chapter.bookArabic == "كتاب · المجلد الأول")
+    }
+
+    @Test func importedCollectionsUsePrintedNumbersOnly() async throws {
+        let fixture = try HadithFixture(count: 2)
+        defer { fixture.remove() }
+        var handle: OpaquePointer?
+        #expect(sqlite3_open(fixture.url.path, &handle) == SQLITE_OK)
+        defer { sqlite3_close(handle) }
+        #expect(sqlite3_exec(handle, "UPDATE collection SET id='openiti-wasail' WHERE id='merged'; UPDATE book SET collection_id='openiti-wasail' WHERE collection_id='merged'; UPDATE hadith SET source_id=77 WHERE id=1; UPDATE hadith SET source_id=NULL WHERE id=2;", nil, nil, nil) == SQLITE_OK)
+        let reader = HadithReader(database: HadithDatabase(url: fixture.url))
+        var request = HadithRequest(collectionID: "openiti-wasail")
+        request.number = 77
+        let rows = try await reader.page(request).rows
+        #expect(rows.map(\.id) == [1])
+        #expect(rows.first?.displayNumber == 77)
+        #expect(try await reader.detail(id: 2).narration.displayNumber == nil)
+        request.number = 2
+        #expect(try await reader.page(request).rows.isEmpty)
+    }
+
+    @Test func supplicationsSearchTitlesAndContentWithoutHadithNavigation() async throws {
+        let reader = HadithReader(database: HadithDatabase(url: Bundle(for: HadithTestBundle.self).url(forResource: "supplications", withExtension: "db")))
+        let prayers = try await reader.supplications()
+        #expect(prayers.count == 57)
+        #expect(prayers.allSatisfy { $0.isSupplication } /* swiftformat:disable:this preferKeyPath */ )
+        #expect(prayers.first?.chapter.arabic.hasPrefix("(1)") == true)
+        #expect(prayers.first?.chapter.bookTitle(locale: Locale(identifier: "ar")) == "الصحيفة السجادية")
+        #expect(prayers.first?.chapter.bookTitle(locale: Locale(identifier: "en")) == "Al-Sahifa al-Sajjadiyya")
+        #expect(prayers.filter { $0.collectionID == Hadith.supplicationCollectionID }.last?.chapter.arabic.hasPrefix("(54)") == true)
+        let titleMatches = try await reader.supplications(query: "مَكَارِم الأخْلاق")
+        let prayer = try #require(titleMatches.first)
+        #expect(prayer.chapter.arabic.hasPrefix("(20)"))
+        let contentMatches = try await reader.supplications(query: "بلغ بإيماني أكمل الإيمان")
+        #expect(contentMatches.contains { $0.id == prayer.id })
+        #expect(try await reader.supplications(query: "zzzzunknown").isEmpty)
+        #expect(try await reader.supplications(query: "!!!").isEmpty)
+        let detail = try await reader.detail(id: prayer.id)
+        #expect(detail.narration.arabic.count > prayer.arabic.count)
+        let reference = HadithShareContent(narration: detail.narration, showEnglish: false, locale: Locale(identifier: "ar")).reference
+        #expect(reference.contains("(20)"))
+        #expect(!reference.hasSuffix(" · 21"))
+        #expect(try await reader.catalog().allSatisfy { $0.id != Hadith.supplicationCollectionID })
+        #expect(try await reader.chapters().allSatisfy { $0.collectionID != Hadith.supplicationCollectionID })
+        #expect(try await reader.page(HadithRequest(query: "الله", collectionID: Hadith.supplicationCollectionID)).rows.isEmpty)
+        #expect(try await reader.page(HadithRequest(query: "الله")).rows.allSatisfy { !$0.isSupplication })
+    }
+
     @Test func kafiOriginalChapterNamesFollowAppLocale() async throws {
         let reader = HadithReader(database: HadithDatabase(url: Bundle(for: HadithTestBundle.self).url(forResource: "hadith", withExtension: "db")))
         let chapters = try await reader.chapters(collectionID: "alkafi")
@@ -65,8 +123,8 @@ struct HadithReaderTests {
         #expect(plain.rows.map(\.id) == vocalized.rows.map(\.id))
         let english = try await reader.page(HadithRequest(query: "intentions"))
         #expect(!english.rows.isEmpty)
-        #expect(english.rows.allSatisfy { $0.englishDisplay.runs.contains { $0.backgroundColor != nil } })
-        #expect(plain.rows.allSatisfy { $0.arabicDisplay.runs.contains { $0.backgroundColor != nil } })
+        #expect(english.rows.allSatisfy { $0.englishDisplay.runs.contains { $0.underlineStyle != nil } })
+        #expect(plain.rows.allSatisfy { $0.arabicDisplay.runs.contains { $0.underlineStyle != nil } })
         #expect(books.contains { $0.id == "additional-Tahdhib-al-Ahkam-Tusi" })
         let extra = try await reader.page(HadithRequest(collectionID: "additional-Tahdhib-al-Ahkam-Tusi"))
         #expect(!extra.rows.isEmpty)
@@ -99,7 +157,7 @@ struct HadithReaderTests {
         }
     }
 
-    @Test func phrasesPrecedeOrderedFallbackAcrossFiltersAndPages() async throws {
+    @Test func phrasesPrecedeLiteralSubstringsAcrossFiltersAndPages() async throws {
         let fixture = try HadithFixture(count: 1, searchRows: """
         INSERT INTO hadith VALUES
           (200001,'v1',1,2,'book is','A narrator','books is useful'),
@@ -115,42 +173,42 @@ struct HadithReaderTests {
         defer { fixture.remove() }
         let reader = HadithReader(database: HadithDatabase(url: fixture.url))
         let adjacent = try await reader.page(HadithRequest(query: "book is"))
-        #expect(adjacent.rows.map(\.id) == [200_001])
+        #expect(adjacent.rows.map(\.id) == [200_001, 200_002, 200_003])
         #expect(!adjacent.usedOrderedFallback)
-        #expect(adjacent.rows[0].englishDisplay.runs.contains { $0.backgroundColor != nil })
+        #expect(adjacent.rows[0].englishDisplay.runs.contains { $0.underlineStyle != nil })
         let full = try await reader.detail(id: 200_001, query: "book is")
         #expect(full.author == "Test Author")
         #expect(String(full.narration.englishDisplay.characters) == "books is useful")
         #expect(String(full.narration.narratorDisplay.characters) == "A narrator")
-        #expect(full.narration.englishDisplay.runs.contains { $0.backgroundColor != nil })
+        #expect(full.narration.englishDisplay.runs.contains { $0.underlineStyle != nil })
         let acrossBoundary = try await reader.detail(id: 200_001, query: "narrator book")
-        #expect(acrossBoundary.narration.narratorDisplay.runs.contains { $0.backgroundColor != nil })
-        #expect(acrossBoundary.narration.englishDisplay.runs.contains { $0.backgroundColor != nil })
+        #expect(acrossBoundary.narration.narratorDisplay.runs.contains { $0.underlineStyle != nil })
+        #expect(acrossBoundary.narration.englishDisplay.runs.contains { $0.underlineStyle != nil })
         #expect(!String(acrossBoundary.narration.englishDisplay.characters).contains(HadithText.startMarker))
         let exhausted = try await reader.page(HadithRequest(query: "book is", cursor: HadithCursor(afterID: 200_001)))
-        #expect(exhausted.rows.isEmpty)
+        #expect(exhausted.rows.map(\.id) == [200_002, 200_003])
         #expect(!exhausted.usedOrderedFallback)
         let fallback = try await reader.page(HadithRequest(query: "book is", chapterID: 2))
-        #expect(fallback.rows.map(\.id) == [200_002])
-        #expect(fallback.usedOrderedFallback)
+        #expect(fallback.rows.map(\.id) == [200_002, 200_003])
+        #expect(!fallback.usedOrderedFallback)
         let fullFallback = try await reader.detail(id: 200_002, query: "book is", orderedFallback: true)
-        #expect(fullFallback.narration.englishDisplay.runs.filter { $0.backgroundColor != nil }.count == 2)
+        #expect(fullFallback.narration.englishDisplay.runs.filter { $0.underlineStyle != nil }.count == 2)
         let plainDetail = try await reader.detail(id: 200_002)
-        #expect(plainDetail.narration.englishDisplay.runs.allSatisfy { $0.backgroundColor == nil })
-        #expect(fallback.rows[0].englishDisplay.runs.contains { $0.backgroundColor != nil })
-        #expect(try await reader.page(HadithRequest(query: "book book")).rows.map(\.id) == [200_005])
-        #expect(try await reader.page(HadithRequest(query: "book book book")).rows.isEmpty)
+        #expect(plainDetail.narration.englishDisplay.runs.allSatisfy { $0.underlineStyle == nil })
+        #expect(fallback.rows[0].englishDisplay.runs.contains { $0.underlineStyle != nil })
+        #expect(try await reader.page(HadithRequest(query: "book book")).rows.map(\.id) == [200_001, 200_002, 200_003, 200_004, 200_005, 200_009])
+        #expect(try await reader.page(HadithRequest(query: "book book book")).rows.count == 6)
         #expect(try await reader.page(HadithRequest(query: "book are")).rows.map(\.id) == [200_009])
-        #expect(try await reader.page(HadithRequest(query: "book, is!")).rows.map(\.id) == [200_001])
-        #expect(try await reader.page(HadithRequest(query: "book OR is")).rows.isEmpty)
+        #expect(try await reader.page(HadithRequest(query: "book, is!")).rows.map(\.id) == [200_001, 200_002, 200_003])
+        #expect(try await reader.page(HadithRequest(query: "book OR is")).rows.map(\.id) == [200_001, 200_003])
         #expect(try await reader.page(HadithRequest(query: "*():")).rows.isEmpty)
         let arabic = try await reader.page(HadithRequest(query: "إِنَّمَا الأَعْمَالُ"))
         #expect(arabic.rows.map(\.id) == [200_007, 200_006, 200_008])
         #expect(!arabic.usedOrderedFallback)
         let arabicGaps = try await reader.page(HadithRequest(query: "إِنَّمَا الأَعْمَالُ", chapterID: 2))
         #expect(arabicGaps.rows.map(\.id) == [200_006, 200_008])
-        #expect(arabicGaps.usedOrderedFallback)
-        #expect(try await reader.page(HadithRequest(query: "book is", number: 2, cursor: HadithCursor(afterID: 200_001))).rows.isEmpty)
+        #expect(!arabicGaps.usedOrderedFallback)
+        #expect(try await reader.page(HadithRequest(query: "book is", number: 2, cursor: HadithCursor(afterID: 200_001))).rows.map(\.id) == [200_002])
     }
 
     @Test func pagingIsBoundedAndCompleteAcrossOneHundredThousandNarrations() async throws {
@@ -163,19 +221,19 @@ struct HadithReaderTests {
         #expect(first.rows.map(\.id) == Array(1 ... 50))
         #expect(first.rows.allSatisfy { $0.arabic.count <= 300 && $0.english.count <= 300 && $0.englishNarrator.isEmpty })
         let ordered = try await reader.page(HadithRequest(query: "Narrator 000"))
-        #expect(ordered.usedOrderedFallback)
+        #expect(!ordered.usedOrderedFallback)
         #expect(ordered.rows.map(\.id) == Array(1 ... 50))
         #expect(ordered.hasMore)
-        let orderedLast = try await reader.page(HadithRequest(query: "Narrator 000", cursor: HadithCursor(afterID: 99950)))
+        let orderedLast = try await reader.page(HadithRequest(query: "Narrator 000", cursor: HadithCursor(phase: .substring, afterID: 99950)))
         #expect(orderedLast.rows.map(\.id) == Array(99951 ... 100_000))
         #expect(!orderedLast.hasMore)
-        #expect(orderedLast.usedOrderedFallback)
-        let second = try await reader.page(HadithRequest(query: "intent", cursor: HadithCursor(afterID: 50)))
+        #expect(!orderedLast.usedOrderedFallback)
+        let second = try await reader.page(HadithRequest(query: "intent", cursor: HadithCursor(phase: .substring, afterID: 50)))
         #expect(second.rows.map(\.id) == Array(51 ... 100))
-        let deep = try await reader.page(HadithRequest(query: "intent", cursor: HadithCursor(afterID: 99950)))
+        let deep = try await reader.page(HadithRequest(query: "intent", cursor: HadithCursor(phase: .substring, afterID: 99950)))
         #expect(deep.rows.map(\.id) == Array(99951 ... 100_000))
         #expect(!deep.hasMore)
-        #expect(try await reader.page(HadithRequest(query: "intent", cursor: HadithCursor(afterID: 100_000))).rows.isEmpty)
+        #expect(try await reader.page(HadithRequest(query: "intent", cursor: HadithCursor(phase: .substring, afterID: 100_000))).rows.isEmpty)
         let filtered = try await reader.page(HadithRequest(query: "intent", collectionID: "merged", chapterID: 2))
         #expect(filtered.rows.first?.id == 50001)
         #expect(filtered.rows.allSatisfy { $0.chapter.id == 2 })
@@ -229,13 +287,54 @@ struct HadithReaderTests {
         let second = try await reader.page(request)
         #expect(second.rows.map(\.id) == Array(200_051 ... 200_075))
         #expect(!second.hasMore)
-        #expect(second.rows.allSatisfy { $0.arabicDisplay.runs.contains { $0.backgroundColor != nil } })
+        #expect(second.rows.allSatisfy { $0.arabicDisplay.runs.contains { $0.underlineStyle != nil } })
         let detail = try await reader.detail(id: 200_051, query: "صلاة")
-        #expect(detail.narration.arabicDisplay.runs.contains { $0.backgroundColor != nil })
+        #expect(detail.narration.arabicDisplay.runs.contains { $0.underlineStyle != nil })
         let filtered = try await reader.page(HadithRequest(query: "صلاة", chapterID: 2))
         #expect(filtered.rows.map(\.id) == [300_000])
-        // Short queries do not fall through to substring matching.
-        #expect(try await reader.page(HadithRequest(query: "صل", chapterID: 2)).rows.isEmpty)
+        // Short literal infixes are eligible even without a trigram candidate.
+        #expect(try await reader.page(HadithRequest(query: "صل", chapterID: 2)).rows.map(\.id) == [300_000])
+    }
+
+    @Test func arabicInfixInEnglishTextIsNotLostByArabicCandidateIndex() async throws {
+        let fixture = try HadithFixture(count: 1, searchRows: "INSERT INTO hadith VALUES (200001,'v1',1,2,'','','بالصلاه');")
+        defer { fixture.remove() }
+        let reader = HadithReader(database: HadithDatabase(url: fixture.url))
+        let page = try await reader.page(HadithRequest(query: "صلا"))
+        #expect(page.rows.map(\.id) == [200_001])
+        let first = try #require(page.rows.first)
+        #expect(first.englishDisplay.runs.contains { $0.underlineStyle != nil })
+    }
+
+    @Test func literalTiersPaginateWithoutStemmedMatches() async throws {
+        let fixture = try HadithFixture(count: 1, searchRows: """
+        WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<55)
+        INSERT INTO hadith SELECT 200000+x,'v1',1,x,'','','believers' FROM n;
+        WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<55)
+        INSERT INTO hadith SELECT 300000+x,'v1',1,x,'','','believingly' FROM n;
+        WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<55)
+        INSERT INTO hadith SELECT 400000+x,'v1',1,x,'','','believing' FROM n;
+        INSERT INTO hadith VALUES (500000,'v2',2,1,'','','believing');
+        """)
+        defer { fixture.remove() }
+        let reader = HadithReader(database: HadithDatabase(url: fixture.url))
+        var request = HadithRequest(query: "believing", chapterID: 1)
+        var ids: [Int] = []
+        var phases: [HadithCursor.Phase] = []
+        repeat {
+            let page = try await reader.page(request)
+            ids += page.rows.map(\.id)
+            guard let cursor = page.nextCursor else { break }
+            phases.append(cursor.phase)
+            request.cursor = cursor
+            #expect(ids.count <= 165)
+            if ids.count > 165 {
+                break
+            }
+        } while true
+        #expect(ids == Array(400_001 ... 400_055) + Array(300_001 ... 300_055))
+        #expect(phases == [.words, .substring])
+        #expect(try await reader.page(HadithRequest(query: "believing", chapterID: 2)).rows.map(\.id) == [500_000])
     }
 
     @Test func sqliteProgressHandlerInterruptsWorkBeforeProducingRows() async throws {
@@ -270,11 +369,13 @@ struct HadithFixture: Sendable {
         defer { sqlite3_close(handle) }
         let sql = """
         PRAGMA application_id = 1230262606;
-        PRAGMA user_version = 6;
+        PRAGMA user_version = 7;
         CREATE TABLE collection(id TEXT PRIMARY KEY, name_ar TEXT, name_en TEXT, sort_order INTEGER);
         CREATE TABLE book(id TEXT PRIMARY KEY, collection_id TEXT, name_ar TEXT, name_en TEXT, sort_order INTEGER, author TEXT DEFAULT 'Test Author', author_ar TEXT DEFAULT 'مؤلف');
         CREATE TABLE chapter(id INTEGER PRIMARY KEY, book_id TEXT, chapter_idx INTEGER, name_ar TEXT, name_en TEXT);
         CREATE TABLE hadith(id INTEGER PRIMARY KEY, book_id TEXT, chapter_id INTEGER, id_in_book INTEGER, arabic TEXT, english_narrator TEXT, english_text TEXT);
+        CREATE TABLE introduction(id INTEGER PRIMARY KEY, book_id TEXT, chapter_id INTEGER, title TEXT, arabic TEXT, english TEXT, url TEXT, sort_order INTEGER);
+        CREATE TABLE hadith_reading(hadith_id INTEGER PRIMARY KEY, words INTEGER, display_number INTEGER);
         CREATE TABLE grader(id TEXT PRIMARY KEY, name_ar TEXT, name_en TEXT);
         CREATE TABLE hadith_grading(id INTEGER PRIMARY KEY, hadith_id INTEGER, grader_id TEXT,
           grade_ar TEXT, grade_en TEXT, reference_ar TEXT, reference_en TEXT, status TEXT, original_text TEXT);
@@ -327,5 +428,116 @@ extension HadithReaderTests {
         #expect(sqlite3_exec(handle, "UPDATE hadith SET id = 123456 WHERE id = 1", nil, nil, nil) == SQLITE_OK)
         #expect(try await reader.resolve(source) == 123_456)
         #expect(try await reader.resolve(HadithSource(book: "missing", chapterFile: "1.json", number: 1, sourceID: 1)) == nil)
+    }
+}
+
+extension HadithReaderTests {
+    @Test func introductionsStayOutsideNarrationsAndEstimatesUseFullText() async throws {
+        let fixture = try HadithFixture(count: 2)
+        defer { fixture.remove() }
+        var handle: OpaquePointer?
+        #expect(sqlite3_open(fixture.url.path, &handle) == SQLITE_OK)
+        defer { sqlite3_close(handle) }
+        #expect(sqlite3_exec(handle, """
+        INSERT INTO introduction VALUES(1,'v1',NULL,'Introduction','نص المقدمة','','',0);
+        INSERT INTO hadith_reading VALUES(1,401,1),(2,201,2);
+        """, nil, nil, nil) == SQLITE_OK)
+        let reader = HadithReader(database: HadithDatabase(url: fixture.url))
+        let introductions = try await reader.introductions(collectionID: "merged")
+        #expect(introductions.count == 1)
+        #expect(introductions.first?.arabic.isEmpty == true)
+        #expect(try await reader.introduction(id: 1).arabic == "نص المقدمة")
+        let page = try await reader.page(HadithRequest(collectionID: "merged"))
+        #expect(page.rows.map(\.id) == [1, 2])
+        #expect(page.rows.first?.readingWords == 401)
+        #expect(page.rows.first?.arabic.count ?? 0 < 300)
+        #expect(try await reader.detail(id: 1).narration.readingWords == 401)
+        #expect(try await reader.detail(id: 1).previousID == nil)
+        #expect(try await reader.detail(id: 1).nextID == 2)
+        #expect(try await reader.chapters(collectionID: "merged").first?.readingWords == 602)
+        #expect(try await reader.page(HadithRequest(query: "المقدمة", collectionID: "merged")).rows.isEmpty)
+    }
+
+    @Test func displayNumbersDoNotChangeSavedSourceKeys() async throws {
+        let fixture = try HadithFixture(count: 2)
+        defer { fixture.remove() }
+        let reader = HadithReader(database: HadithDatabase(url: fixture.url))
+        let original = try #require(await reader.source(id: 2))
+        var handle: OpaquePointer?
+        #expect(sqlite3_open(fixture.url.path, &handle) == SQLITE_OK)
+        defer { sqlite3_close(handle) }
+        #expect(sqlite3_exec(handle, "INSERT INTO hadith_reading VALUES(2,200,1);", nil, nil, nil) == SQLITE_OK)
+        let detail = try await reader.detail(id: 2)
+        #expect(detail.narration.displayNumber == 1)
+        #expect(detail.narration.source?.key == original.key)
+        #expect(try await reader.resolve(original) == 2)
+    }
+}
+
+extension HadithReaderTests {
+    @Test func multilingualSupplicationsSearchSelectShareAndResolve() async throws {
+        let reader = HadithReader(database: HadithDatabase(url: Bundle(for: HadithTestBundle.self).url(forResource: "supplications", withExtension: "db")))
+        #expect(try await reader.translationLanguages() == ["en", "ur"])
+        let results = try await reader.supplications(query: "embraces all things", translation: "none")
+        let prayer = try #require(results.first)
+        #expect(prayer.collectionID == "mafatih-supplications")
+        #expect(prayer.translation?.language == "en")
+        #expect(prayer.translation?.text.contains("embraces") == true)
+        let detail = try await reader.detail(id: prayer.id, translation: "ur")
+        let translated = try #require(detail.narration.translation)
+        #expect(translated.language == "ur")
+        #expect(translated.isRightToLeft)
+        #expect(detail.narration.displayNumber == nil)
+        let source = try #require(detail.narration.source)
+        #expect(try await reader.resolve(source) == prayer.id)
+        let share = HadithShareContent(narration: detail.narration, showEnglish: false, locale: Locale(identifier: "en"))
+        #expect(share.text.contains(translated.text))
+        #expect(!share.reference.contains(" · 1"))
+        let text = try #require(detail.narration.highlightBlocks[translated.block])
+        let range = try #require(HighlightRange(NSRange(location: 0, length: 10), in: text))
+        let highlight = ReadingHighlight(source: source.key, isHadith: true, block: translated.block, ranges: [range], excerpt: String(text.prefix(10)), reference: share.reference)
+        #expect(highlight.isAvailable(in: detail.narration.highlightBlocks))
+        #expect(!highlight.isAvailable(in: ["translation:en:duas.org-en": text]))
+        let restoredID = String(translated.block.dropFirst("translation:".count))
+        #expect(try await reader.detail(id: prayer.id, translation: restoredID).narration.translation == translated)
+        #expect(try await reader.detail(id: prayer.id, translation: "none").narration.translation == nil)
+        #expect(try await reader.detail(id: prayer.id, translation: "fr").narration.translation == nil)
+        #expect(try await reader.detail(id: prayer.id, languages: ["ur-PK"]).narration.translation?.language == "ur")
+        #expect(try await reader.detail(id: prayer.id, languages: ["ar", "en"]).narration.translation == nil)
+        let urdu = try await reader.supplications(query: "تیری رحمت", translation: "ur")
+        #expect(urdu.contains { $0.id == prayer.id && $0.translation?.language == "ur" })
+        #expect(try await reader.catalog().isEmpty)
+        #expect(try await reader.chapters().isEmpty)
+        #expect(try await reader.page(HadithRequest(query: "اللهم")).rows.isEmpty)
+    }
+
+    @Test func legacySupplicationsWithoutTranslationTableRemainReadable() async throws {
+        let fixture = try HadithFixture(count: 1, searchRows: """
+        UPDATE collection SET id='openiti-Sahifa-Sajjadiyya' WHERE id='merged';
+        UPDATE book SET collection_id='openiti-Sahifa-Sajjadiyya' WHERE collection_id='merged';
+        UPDATE chapter SET chapter_idx=1 WHERE id=1;
+        """)
+        defer { fixture.remove() }
+        let reader = HadithReader(database: HadithDatabase(url: fixture.url))
+        #expect(try await reader.translationLanguages().isEmpty)
+        let prayers = try await reader.supplications()
+        #expect(prayers.count == 1)
+        #expect(try await reader.detail(id: 1, translation: "ur").narration.arabic.isEmpty == false)
+        #expect(try await reader.detail(id: 1, translation: "ur").narration.translation == nil)
+    }
+}
+
+extension HadithReaderTests {
+    @Test func onlyFirstIntroductionAcrossVolumesIsShown() async throws {
+        let fixture = try HadithFixture(count: 2, searchRows: """
+        INSERT INTO introduction VALUES(9,'v1',NULL,'Introduction','المقدمة الأولى','','',0);
+        INSERT INTO introduction VALUES(10,'v1',1,'Fragment','جملة قصيرة','','',1);
+        INSERT INTO introduction VALUES(11,'v2',2,'Volume','جملة أخرى','','',0);
+        """)
+        defer { fixture.remove() }
+        let reader = HadithReader(database: HadithDatabase(url: fixture.url))
+        #expect(try await reader.introductions(collectionID: "merged").map(\.id) == [9])
+        #expect(try await reader.introductions(collectionID: "merged", chapterID: 2).isEmpty)
+        #expect(try await reader.detail(id: 1).narration.id == 1)
     }
 }

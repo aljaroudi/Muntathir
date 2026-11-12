@@ -34,6 +34,9 @@ final class ReleaseLayoutUITests: XCTestCase {
         capture(app, "Quran")
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.navigationBars.buttons.element(boundBy: 0).tap()
+        if !app.buttons["qibla"].exists {
+            app.swipeUp()
+        }
         app.buttons["qibla"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["qibla-map-ready"].waitForExistence(timeout: 10))
         capture(app, "Qibla")

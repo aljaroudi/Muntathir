@@ -17,17 +17,8 @@ struct QuranDownloadView: View {
                 }
             } actions: {
                 if store.isDownloading {
-                    VStack(spacing: 8) {
-                        if store.downloadState == .installing {
-                            ProgressView("Preparing translations…")
-                        } else {
-                            TimelineView(.periodic(from: .now, by: 1)) { _ in
-                                ProgressView(value: store.downloadProgress?.fractionCompleted ?? 0)
-                                    .accessibilityLabel("Downloading translations…")
-                            }
-                        }
-                    }
-                    .frame(maxWidth: 240)
+                    AssetDownloadProgress(progress: store.downloadProgress, installing: store.downloadState == .installing)
+                        .frame(maxWidth: 300)
                 } else {
                     AssetDownloadButton(pack: "quran-translations", retry: store.downloadState == .failed) {
                         Task { await store.download(requested: requested) }

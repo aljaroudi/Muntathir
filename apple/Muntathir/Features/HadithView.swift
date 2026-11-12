@@ -5,7 +5,9 @@ struct HadithView: View {
     @Environment(\.hadithAssets) private var assets
     @Environment(\.hadithSession) private var session
     @State private var restored = false
-    @State private var scrollPosition = ScrollPosition()
+    @State private var visibleRows: [String: CGFloat] = [:]
+    @State private var restoredRow: String?
+    @State private var restoringList = true
     @State private var listOffset: Double = 0
     @Environment(\.locale) private var locale
     @FocusState private var searchFocused: Bool
@@ -15,6 +17,7 @@ struct HadithView: View {
     @State private var collection: HadithCollection?
     @State private var collectionRestoration: HadithSessionState?
     @State private var catalog: [HadithCollection] = []
+    @State private var introductions: [HadithIntroduction] = []
     @State private var chapters: [HadithChapter] = []
     @State private var request = HadithRequest()
     @State private var searchText = ""
@@ -78,8 +81,14 @@ struct HadithView: View {
     }
 
     var body: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 20) {
+        ScrollViewReader { proxy in
+            List {
+                if query.isEmpty, request.collectionID == nil, request.chapterID == nil {
+                    Section {
+                        NavigationLink { HadithSavedView(reader: reader) } label: { Label("Saved", systemImage: "bookmark") }
+                            .accessibilityIdentifier("hadith-saved")
+                    }
+                }
                 if !matchingBooks.isEmpty {
                     ForEach(HadithBookGroup.allCases) { group in
                         let books = matchingBooks.filter { $0.group == group }.sorted {
@@ -97,14 +106,24 @@ struct HadithView: View {
                                             Text("\(book.count, format: .number) narrations").font(.caption).foregroundStyle(.secondary)
                                         }
                                         .foregroundStyle(.primary)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .contentShape(.rect)
                                     }
                                     .accessibilityIdentifier("hadith-book-\(book.id)")
-                                    .buttonStyle(.plain)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(14)
-                                    .background(HadithBookStyle.background(for: book.id), in: .rect(cornerRadius: 14))
+                                    .tint(.primary)
+                                    .modifier(HadithListAnchor(id: "book:" + book.id, visibleRows: $visibleRows))
+                                    .id("book:" + book.id)
                                 }
                             }
+                        }
+                    }
+                }
+                if query.isEmpty, !introductions.isEmpty {
+                    Section("Introduction") {
+                        ForEach(introductions) { introduction in
+                            HadithIntroductionRow(introduction: introduction, reader: reader)
+                                .modifier(HadithListAnchor(id: "introduction:\(introduction.id)", visibleRows: $visibleRows))
+                                .id("introduction:\(introduction.id)")
                         }
                     }
                 }
@@ -116,22 +135,27 @@ struct HadithView: View {
                     ProgressView("Loading Hadith…").frame(maxWidth: .infinity)
                 } else if failed {
                     HadithLoadError { Task { await assets?.refresh(); retry += 1 } }
-                } else if !query.isEmpty, completedRequest == request, page.rows.isEmpty, matchingBooks.isEmpty, matchingChapters.isEmpty {
+                } else if !query.isEmpty, completedRequest == request, HadithSearch.number(query) == nil, HadithSearch.chapter(query) == nil {
                     Group {
-                        MeaningSearchResults(query: query, emptyIdentifier: "hadith-empty-results") {
+                        MeaningSearchResults(query: query, hasLocalResults: !page.rows.isEmpty || !matchingBooks.isEmpty || !matchingChapters.isEmpty, emptyIdentifier: "hadith-empty-results") {
                             guard let client = SemanticSearchClient.configured else { throw URLError(.unsupportedURL) }
                             let scope = try await reader.meaningSearchScope(request)
                             let matches = try await client.search(query, kind: "hadith", sources: scope.sources, chapter: scope.chapter)
                             var narrations: [Hadith] = []
+                            var seen = Set<Int>()
                             for match in matches {
                                 guard case let .hadith(book, chapter, number) = match.reference,
-                                      let id = try await reader.resolveSearch(book: book, chapter: chapter, number: number) else { continue }
+                                      let id = try await reader.resolveSearch(book: book, chapter: chapter, number: number),
+                                      seen.insert(id).inserted else { continue }
                                 try Task.checkCancellation()
-                                try await narrations.append(reader.detail(id: id).narration)
+                                let narration = try await reader.detail(id: id, query: query).narration
+                                if !narration.isSupplication {
+                                    narrations.append(narration)
+                                }
                             }
                             return narrations
                         } resultsContent: { narrations in
-                            narrationResults(narrations)
+                            narrationResults(narrations.filter { narration in !page.rows.contains { $0.id == narration.id } }, online: true)
                         }
                         .id(request)
                         if request.collectionID != nil {
@@ -142,12 +166,27 @@ struct HadithView: View {
                             .accessibilityIdentifier("hadith-search-all")
                         }
                     }
+                } else if !query.isEmpty, completedRequest == request, page.rows.isEmpty, matchingBooks.isEmpty, matchingChapters.isEmpty {
+                    ContentUnavailableView.search(text: query)
+                        .accessibilityIdentifier("hadith-empty-results")
                 }
             }
-            .padding()
-            .id(query)
+            .id(request)
+            .coordinateSpace(name: "hadith-list")
+            .task(id: loading) {
+                restoringList = true
+                guard !loading else { return }
+                if let row = restoredRow {
+                    await Task.yield()
+                    guard !Task.isCancelled else { return }
+                    proxy.scrollTo(row, anchor: .top)
+                    await Task.yield()
+                }
+                guard !Task.isCancelled else { return }
+                restoringList = false
+            }
         }
-        .scrollPosition($scrollPosition)
+
         .onScrollGeometryChange(for: Double.self) { max(0, $0.contentOffset.y + $0.contentInsets.top) } action: { _, offset in
             if !loading {
                 listOffset = offset
@@ -156,19 +195,19 @@ struct HadithView: View {
         .onScrollPhaseChange { _, phase in
             if phase == .idle, !loading, restored, collection == nil, route == nil {
                 session?.state.listOffset = listOffset
+                saveVisibleRow()
             }
         }
-        .onChange(of: loading) { _, loading in
-            if !loading {
-                scrollPosition.scrollTo(y: listOffset)
-            }
-        }
+        .onChange(of: visibleRows) { _, _ in saveVisibleRow() }
         .safeAreaInset(edge: .bottom) {
             if showsNarrations, !searchFocused, !history.isEmpty || page.hasMore {
                 HStack {
                     Button("Previous") {
                         guard let previous = history.popLast() else { return }
                         listOffset = 0
+                        restoredRow = nil
+                        visibleRows = [:]
+                        session?.state.listRow = nil
                         session?.state.listOffset = 0
                         request.cursor = previous
                     }
@@ -179,6 +218,9 @@ struct HadithView: View {
                         guard let next = page.nextCursor else { return }
                         history.append(request.cursor)
                         listOffset = 0
+                        restoredRow = nil
+                        visibleRows = [:]
+                        session?.state.listRow = nil
                         session?.state.listOffset = 0
                         request.cursor = next
                     }
@@ -189,6 +231,7 @@ struct HadithView: View {
                 .background(.bar)
             }
         }
+        .readingBackground()
         .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search Hadith")
@@ -202,7 +245,7 @@ struct HadithView: View {
         .autocorrectionDisabled()
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Menu { toolbarActions } label: {
+                Menu { HadithTranslationPicker() } label: {
                     Label("Hadith actions", systemImage: "ellipsis.circle")
                 }
                 .accessibilityIdentifier("hadith-library-menu")
@@ -252,12 +295,6 @@ struct HadithView: View {
         }
     }
 
-    @ViewBuilder private var toolbarActions: some View {
-        NavigationLink { HadithSavedView(reader: reader) } label: { Label("Highlights", systemImage: "highlighter") }
-            .accessibilityIdentifier("hadith-highlights")
-        HadithTranslationPicker()
-    }
-
     @ViewBuilder private var chapterResults: some View {
         let groups = HadithContentsGroup.groups(matchingChapters)
         let showBookTitles = request.collectionID == nil || Set(chapters.map(\.bookID)).count > 1
@@ -272,6 +309,7 @@ struct HadithView: View {
                             if request.collectionID != nil {
                                 session?.state.contentsQuery = request.query
                                 session?.state.contentsOffset = listOffset
+                                session?.state.contentsRow = restoredRow
                             }
                             session?.state.selection = nil
                             session?.state.detailOffset = 0
@@ -284,11 +322,13 @@ struct HadithView: View {
                                 .font(.caption).foregroundStyle(.secondary)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(14)
-                        .background(HadithBookStyle.background(for: chapter.collectionID), in: .rect(cornerRadius: 12))
+                        .contentShape(.rect)
+                        .foregroundStyle(.primary)
                     }
-                    .buttonStyle(.plain)
+                    .tint(.primary)
                     .accessibilityIdentifier("hadith-chapter-\(chapter.id)")
+                    .modifier(HadithListAnchor(id: "chapter:\(chapter.bookID):\(chapter.index)", visibleRows: $visibleRows))
+                    .id("chapter:\(chapter.bookID):\(chapter.index)")
                 }
             } header: {
                 if showBookTitles, let first = group.chapters.first {
@@ -298,8 +338,18 @@ struct HadithView: View {
         }
     }
 
+    private func saveVisibleRow() {
+        guard !loading, !restoringList, restored, collection == nil, route == nil, selected == nil,
+              let row = visibleRows.min(by: { $0.value < $1.value })?.key, row != restoredRow else { return }
+        restoredRow = row
+        session?.state.listRow = row
+    }
+
     private func update(_ change: (inout HadithRequest) -> Void) {
         listOffset = 0
+        restoredRow = nil
+        visibleRows = [:]
+        session?.state.listRow = nil
         session?.state.listOffset = 0
         change(&request)
         request.cursor = HadithCursor()
@@ -334,16 +384,19 @@ struct HadithView: View {
             if saved.request.chapterID != nil {
                 request.query = saved.contentsQuery ?? ""
                 listOffset = saved.contentsOffset ?? 0
+                restoredRow = saved.contentsRow
                 route = SearchRoute(request: saved.request, restoresChapter: true)
                 savedState = nil
             } else if saved.screen == "contents", saved.request.query.isEmpty {
                 request.query = saved.contentsQuery ?? ""
                 listOffset = saved.contentsOffset ?? 0
+                restoredRow = saved.contentsRow
                 savedState = nil
             }
         }
         if let saved = savedState {
             listOffset = saved.listOffset
+            restoredRow = saved.listRow
             var restoredRequest = saved.request
             if let number = restoredRequest.number {
                 restoredRequest.query = String(number)
@@ -382,7 +435,7 @@ struct HadithView: View {
                 request = restoredRequest
                 history = restoredHistory
                 if let source = saved.selection, let id = try await reader.resolve(source) {
-                    selected = try await reader.detail(id: id).narration
+                    selected = try await reader.detail(id: id, query: query).narration
                 } else if saved.selection != nil {
                     session?.state.selection = nil
                     session?.state.detailOffset = 0
@@ -412,9 +465,11 @@ struct HadithView: View {
             state.screen = "results"
             state.listOffset = listOffset
             state.request = current
+            state.listRow = restoredRow
             if current.collectionID != nil, current.chapterID == nil {
                 state.contentsQuery = current.query
                 state.contentsOffset = listOffset
+                state.contentsRow = restoredRow
             }
             state.history = history
             state.cursorSources = sources
@@ -423,8 +478,8 @@ struct HadithView: View {
         } catch { /* Keep the previous complete session if a query fails. */ }
     }
 
-    private func narrationResults(_ narrations: [Hadith], orderedFallback: Bool = false) -> some View {
-        Section("Hadith") {
+    private func narrationResults(_ narrations: [Hadith], orderedFallback: Bool = false, online: Bool = false) -> some View {
+        Section {
             if orderedFallback, !narrations.isEmpty {
                 Text("No exact phrase found.")
                     .font(.footnote)
@@ -434,12 +489,23 @@ struct HadithView: View {
             ForEach(narrations) { narration in
                 Button { searchFocused = false; selected = narration } label: {
                     HadithPreviewRow(narration: narration)
+                        .foregroundStyle(.primary)
                 }
-                .buttonStyle(.plain)
-                .padding(.horizontal, 14)
-                .background(HadithBookStyle.background(for: narration.collectionID), in: .rect(cornerRadius: 14))
+                .tint(.primary)
+                .contextMenu {
+                    Button("Open", systemImage: "arrow.up.forward") {
+                        searchFocused = false
+                        selected = narration
+                    }
+                } preview: {
+                    HadithPeekView(id: narration.id, reader: reader)
+                }
                 .accessibilityIdentifier("hadith-result-\(narration.id)")
+                .modifier(HadithListAnchor(id: "hadith:" + (narration.source?.key ?? String(narration.id)), visibleRows: $visibleRows))
+                .id("hadith:" + (narration.source?.key ?? String(narration.id)))
             }
+        } header: {
+            Text(online ? LocalizedStringKey("Search by meaning") : LocalizedStringKey("Hadith"))
         }
     }
 
@@ -454,6 +520,11 @@ struct HadithView: View {
                 try Task.checkCancellation()
                 guard current == request else { return }
                 catalog = books
+            }
+            if current.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, let collectionID = current.collectionID {
+                introductions = try await reader.introductions(collectionID: collectionID, chapterID: current.chapterID)
+            } else {
+                introductions = []
             }
             if chapters.isEmpty, current.collectionID != nil || !query.isEmpty {
                 let values = try await reader.chapters(collectionID: current.collectionID)
@@ -493,10 +564,11 @@ struct HadithView: View {
 }
 
 struct HadithLoadError: View {
+    var supplications = false
     let retry: () -> Void
     var body: some View {
         ContentUnavailableView {
-            Label("Unable to load Hadith", systemImage: "exclamationmark.triangle")
+            Label(LocalizedStringKey(supplications ? "Unable to load supplications" : "Unable to load Hadith"), systemImage: "exclamationmark.triangle")
         } description: {
             Text("Please try again.")
         } actions: {
@@ -508,63 +580,62 @@ struct HadithLoadError: View {
 struct HadithSavedView: View {
     @Environment(\.hadithAssets) private var assets
     let reader: HadithReader
+    var supplications = false
     @Environment(\.quranUserStore) private var store
     @State private var rows: [String: Int] = [:]
     @State private var availableHighlights: Set<String> = []
     @State private var loading = true
     @State private var failed = false
     @State private var retry = 0
-    @State private var editing: ReadingHighlight?
 
     private var highlights: [ReadingHighlight] {
-        store?.highlights.filter(\.isHadith) ?? []
+        store?.highlights.filter {
+            $0.isHadith && (Hadith.supplicationCollectionIDs.contains(HadithSource(key: $0.source)?.book ?? "")) == supplications
+        } ?? []
+    }
+
+    private var bookmarks: [ReadingBookmark] {
+        store?.bookmarks.filter {
+            $0.isHadith && (Hadith.supplicationCollectionIDs.contains(HadithSource(key: $0.source)?.book ?? "")) == supplications
+        } ?? []
     }
 
     private var keys: [String] {
-        Array(Set(highlights.map(\.source))).sorted()
+        Array(Set(highlights.map(\.source) + bookmarks.map(\.source))).sorted()
     }
 
     var body: some View {
-        List {
-            if store?.unavailable != false {
-                ContentUnavailableView {
-                    Label("Highlights unavailable", systemImage: "exclamationmark.triangle")
-                } actions: { Button("Try again") { store?.reopen() } }
-            } else if loading {
-                ProgressView("Loading Hadith…")
-            } else if failed {
-                HadithLoadError { Task { await assets?.refresh(); retry += 1 } }
-            } else if highlights.isEmpty {
-                ContentUnavailableView("No highlights yet", systemImage: "highlighter")
-            } else {
-                ForEach(highlights) { highlight in
+        SavedList(highlights: highlights, bookmarks: bookmarks, canOpen: { rows[$0.source] != nil },
+                  available: { availableHighlights.contains($0.id) })
+        { entry in
+            if let id = rows[entry.source] {
+                HadithDetailView(initialID: id, reader: reader, query: "", orderedFallback: false,
+                                 highlight: entry.highlight, supplication: supplications)
+            }
+        }
+        .accessibilityHidden(store?.unavailable != false || loading || failed)
+        .allowsHitTesting(store?.unavailable == false && !loading && !failed)
+        .overlay {
+            if store?.unavailable != false || loading || failed {
+                ZStack {
+                    Color(uiColor: .systemGroupedBackground).ignoresSafeArea()
                     Group {
-                        if let id = rows[highlight.source] {
-                            NavigationLink {
-                                HadithDetailView(initialID: id, reader: reader, query: "", orderedFallback: false, highlight: highlight)
-                            } label: { HighlightSummary(highlight: highlight, available: availableHighlights.contains(highlight.id)) }
-                                .accessibilityIdentifier("saved-hadith-\(highlight.source)")
-                        } else {
-                            Button { editing = highlight } label: {
-                                HighlightSummary(highlight: highlight, available: false)
-                            }
-                            .tint(.primary)
+                        if store?.unavailable != false {
+                            ContentUnavailableView {
+                                Label("Saved unavailable", systemImage: "exclamationmark.triangle")
+                            } actions: { Button("Try again") { store?.reopen() } }
+                        } else if loading {
+                            ProgressView()
+                        } else if failed {
+                            HadithLoadError(supplications: supplications) { Task { await assets?.refresh(); retry += 1 } }
                         }
-                    }
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button("Edit highlight", systemImage: "pencil") { editing = highlight }
-                            .tint(.accentColor)
-                    }
-                    .contextMenu {
-                        Button("Edit highlight", systemImage: "pencil") { editing = highlight }
                     }
                 }
             }
         }
-        .listStyle(.insetGrouped)
-        .navigationTitle("Highlights")
-        .sheet(item: $editing) { HighlightEditor(highlight: $0, existing: true) }
-        .task(id: highlights.map { $0.id + String($0.modifiedAt.timeIntervalSince1970) }.joined(separator: "|") + "-\(retry)") {
+        .readingBackground()
+        .navigationTitle("Saved")
+        .task(id: highlights.map { $0.id + String($0.modifiedAt.timeIntervalSince1970) }.joined(separator: "|") + bookmarks.map(\.id).joined(separator: "|") + "-\(retry)") {
             loading = true
             failed = false
             do {
@@ -574,7 +645,12 @@ struct HadithSavedView: View {
                     guard let source = HadithSource(key: key), let id = try await reader.resolve(source) else { continue }
                     let narration = try await reader.detail(id: id).narration
                     loaded[key] = id
-                    let blocks = narration.highlightBlocks
+                    var blocks = narration.highlightBlocks
+                    if narration.isSupplication {
+                        for translation in try await reader.translations(id: id) {
+                            blocks[translation.block] = HighlightTextContent.canonical(HadithText.markdown(translation.text))
+                        }
+                    }
                     for highlight in highlights where highlight.source == key && highlight.isAvailable(in: blocks) {
                         available.insert(highlight.id)
                     }
@@ -596,8 +672,12 @@ struct HadithSavedView: View {
 
 extension Hadith {
     var highlightBlocks: [String: String] {
-        ["arabic": HighlightTextContent.canonical(arabicDisplay),
-         "english": HighlightTextContent.canonical(englishDisplay),
-         "englishNarrator": HighlightTextContent.canonical(narratorDisplay)]
+        var blocks = ["arabic": HighlightTextContent.canonical(arabicDisplay),
+                      "english": HighlightTextContent.canonical(englishDisplay),
+                      "englishNarrator": HighlightTextContent.canonical(narratorDisplay)]
+        if let translation {
+            blocks[translation.block] = HighlightTextContent.canonical(HadithText.markdown(translation.text))
+        }
+        return blocks
     }
 }

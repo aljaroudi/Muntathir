@@ -9,6 +9,7 @@ struct ContentView: View {
     @State private var restored = false
     @State private var settings = false
     @State private var hadithAssets = HadithAssetStore()
+    @State private var supplicationAssets = HadithAssetStore(backend: AppleAssetPackBackend(identifier: "supplications", resourcePath: "Supplications/supplications.db"), packID: "supplications")
     @State private var translations = QuranTranslationStore.shared
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -21,34 +22,55 @@ struct ContentView: View {
             Tab("Tools", systemImage: "square.grid.2x2", value: 2) {
                 NavigationStack(path: $toolsPath) {
                     List {
-                        NavigationLink {
-                            QuranView()
-                        } label: {
-                            Label("The Holy Quran", systemImage: "book.closed")
+                        Section {
+                            NavigationLink {
+                                QuranView()
+                            } label: {
+                                Label("The Holy Quran", systemImage: "book.closed")
+                            }
+                            .accessibilityIdentifier("holy-quran")
+                            NavigationLink(value: FigureRoute.hadith) {
+                                Label("Hadith", systemImage: "text.book.closed")
+                            }
+                            .accessibilityIdentifier("hadith")
+                            NavigationLink(value: FigureRoute.supplications) {
+                                Label("Supplications", systemImage: "hands.sparkles")
+                            }
+                            .accessibilityIdentifier("supplications")
                         }
-                        .accessibilityIdentifier("holy-quran")
-                        NavigationLink(value: FigureRoute.hadith) {
-                            Label("Hadith", systemImage: "text.book.closed")
-                        }
-                        .accessibilityIdentifier("hadith")
                         NavigationLink(value: FigureRoute.browser) {
                             Label("Figures", systemImage: "person.2")
                         }
                         .accessibilityIdentifier("figures")
-                        NavigationLink {
-                            QiblaView(isCovered: settings).toolbar { settingsToolbar }
-                        } label: {
-                            Label("Qibla", systemImage: "location.north.circle")
+                        Section {
+                            NavigationLink {
+                                TasbihView()
+                            } label: {
+                                Label { Text("Tasbih") } icon: { Text(verbatim: "📿") }
+                            }
+                            .accessibilityIdentifier("tasbih")
+                            NavigationLink {
+                                RakaatTrackerView()
+                            } label: {
+                                Label("Rakaat Tracker", systemImage: "camera.metering.center.weighted")
+                            }
+                            .accessibilityIdentifier("rakaat-tracker")
+                            NavigationLink {
+                                QiblaView(isCovered: settings).toolbar { settingsToolbar }
+                            } label: {
+                                Label("Qibla", systemImage: "location.north.circle")
+                            }
+                            .accessibilityIdentifier("qibla")
                         }
-                        .accessibilityIdentifier("qibla")
                     }
                     .navigationTitle("Tools")
-                    .figureDestinations(hadithAssets: hadithAssets)
+                    .figureDestinations(hadithAssets: hadithAssets, supplicationAssets: supplicationAssets)
                     .toolbar { settingsToolbar }
                 }
             }
         }
         .environment(\.hadithAssets, hadithAssets)
+        .environment(\.supplicationAssets, supplicationAssets)
         .environment(\.hadithSession, hadithSession)
         .task {
             guard !restored else { return }
@@ -63,6 +85,7 @@ struct ContentView: View {
         .sheet(isPresented: $settings) {
             SettingsView()
                 .environment(\.hadithAssets, hadithAssets)
+                .environment(\.supplicationAssets, supplicationAssets)
                 .environment(\.hadithSession, hadithSession)
         }
         .sheet(item: $translations.downloadRequest) { translation in
@@ -70,9 +93,11 @@ struct ContentView: View {
         }
         .task { model.reschedule() }
         .task { await hadithAssets.monitor() }
+        .task { await supplicationAssets.monitor() }
         .task { await QuranTranslationStore.shared.monitor() }
         .task { await QuranTranslationStore.shared.refresh() }
         .task { await hadithAssets.refresh() }
+        .task { await supplicationAssets.refresh() }
         .onChange(of: model.locationService.current) { _, location in
             if model.liveLocation != nil, let location {
                 model.applyLive(location)
@@ -81,10 +106,12 @@ struct ContentView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
                 hadithSession.save()
+                hadithAssets.cancelIntegrityCheck()
+                supplicationAssets.cancelIntegrityCheck()
             }
             if phase == .active {
                 model.reschedule()
-                Task { await hadithAssets.refresh(); await QuranTranslationStore.shared.refresh() }
+                Task { await hadithAssets.refresh(); await supplicationAssets.refresh(); await QuranTranslationStore.shared.refresh() }
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in model.reschedule() }

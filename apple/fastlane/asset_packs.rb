@@ -2,7 +2,7 @@ require "json"
 require "net/http"
 
 module MuntathirRelease
-  REQUIRED_ASSET_PACKS = %w[hadith quran-translations].freeze
+  REQUIRED_ASSET_PACKS = %w[hadith supplications quran-translations].freeze
 
   module ReviewAssetPacks
     def submit_for_review(client: nil)

@@ -1,3 +1,5 @@
+Uji unduhan buku hadis, termasuk jeda, coba lagi, hapus, dan baca luring. Coba unduhan doa terpisah dan terjemahannya, membaca dan mencari Al-Quran, serta penanda dan sorotan. Uji pelacak salat dan posisi kamera.
+
 Temukan ayat Al-Quran dan hadis berdasarkan makna. Jika pencarian lokal tidak menemukan hasil, coba pencarian online dari kolom yang sama. Buku dan bab yang dipilih tetap digunakan. Pencarian teks lokal tetap tersedia secara offline.
 
 Sorot ayat Al-Qur’an dan kutipan hadis, lalu buka kembali di Sorotan.

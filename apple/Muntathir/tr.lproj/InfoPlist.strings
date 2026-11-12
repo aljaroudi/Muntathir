@@ -3,3 +3,5 @@
 "QiblaPreciseLocation" = "Tam konumunuz, haritada konumunuzu ve Kâbe yönünü gösterir.";
 
 "NSPhotoLibraryAddUsageDescription" = "Paylaşılan Kur’an ve hadis görsellerini fotoğraf arşivinize kaydedin.";
+
+"NSCameraUsageDescription" = "Ön kamera, secdeleri saymak için ışık değişimlerini algılar. Görüntüler asla kaydedilmez veya paylaşılmaz.";

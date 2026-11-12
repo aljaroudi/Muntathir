@@ -1,9 +1,10 @@
 import importlib.util
 import json
+import hashlib
 import sqlite3
 import tempfile
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
@@ -12,6 +13,167 @@ HERE = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location("hadith_build", HERE / "build.py")
 builder = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(builder)
+
+
+class SupplicationAssetTests(unittest.TestCase):
+    def test_split_preserves_ids_text_and_provenance(self):
+        with tempfile.TemporaryDirectory() as folder, sqlite3.connect(":memory:") as db:
+            builder.apply_schema(db, HERE / "schema.sql")
+            for collection, number in [("openiti-Sahifa-Sajjadiyya", 101), ("other", 202)]:
+                db.execute("INSERT INTO collection VALUES (?, 'كتاب', 'Book', 0)", (collection,))
+                db.execute("INSERT INTO book(id,collection_id,sect,book_group,name_ar,name_en) VALUES (?,?,'shia','shia','كتاب','Book')", (collection, collection))
+                db.execute("INSERT INTO chapter(id,book_id,chapter_idx,file_name,name_ar) VALUES (?,?,0,'edition','باب')", (number, collection))
+                db.execute("INSERT INTO hadith(id,book_id,chapter_id,chapter_idx,id_in_book,arabic,url) VALUES (?,?,?,0,1,'دعاء كامل','edition#page')", (number, collection, number))
+            output = Path(folder) / "supplications.db"
+            self.assertEqual(builder.extract_supplications(db, output, curated=False), 1)
+            self.assertEqual(db.execute("SELECT id FROM hadith").fetchall(), [(202,)])
+            with sqlite3.connect(output) as prayers:
+                self.assertEqual(prayers.execute("SELECT id,arabic,url FROM hadith").fetchall(), [(101, 'دعاء كامل', 'edition#page')])
+                self.assertEqual(prayers.execute("PRAGMA foreign_key_check").fetchall(), [])
+                self.assertEqual(prayers.execute("SELECT count(*) FROM hadith_words WHERE hadith_words MATCH 'دعاء'").fetchone(), (1,))
+
+    def test_curated_prayers_and_translations_preserve_source_keys(self):
+        source = json.loads((HERE / "data/supplications.json").read_text())
+        with sqlite3.connect(":memory:") as db:
+            builder.apply_schema(db, HERE / "schema.sql")
+            builder.import_supplications(db)
+            self.assertEqual(db.execute("SELECT count(*) FROM hadith").fetchone(), (3,))
+            self.assertEqual(db.execute("SELECT count(*) FROM supplication_translation").fetchone(), (5,))
+            self.assertEqual(db.execute("PRAGMA foreign_key_check").fetchall(), [])
+            for prayer in source["supplications"]:
+                hid, arabic = db.execute("SELECT h.id,h.arabic FROM hadith h JOIN chapter c ON c.id=h.chapter_id WHERE c.file_name=? AND h.id_in_book=?", (prayer["file_name"], prayer["id_in_book"])).fetchone()
+                self.assertEqual(arabic, prayer["arabic"])
+                self.assertLess(hid, 0)
+                for variant in prayer["texts"]:
+                    if variant["language"] != "ar":
+                        self.assertEqual(db.execute("SELECT text,attribution,url,license FROM supplication_translation WHERE hadith_id=? AND language=? AND edition=?", (hid,variant["language"],variant["edition"])).fetchone(), tuple(variant[k] for k in ("text","attribution","url","license")))
+            builder.build_fts(db)
+            self.assertTrue(db.execute("SELECT rowid FROM hadith_words WHERE hadith_words MATCH 'اللهم'").fetchall())
+
+    def test_translation_import_requires_provenance(self):
+        source = json.loads((HERE / "data/supplications.json").read_text())
+        source["supplications"][0]["texts"][1]["license"] = ""
+        with tempfile.TemporaryDirectory() as folder, sqlite3.connect(":memory:") as db:
+            (Path(folder) / "supplications.json").write_text(json.dumps(source))
+            builder.apply_schema(db, HERE / "schema.sql")
+            with patch.object(builder, "DATA", Path(folder)), self.assertRaisesRegex(ValueError, "provenance"):
+                builder.import_supplications(db)
+
+
+class ArabicChapterTests(unittest.TestCase):
+    def test_mapping_checks_content_and_preserves_existing_arabic(self):
+        with tempfile.TemporaryDirectory() as directory, sqlite3.connect(":memory:") as db:
+            builder.apply_schema(db, HERE / "schema.sql")
+            db.execute("INSERT INTO collection VALUES ('book','كتاب','Book',0)")
+            db.execute("INSERT INTO book(id,collection_id,sect,book_group,name_ar,name_en) VALUES ('book','book','shia','shia','كتاب','Book')")
+            db.execute("INSERT INTO chapter(id,book_id,chapter_idx,file_name,name_en) VALUES (1,'book',0,'1.json','Chapter')")
+            db.execute("INSERT INTO hadith(id,book_id,chapter_id,chapter_idx,id_in_book,arabic,url) VALUES (1,'book',1,0,1,'نص','source')")
+            row = dict(book_id='book', chapter_idx=0, name_en='Chapter', name_ar='باب',
+                       boundary_sha256=hashlib.sha256(json.dumps([('source', 'نص')], ensure_ascii=False).encode()).hexdigest())
+            folder = Path(directory)
+            (folder / 'arabic-chapters.json').write_text(json.dumps({'chapters': [row]}))
+            with patch.object(builder, 'DATA', folder):
+                before = db.execute('SELECT * FROM hadith').fetchall()
+                builder.localize_chapters(db)
+                self.assertEqual(db.execute('SELECT name_ar FROM chapter').fetchone(), ('باب',))
+                self.assertEqual(db.execute('SELECT * FROM hadith').fetchall(), before)
+                db.execute("UPDATE chapter SET name_ar='عنوان المصدر', name_en='Changed'")
+                builder.localize_chapters(db)
+                self.assertEqual(db.execute('SELECT name_ar FROM chapter').fetchone(), ('عنوان المصدر',))
+                db.execute("UPDATE chapter SET name_ar=''")
+                with self.assertRaisesRegex(ValueError, 'source changed'):
+                    builder.localize_chapters(db)
+                db.execute("UPDATE chapter SET name_en='Chapter'")
+                db.execute("UPDATE hadith SET arabic='تغير النص'")
+                with self.assertRaisesRegex(ValueError, 'source changed'):
+                    builder.localize_chapters(db)
+
+    def test_curated_mapping_has_unique_keys_and_source_provenance(self):
+        rows = json.loads((HERE / 'data/arabic-chapters.json').read_text())['chapters']
+        self.assertEqual(len(rows), 2156)
+        self.assertEqual(len({(r['book_id'], r['chapter_idx']) for r in rows}), len(rows))
+        self.assertTrue(all(r['source'] and r['name_ar'] and len(r['boundary_sha256']) == 64 for r in rows))
+
+
+class OpenITITests(unittest.TestCase):
+    def test_volume_boundaries_heading_continuations_and_commentary(self):
+        text = '''######OpenITI#
+#META#Header#End#
+PageV01P001
+### | مقدمة المؤلف
+# مقدمة عربية
+### || 1 - باب الماء
+~~والطهارة
+### $ 1 - أخبرني الراوي
+~~عن الإمام ms0001
+# قال المصنف: بيان الخبر
+PageV01P002
+### $ 2 - خبر آخر
+PageV02P001
+### || 1 - باب الزكاة
+ أخبرني الراوي الثاني
+~~بخبر الزكاة
+'''
+        rows = builder.parse_openiti(text, 'istibsar')
+        self.assertEqual(len(rows), 4)
+        self.assertEqual([r['volume'] for r in rows], [1, 1, 1, 2])
+        self.assertEqual(rows[1]['title'], '1 - باب الماء والطهارة')
+        self.assertIn('بيان الخبر', rows[1]['text'])
+        self.assertEqual(rows[2]['page'], 'PageV01P002')
+        self.assertTrue(all('PageV' not in r['text'] and 'ms0001' not in r['text'] for r in rows))
+
+    def test_narration_embedded_in_heading_is_not_lost_or_duplicated(self):
+        text = '''#META#Header#End#
+PageV01P001
+### || 12 - باب الماء 64 - 1 أخبرني الأول
+~~بخبر كامل
+# قال: جواب الخبر
+### $ - 2 خبر ثان
+### $ - 3 خبر ثالث
+'''
+        rows = builder.parse_openiti(text, 'istibsar')
+        self.assertEqual(len(rows), 3)
+        self.assertTrue(all(r['title'] == '12 - باب الماء' for r in rows))
+        self.assertIn('أخبرني الأول بخبر كامل', rows[0]['text'])
+        self.assertIn('جواب الخبر', rows[0]['text'])
+
+    def test_mistagged_headings_and_heading_footnotes_are_not_narrations(self):
+        text = '''#META#Header#End#
+PageV02P001
+### $ - باب الحجامة للمحرم
+### $ - خبر الحجامة
+##|| 181 - باب الأضحية
+~~وما عرف به
+### $ - خبر الأضحية
+### || [42 - باب ربح المؤمن] (1)
+### $ - خبر البيع
+'''
+        rows = builder.parse_openiti(text, 'istibsar')
+        self.assertEqual([r['title'] for r in rows], ['باب الحجامة للمحرم', '181 - باب الأضحية وما عرف به', '42 - باب ربح المؤمن'])
+        self.assertTrue(all(r['text'].startswith('خبر') for r in rows))
+
+    def test_sahifa_keeps_intro_and_whole_prayer_but_excludes_editorial_notes(self):
+        text = '''#META#Header#End#
+### |EDITOR|
+# مادة الناشر
+### | [مقدمة]
+# مقدمة عربية
+### | (1) [التحميد لله]
+# أول الدعاء
+PageV00P023
+~~بقية الدعاء ms14
+# آخر الدعاء
+### |EDITOR|
+# مادة ختامية
+#####ENDNOTES#
+# حاشية
+'''
+        rows = builder.parse_openiti(text, 'sahifa')
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[1]['title'], '(1) التحميد لله')
+        self.assertIn('آخر الدعاء', rows[1]['text'])
+        self.assertNotIn('مادة', str(rows))
+        self.assertNotIn('حاشية', str(rows))
 
 
 class AdditionalBooksTests(unittest.TestCase):
@@ -278,7 +440,7 @@ class GradingTests(unittest.TestCase):
         row, = self.records()
         self.assertIsNone(row['grader_id'])
         self.assertEqual(row['grade_ar'], 'مجهول')
-        self.assertEqual(self.db.execute('PRAGMA user_version').fetchone()[0], 6)
+        self.assertEqual(self.db.execute('PRAGMA user_version').fetchone()[0], 7)
         self.assertEqual(self.db.execute('PRAGMA foreign_key_check').fetchall(), [])
 
 
@@ -299,3 +461,86 @@ class ShippingSchemaTests(unittest.TestCase):
             builder.build_fts(db)
             builder.apply_schema(db, HERE / 'experimental-morphology.sql')
             self.assertEqual(db.execute('SELECT count(*) FROM word_form').fetchone()[0], 0)
+
+
+class IntroductionTests(unittest.TestCase):
+    def test_unnumbered_collection_chapters_are_not_introductions(self):
+        for kind, heading, numbered in [
+            ('wasail', '# 1 - باب الصلاة', '# [12345] 1 - رواية'),
+            ('bihar', '### || باب 4', '# 1 - رواية'),
+        ]:
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as folder, sqlite3.connect(':memory:') as db:
+                root = Path(folder)
+                edition = '1104Author.Book.Test-ara1'
+                path = root / '1104Author' / '1104Author.Book' / edition
+                path.parent.mkdir(parents=True)
+                path.write_text('#META#Header#End#\n# مقدمة المؤلف\nPageV01P001\n'
+                                + heading + '\n# خبر طويل غير مرقم\nPageV01P002\n'
+                                + heading + '\n' + numbered + '\nPageV01P003\n'
+                                + '# خاتمة الكتاب\n# نص الخاتمة\nPageV02P001\n')
+                records = builder.parse_collection(path.read_text(), kind)
+                self.assertEqual([r['number'] for r in records], [0, 0, 12345 if kind == 'wasail' else 1, 0])
+                (root / 'openiti-editions.json').write_text(json.dumps({'editions': {kind: {
+                    'sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
+                    'reading_entries': 4, 'entries_by_volume': {'1': 3, '2': 1},
+                }}}))
+                builder.apply_schema(db, HERE / 'schema.sql')
+                with patch.object(builder, 'DATA', root), patch.object(builder, 'OPENITI_EDITIONS', {kind: edition}):
+                    builder.load_openiti_books(db, root)
+                self.assertEqual(db.execute('SELECT arabic FROM introduction').fetchall(), [('مقدمة المؤلف',)])
+                # Skipping the preface must not resequence legacy source identities.
+                self.assertEqual(db.execute('SELECT id,id_in_book,arabic FROM hadith ORDER BY id').fetchall(),
+                                 [(2, 2, records[1]['text']), (3, 3, records[2]['text']), (4, 1, records[3]['text'])])
+                self.assertEqual(db.execute('SELECT hadith_count FROM chapter ORDER BY id').fetchall(), [(0,), (1,), (1,), (1,)])
+
+    def test_continuous_text_is_separate_and_metadata_preserves_source_identity(self):
+        with sqlite3.connect(':memory:') as db:
+            builder.apply_schema(db, HERE / 'schema.sql')
+            db.execute("INSERT INTO collection VALUES ('additional-Al-Istibsar-Tusi','كتاب','Book',0)")
+            db.execute("INSERT INTO book(id,collection_id,sect,book_group,name_ar,name_en) VALUES ('v1','additional-Al-Istibsar-Tusi','shia','shia','كتاب','Book')")
+            db.execute("INSERT INTO chapter(id,book_id,chapter_idx,file_name) VALUES (1,'v1',1,'edition')")
+            db.execute("INSERT INTO hadith(id,book_id,chapter_id,chapter_idx,id_in_book,arabic) VALUES (2,'v1',1,1,2,'نص الرواية')")
+            before = db.execute('SELECT * FROM hadith').fetchall()
+            builder.add_introduction(db, 'v1', None, 'Opening', 'النص الأول')
+            builder.add_introduction(db, 'v1', None, 'Heading', 'النص الثاني')
+            builder.build_reading_metadata(db)
+            self.assertEqual(db.execute('SELECT * FROM hadith').fetchall(), before)
+            self.assertEqual(db.execute('SELECT arabic FROM introduction').fetchall(), [('النص الأول\n\nHeading\n\nالنص الثاني',)])
+            self.assertEqual(db.execute('SELECT * FROM hadith_reading').fetchall(), [(2, 2, 1)])
+            self.assertEqual(builder.reading_words('', '**Two** [words](https://example.com)'), 2)
+
+    def test_supplication_extraction_carries_introductions_and_reading_metadata(self):
+        with tempfile.TemporaryDirectory() as folder, sqlite3.connect(':memory:') as db:
+            builder.apply_schema(db, HERE / 'schema.sql')
+            book = 'openiti-Sahifa-Sajjadiyya'
+            db.execute("INSERT INTO collection VALUES (?, 'كتاب', 'Book', 0)", (book,))
+            db.execute("INSERT INTO book(id,collection_id,sect,book_group,name_ar,name_en) VALUES (?,?,'shia','shia','كتاب','Book')", (book, book))
+            db.execute("INSERT INTO chapter(id,book_id,chapter_idx,file_name) VALUES (1,?,1,'edition')", (book,))
+            db.execute("INSERT INTO hadith(id,book_id,chapter_id,chapter_idx,id_in_book,arabic) VALUES (2,?,1,1,2,'دعاء كامل')", (book,))
+            builder.add_introduction(db, book, None, 'Introduction', 'مقدمة كاملة')
+            builder.build_reading_metadata(db)
+            output = Path(folder) / 'supplications.db'
+            self.assertEqual(builder.extract_supplications(db, output, curated=False), 1)
+            with sqlite3.connect(output) as result:
+                self.assertEqual(result.execute('SELECT arabic FROM introduction').fetchall(), [('مقدمة كاملة',)])
+                self.assertEqual(result.execute('SELECT * FROM hadith_reading').fetchall(), [(2, 2, 2)])
+                self.assertEqual(result.execute('PRAGMA foreign_key_check').fetchall(), [])
+            self.assertEqual(db.execute('SELECT count(*) FROM introduction').fetchone(), (0,))
+
+    def test_kafi_introduction_does_not_shift_existing_narrations(self):
+        with sqlite3.connect(':memory:') as db:
+            builder.apply_schema(db, HERE / 'schema.sql')
+            source = Mock()
+            source.exists.return_value = True
+            metadata = dict(sunni=dict(the_9_books=[], forties=[], other_books=[]), shia=[dict(id='alkafi-1')])
+            data = {
+                'books.json': metadata,
+                'shia/alkafi-1/index.json': [dict(file='1.json', name_en='Introduction', count=1), dict(file='2.json', name_en='Chapter', count=1)],
+                'shia/alkafi-1/1.json': [dict(id=1, arabic='نص المقدمة', english='Introduction text')],
+                'shia/alkafi-1/2.json': [dict(id=2, idInBook=2, arabic='نص الرواية', english='Narration text')],
+            }
+            source.read_json.side_effect = data.__getitem__
+            self.assertEqual(builder.load_books_chapters_hadiths(source, db, builder.RefResolver()), (0, 1))
+            self.assertEqual(db.execute('SELECT arabic,english FROM introduction').fetchall(), [('نص المقدمة', 'Introduction text')])
+            self.assertEqual(db.execute('SELECT id_in_book,source_id,arabic FROM hadith').fetchall(), [(1, 2, 'نص الرواية')])
+            self.assertEqual(db.execute('SELECT chapter_idx,file_name FROM chapter').fetchall(), [(1, '2.json')])

@@ -1,6 +1,83 @@
 {
   "$schema": "./schema.json",
   "schema_version": 1,
+  "browser_groups": [
+    {
+      "id": "infallibles",
+      "figure_ids": [
+        "prophet-muhammad",
+        "ali-ibn-abi-talib",
+        "fatima-al-zahra",
+        "hasan-ibn-ali",
+        "husayn-ibn-ali",
+        "ali-zayn-al-abidin",
+        "muhammad-al-baqir",
+        "jafar-al-sadiq",
+        "musa-al-kadhim",
+        "ali-al-ridha",
+        "muhammad-al-jawad",
+        "ali-al-hadi",
+        "hasan-al-askari",
+        "muhammad-al-mahdi"
+      ]
+    },
+    {
+      "id": "otherInfallibles",
+      "figure_ids": [
+        "zaynab-bint-ali",
+        "abbas-ibn-ali",
+        "ali-al-akbar",
+        "fatima-al-masuma"
+      ]
+    },
+    {
+      "id": "messengers",
+      "figure_ids": [
+        "prophet-ibrahim",
+        "prophet-isa",
+        "prophet-musa"
+      ]
+    },
+    {
+      "id": "prophets",
+      "figure_ids": []
+    },
+    {
+      "id": "prophetRelatives",
+      "figure_ids": [
+        "abd-al-muttalib",
+        "abdullah-ibn-abd-al-muttalib",
+        "amina-bint-wahb",
+        "abu-talib",
+        "khadija-bint-khuwaylid",
+        "hamza-ibn-abd-al-muttalib",
+        "umm-kulthum-bint-ali",
+        "umm-al-banin",
+        "ruqayya-bint-al-husayn",
+        "sukayna-bint-al-husayn",
+        "qasim-ibn-al-hasan",
+        "qasim-ibn-al-kadhim",
+        "muslim-ibn-aqil"
+      ]
+    },
+    {
+      "id": "companions",
+      "figure_ids": [
+        "salman-al-muhammadi",
+        "abu-dharr-al-ghifari",
+        "miqdad-ibn-al-aswad",
+        "ammar-ibn-yasir"
+      ]
+    },
+    {
+      "id": "otherCompanions",
+      "figure_ids": [
+        "hani-ibn-urwa",
+        "jabir-ibn-abdullah",
+        "abu-bakr"
+      ]
+    }
+  ],
   "people": [
     {
       "id": "prophet-muhammad",
@@ -91,7 +168,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "fatima-al-zahra",
@@ -235,7 +313,8 @@
       "notes": {
         "en": "Popular birth is 20 Jumada II, five years after Bi'tha. The observed death days are 3 Jumada II, 13 Jumada I, and 8 Rabi II; 13 Rabi II is also reported. Lesser reports (72 days, three or six months, 3 Ramadan) are not kept.",
         "ar": "المولد المشهور ٢٠ جمادى الآخرة، في السنة الخامسة للبعثة. أيام الوفاة المرعية: ٣ جمادى الآخرة، و١٣ جمادى الأولى، و٨ ربيع الآخر، ويُروى أيضاً ١٣ ربيع الآخر."
-      }
+      },
+      "verified": true
     },
     {
       "id": "ali-ibn-abi-talib",
@@ -321,7 +400,8 @@
       "notes": {
         "en": "Struck on Ramadan 19, 40 AH; martyred two days later per WikiShia.",
         "ar": "ضُرب في ١٩ رمضان سنة ٤٠ هـ، واستُشهد بعد يومين بحسب ويكي شيعة."
-      }
+      },
+      "verified": true
     },
     {
       "id": "hasan-ibn-ali",
@@ -404,7 +484,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "husayn-ibn-ali",
@@ -469,7 +550,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "ali-zayn-al-abidin",
@@ -531,7 +613,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "muhammad-al-baqir",
@@ -593,7 +676,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "jafar-al-sadiq",
@@ -654,7 +738,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "musa-al-kadhim",
@@ -716,7 +801,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "ali-al-ridha",
@@ -765,7 +851,8 @@
           "precision": "approximate",
           "start": {
             "year": 203,
-            "month": 2
+            "month": 2,
+            "day": 29
           },
           "original": "Last day of Safar, 203 AH (Safar 29 or 30)",
           "status": "accepted",
@@ -776,7 +863,10 @@
               "quote": "According to al-Tabrisi, the martyrdom was on the last day of Safar"
             }
           ],
-          "notes": "Infobox: Safar 29 or Safar 30, 203. The popular observance is the last day of Safar."
+          "notes": {
+            "en": "The last day of Safar.",
+            "ar": "آخر يوم من شهر صفر."
+          }
         }
       ]
     },
@@ -840,7 +930,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "ali-al-hadi",
@@ -902,7 +993,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "hasan-al-askari",
@@ -963,7 +1055,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "muhammad-al-mahdi",
@@ -998,17 +1091,11 @@
             "day": 15
           },
           "original": "Sha'ban 15, 255 AH",
-          "status": "accepted",
-          "citations": [
-            {
-              "source_id": "wikishia-imams",
-              "locator": "Table",
-              "quote": "Birth 15 Sha'ban 255"
-            }
-          ]
+          "status": "accepted"
         }
       ],
-      "death_dates": []
+      "death_dates": [],
+      "verified": true
     },
     {
       "id": "abd-al-muttalib",
@@ -1044,7 +1131,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "abdullah-ibn-abd-al-muttalib",
@@ -1080,7 +1168,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "amina-bint-wahb",
@@ -1113,7 +1202,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "abu-talib",
@@ -1191,7 +1281,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "khadija-bint-khuwaylid",
@@ -1235,7 +1326,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "hamza-ibn-abd-al-muttalib",
@@ -1280,12 +1372,13 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "zaynab-bint-ali",
       "display_names": {
-        "ar": "السيدة زينب",
+        "ar": "زينب بنت علي",
         "en": "Lady Zaynab"
       },
       "names": {
@@ -1358,7 +1451,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "umm-kulthum-bint-ali",
@@ -1415,14 +1509,14 @@
               "locator": "Demise",
               "quote": "Some scholars believe that they passed away about 50/670-1 at the time of Mu'awiya"
             }
-          ],
-          "notes": "WikiShia records differing opinions and no popular exact day. Another report places the death in the reign of Abd al-Malik."
+          ]
         }
       ],
       "notes": {
         "en": "Daughter of Ali and Fatima; distinct from Umm Kulthum daughter of the Prophet (d. 9 AH). No agreed death day.",
         "ar": "ابنة علي وفاطمة، وهي غير أم كلثوم ابنة النبي التي توفيت سنة ٩ هـ. لا يتفق المصادر على يوم وفاتها."
-      }
+      },
+      "verified": true
     },
     {
       "id": "umm-al-banin",
@@ -1458,10 +1552,10 @@
               "locator": "Lineage and Demise",
               "quote": "The exact date of her demise is unknown. However, her demise is marked on Jumada II 13, 64"
             }
-          ],
-          "notes": "Popular marked anniversary. WikiShia says the exact historical day is unknown."
+          ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "abbas-ibn-ali",
@@ -1476,8 +1570,9 @@
           ],
           "laqab": [
             "قمر بني هاشم",
-            "السقاء",
-            "باب الحوائج"
+            "ساقي العطاشى",
+            "باب الحوائج",
+            "سبع القنطرة"
           ],
           "name": "العباس",
           "full_name": "العباس بن علي"
@@ -1515,16 +1610,10 @@
             "day": 10
           },
           "original": "Muharram 10, 61 AH (Karbala)",
-          "status": "accepted",
-          "citations": [
-            {
-              "source_id": "wikishia-abbas",
-              "locator": "Martyrdom",
-              "quote": "Martyred in the Battle of Karbala"
-            }
-          ]
+          "status": "accepted"
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "ali-al-akbar",
@@ -1585,7 +1674,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "ruqayya-bint-al-husayn",
@@ -1618,14 +1708,10 @@
               "locator": "Infobox",
               "quote": "تاريخ الوفاة 5 صفر سنة 61 هـ"
             }
-          ],
-          "notes": "Arabic WikiShia infobox records this day. The English article does not fix the day and discusses disagreements about the account."
+          ]
         }
       ],
-      "notes": {
-        "en": "Popular marked death is Safar 5, 61 AH. No popular birth day is recorded.",
-        "ar": "الوفاة المرعية ٥ صفر ٦١ هـ. لا يُذكر مولد مشهور."
-      }
+      "verified": true
     },
     {
       "id": "sukayna-bint-al-husayn",
@@ -1667,7 +1753,8 @@
       "notes": {
         "en": "No exact birthday is recorded. Her name is given as Amina; she is known as Sukayna. Majority death report: Rabi' I 5, 117 AH.",
         "ar": "لا يُروى تاريخ مولد محدد. اسمها آمنة، وتُعرف بسكينة. وفاتها في المشهور ٥ ربيع الأول ١١٧ هـ."
-      }
+      },
+      "verified": true
     },
     {
       "id": "qasim-ibn-al-hasan",
@@ -1706,7 +1793,8 @@
       "notes": {
         "en": "WikiShia: no record of his birthday. Martyred on Ashura; some reports say he had not reached puberty, others that he was 16.",
         "ar": "ويكي شيعة: لا يُذكر تاريخ مولده. استُشهد يوم عاشوراء، وقيل لم يبلغ الحلم، وقيل كان في السادسة عشرة."
-      }
+      },
+      "verified": true
     },
     {
       "id": "fatima-al-masuma",
@@ -1765,7 +1853,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "qasim-ibn-al-kadhim",
@@ -1802,7 +1891,8 @@
       "notes": {
         "en": "Arabic WikiShia: sources do not record his birth or death year. One report says he was born about 150 AH. The old Jumada I 22, 189 date is not in WikiShia.",
         "ar": "ويكي شيعة: لم تُذكر سنة ولادته ووفاته، وقيل وُلد سنة ١٥٠ هـ."
-      }
+      },
+      "verified": true
     },
     {
       "id": "muslim-ibn-aqil",
@@ -1837,7 +1927,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "hani-ibn-urwa",
@@ -1872,7 +1963,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "jabir-ibn-abdullah",
@@ -1912,50 +2004,8 @@
       "notes": {
         "en": "Companion who performed the first Arbaeen ziyarah of Imam al-Husayn.",
         "ar": "صحابي قام بأول زيارة أربعين للإمام الحسين."
-      }
-    },
-    {
-      "id": "ali-ibn-muhammad-al-samarri",
-      "display_names": {
-        "ar": "علي بن محمد السمري",
-        "en": "Ali ibn Muhammad al-Samarri"
       },
-      "names": {
-        "ar": {
-          "kunya": [
-            "أبو الحسن"
-          ],
-          "name": "علي",
-          "full_name": "علي بن محمد السمري"
-        },
-        "en": {
-          "title": [
-            "Fourth Special Deputy"
-          ]
-        }
-      },
-      "birth_dates": [],
-      "death_dates": [
-        {
-          "calendar": "hijri",
-          "era": "AH",
-          "precision": "exact",
-          "start": {
-            "year": 329,
-            "month": 8,
-            "day": 15
-          },
-          "original": "Sha'ban 15, 329 AH",
-          "status": "accepted",
-          "citations": [
-            {
-              "source_id": "wikishia-four-deputies",
-              "locator": "Ali b. Muhammad al-Samuri",
-              "quote": "d. 329/941"
-            }
-          ]
-        }
-      ]
+      "verified": true
     },
     {
       "id": "prophet-ibrahim",
@@ -1969,7 +2019,8 @@
             "رسول الله"
           ],
           "laqab": [
-            "خليل الله"
+            "خليل الله",
+            "أبو الأنبياء"
           ],
           "name": "إبراهيم"
         },
@@ -1979,10 +2030,7 @@
       },
       "birth_dates": [],
       "death_dates": [],
-      "notes": {
-        "en": "Earlier prophet; birth observed on Shia calendars (Dhu l-Qa'da 25 / Dhu l-Hijja 1 traditions) without a fixed AH year.",
-        "ar": "نبي سابق، تُحيي بعض التقاويم الشيعية مولده في ٢٥ ذي القعدة أو أول ذي الحجة، دون سنة هجرية محددة."
-      }
+      "verified": true
     },
     {
       "id": "prophet-isa",
@@ -2009,7 +2057,8 @@
       "notes": {
         "en": "Earlier prophet; birth observed on Shia calendars (often Dhu l-Qa'da 25) without a fixed AH year.",
         "ar": "نبي سابق، تُحيي بعض التقاويم الشيعية مولده في ٢٥ ذي القعدة، دون سنة هجرية محددة."
-      }
+      },
+      "verified": true
     },
     {
       "id": "prophet-musa",
@@ -2033,10 +2082,7 @@
       },
       "birth_dates": [],
       "death_dates": [],
-      "notes": {
-        "en": "Earlier prophet; calendar marks appointment/meeting (Dhu l-Qa'da 1) rather than birth/death AH dates.",
-        "ar": "نبي سابق، يذكر التقويم ميقاته في أول ذي القعدة."
-      }
+      "verified": true
     },
     {
       "id": "abu-bakr",
@@ -2071,41 +2117,6 @@
               "source_id": "wikishia-abu-bakr",
               "locator": "Death",
               "quote": "Death of Abu Bakr"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "yazid-ibn-muawiya",
-      "display_names": {
-        "ar": "يزيد بن معاوية",
-        "en": "Yazid ibn Muawiya"
-      },
-      "names": {
-        "ar": {
-          "name": "يزيد",
-          "full_name": "يزيد بن معاوية"
-        }
-      },
-      "birth_dates": [],
-      "death_dates": [
-        {
-          "calendar": "hijri",
-          "era": "AH",
-          "precision": "exact",
-          "start": {
-            "year": 64,
-            "month": 3,
-            "day": 14
-          },
-          "original": "Rabi' I 14, 64 AH",
-          "status": "accepted",
-          "citations": [
-            {
-              "source_id": "wikishia-yazid",
-              "locator": "Death",
-              "quote": "Death of Yazid ibn Muawiya"
             }
           ]
         }
@@ -2169,10 +2180,7 @@
           ]
         }
       ],
-      "notes": {
-        "en": "One of the four early Shi'a pillars with Abu Dharr, Miqdad, and Ammar. Prophet: 'Salman is of us, the Ahl al-Bayt'.",
-        "ar": "أحد الأركان الأربعة الأوائل مع أبي ذر والمقداد وعمار. قال النبي: سلمان منا أهل البيت."
-      }
+      "verified": true
     },
     {
       "id": "abu-dharr-al-ghifari",
@@ -2231,7 +2239,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "miqdad-ibn-al-aswad",
@@ -2288,7 +2297,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "ammar-ibn-yasir",
@@ -2324,7 +2334,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     }
   ],
   "parentages": [
@@ -2397,8 +2408,7 @@
           "source_id": "wikishia-ali",
           "locator": "Father"
         }
-      ],
-      "notes": "Mother Fatima bt. Asad not in this dataset."
+      ]
     },
     {
       "id": "parentage-fatima",
@@ -2502,8 +2512,7 @@
           "source_id": "wikishia-sajjad",
           "locator": "Father"
         }
-      ],
-      "notes": "Mother often identified as Shahrbanu; not in this dataset."
+      ]
     },
     {
       "id": "parentage-ali-akbar",
@@ -2517,8 +2526,7 @@
           "source_id": "wikishia-ali-akbar",
           "locator": "Father"
         }
-      ],
-      "notes": "Mother Layla bt. Abi Murra not in this dataset."
+      ]
     },
     {
       "id": "parentage-ruqayya",
@@ -2546,8 +2554,7 @@
           "source_id": "wikishia-sukayna",
           "locator": "Father"
         }
-      ],
-      "notes": "Mother often Rabab; not in this dataset."
+      ]
     },
     {
       "id": "parentage-qasim-hasan",
@@ -2575,8 +2582,7 @@
           "source_id": "wikishia-baqir",
           "locator": "Father"
         }
-      ],
-      "notes": "Mother Fatima bt. al-Hasan not in this dataset as a separate person record."
+      ]
     },
     {
       "id": "parentage-sadiq",
@@ -3003,12 +3009,6 @@
       "notes": "WikiShia"
     },
     {
-      "id": "wikishia-yazid",
-      "title": "Yazid b. Muawiya",
-      "url": "https://en.wikishia.net/view/Yazid_b._Muawiya",
-      "notes": "WikiShia"
-    },
-    {
       "id": "wikishia-abu-bakr",
       "title": "Abu Bakr b. Abi Quhafa",
       "url": "https://en.wikishia.net/view/Abu_Bakr",
@@ -3054,8 +3054,7 @@
     {
       "id": "wikishia-ruqayya-ar",
       "title": "رقية بنت الحسين",
-      "url": "https://ar.wikishia.net/view/%D8%B1%D9%82%D9%8A%D8%A9_%D8%A8%D9%86%D8%AA_%D8%A7%D9%84%D8%AD%D8%B3%D9%8A%D9%86",
-      "notes": "Arabic WikiShia infobox records Safar 5, 61"
+      "url": "https://ar.wikishia.net/view/%D8%B1%D9%82%D9%8A%D8%A9_%D8%A8%D9%86%D8%AA_%D8%A7%D9%84%D8%AD%D8%B3%D9%8A%D9%86"
     }
   ]
 }

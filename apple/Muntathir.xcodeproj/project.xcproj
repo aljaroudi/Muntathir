@@ -37,6 +37,7 @@
     {
       "path": "<PROJECT>/../shared/figures/figures.json",
       "target-membership": [
+        "Muntathir/resources",
         "MuntathirTests/resources",
         "MuntathirUITests/resources",
       ],
@@ -51,6 +52,7 @@
     { "path": "<PROJECT>/Muntathir/Resources/Quran", "target-membership": [ "MuntathirTests/resources" ] },
     { "path": "<PROJECT>/Muntathir/Core/QuranTranslationFiles.swift", "target-membership": [ "MuntathirWidgets/compile-sources" ] },
     { "path": "<PROJECT>/Muntathir/Core/QuranTranslation.swift", "target-membership": [ "MuntathirWidgets/compile-sources" ] },
+    { "path": "<PROJECT>/Muntathir/Core/QuranSurah.swift", "target-membership": [ "MuntathirWidgets/compile-sources" ] },
     { "path": "<PROJECT>/Muntathir/Core/QuranDatabase.swift", "target-membership": [ "MuntathirWidgets/compile-sources" ] },
     {
       "kind": "folder",
@@ -245,6 +247,7 @@
       "name": "Recovered References",
       "children": [
         { "path": "<PROJECT>/../build/hadith/dist/hadith.db", "target-membership": [ "MuntathirTests/resources" ] },
+        { "path": "<PROJECT>/../build/hadith/dist/supplications.db", "target-membership": [ "MuntathirTests/resources" ] },
       ],
     },
   ],

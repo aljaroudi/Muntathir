@@ -27,6 +27,7 @@ struct HighlightEditor: View {
     @Environment(\.dismiss) private var dismiss
     let original: ReadingHighlight
     let existing: Bool
+    let additionalHighlights: [ReadingHighlight]
     // A draft is seeded once when the editor opens; incoming sync never replaces unsaved typing.
     @State private var draft: ReadingHighlight
     @State private var discard = false
@@ -36,7 +37,8 @@ struct HighlightEditor: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     @FocusState private var noteFocused: Bool
 
-    init(highlight: ReadingHighlight, existing: Bool = false) {
+    init(highlight: ReadingHighlight, existing: Bool = false, additionalHighlights: [ReadingHighlight] = []) {
+        self.additionalHighlights = additionalHighlights
         original = highlight
         self.existing = existing
         _draft = State(initialValue: highlight)
@@ -150,7 +152,13 @@ struct HighlightEditor: View {
             if deleting {
                 try store.delete(original)
             } else {
-                try store.save(draft)
+                let additional = additionalHighlights.map { highlight in
+                    var value = highlight
+                    value.color = draft.color
+                    value.note = draft.note
+                    return value
+                }
+                try store.save([draft] + additional)
             }
             dismiss()
         } catch { failed = true }
@@ -164,11 +172,10 @@ struct HighlightActions: View {
     let reference: String
     @Environment(\.quranUserStore) private var store
     @Binding var editing: ReadingHighlight?
+    @Binding var bookmarkFailed: Bool
 
     var body: some View {
-        Button("Highlight", systemImage: "highlighter") {
-            editing = ReadingHighlight(source: source, isHadith: isHadith, excerpt: excerpt, reference: reference)
-        }.disabled(source.isEmpty)
+        BookmarkButton(source: source, isHadith: isHadith, excerpt: excerpt, reference: reference, failed: $bookmarkFailed)
         ForEach(store?.highlights(for: source, isHadith: isHadith) ?? []) { highlight in
             Button {
                 editing = highlight
@@ -180,8 +187,16 @@ struct HighlightActions: View {
 }
 
 struct HighlightSummary: View {
+    @Environment(\.locale) private var locale
+
+    private var reference: String {
+        highlight.isHadith || locale.language.languageCode?.identifier != "ar"
+            ? highlight.reference : QuranReference.display(highlight.source, locale: locale)
+    }
+
     let highlight: ReadingHighlight
     var available = true
+    var showReference = true
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -190,11 +205,14 @@ struct HighlightSummary: View {
                 .frame(width: 4)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 8) {
-                Text(highlight.reference)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .accessibilityLabel(highlight.reference + ", " + highlight.color.title)
+                if showReference {
+                    Text(reference)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .accessibilityLabel(reference + ", " + highlight.color.title)
+                }
                 Text(highlight.excerpt)
+                    .accessibilityLabel(showReference ? highlight.excerpt : reference + ", " + highlight.color.title + ", " + highlight.excerpt)
                     .font(.body)
                     .foregroundStyle(.primary)
                     .lineLimit(4)

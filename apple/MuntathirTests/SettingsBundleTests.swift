@@ -24,6 +24,9 @@ struct SettingsBundleTests {
                     && $0["DefaultValue"] as? String == "https://tanzil.net/trans/\(translation.id)"
             })
         }
+        let supplicationCredits = credits.filter { ($0["Key"] as? String)?.hasPrefix("credit-dua-") == true }
+        #expect(supplicationCredits.count == 5)
+        #expect(supplicationCredits.allSatisfy { ($0["DefaultValue"] as? String)?.hasPrefix("https://www.duas.org/") == true })
         let licenseURL = try #require(Bundle.main.url(forResource: "Adhan-LICENSE", withExtension: "txt"))
         let license = try String(contentsOf: licenseURL, encoding: .utf8)
         #expect(try specifiers("Adhan").contains { $0["FooterText"] as? String == license })

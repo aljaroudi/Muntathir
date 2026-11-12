@@ -1,3 +1,5 @@
+Hadis kitaplarını tek tek indirmeyi, duraklatmayı, yeniden denemeyi, silmeyi ve çevrimdışı okumayı test edin. Ayrı dua indirmesini ve çevirileri, Kur’an okuma ve aramayı, yer imlerini ve vurguları deneyin. Namaz takibini ve kamera yerleşimini kontrol edin.
+
 Kuran ayetlerini ve hadisleri anlamına göre bulun. Yerel aramada sonuç yoksa aynı arama çubuğundan çevrimiçi aramayı deneyin. Seçtiğiniz kitap ve bölüm korunur. Yerel metin araması çevrimdışı kullanılmaya devam eder.
 
 Kur’an ve hadislerden bölümleri vurgulayın ve Vurgular’da yeniden okuyun.

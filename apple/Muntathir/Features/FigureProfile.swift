@@ -48,8 +48,20 @@ struct FigureProfile: View {
                     }
                 }
             }
+            if let place = figure.birthPlace.flatMap({ Figure.localized($0, locale) }) {
+                Section("Place of birth") { Text(verbatim: place) }
+            }
             dateSection("Birth dates", dates: figure.birthDates)
+            if let place = figure.deathPlace.flatMap({ Figure.localized($0, locale) }) {
+                Section("Place of death") { Text(verbatim: place) }
+            }
             dateSection("Death dates", dates: figure.deathDates)
+            if let age = figure.age {
+                LabeledContent("Estimated age") {
+                    Text(verbatim: formattedAge(age))
+                }
+                .accessibilityIdentifier("figure-age")
+            }
             if let notes = figure.notes.flatMap({ Figure.localized($0, locale) }) {
                 Section("Notes") { Text(verbatim: notes) }
             }
@@ -113,6 +125,17 @@ struct FigureProfile: View {
         }
         .navigationTitle(figure.title(locale))
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func formattedAge(_ age: DateComponents) -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.locale = locale
+        let formatter = DateComponentsFormatter()
+        formatter.calendar = calendar
+        formatter.allowedUnits = (age.month ?? 0) == 0 ? [.year] : [.year, .month]
+        formatter.maximumUnitCount = 2
+        formatter.unitsStyle = .full
+        return formatter.string(from: age) ?? (age.year ?? 0).formatted(.number.locale(locale))
     }
 
     @ViewBuilder

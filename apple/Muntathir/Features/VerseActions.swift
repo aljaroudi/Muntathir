@@ -4,22 +4,14 @@ struct VerseShareContent {
     let ayah: Ayah
     let translation: QuranTranslation?
     let reference: String
-    let imageReference: String
-    private static let arabicDigits = Array("٠١٢٣٤٥٦٧٨٩")
-    private static let surahs = (try? QuranSurah.load()) ?? []
+    var imageReference: String {
+        reference
+    }
 
     init(ayah: Ayah, translation: QuranTranslation?, locale: Locale) {
         self.ayah = ayah
         self.translation = translation
-        let name = Self.surahs.first { $0.id == ayah.surah }?.title(locale: locale)
-        reference = [name, ayah.id].compactMap(\.self).joined(separator: " · ")
-        if locale.language.languageCode?.identifier == "ar", let name {
-            // Image references use Arabic-Indic digits regardless of the device's numbering preference.
-            let number = String(ayah.number).compactMap(\.wholeNumberValue).map { String(Self.arabicDigits[$0]) }.joined()
-            imageReference = name + " " + number
-        } else {
-            imageReference = ayah.id
-        }
+        reference = QuranReference.display(ayah.id, locale: locale)
     }
 
     var translatedText: String? {
@@ -33,45 +25,17 @@ struct VerseShareContent {
 }
 
 struct VerseActions: View {
+    @Environment(\.locale) private var locale
     let ayah: Ayah
     let translation: QuranTranslation?
     var identifier: String?
-    @Environment(\.locale) private var locale
-    @State private var sharedImage: SharedAyah?
-    @State private var copied = false
-    @State private var editing: ReadingHighlight?
-    @Environment(\.quranUserStore) private var store
-    @State private var shareFailed = false
-
     var body: some View {
-        Menu {
-            let canShare = AyahImageRenderer.canShare(ayah, locale: locale, translation: translation)
-            Button("Copy text", systemImage: "doc.on.doc") {
-                UIPasteboard.general.string = VerseShareContent(ayah: ayah, translation: translation, locale: locale).text
-                copied = true
-            }
-            Button("Share as image", systemImage: "square.and.arrow.up") {
-                if let image = AyahImageRenderer.image(for: ayah, locale: locale, translation: translation) {
-                    sharedImage = SharedAyah(image: image)
-                } else {
-                    shareFailed = true
-                }
-            }
-            .disabled(!canShare)
-            Divider()
-            HighlightActions(source: ayah.id, isHadith: false, excerpt: ayah.text, reference: ayah.id, editing: $editing)
-        } label: {
+        VerseActionHost(ayah: ayah, translation: translation, contextMenu: false) {
             Label("Verse actions", systemImage: "ellipsis.circle")
                 .labelStyle(.iconOnly).frame(minWidth: 44, minHeight: 44)
         }
         .accessibilityIdentifier(identifier ?? "verse-actions-\(ayah.id)")
-        .accessibilityLabel(Text("Actions for verse \(ayah.id)"))
-        .sheet(item: $sharedImage) { AyahShareSheet(image: $0.image) }
-        .sheet(item: $editing) { value in
-            HighlightEditor(highlight: value, existing: store?.highlights.contains { $0.id == value.id } == true)
-        }
-        .alert("Text copied", isPresented: $copied) { Button("OK", role: .cancel) {} }
-        .alert("Unable to create image", isPresented: $shareFailed) { Button("OK", role: .cancel) {} }
+        .accessibilityLabel(Text("Actions for verse \(QuranReference.display(ayah.id, locale: locale))"))
     }
 }
 
@@ -81,47 +45,62 @@ struct HadithShareContent {
     let locale: Locale
 
     var reference: String {
-        narration.chapter.title(locale: locale) + " · " + String(narration.number)
+        if narration.isSupplication {
+            return narration.chapter.title(locale: locale)
+        }
+        return narration.chapter.bookTitle(locale: locale) + (narration.displayNumber.map { " • " + String($0) } ?? "")
+    }
+
+    private var translatedTexts: [String] {
+        if narration.isSupplication {
+            return narration.translation.map { [$0.text] } ?? []
+        }
+        return showEnglish ? [narration.englishNarrator, narration.english] : []
     }
 
     var text: String {
-        ([narration.arabic] + (showEnglish ? [narration.englishNarrator, narration.english] : []) + [reference])
+        ([narration.arabic] + translatedTexts + [reference])
             .filter { !$0.isEmpty }.joined(separator: "\n\n")
     }
 
     var body: String {
-        ([narration.arabic] + (showEnglish ? [narration.englishNarrator, narration.english] : []))
+        ([narration.arabic] + translatedTexts)
             .filter { !$0.isEmpty }.map { String(HadithText.markdown($0).characters) }.joined(separator: "\n\n")
     }
 }
 
 @MainActor enum HadithImageRenderer {
-    static func canShare(_ content: HadithShareContent) -> Bool {
-        ShareImageRenderer.canShare(HadithShareArtwork(content: content), locale: content.locale)
+    static func canShare(_ content: HadithShareContent, highlights: [ReadingHighlight] = []) -> Bool {
+        ShareImageRenderer.canShare(HadithShareArtwork(content: content, highlights: highlights), locale: content.locale)
     }
 
-    static func image(for content: HadithShareContent) -> UIImage? {
-        ShareImageRenderer.image(HadithShareArtwork(content: content), locale: content.locale)
+    static func image(for content: HadithShareContent, highlights: [ReadingHighlight] = []) -> UIImage? {
+        ShareImageRenderer.image(HadithShareArtwork(content: content, highlights: highlights), locale: content.locale)
     }
 }
 
 struct HadithShareArtwork: View {
     let content: HadithShareContent
+    var highlights: [ReadingHighlight] = []
 
     var body: some View {
         ShareArtwork(reference: content.reference) {
             if !content.narration.arabic.isEmpty {
-                HadithMarkdownView(text: HadithText.markdown(content.narration.arabic), arabic: true, adjustable: false)
+                HadithMarkdownView(text: HadithText.markdown(content.narration.arabic), arabic: true, adjustable: false, highlights: highlights, block: "arabic")
                     .padding()
                     .environment(\.layoutDirection, .rightToLeft)
             }
-            if content.showEnglish {
+            if let translation = content.narration.translation {
+                HadithMarkdownView(text: HadithText.markdown(translation.text), adjustable: false, highlights: highlights, block: translation.block)
+                    .environment(\.layoutDirection, translation.isRightToLeft ? .rightToLeft : .leftToRight)
+            }
+            if !content.narration.isSupplication, content.showEnglish {
                 if !content.narration.englishNarrator.isEmpty {
-                    HadithMarkdownView(text: HadithText.markdown(content.narration.englishNarrator), adjustable: false)
+                    HadithMarkdownView(text: HadithText.markdown(content.narration.englishNarrator), adjustable: false, highlights: highlights, block: "englishNarrator")
                         .environment(\.layoutDirection, .leftToRight)
                 }
                 if !content.narration.english.isEmpty {
-                    HadithMarkdownView(text: HadithText.markdown(content.narration.english), adjustable: false)
+                    HadithMarkdownView(text: HadithText.markdown(content.narration.english), adjustable: false, highlights: highlights, block: "english")
                         .environment(\.layoutDirection, .leftToRight)
                 }
             }
@@ -132,7 +111,9 @@ struct HadithShareArtwork: View {
 struct HadithActions: View {
     @Binding var textSizePresented: Bool
     let narration: Hadith
+    var translationLanguages: [String] = []
     @Environment(\.locale) private var locale
+    @Environment(\.quranUserStore) private var store
     @AppStorage("hadithEnglishEnabled") private var showEnglish = true
     private struct ShareItem: Identifiable {
         let id = UUID()
@@ -141,41 +122,49 @@ struct HadithActions: View {
 
     @State private var shared: ShareItem?
     @State private var copied = false
-    @State private var editing: ReadingHighlight?
-    @Environment(\.quranUserStore) private var store
+    @State private var bookmarkFailed = false
 
     private var content: HadithShareContent {
         .init(narration: narration, showEnglish: showEnglish, locale: locale)
     }
 
+    private var highlights: [ReadingHighlight] {
+        guard let source = narration.source?.key else { return [] }
+        return store?.highlights(for: source, isHadith: true) ?? []
+    }
+
     var body: some View {
         Menu {
-            let canShare = HadithImageRenderer.canShare(content)
+            let canShare = HadithImageRenderer.canShare(content, highlights: highlights)
             Button("Copy text", systemImage: "doc.on.doc") {
                 UIPasteboard.general.string = content.text
                 copied = true
             }
             let shareTitle: LocalizedStringKey = canShare ? "Share as image" : "Share"
             Button(shareTitle, systemImage: "square.and.arrow.up") {
-                if canShare, let image = HadithImageRenderer.image(for: content) {
+                if canShare, let image = HadithImageRenderer.image(for: content, highlights: highlights) {
                     shared = ShareItem(items: [image])
                 } else {
                     shared = ShareItem(items: [content.text])
                 }
             }
             Divider()
-            HadithTranslationPicker()
+            if narration.isSupplication {
+                SupplicationTranslationPicker(languages: translationLanguages)
+            } else {
+                HadithTranslationPicker()
+            }
             ReadingSizeMenu(isPresented: $textSizePresented)
-            HighlightActions(source: narration.source?.key ?? "", isHadith: true, excerpt: content.body, reference: content.reference, editing: $editing)
+            BookmarkButton(source: narration.source?.key ?? "", isHadith: true, excerpt: content.body, reference: content.reference, failed: $bookmarkFailed)
         } label: {
-            Label("Hadith actions", systemImage: "ellipsis.circle").labelStyle(.iconOnly)
+            Label(LocalizedStringKey(narration.isSupplication ? "Supplication actions" : "Hadith actions"), systemImage: "ellipsis.circle").labelStyle(.iconOnly)
                 .frame(minWidth: 44, minHeight: 44)
         }
         .accessibilityIdentifier("hadith-actions")
         .sheet(item: $shared) { AyahShareSheet(items: $0.items) }
-        .sheet(item: $editing) { value in
-            HighlightEditor(highlight: value, existing: store?.highlights.contains { $0.id == value.id } == true)
-        }
         .alert("Text copied", isPresented: $copied) { Button("OK", role: .cancel) {} }
+        .alert("Unable to save bookmark", isPresented: $bookmarkFailed) {
+            Button("OK", role: .cancel) {}
+        } message: { Text("Please try again.") }
     }
 }

@@ -56,6 +56,7 @@ def main():
     for locale in LOCALES:
         permission = (APPLE / "Muntathir" / f"{locale}.lproj/InfoPlist.strings").read_text()
         assert '"NSLocationWhenInUseUsageDescription"' in permission, f"Missing location purpose: {locale}"
+        assert '"NSCameraUsageDescription"' in permission, f"Missing camera purpose: {locale}"
     print(f"Validated {len(catalog)} interface strings and {len(events)} observances in {len(LOCALES)} locales.")
 
 

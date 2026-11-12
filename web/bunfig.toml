@@ -1,0 +1,8 @@
+[fmt]
+printWidth = 100
+semi = false
+singleQuote = true
+
+[lint.rules]
+"import/no-nodejs-modules" = "error"
+"func-style" = ["error", "declaration"]

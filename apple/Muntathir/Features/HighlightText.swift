@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 
 extension EnvironmentValues {
+    @Entry var searchMatchQuery = ""
     @Entry var focusedHighlight: ReadingHighlight? = nil
 }
 
@@ -13,11 +14,11 @@ enum HighlightTextContent {
         }.joined(separator: "\n\n")
     }
 
-    static func applying(_ highlights: [ReadingHighlight], to attributed: NSAttributedString, block: String, differentiate: Bool = false) -> NSMutableAttributedString {
+    static func applying(_ highlights: [ReadingHighlight], to attributed: NSAttributedString, block: String, differentiate: Bool = false, mappedRanges: [String: [NSRange]]? = nil) -> NSMutableAttributedString {
         let rendered = NSMutableAttributedString(attributedString: attributed)
         // Apply oldest first; the newest color wins without removing any saved notes.
         for highlight in highlights.sorted(by: { $0.modifiedAt == $1.modifiedAt ? $0.id < $1.id : $0.modifiedAt < $1.modifiedAt }) {
-            for range in highlight.ranges(in: rendered.string, block: block) {
+            for range in mappedRanges?[highlight.id] ?? highlight.ranges(in: rendered.string, block: block) {
                 rendered.addAttribute(.backgroundColor, value: UIColor(highlight.color.color).withAlphaComponent(0.3), range: range)
                 if differentiate {
                     rendered.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: range)
@@ -32,7 +33,7 @@ enum HighlightTextContent {
         let style = NSMutableParagraphStyle()
         style.alignment = alignment
         style.baseWritingDirection = arabic ? .rightToLeft : .natural
-        style.lineSpacing = max(0, size * 1.5 - font.lineHeight)
+        style.lineSpacing = max(0, size * 1.75 - font.lineHeight)
         let result = NSMutableAttributedString(string: text, attributes: [.font: font, .foregroundColor: UIColor.label, .paragraphStyle: style])
         if let markdown {
             var offset = 0
@@ -53,6 +54,9 @@ enum HighlightTextContent {
                     result.addAttribute(.font, value: UIFont(descriptor: descriptor, size: runSize), range: NSRange(location: offset, length: length))
                     if run.inlinePresentationIntent?.contains(.strikethrough) == true {
                         result.addAttribute(.strikethroughStyle, value: NSUnderlineStyle.single.rawValue, range: NSRange(location: offset, length: length))
+                    }
+                    if run.underlineStyle != nil {
+                        result.addAttributes([.underlineStyle: NSUnderlineStyle.single.rawValue, .underlineColor: UIColor(Color.accentColor)], range: NSRange(location: offset, length: length))
                     }
                     if let background = run.backgroundColor {
                         result.addAttribute(.backgroundColor, value: UIColor(background), range: NSRange(location: offset, length: length))
@@ -82,6 +86,7 @@ struct HighlightText: View {
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiate
     @Environment(\.quranUserStore) private var store
     @Environment(\.focusedHighlight) private var focused
+    @Environment(\.searchMatchQuery) private var searchQuery
     @AppStorage("readingSizePercent") private var percent = 100
     @ScaledMetric(relativeTo: .body) private var bodySize = 17
     @ScaledMetric(relativeTo: .title2) private var arabicSize = 28
@@ -93,7 +98,7 @@ struct HighlightText: View {
         let size = (arabic ? arabicSize : bodySize) * CGFloat(min(160, max(80, percent))) / 100
         let highlights = store?.highlights(for: source, isHadith: isHadith) ?? []
         SelectableHighlightText(
-            attributed: HighlightTextContent.attributed(text: text, markdown: markdown, arabic: arabic, hadith: isHadith, size: size, alignment: centered ? .center : .natural),
+            attributed: SearchMatch.applying(to: HighlightTextContent.attributed(text: text, markdown: markdown, arabic: arabic, hadith: isHadith, size: size, alignment: centered ? .center : .natural), query: searchQuery),
             highlights: highlights, block: block, focused: focused?.source == source && focused?.isHadith == isHadith && (focused?.block != nil || block == "arabic" || focusWholeItem) ? focused : nil,
             differentiate: differentiate, select: { ranges in
                 let saved = ranges.compactMap { HighlightRange($0, in: text) }
@@ -131,7 +136,7 @@ struct HighlightText: View {
     }
 }
 
-private struct SelectableHighlightText: UIViewRepresentable {
+struct SelectableHighlightText: UIViewRepresentable {
     let attributed: NSMutableAttributedString
     let highlights: [ReadingHighlight]
     let block: String
@@ -140,6 +145,14 @@ private struct SelectableHighlightText: UIViewRepresentable {
     let select: ([NSRange]) -> Void
     let edit: (ReadingHighlight) -> Void
     let tap: ([ReadingHighlight]) -> Void
+    var mappedRanges: [String: [NSRange]]?
+    var additionalActions: ([NSRange]) -> [UIMenuElement] = { _ in [] }
+    var selectionChanged: (NSRange) -> Void = { _ in }
+    var canHighlight: ([NSRange]) -> Bool = { _ in true }
+
+    func ranges(for highlight: ReadingHighlight) -> [NSRange] {
+        mappedRanges?[highlight.id] ?? highlight.ranges(in: attributed.string, block: block)
+    }
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -164,11 +177,9 @@ private struct SelectableHighlightText: UIViewRepresentable {
 
     func updateUIView(_ view: HighlightUITextView, context: Context) {
         context.coordinator.parent = self
-        let rendered = HighlightTextContent.applying(highlights, to: attributed, block: block, differentiate: differentiate)
-        if view.attributedText != rendered {
-            view.attributedText = rendered
-        }
-        if let focused, let range = focused.ranges(in: rendered.string, block: block).first {
+        let rendered = HighlightTextContent.applying(highlights, to: attributed, block: block, differentiate: differentiate, mappedRanges: mappedRanges)
+        view.setRenderedText(rendered)
+        if let focused, let range = ranges(for: focused).first {
             view.focusID = focused.id
             view.focusRange = range
             view.setNeedsLayout()
@@ -179,7 +190,8 @@ private struct SelectableHighlightText: UIViewRepresentable {
 
     func sizeThatFits(_ proposal: ProposedViewSize, uiView: HighlightUITextView, context _: Context) -> CGSize? {
         guard let width = proposal.width else { return nil }
-        return uiView.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude))
+        let fitted = uiView.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude))
+        return CGSize(width: width, height: fitted.height)
     }
 
     final class Coordinator: NSObject, UITextViewDelegate, UIGestureRecognizerDelegate {
@@ -197,7 +209,7 @@ private struct SelectableHighlightText: UIViewRepresentable {
                       let character = view.textRange(from: start, to: end),
                       view.firstRect(for: character).insetBy(dx: -2, dy: -2).contains(point) else { continue }
                 return parent.highlights.filter { highlight in
-                    highlight.ranges(in: parent.attributed.string, block: parent.block).contains { NSLocationInRange(offset, $0) }
+                    parent.ranges(for: highlight).contains { NSLocationInRange(offset, $0) }
                 }
             }
             return []
@@ -220,23 +232,43 @@ private struct SelectableHighlightText: UIViewRepresentable {
             }
         }
 
+        func textViewDidChangeSelection(_ textView: UITextView) {
+            if textView.selectedRange.length > 0 {
+                parent.selectionChanged(textView.selectedRange)
+            }
+        }
+
         func textView(_: UITextView, editMenuForTextInRanges ranges: [NSValue], suggestedActions: [UIMenuElement]) -> UIMenu? {
             let selected = ranges.map(\.rangeValue).filter { $0.length > 0 }
             var actions: [UIMenuElement] = []
-            if !selected.isEmpty {
+            if !selected.isEmpty, parent.canHighlight(selected) {
                 actions.append(UIAction(title: String(localized: "Highlight"), image: UIImage(systemName: "highlighter")) { [weak self] _ in self?.parent.select(selected) })
             }
-            for highlight in parent.highlights where highlight.ranges(in: parent.attributed.string, block: parent.block).contains(where: { existing in
+            for highlight in parent.highlights where parent.ranges(for: highlight).contains(where: { existing in
                 selected.contains { NSIntersectionRange(existing, $0).length > 0 }
             }) {
                 actions.append(UIAction(title: String(localized: "Edit highlight") + " · " + highlight.color.title + " · " + String(highlight.excerpt.prefix(35))) { [weak self] _ in self?.parent.edit(highlight) })
             }
-            return UIMenu(children: actions + suggestedActions)
+            return UIMenu(children: actions + suggestedActions + parent.additionalActions(selected))
         }
     }
 }
 
-private final class HighlightUITextView: UITextView {
+final class HighlightUITextView: UITextView {
+    private var renderedText: NSAttributedString?
+
+    func setRenderedText(_ rendered: NSAttributedString) {
+        // UIKit normalizes paragraph attributes; comparing its text storage resets selection on SwiftUI updates.
+        guard renderedText != rendered else { return }
+        let selection = selectedRange
+        let sameText = text == rendered.string
+        renderedText = NSAttributedString(attributedString: rendered)
+        attributedText = rendered
+        if sameText {
+            selectedRange = selection
+        }
+    }
+
     var focusID: String?
     var focusRange: NSRange?
     private var scrolledID: String?
@@ -262,5 +294,14 @@ private final class HighlightUITextView: UITextView {
             }
             ancestor = current.superview
         }
+    }
+}
+
+extension SearchMatch {
+    static func applying(to text: NSMutableAttributedString, query: String) -> NSMutableAttributedString {
+        for range in ranges(in: text.string, terms: QuranSearchText.terms(query)) {
+            text.addAttributes([.underlineStyle: NSUnderlineStyle.single.rawValue, .underlineColor: UIColor(Color.accentColor)], range: range)
+        }
+        return text
     }
 }

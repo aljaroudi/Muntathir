@@ -32,6 +32,7 @@ struct HadithChapter: Identifiable, Hashable, Sendable {
     var index = 0
     var bookID = ""
     var count = 0
+    var readingWords = 0
 
     func matches(_ query: String) -> Bool {
         let terms = QuranSearchText.terms(query)
@@ -56,6 +57,21 @@ struct HadithChapter: Identifiable, Hashable, Sendable {
 
 /// Preview text is prepared one result at a time; pages never retain complete narration text.
 struct Hadith: Identifiable, Hashable, Sendable {
+    static let supplicationCollectionID = "openiti-Sahifa-Sajjadiyya"
+
+    static let supplicationCollectionIDs = [supplicationCollectionID, "mafatih-supplications"]
+
+    var isSupplication: Bool {
+        Self.supplicationCollectionIDs.contains(collectionID)
+    }
+
+    var displayNumber: Int? {
+        if collectionID == "openiti-wasail" || collectionID == "openiti-bihar" {
+            return source?.sourceID
+        }
+        return isSupplication ? nil : (readingNumber ?? number)
+    }
+
     let id: Int
     let collectionID: String
     let number: Int
@@ -67,6 +83,9 @@ struct Hadith: Identifiable, Hashable, Sendable {
     var arabicDisplay: AttributedString = .init()
     var englishDisplay: AttributedString = .init()
     var narratorDisplay: AttributedString = .init()
+    var readingWords = 0
+    var readingNumber: Int?
+    var translation: SupplicationTranslation?
 }
 
 struct HadithPage: Sendable {
@@ -160,7 +179,7 @@ enum HadithBookGroup: CaseIterable, Identifiable {
 }
 
 struct HadithCursor: Codable, Hashable, Sendable {
-    enum Phase: Int, Codable, Sendable { case words, substring }
+    enum Phase: Int, Codable, CaseIterable, Sendable { case words, substring, broader }
     var phase: Phase = .words
     var afterID = 0
 }

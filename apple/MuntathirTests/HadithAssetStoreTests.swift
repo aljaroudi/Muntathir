@@ -3,6 +3,32 @@ import Foundation
 import Testing
 
 @MainActor struct HadithAssetStoreTests {
+    @Test func supplicationsHaveIndependentDownloadAndValidationState() async throws {
+        let fixture = try HadithFixture(count: 1)
+        defer { fixture.remove() }
+        let suite = "IndependentAssets.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let hadithBackend = TestHadithAssets(url: fixture.url)
+        let prayerBackend = TestHadithAssets(url: fixture.url)
+        let hadith = HadithAssetStore(backend: hadithBackend, defaults: defaults)
+        let prayers = HadithAssetStore(backend: prayerBackend, packID: "supplications", defaults: defaults)
+        await hadith.refresh()
+        await prayers.download()
+        await prayers.integrityCheck?.value
+        #expect(prayers.state == .ready)
+        #expect(hadith.state == .missing)
+        #expect(await hadithBackend.downloads == 0)
+        #expect(defaults.string(forKey: "supplications.validated.v1") != nil)
+        #expect(defaults.string(forKey: "hadith.validated.v1") == nil)
+        await hadith.download()
+        await hadith.integrityCheck?.value
+        await prayers.remove()
+        #expect(prayers.state == .missing)
+        #expect(hadith.state == .ready)
+        #expect(defaults.string(forKey: "hadith.validated.v1") != nil)
+    }
+
     @Test func explicitDownloadOfflineRelaunchAndRemoval() async throws {
         let fixture = try HadithFixture(count: 1)
         defer { fixture.remove() }
@@ -131,6 +157,21 @@ import Testing
         #expect(store.state == .ready)
     }
 
+    @Test func progressDoesNotRegressWhenAnOlderEventArrives() async {
+        let store = HadithAssetStore(backend: TestHadithAssets(url: URL(filePath: "/unused")))
+        await store.receive(.began)
+        #expect(store.isDownloading)
+        #expect(store.downloadProgress == nil)
+        #expect(!store.preparingDownload)
+        let current = Progress(totalUnitCount: 100)
+        current.completedUnitCount = 60
+        await store.receive(.progress(current))
+        let older = Progress(totalUnitCount: 100)
+        older.completedUnitCount = 30
+        await store.receive(.progress(older))
+        #expect(store.progress == 0.6)
+    }
+
     @Test func estimatedRemainingUsesLiveProgress() async throws {
         let store = HadithAssetStore(backend: TestHadithAssets(url: URL(filePath: "/unused")))
         let progress = Progress(totalUnitCount: 100)
@@ -145,17 +186,17 @@ import Testing
         #expect(store.estimatedRemaining(at: Date()) == nil)
     }
 
-    @Test func incompatibleAndCorruptFilesAreRejected() async throws {
+    @Test(arguments: [6, 999]) func incompatibleAndCorruptFilesAreRejected(version: Int) async throws {
         let fixture = try HadithFixture(count: 1)
         defer { fixture.remove() }
         let write = try QuranConnection(path: fixture.url.path, flags: 2)
-        try write.execute("PRAGMA user_version = 999")
+        try write.execute("PRAGMA user_version = \(version)")
         let backend = TestHadithAssets(url: fixture.url)
         let store = HadithAssetStore(backend: backend)
         await store.download()
         #expect(store.state == .incompatible)
         await #expect(throws: HadithDatabaseError.self) { _ = try await store.reader.catalog() }
-        try write.execute("PRAGMA user_version = 6")
+        try write.execute("PRAGMA user_version = 7")
         await store.download()
         #expect(store.state == .ready)
         let corrupt = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
@@ -276,6 +317,30 @@ extension HadithAssetStoreTests {
         #expect(defaults.string(forKey: "hadith.validated.v1") == nil)
     }
 
+    @Test func oldSearchSessionRestartsPaginationAndKeepsScope() throws {
+        let suite = "HadithSessionTests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        var saved = HadithSessionState()
+        saved.request = HadithRequest(query: "mercy", collectionID: "bukhari", chapterID: 3, cursor: HadithCursor(phase: .substring, afterID: 99))
+        saved.history = [HadithCursor()]
+        saved.listOffset = 120
+        saved.listRow = "hadith:old"
+        var json = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(saved)) as? [String: Any])
+        json.removeValue(forKey: "searchRankingVersion")
+        try defaults.set(JSONSerialization.data(withJSONObject: json), forKey: "hadith.session.v1")
+        let restored = HadithSession(defaults: defaults).state
+        #expect(restored.request.query == "mercy")
+        #expect(restored.request.collectionID == "bukhari")
+        #expect(restored.request.chapterID == 3)
+        #expect(restored.request.cursor == HadithCursor())
+        #expect(restored.history.isEmpty)
+        #expect(restored.cursorSources.isEmpty)
+        #expect(restored.listOffset == 0)
+        #expect(restored.listRow == nil)
+        #expect(restored.searchRankingVersion == 2)
+    }
+
     @Test func readingSessionRoundTripsWithoutTheLibrary() throws {
         let suite = "HadithSessionTests.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
@@ -376,5 +441,38 @@ extension HadithAssetStoreTests {
         let report = "Apple asset locator: \(started.duration(to: .now)); installed=\(local != nil)"
         print(report)
         Attachment.record(report, named: "Apple asset locator timing")
+    }
+}
+
+extension HadithAssetStoreTests {
+    @Test func managedPackMigratesAndRestoresOneTitle() async throws {
+        let fixture = try HadithFixture(count: 3)
+        defer { fixture.remove() }
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let suite = "OwnedAssets.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let backend = TestHadithAssets(url: fixture.url)
+        await backend.setInstalled(true)
+        let library = HadithLocalLibrary(root: root)
+        let store = HadithAssetStore(backend: backend, defaults: defaults, library: library)
+        await store.refresh()
+        #expect(store.state == .ready)
+        #expect(await backend.localURL() == nil)
+        #expect(store.books.filter(\.installed).count == 2)
+        await store.remove(title: "merged")
+        #expect(!store.storageError)
+        #expect(store.books.filter(\.installed).map(\.id) == ["other"])
+        await store.download(title: "merged")
+        #expect(store.state == .ready)
+        #expect(store.books.filter(\.installed).count == 2)
+        #expect(await backend.downloads == 1)
+        #expect(await backend.localURL() == nil)
+        await store.receive(.progress(Progress(totalUnitCount: 100)))
+        #expect(store.state == .ready)
+        await store.remove()
+        #expect(store.state == .missing)
+        #expect(await library.localURL() == nil)
     }
 }

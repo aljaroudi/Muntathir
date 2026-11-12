@@ -3,3 +3,5 @@
 "QiblaPreciseLocation" = "Lokasi tepat anda menunjukkan kedudukan anda dan arah ke Kaabah pada peta.";
 
 "NSPhotoLibraryAddUsageDescription" = "Simpan imej al-Quran dan hadis yang dikongsi ke pustaka foto anda.";
+
+"NSCameraUsageDescription" = "Kamera hadapan mengesan perubahan cahaya untuk mengira sujud. Imej tidak pernah disimpan atau dikongsi.";

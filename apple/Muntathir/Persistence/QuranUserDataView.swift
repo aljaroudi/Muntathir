@@ -2,6 +2,7 @@ import SwiftData
 import SwiftUI
 
 extension EnvironmentValues {
+    @Entry var supplicationAssets: HadithAssetStore? = nil
     @Entry var hadithAssets: HadithAssetStore? = nil
     @Entry var hadithSession: HadithSession? = nil
     @Entry var quranUserStore: QuranUserStore? = nil
@@ -28,10 +29,14 @@ private struct HighlightObserver<Content: View>: View {
     let store: QuranUserStore
     @ViewBuilder let content: Content
     @Query private var annotations: [HighlightRecord]
+    @Query private var bookmarks: [BookmarkRecord]
 
     var body: some View {
         content.onChange(of: annotations.map(HighlightSnapshot.init), initial: true) { _, rows in
             store.receive(rows)
+        }
+        .onChange(of: bookmarks.map(BookmarkSnapshot.init), initial: true) { _, rows in
+            store.receiveBookmarks(rows)
         }
     }
 }

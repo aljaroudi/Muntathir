@@ -24,7 +24,7 @@ struct HadithTextTests {
         #expect(plain.contains("الأَعْمَالُ"))
         #expect(plain.count <= 264)
         #expect(!plain.contains("**"))
-        let matches = preview.runs.filter { $0.backgroundColor != nil }.map { String(preview[$0.range].characters) }.joined()
+        let matches = preview.runs.filter { $0.underlineStyle != nil }.map { String(preview[$0.range].characters) }.joined()
         #expect(matches == "الأَعْمَالُ")
     }
 
@@ -33,7 +33,7 @@ struct HadithTextTests {
         let preview = HadithText.preview(source, marked: true)
         #expect(String(preview.characters).contains("believers"))
         #expect(!String(preview.characters).contains(HadithText.startMarker))
-        #expect(preview.runs.contains { $0.backgroundColor != nil && $0.inlinePresentationIntent?.contains(.stronglyEmphasized) == true })
+        #expect(preview.runs.contains { $0.underlineStyle != nil && $0.inlinePresentationIntent?.contains(.stronglyEmphasized) == true })
         #expect(preview.runs.contains { $0.link != nil })
     }
 
@@ -43,22 +43,31 @@ struct HadithTextTests {
         #expect(full.characters.count > 1000)
         #expect(HadithText.paragraphs(full).first?.heading == 1)
         #expect(HadithText.paragraphs(full).last?.marker == "•")
-        #expect(full.runs.contains { $0.backgroundColor != nil })
+        #expect(full.runs.contains { $0.underlineStyle != nil })
         let marked = "\(HadithText.startMarker)narrator books\(HadithText.endMarker) end"
         let narrator = HadithText.highlighted(HadithText.markedSlice(marked, range: 0 ..< 8), marked: true)
         let body = HadithText.highlighted(HadithText.markedSlice(marked, range: 9 ..< 18), marked: true)
         #expect(String(narrator.characters) == "narrator")
         #expect(String(body.characters) == "books end")
-        #expect(narrator.runs.contains { $0.backgroundColor != nil })
-        #expect(body.runs.contains { $0.backgroundColor != nil })
+        #expect(narrator.runs.contains { $0.underlineStyle != nil })
+        #expect(body.runs.contains { $0.underlineStyle != nil })
+    }
+
+    @Test func quranPreviewCentersLiteralMatchWithoutParsingOrChangingSource() {
+        let source = String(repeating: "مقدمة طويلة ", count: 40) + "كُرْسِيُّهُ" + String(repeating: " خاتمة", count: 40)
+        let preview = SearchMatch.preview(SearchMatch.text(source, query: "كرسي"))
+        #expect(String(preview.characters).hasPrefix("… "))
+        #expect(String(preview.characters).contains("كُرْسِيُّهُ"))
+        #expect(preview.runs.contains { $0.underlineStyle != nil })
+        #expect(SearchMatch.text("**نص**", query: "نص").characters.count == 6)
     }
 
     @Test func previewBoundsAndUnmatchedTextAreSafe() {
         #expect(HadithText.preview("").characters.isEmpty)
         let snippet = HadithText.preview("**Hello**\n\nworld", terms: ["absent"])
         #expect(String(snippet.characters) == "Hello\nworld")
-        #expect(snippet.runs.allSatisfy { $0.backgroundColor == nil })
+        #expect(snippet.runs.allSatisfy { $0.underlineStyle == nil })
         let multi = HadithText.preview("رحمة ورحمة", terms: ["رحمه"])
-        #expect(multi.runs.filter { $0.backgroundColor != nil }.count == 2)
+        #expect(multi.runs.filter { $0.underlineStyle != nil }.count == 2)
     }
 }

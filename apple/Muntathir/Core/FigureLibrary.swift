@@ -49,11 +49,38 @@ struct Figure: Decodable, Identifiable, Sendable {
     }
 
     let id: String
+    let verified: Bool?
     let displayNames: [String: String]
     let names: [String: Names]
+    let birthPlace: [String: String]?
+    let deathPlace: [String: String]?
     let birthDates: [FigureDate]
     let deathDates: [FigureDate]
     let notes: [String: String]?
+
+    /// Estimate at the precision shared by the recorded dates.
+    var age: DateComponents? {
+        let births = birthDates.filter { $0.status == .accepted }
+        let deaths = deathDates.filter { $0.status == .accepted }
+        for birth in births.isEmpty ? birthDates : births {
+            for death in deaths.isEmpty ? deathDates : deaths where birth.calendar == death.calendar {
+                let birthYear = birth.era == .bh || birth.era == .bce ? 1 - birth.start.year : birth.start.year
+                let deathYear = death.era == .bh || death.era == .bce ? 1 - death.start.year : death.start.year
+                let years = deathYear - birthYear
+                guard years >= 0 else { continue }
+                guard let birthMonth = birth.start.month, let deathMonth = death.start.month else {
+                    return DateComponents(year: years)
+                }
+                var months = years * 12 + deathMonth - birthMonth
+                if let birthDay = birth.start.day, let deathDay = death.start.day, deathDay < birthDay {
+                    months -= 1
+                }
+                guard months >= 0 else { continue }
+                return DateComponents(year: months / 12, month: months % 12)
+            }
+        }
+        return nil
+    }
 
     func title(_ locale: Locale) -> String {
         Self.localized(displayNames, locale) ?? id
@@ -73,6 +100,19 @@ struct Figure: Decodable, Identifiable, Sendable {
         let language = locale.language.languageCode?.identifier ?? "en"
         let script = locale.language.script.map { "\(language)-\($0.identifier)" }
         return [exact] + (script.map { [$0] } ?? []) + [language, "en", "ar"] + values.keys.sorted()
+    }
+}
+
+struct FigureNotes: Decodable, Sendable {
+    let values: [String: String]
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let legacy = try? container.decode(String.self) {
+            values = ["en": legacy]
+        } else {
+            values = try container.decode([String: String].self)
+        }
     }
 }
 
@@ -105,7 +145,24 @@ struct FigureDate: Decodable, Hashable, Sendable {
     let original: String
     let status: FigureClaimStatus
     let citations: [FigureCitation]
-    let notes: String?
+    let notes: FigureNotes?
+
+    private enum CodingKeys: String, CodingKey {
+        case calendar, era, precision, start, end, original, status, citations, notes
+    }
+
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        calendar = try values.decode(CalendarKind.self, forKey: .calendar)
+        era = try values.decode(Era.self, forKey: .era)
+        precision = try values.decode(Precision.self, forKey: .precision)
+        start = try values.decode(Point.self, forKey: .start)
+        end = try values.decodeIfPresent(Point.self, forKey: .end)
+        original = try values.decode(String.self, forKey: .original)
+        status = try values.decode(FigureClaimStatus.self, forKey: .status)
+        citations = try values.decodeIfPresent([FigureCitation].self, forKey: .citations) ?? []
+        notes = try values.decodeIfPresent(FigureNotes.self, forKey: .notes)
+    }
 
     static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.calendar == rhs.calendar && lhs.era == rhs.era && lhs.precision == rhs.precision
@@ -134,7 +191,7 @@ struct FigureParentage: Decodable, Identifiable, Sendable {
     let kind: Kind
     let status: FigureClaimStatus
     let citations: [FigureCitation]
-    let notes: String?
+    let notes: FigureNotes?
 
     var parentIDs: [String] {
         [fatherId, motherId].compactMap(\.self)
@@ -156,12 +213,22 @@ struct FigureUnion: Decodable, Identifiable, Sendable {
     let kind: Kind
     let status: FigureClaimStatus
     let citations: [FigureCitation]
-    let notes: String?
+    let notes: FigureNotes?
 }
 
 struct FigureLibrary: Sendable {
-    enum Failure: Error, Equatable { case unsupportedVersion, invalidRelationships }
+    enum Failure: Error, Equatable { case unsupportedVersion, invalidRelationships, invalidBrowserGroups }
     enum SiblingDegree: String, CaseIterable, Sendable { case full, half, unknown }
+
+    private struct BrowserGroup: Decodable, Sendable {
+        let id: String
+        let figureIds: [String]
+    }
+
+    struct BrowserSection: Identifiable {
+        let id: String
+        let figures: [Figure]
+    }
 
     private struct Source: Decodable, Sendable {
         let id: String
@@ -178,9 +245,11 @@ struct FigureLibrary: Sendable {
         let parentages: [FigureParentage]
         let unions: [FigureUnion]
         let sources: [Source]
+        let browserGroups: [BrowserGroup]?
     }
 
     let people: [Figure]
+    private let browserGroups: [BrowserGroup]
     let byID: [String: Figure]
     let parents: [String: [FigureParentage]]
     let children: [String: [FigureParentage]]
@@ -193,7 +262,7 @@ struct FigureLibrary: Sendable {
         .flatMap { try? Data(contentsOf: $0) }
         .flatMap { try? JSONDecoder().decode([IslamicEvent].self, from: $0) } ?? []
 
-    init(data: Data, events: [IslamicEvent] = []) throws {
+    init(data: Data, events: [IslamicEvent] = [], verifiedOnly: Bool = true) throws {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         let dataset = try decoder.decode(Dataset.self, from: data)
@@ -208,23 +277,52 @@ struct FigureLibrary: Sendable {
               dataset.unions.allSatisfy({ $0.partnerIds.count == 2 && Set($0.partnerIds).count == 2
                       && $0.partnerIds.allSatisfy(ids.contains) })
         else { throw Failure.invalidRelationships }
-        people = dataset.people
+        if let groups = dataset.browserGroups {
+            let assignedIDs = groups.flatMap(\.figureIds)
+            guard Set(groups.map(\.id)).count == groups.count,
+                  assignedIDs.count == ids.count, Set(assignedIDs) == ids
+            else { throw Failure.invalidBrowserGroups }
+            browserGroups = groups
+        } else {
+            browserGroups = [BrowserGroup(id: "all", figureIds: dataset.people.map(\.id))]
+        }
+        people = dataset.people.filter { !verifiedOnly || $0.verified == true }
+        let publishedIDs = Set(people.map(\.id))
+        let unions = dataset.unions.filter { $0.partnerIds.allSatisfy(publishedIDs.contains) }
+        let publishedUnionIDs = Set(unions.map(\.id))
+        let parentages = dataset.parentages.filter {
+            publishedIDs.contains($0.childId) && $0.parentIDs.allSatisfy(publishedIDs.contains)
+                && ($0.unionId.map(publishedUnionIDs.contains) ?? true)
+        }
         byID = Dictionary(uniqueKeysWithValues: people.map { ($0.id, $0) })
-        parents = Dictionary(grouping: dataset.parentages, by: \.childId)
-        children = Dictionary(grouping: dataset.parentages.flatMap { claim in
+        parents = Dictionary(grouping: parentages, by: \.childId)
+        children = Dictionary(grouping: parentages.flatMap { claim in
             claim.parentIDs.map { ($0, claim) }
         }, by: \.0).mapValues { $0.map(\.1) }
-        partners = Dictionary(grouping: dataset.unions.flatMap { union in
+        partners = Dictionary(grouping: unions.flatMap { union in
             union.partnerIds.map { ($0, union) }
         }, by: \.0).mapValues { $0.map(\.1) }
         self.events = Dictionary(grouping: events.sorted {
             ($0.month, $0.day, $0.id) < ($1.month, $1.day, $1.id)
         }.flatMap { event in
-            event.figureIDs.map { ($0, event) }
+            event.figureIDs.filter(publishedIDs.contains).map { ($0, event) }
         }, by: \.0).mapValues { $0.map(\.1) }
-        sources = dataset.sources
+        let citations = people.flatMap { ($0.birthDates + $0.deathDates).flatMap(\.citations) }
+            + parentages.flatMap(\.citations) + unions.flatMap(\.citations)
+        let sourceIDs = Set(citations.map(\.sourceId))
+        guard sourceIDs.isSubset(of: Set(dataset.sources.map(\.id))) else { throw Failure.invalidRelationships }
+        sources = dataset.sources.filter { sourceIDs.contains($0.id) }
         searchTerms = people.reduce(into: [:]) { terms, figure in
             terms[figure.id] = Array(figure.displayNames.values) + figure.names.values.flatMap(\.aliases)
+        }
+    }
+
+    func browserSections(matching query: String, locale: Locale) -> [BrowserSection] {
+        let matches = Set(search(query, locale: locale).map(\.id))
+        return browserGroups.compactMap { group in
+            let figures = group.figureIds.filter(matches.contains).compactMap { byID[$0] }
+            guard !figures.isEmpty else { return nil }
+            return BrowserSection(id: group.id, figures: figures)
         }
     }
 
@@ -274,73 +372,29 @@ struct FigureLibrary: Sendable {
     }
 }
 
-actor FigureFeed {
-    static let shared = FigureFeed(
-        url: URL(string: "https://xn--pgbou4cf.com/figures/figures.json")!,
-        cacheURL: URL.cachesDirectory.appendingPathComponent("figures.json"),
-        session: URLSession(configuration: .ephemeral)
-    )
+actor FigureStore {
+    static let shared = FigureStore()
+    private var library: Result<FigureLibrary, any Error>?
 
-    private let url: URL
-    private let cacheURL: URL
-    private let session: URLSession
-    private var downloaded: FigureLibrary?
-    private var running: Task<Result<FigureLibrary, any Error>, Never>?
-
-    init(url: URL, cacheURL: URL, session: URLSession) {
-        self.url = url
-        self.cacheURL = cacheURL
-        self.session = session
-    }
-
-    func load() async -> Result<FigureLibrary, any Error> {
+    func load() -> Result<FigureLibrary, any Error> {
         #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
                let fixture = ProcessInfo.processInfo.environment["UITEST_FIGURES"],
                let data = Data(base64Encoded: fixture)
             {
-                return Result { try decode(data) }
+                return Result { try FigureLibrary(data: data, events: FigureLibrary.bundledEvents) }
             }
         #endif
-        if let downloaded {
-            return .success(downloaded)
+        if let library {
+            return library
         }
-        if let running {
-            return await running.value
-        }
-
-        let task = Task { await fetch() }
-        running = task
-        defer { running = nil }
-        return await task.value
-    }
-
-    private func fetch() async -> Result<FigureLibrary, any Error> {
-        do {
-            let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
-            let (data, response) = try await session.data(for: request)
-            guard let http = response as? HTTPURLResponse, http.url?.scheme == "https",
-                  http.statusCode == 200, data.count <= 5_000_000
-            else { throw URLError(.badServerResponse) }
-            let library = try decode(data)
-            persist(data)
-            downloaded = library
-            return .success(library)
-        } catch {
-            if let data = try? Data(contentsOf: cacheURL), let library = try? decode(data) {
-                downloaded = library
-                return .success(library)
+        let loaded = Result {
+            guard let url = Bundle.main.url(forResource: "figures", withExtension: "json") else {
+                throw CocoaError(.fileNoSuchFile)
             }
-            return .failure(error)
+            return try FigureLibrary(data: Data(contentsOf: url), events: FigureLibrary.bundledEvents)
         }
-    }
-
-    private func persist(_ data: Data) {
-        try? FileManager.default.createDirectory(at: cacheURL.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try? data.write(to: cacheURL, options: .atomic)
-    }
-
-    private func decode(_ data: Data) throws -> FigureLibrary {
-        try FigureLibrary(data: data, events: FigureLibrary.bundledEvents)
+        library = loaded
+        return loaded
     }
 }

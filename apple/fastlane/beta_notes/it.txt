@@ -1,3 +1,5 @@
+Prova il download dei singoli libri di hadith, la pausa, il nuovo tentativo, la rimozione e la lettura offline. Prova il download separato delle suppliche e le traduzioni, la lettura e la ricerca del Corano, i segnalibri e le evidenziazioni. Verifica il conteggio della preghiera e la posizione della fotocamera.
+
 Trova versetti del Corano e hadith per significato. Se la ricerca locale non trova nulla, prova la ricerca online dalla stessa barra. Il libro e il capitolo selezionati restano invariati. La ricerca testuale locale rimane disponibile offline.
 
 Evidenzia brani del Corano e degli hadith e ritrovali nella sezione Evidenziazioni.

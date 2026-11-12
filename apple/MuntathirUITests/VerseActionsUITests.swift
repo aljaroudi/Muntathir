@@ -20,9 +20,21 @@ final class VerseActionsUITests: XCTestCase {
         XCTAssertTrue(app.buttons["verse-actions-1:1"].waitForExistence(timeout: 5))
     }
 
+    @MainActor private func firstTranslationWord(_ app: XCUIApplication) -> XCUICoordinate {
+        let text = app.textViews["quran-translation-1:1"]
+        XCTAssertTrue(text.waitForExistence(timeout: 5))
+        return text.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.25))
+    }
+
     @MainActor private func addHighlight(_ app: XCUIApplication, note: String = "My private note") {
-        app.buttons["verse-actions-1:1"].tap()
-        app.buttons["Highlight"].tap()
+        if !app.textViews["quran-translation-1:1"].exists {
+            app.buttons["quran-reading-options"].tap()
+            app.buttons["quran-translation-picker"].tap()
+            app.buttons["English"].tap()
+        }
+        firstTranslationWord(app).press(forDuration: 1.2)
+        XCTAssertTrue(app.menuItems["Highlight"].waitForExistence(timeout: 5))
+        app.menuItems["Highlight"].tap()
         app.buttons["highlight-add-note"].tap()
         let editor = app.textViews["highlight-note-editor"]
         XCTAssertTrue(editor.waitForExistence(timeout: 5))
@@ -33,15 +45,8 @@ final class VerseActionsUITests: XCTestCase {
     }
 
     @MainActor private func editHighlight(_ app: XCUIApplication) {
-        app.buttons["verse-actions-1:1"].tap()
-        let edit = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Edit highlight")).firstMatch
-        if !edit.waitForExistence(timeout: 5) {
-            let screenshot = XCTAttachment(screenshot: app.screenshot())
-            screenshot.name = "Missing highlight action"
-            screenshot.lifetime = .keepAlways
-            add(screenshot)
-        }
-        edit.tap()
+        firstTranslationWord(app).tap()
+        XCTAssertTrue(app.buttons["Delete highlight"].waitForExistence(timeout: 5))
     }
 
     @MainActor func testHighlightsSurviveRelaunchAndOpenTheVerse() {
@@ -49,8 +54,24 @@ final class VerseActionsUITests: XCTestCase {
         openFirstVerse(app)
         addHighlight(app)
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        app.buttons["quran-highlights"].tap()
+        app.buttons["quran-saved"].tap()
         XCTAssertTrue(app.staticTexts["My private note"].waitForExistence(timeout: 5))
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        search.typeText("missing-note")
+        XCTAssertTrue(app.buttons["saved-verse-1:1"].waitForNonExistence(timeout: 5))
+        search.buttons["Clear text"].tap()
+        search.typeText("private")
+        XCTAssertTrue(app.buttons["saved-verse-1:1"].waitForExistence(timeout: 5))
+        if app.buttons["Close"].exists {
+            app.buttons["Close"].tap()
+        } else {
+            app.buttons["Cancel"].tap()
+        }
+        app.buttons["saved-grouping"].tap()
+        app.buttons["Group by Date"].tap()
+        XCTAssertTrue(app.staticTexts["Today"].waitForExistence(timeout: 5))
         let screenshot = XCTAttachment(screenshot: app.screenshot())
         screenshot.name = "Quran highlights list"
         screenshot.lifetime = .keepAlways
@@ -67,7 +88,7 @@ final class VerseActionsUITests: XCTestCase {
         app.launchArguments += ["--ui-testing-preserve-state"]
         app.launch()
         openQuran(app)
-        app.buttons["quran-highlights"].tap()
+        app.buttons["quran-saved"].tap()
         XCTAssertTrue(app.buttons["saved-verse-1:1"].waitForExistence(timeout: 5))
         app.buttons["saved-verse-1:1"].tap()
         editHighlight(app)
@@ -90,9 +111,10 @@ final class VerseActionsUITests: XCTestCase {
         XCTAssertEqual(app.staticTexts["highlight-note-preview"].label, "Keep this")
         app.buttons["Delete highlight"].tap()
         app.sheets.buttons["Delete highlight"].tap()
-        XCTAssertTrue(app.buttons["verse-actions-1:1"].waitForExistence(timeout: 5))
-        app.buttons["verse-actions-1:1"].tap()
-        XCTAssertFalse(app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Edit highlight")).firstMatch.exists)
+        XCTAssertTrue(app.buttons["Done"].waitForNonExistence(timeout: 5))
+        firstTranslationWord(app).press(forDuration: 1.2)
+        XCTAssertTrue(app.menuItems["Highlight"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.menuItems.matching(NSPredicate(format: "label BEGINSWITH %@", "Edit highlight")).firstMatch.exists)
     }
 
     @MainActor func testFailedSaveKeepsTheDraft() {
@@ -110,9 +132,7 @@ final class VerseActionsUITests: XCTestCase {
         app.buttons["quran-reading-options"].tap()
         app.buttons["quran-translation-picker"].tap()
         app.buttons["English"].tap()
-        let text = app.textViews["quran-translation-1:1"]
-        XCTAssertTrue(text.waitForExistence(timeout: 5))
-        text.press(forDuration: 1.2)
+        firstTranslationWord(app).press(forDuration: 1.2)
         let highlight = app.menuItems["Highlight"]
         XCTAssertTrue(highlight.waitForExistence(timeout: 5))
         highlight.tap()
@@ -156,13 +176,11 @@ final class VerseActionsUITests: XCTestCase {
     }
 
     @MainActor func testOverlappingHighlightsOfferTheirNotesInPlace() {
-        let app = launch()
+        let app = launch(extra: ["--ui-testing-legacy-highlights"])
         openFirstVerse(app)
         app.buttons["quran-reading-options"].tap()
         app.buttons["quran-translation-picker"].tap()
         app.buttons["English"].tap()
-        addHighlight(app, note: "First note")
-        addHighlight(app, note: "Second note")
         app.textViews["quran-translation-1:1"].coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.25)).tap()
         XCTAssertTrue(app.buttons["First note"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["Second note"].exists)

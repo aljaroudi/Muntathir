@@ -1,8 +1,10 @@
 # Religious figures
 
-Use JSON as the editable source format, matching `shared/events.json`. The web build serves the published subset of the canonical dataset at `/figures/figures.json` and its schema at `/figures/schema.json`. The app downloads figures on first use and keeps the last valid download for offline use.
+Use JSON as the editable source format, matching `shared/events.json`. The web build serves the published subset of the canonical dataset at `/figures/figures.json` and its schema at `/figures/schema.json`. The app bundles the dataset and loads it offline. New data ships with app updates. The web feed retains legacy string notes and required citation arrays for previously released apps.
 
-The web route’s `publishedIDs` list controls which records are served. Add IDs after review. The source stays valid JSON, so editors with JSON Schema support can still check all records.
+The optional `browser_groups` array sets the app's section order. Give each group a unique, stable `id` and list its members in display order in `figure_ids`. When adding a figure, add its ID to exactly one group, even if the figure is unverified. The app hides empty sections and shows one section when the field is absent.
+
+Set `verified: true` on a person after review. Missing or false flags exclude that person from app browsing and the web feed. Relationships involving excluded people are also omitted. The source stays valid JSON, so editors with JSON Schema support can still check all records.
 
 - `figures.json`: production dataset, starting with the Prophet Muhammad and his family.
 - `schema.json`: JSON Schema (Draft 2020-12) describing the format.
@@ -12,6 +14,8 @@ The web route’s `publishedIDs` list controls which records are served. Add IDs
 Assign every person a permanent, unique ID, for example `prophet-muhammad`. Reuse that ID everywhere; names are not identifiers. Add relatives as people even if little is known about them. Use empty arrays for unknown names or dates; do not invent values.
 
 `display_names` maps language tags to reader-facing names, such as `ar` and `en`. `names` groups arrays of strings by language tag and name kind: `name`, `full_name`, `surname`, `kunya`, `laqab`, `nisba`, `nickname`, or `title`. A historical figure need not have a modern surname. Arabic spellings and transliterations can coexist under separate language keys (for example `ar` and `ar-Latn`). Person `notes` maps language tags to reader-facing notes. The `name` and `full_name` fields contain one string each. Other name kinds contain string arrays.
+
+Optional `birth_place` and `death_place` map language tags to place names. Omit unknown places. The app computes a numeric age estimate from the first accepted birth/death year pair in the same calendar (falling back to recorded alternatives when none are accepted). The calculation accounts for the absence of year zero and does not convert lunar years to solar years. Missing or incompatible dates show no age.
 
 ## Family links
 
@@ -47,6 +51,6 @@ Do not silently convert Hijri dates to Gregorian or collapse differing calendars
 
 Parentages, unions, and date claims carry `status` (`accepted`, `disputed`, or `unreviewed`) and a `citations` array. Status is an editorial assessment, not a claim of universal agreement. Each citation links to a source ID and a `locator` (page, volume, section, or other precise reference); an optional short quote preserves relevant wording. Sources can record title, author, edition, URL, and notes.
 
-An empty citations array is allowed while collecting data. Keep unsourced entries `unreviewed`. Record differing traditions and interpretations in notes and preserve their respective citations.
+Date citations may be omitted; Swift treats them as an empty array. Claim notes map language tags to text. An empty citations array is allowed while collecting data. Keep unsourced entries `unreviewed`. Record differing traditions and interpretations in notes and preserve their respective citations.
 
 Open `figures.json` in an editor with JSON Schema support. Its `$schema` points to the adjacent schema. Review cross-record references and historical date ranges when editing.

@@ -5,11 +5,26 @@ import Testing
 
 @MainActor struct QuranUserStoreTests {
     private func configuration(url: URL? = nil) -> ModelConfiguration {
-        let schema = Schema([HighlightRecord.self])
+        let schema = Schema([HighlightRecord.self, BookmarkRecord.self])
         if let url {
             return ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)
         }
         return ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
+    }
+
+    @Test func multiVerseHighlightsSaveTogetherAndRejectInvalidBatches() throws {
+        let store = QuranUserStore(configuration: configuration(), installationID: "A")
+        let first = ReadingHighlight(source: "1:1", isHadith: false, excerpt: "first", reference: "1:1", color: .green, note: "Shared note")
+        let second = ReadingHighlight(source: "1:2", isHadith: false, excerpt: "second", reference: "1:2", color: .green, note: "Shared note")
+        try store.save([first, second])
+        #expect(store.highlights.count == 2)
+        #expect(store.highlights.allSatisfy { $0.color == .green && $0.note == "Shared note" })
+        var invalid = second
+        invalid.source = ""
+        var changed = first
+        changed.note = "Must not save"
+        #expect(throws: QuranUserStoreError.self) { try store.save([changed, invalid]) }
+        #expect(store.highlights.first { $0.id == first.id }?.note == "Shared note")
     }
 
     @Test func installationIdentityPersistsAndIsExcludedFromBackups() throws {
@@ -98,6 +113,96 @@ import Testing
         do { let store = QuranUserStore(configuration: config, installationID: "A"); try store.save(value) }
         let reopened = QuranUserStore(configuration: config, installationID: "A")
         #expect(reopened.highlights.first?.id == value.id)
+    }
+
+    @Test func bookmarksDeduplicateAndRemainSeparateFromHighlights() throws {
+        let store = QuranUserStore(configuration: configuration(), installationID: "A")
+        let value = ReadingBookmark(source: "1:1", isHadith: false, excerpt: "verse", reference: "1:1")
+        try store.save(value)
+        try store.save(value)
+        try store.save(ReadingBookmark(source: "1:1", isHadith: true, excerpt: "narration", reference: "1:1"))
+        #expect(store.bookmarks.count == 2)
+        #expect(store.bookmark(for: "1:1")?.createdAt == value.createdAt)
+        #expect(store.highlights(for: "1:1").isEmpty)
+        try store.delete(value)
+        #expect(store.bookmark(for: "1:1") == nil)
+        #expect(store.bookmark(for: "1:1", isHadith: true) != nil)
+        let rows = try #require(store.container).mainContext.fetch(FetchDescriptor<BookmarkRecord>())
+        #expect(rows.contains { $0.bookmarkID == value.id && $0.isTombstone })
+    }
+
+    @Test func bookmarkFailuresRollBackAndCanRetry() throws {
+        var fail = true
+        let store = QuranUserStore(configuration: configuration(), installationID: "A") { context in
+            if fail {
+                throw QuranUserStoreError.unavailable
+            }
+            try context.save()
+        }
+        let value = ReadingBookmark(source: "1:1", isHadith: false, excerpt: "verse", reference: "1:1")
+        #expect(throws: QuranUserStoreError.self) { try store.save(value) }
+        #expect(store.bookmarks.isEmpty)
+        fail = false
+        try store.save(value)
+        fail = true
+        #expect(throws: QuranUserStoreError.self) { try store.delete(value) }
+        #expect(store.bookmarks.count == 1)
+        fail = false
+        try store.delete(value)
+        #expect(store.bookmarks.isEmpty)
+    }
+
+    @Test func bookmarkSyncUsesStableWinnersAndLocalEditsBeatImports() throws {
+        let store = QuranUserStore(configuration: configuration(), installationID: "A")
+        let context = try #require(store.container).mainContext
+        var value = ReadingBookmark(source: "1:1", isHadith: false, excerpt: "verse", reference: "1:1")
+        for id in ["b", "z"] {
+            let row = BookmarkRecord(bookmarkID: value.id, installationID: id)
+            row.recordID = id
+            value.reference = id
+            row.payload = try JSONEncoder().encode(value)
+            row.modifiedAt = Date(timeIntervalSince1970: 100)
+            context.insert(row)
+        }
+        try context.save()
+        let rows = try context.fetch(FetchDescriptor<BookmarkRecord>()).map(BookmarkSnapshot.init)
+        #expect(BookmarkSnapshot.winners(rows) == BookmarkSnapshot.winners(rows.reversed()))
+        store.receiveBookmarks(rows)
+        #expect(store.bookmarks.first?.reference == "z")
+        try store.delete(value, now: Date(timeIntervalSince1970: 1))
+        #expect(store.bookmarks.isEmpty)
+        try store.save(value, now: Date(timeIntervalSince1970: 1))
+        #expect(store.bookmarks.count == 1)
+        #expect(try #require(store.bookmarks.first).modifiedAt > Date(timeIntervalSince1970: 100))
+    }
+
+    @Test func addingBookmarkSchemaPreservesLegacyHighlightsAndPersistsBookmarks() throws {
+        let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appending(path: "legacy.store")
+        var legacy = ReadingHighlight(source: "1:1", isHadith: false, excerpt: "verse", reference: "1:1")
+        legacy.note = "Keep my note"
+        legacy.color = .purple
+        do {
+            let config = ModelConfiguration(schema: Schema([HighlightRecord.self]), url: url, cloudKitDatabase: .none)
+            let container = try ModelContainer(for: HighlightRecord.self, configurations: config)
+            let row = HighlightRecord(highlightID: legacy.id, installationID: "A")
+            row.payload = try JSONEncoder().encode(legacy)
+            container.mainContext.insert(row)
+            try container.mainContext.save()
+        }
+        let bookmark = ReadingBookmark(source: "1:1", isHadith: false, excerpt: "verse", reference: "1:1")
+        do {
+            let store = QuranUserStore(configuration: configuration(url: url), installationID: "A")
+            #expect(store.unavailable == false)
+            #expect(store.highlights == [legacy])
+            try store.save(bookmark)
+        }
+        let reopened = QuranUserStore(configuration: configuration(url: url), installationID: "A")
+        #expect(reopened.highlights == [legacy])
+        #expect(reopened.bookmarks.first?.id == bookmark.id)
+        #expect(reopened.bookmarks.first?.createdAt == bookmark.createdAt)
     }
 
     @Test func rangesPreserveRepeatedArabicTextAndRejectChangedSource() throws {

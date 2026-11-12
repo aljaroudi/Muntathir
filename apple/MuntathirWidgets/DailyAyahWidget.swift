@@ -34,6 +34,7 @@ struct DailyAyahProvider: TimelineProvider {
 
 struct DailyAyahWidgetView: View {
     let entry: DailyAyahEntry
+    @Environment(\.locale) private var locale
     @Environment(\.widgetFamily) private var family
     private var isAccessory: Bool {
         family == .accessoryRectangular
@@ -52,7 +53,7 @@ struct DailyAyahWidgetView: View {
                     ayahContent(ayah, heading: false, translation: false, lines: 1)
                 }
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(Text([ayah.text, isAccessory ? nil : entry.translation.flatMap { ayah.translations[$0.id] }, ayah.id].compactMap(\.self).joined(separator: " ")))
+                .accessibilityLabel(Text([ayah.text, isAccessory ? nil : entry.translation.flatMap { ayah.translations[$0.id] }, QuranReference.display(ayah.id, locale: locale)].compactMap(\.self).joined(separator: " ")))
             } else {
                 Text("Verse unavailable").font(.caption)
             }
