@@ -25,7 +25,6 @@ struct HadithDetailView: View {
     @State private var translationChanged = false
     @AppStorage("hadithEnglishEnabled") private var showEnglish = true
     @Environment(\.locale) private var locale
-    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var currentID: Int?
     @State private var detail: HadithDetail?
     @State private var loading = true
@@ -46,21 +45,28 @@ struct HadithDetailView: View {
                             .font(.title2.weight(.semibold))
                             .accessibilityIdentifier("supplication-title")
                     } else {
-                        Section {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(narration.chapter.bookTitle(locale: locale))
+                                .font(.headline)
+                                .accessibilityIdentifier("hadith-detail-book")
                             if !detail.authorName(locale: locale).isEmpty {
-                                metadata("Author", value: detail.authorName(locale: locale))
+                                Text(detail.authorName(locale: locale))
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
                                     .accessibilityIdentifier("hadith-detail-author")
                             }
-                            metadata("Book", value: narration.chapter.bookTitle(locale: locale))
-                                .accessibilityIdentifier("hadith-detail-book")
                             if !narration.chapter.chapterTitle(locale: locale).isEmpty {
-                                metadata("Chapter", value: narration.chapter.chapterTitle(locale: locale))
+                                Text(narration.chapter.chapterTitle(locale: locale))
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
                                     .accessibilityIdentifier("hadith-detail-chapter")
                             }
                         }
-                        .readingRowBackground()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                        Divider()
                     }
-                    Section {
+                    VStack(alignment: .leading, spacing: 20) {
                         if !narration.arabic.isEmpty {
                             highlighted(narration.arabicDisplay, block: "arabic", narration: narration, arabic: true)
                                 .frame(maxWidth: .infinity, alignment: .trailing)
@@ -86,12 +92,14 @@ struct HadithDetailView: View {
                                 .accessibilityIdentifier("supplication-full-translation")
                         }
                     }
-                    .readingRowBackground()
                     let gradings = detail.gradings.filter {
                         $0.status == "judgment" && !$0.judgment(locale: locale).isEmpty
                     }
                     if !gradings.isEmpty {
-                        Section("Grading") {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Grading")
+                                .font(.headline)
+                                .accessibilityAddTraits(.isHeader)
                             ForEach(gradings) { grading in
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(grading.judgment(locale: locale))
@@ -112,18 +120,16 @@ struct HadithDetailView: View {
                         }
                     }
                     if !isSupplication {
-                        Section {
-                            HStack {
-                                Button("Previous") { session?.state.detailOffset = 0; currentID = detail.previousID }
-                                    .disabled(detail.previousID == nil)
-                                    .accessibilityIdentifier("hadith-previous")
-                                Spacer()
-                                Button("Next") { session?.state.detailOffset = 0; currentID = detail.nextID }
-                                    .disabled(detail.nextID == nil)
-                                    .accessibilityIdentifier("hadith-next")
-                            }
-                            .buttonStyle(.borderless)
+                        HStack {
+                            Button("Previous") { session?.state.detailOffset = 0; currentID = detail.previousID }
+                                .disabled(detail.previousID == nil)
+                                .accessibilityIdentifier("hadith-previous")
+                            Spacer()
+                            Button("Next") { session?.state.detailOffset = 0; currentID = detail.nextID }
+                                .disabled(detail.nextID == nil)
+                                .accessibilityIdentifier("hadith-next")
                         }
+                        .buttonStyle(.borderless)
                     }
                 }
             }
@@ -214,18 +220,5 @@ struct HadithDetailView: View {
         HighlightText(text: HighlightTextContent.canonical(text), source: narration.source?.key ?? "", block: block,
                       isHadith: true, reference: HadithShareContent(narration: narration, showEnglish: showEnglish, locale: locale).reference,
                       arabic: arabic, markdown: text, focusWholeItem: narration.arabic.isEmpty && (block == "englishNarrator" || narration.englishNarrator.isEmpty))
-    }
-
-    @ViewBuilder private func metadata(_ title: LocalizedStringKey, value: String) -> some View {
-        if typeSize.isAccessibilitySize {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title).font(.subheadline).foregroundStyle(.secondary)
-                Text(value)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityElement(children: .combine)
-        } else {
-            LabeledContent(title, value: value)
-        }
     }
 }

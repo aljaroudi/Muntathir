@@ -23,22 +23,32 @@ final class RakaatTrackerUITests: XCTestCase {
         XCTAssertTrue(app.otherElements["rakaat-prayer-screen"].exists)
         XCTAssertTrue(app.staticTexts["rakaat-count"].waitForExistence(timeout: 4))
         XCTAssertEqual(app.staticTexts["rakaat-count"].label, "1 rakaat")
-        XCTAssertFalse(app.navigationBars["Rakaat Tracker"].exists)
+        XCTAssertTrue(app.navigationBars["Rakaat Tracker"].exists)
         XCTAssertTrue(app.descendants(matching: .any)["rakaat-complete"].waitForExistence(timeout: 8))
         XCTAssertEqual(app.staticTexts["rakaat-count"].label, "3 rakaat")
         XCTAssertFalse(app.buttons["End"].exists)
         XCTAssertFalse(app.buttons["New session"].exists)
-        app.buttons["Finish"].tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(app.buttons["rakaat-target-2"].waitForExistence(timeout: 2))
     }
 
-    @MainActor func testEndDuringPreparationReturnsToSelection() {
+    @MainActor func testBackDuringPreparationReturnsToSelection() {
         let app = open("--rakaat-demo")
         app.buttons["rakaat-target-4"].tap()
         XCTAssertTrue(app.otherElements["rakaat-prayer-screen"].waitForExistence(timeout: 2))
-        app.buttons["End"].tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(app.buttons["rakaat-target-2"].waitForExistence(timeout: 3))
         XCTAssertFalse(app.otherElements["rakaat-prayer-screen"].exists)
+    }
+
+    @MainActor func testSwipeBackReturnsToSelection() {
+        let app = open("--rakaat-demo")
+        app.buttons["rakaat-target-2"].tap()
+        XCTAssertTrue(app.otherElements["rakaat-prayer-screen"].waitForExistence(timeout: 3))
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.01, dy: 0.5))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: 0.5))
+        start.press(forDuration: 0.1, thenDragTo: end)
+        XCTAssertTrue(app.buttons["rakaat-target-2"].waitForExistence(timeout: 3))
     }
 
     @MainActor func testQiblaGuidanceBeforeSelection() {
@@ -62,6 +72,8 @@ final class RakaatTrackerUITests: XCTestCase {
         app.buttons["rakaat-target-2"].tap()
         XCTAssertTrue(app.staticTexts["Camera unavailable"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.buttons["Open Settings"].exists)
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.buttons["rakaat-target-2"].waitForExistence(timeout: 3))
         XCTAssertFalse(app.descendants(matching: .any)["rakaat-complete"].exists)
     }
 }

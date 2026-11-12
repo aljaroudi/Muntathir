@@ -31,6 +31,7 @@ struct HadithPeekView: View {
             }
             .padding()
         }
+        .readingBackground()
         .frame(idealWidth: 360, idealHeight: 440)
         .accessibilityIdentifier("hadith-peek")
         .task(id: id) {

@@ -45,7 +45,6 @@ struct QuranSearchContent: View {
                         QuranSavedVersesView(reader: reader, surahs: surahs)
                     } label: { Label("Saved", systemImage: "bookmark") }
                         .accessibilityIdentifier("quran-saved")
-                        .readingRowBackground()
                 }
             }
             if !matchingSurahs.isEmpty {
@@ -74,7 +73,6 @@ struct QuranSearchContent: View {
                             }
                         }
                         .accessibilityIdentifier("quran-surah-\(surah.id)")
-                        .readingRowBackground()
                     }
                 }
             }
@@ -136,7 +134,6 @@ struct QuranSearchContent: View {
                         QuranVerseRow(ayah: ayah, translation: translation, preview: true, showsActions: false)
                             .contentShape(.rect)
                     }
-                    .readingRowBackground()
                     .accessibilityIdentifier("quran-result-\(ayah.id)")
                     .accessibilityLabel(Text("Verse \(QuranReference.display(ayah.id, locale: locale))"))
                     .accessibilityValue(ayah.text)

@@ -114,7 +114,7 @@ final class QuranUITests: XCTestCase {
         app.buttons["Mushaf"].tap()
         let page = app.descendants(matching: .any)["quran-page-2"].firstMatch
         XCTAssertTrue(page.waitForExistence(timeout: 10))
-        XCTAssertTrue(app.buttons["quran-verse-2:1"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.textViews["quran-page-text-2"].waitForExistence(timeout: 10))
         let height = page.frame.height
         if !app.searchFields.firstMatch.waitForExistence(timeout: 5) {
             let button = app.buttons["Search"].firstMatch
@@ -168,8 +168,10 @@ final class QuranUITests: XCTestCase {
                 number = destination
             }
         }
+        app.swipeRight(velocity: .fast)
+        guard settled(3) else { return }
         let screenshot = XCTAttachment(screenshot: app.screenshot())
-        screenshot.name = "Mushaf after repeated paging"
+        screenshot.name = "Justified Mushaf after repeated paging"
         screenshot.lifetime = .keepAlways
         add(screenshot)
     }
@@ -221,10 +223,9 @@ final class QuranUITests: XCTestCase {
         app.buttons["Mushaf"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-page-42"].firstMatch.waitForExistence(timeout: 10))
         XCTAssertEqual(app.descendants(matching: .any)["quran-page-42"].firstMatch.frame.midX, app.frame.midX, accuracy: 4)
-        app.buttons["quran-verse-2:255"].firstMatch.tap()
-        app.buttons["quran-verse-2:255"].firstMatch.press(forDuration: 1)
-        XCTAssertTrue(app.buttons["Copy text"].waitForExistence(timeout: 5))
-        app.buttons["Copy text"].tap()
+        let text = app.textViews["quran-page-text-42"]
+        XCTAssertTrue(text.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["quran-verse-2:255"].exists)
         app.buttons["quran-reading-options"].tap()
         app.buttons["Verses"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-verse-2:255"].firstMatch.waitForExistence(timeout: 10))
@@ -304,17 +305,48 @@ final class QuranUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["quran-verse-1:1"].exists)
     }
 
-    @MainActor func testReadingBackgroundPersistsAcrossModes() {
+    @MainActor func testMushafUsesNativeSelectionAndHighlightEditor() {
         let app = openQuran()
         app.buttons["quran-surah-2"].tap()
         app.buttons["quran-reading-options"].tap()
-        app.buttons["reading-background"].tap()
-        app.buttons["Soft Gray"].tap()
+        app.buttons["Mushaf"].tap()
+        let text = app.textViews["quran-page-text-2"]
+        XCTAssertTrue(text.waitForExistence(timeout: 10))
+        text.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: 0.56)).press(forDuration: 1.2)
+        XCTAssertTrue(app.menuItems["Highlight"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.menuItems["Copy"].exists)
+        let selected = XCTAttachment(screenshot: app.screenshot())
+        selected.name = "Native Mushaf text selection"
+        selected.lifetime = .keepAlways
+        add(selected)
+        app.menuItems["Highlight"].tap()
+        XCTAssertTrue(app.buttons["highlight-color-green"].waitForExistence(timeout: 5))
+        app.buttons["highlight-color-green"].tap()
+        XCTAssertTrue(app.buttons["highlight-color-green"].waitForNonExistence(timeout: 5))
+        let saved = XCTAttachment(screenshot: app.screenshot())
+        saved.name = "Mushaf native highlight"
+        saved.lifetime = .keepAlways
+        add(saved)
+        app.swipeRight(velocity: .fast)
+        let next = app.descendants(matching: .any)["quran-page-3"].firstMatch
+        XCTAssertTrue(next.waitForExistence(timeout: 5))
+        XCTAssertEqual(next.frame.midX, app.frame.midX, accuracy: 4)
+        let justified = XCTAttachment(screenshot: app.screenshot())
+        justified.name = "Native justified page"
+        justified.lifetime = .keepAlways
+        add(justified)
+        app.terminate()
+    }
+
+    @MainActor func testReadingOptionsUseOneBackgroundAcrossModes() {
+        let app = openQuran()
+        app.buttons["quran-surah-2"].tap()
         app.buttons["quran-reading-options"].tap()
+        XCTAssertFalse(app.buttons["reading-background"].exists)
         app.buttons["Mushaf"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-page-2"].waitForExistence(timeout: 10))
         app.buttons["quran-reading-options"].tap()
-        XCTAssertTrue(app.buttons["reading-background"].exists)
+        XCTAssertFalse(app.buttons["reading-background"].exists)
         XCTAssertTrue(app.buttons["quran-translation-picker"].exists)
         XCTAssertFalse(app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Edit highlight")).firstMatch.exists)
     }

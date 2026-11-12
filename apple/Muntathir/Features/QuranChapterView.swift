@@ -50,7 +50,6 @@ struct QuranChapterView: View {
                                 }
                                 .id(ayah.number)
                                 .accessibilityIdentifier("quran-verse-\(ayah.id)")
-                                .readingRowBackground()
                         }
                     }
                 }
@@ -74,7 +73,6 @@ struct QuranChapterView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     QuranReadingModePicker()
-                    ReadingBackgroundPicker()
                     QuranTranslationPicker()
                     ReadingSizeMenu(isPresented: $textSizePresented)
                 } label: {

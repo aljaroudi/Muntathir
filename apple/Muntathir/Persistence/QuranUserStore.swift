@@ -155,32 +155,40 @@ import SwiftData
     }
 
     func save(_ highlight: ReadingHighlight, now: Date = .now) throws {
-        guard !highlight.source.isEmpty, highlight.block == nil || !highlight.ranges.isEmpty else { throw QuranUserStoreError.invalidHighlight }
-        try update(highlight, deleted: false, now: now)
+        try save([highlight], now: now)
+    }
+
+    func save(_ highlights: [ReadingHighlight], now: Date = .now) throws {
+        guard !highlights.isEmpty, highlights.allSatisfy({ !$0.source.isEmpty && ($0.block == nil || !$0.ranges.isEmpty) }) else {
+            throw QuranUserStoreError.invalidHighlight
+        }
+        try update(highlights, deleted: false, now: now)
     }
 
     func delete(_ highlight: ReadingHighlight, now: Date = .now) throws {
-        try update(highlight, deleted: true, now: now)
+        try update([highlight], deleted: true, now: now)
     }
 
-    private func update(_ highlight: ReadingHighlight, deleted: Bool, now: Date) throws {
+    private func update(_ highlights: [ReadingHighlight], deleted: Bool, now: Date) throws {
         guard let context = container?.mainContext else { throw QuranUserStoreError.unavailable }
         do {
             // Imported state may have changed since the editor opened.
             let rows = try context.fetch(FetchDescriptor<HighlightRecord>())
-            let matching = rows.filter { $0.highlightID == highlight.id }
-            let winner = HighlightSnapshot.winners(matching.map(HighlightSnapshot.init))[highlight.id]
-            let local = matching.filter { $0.installationID == installationID }.sorted { $0.recordID > $1.recordID }.first
-            let row = local ?? HighlightRecord(highlightID: highlight.id, installationID: installationID)
-            if local == nil {
-                context.insert(row)
+            for highlight in highlights {
+                let matching = rows.filter { $0.highlightID == highlight.id }
+                let winner = HighlightSnapshot.winners(matching.map(HighlightSnapshot.init))[highlight.id]
+                let local = matching.filter { $0.installationID == installationID }.sorted { $0.recordID > $1.recordID }.first
+                let row = local ?? HighlightRecord(highlightID: highlight.id, installationID: installationID)
+                if local == nil {
+                    context.insert(row)
+                }
+                var value = highlight
+                value.modifiedAt = max(now, (winner?.modifiedAt ?? .distantPast).addingTimeInterval(0.001))
+                value.note = value.note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "" : value.note
+                row.payload = try JSONEncoder().encode(value)
+                row.modifiedAt = value.modifiedAt
+                row.isTombstone = deleted
             }
-            var value = highlight
-            value.modifiedAt = max(now, (winner?.modifiedAt ?? .distantPast).addingTimeInterval(0.001))
-            value.note = value.note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "" : value.note
-            row.payload = try JSONEncoder().encode(value)
-            row.modifiedAt = value.modifiedAt
-            row.isTombstone = deleted
             try saveContext(context)
             try receive(context.fetch(FetchDescriptor<HighlightRecord>()).map(HighlightSnapshot.init))
         } catch {

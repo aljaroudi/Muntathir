@@ -111,7 +111,6 @@ struct HadithView: View {
                                     }
                                     .accessibilityIdentifier("hadith-book-\(book.id)")
                                     .tint(.primary)
-                                    .readingRowBackground()
                                     .modifier(HadithListAnchor(id: "book:" + book.id, visibleRows: $visibleRows))
                                     .id("book:" + book.id)
                                 }
@@ -123,7 +122,6 @@ struct HadithView: View {
                     Section("Introduction") {
                         ForEach(introductions) { introduction in
                             HadithIntroductionRow(introduction: introduction, reader: reader)
-                                .readingRowBackground()
                                 .modifier(HadithListAnchor(id: "introduction:\(introduction.id)", visibleRows: $visibleRows))
                                 .id("introduction:\(introduction.id)")
                         }
@@ -292,9 +290,8 @@ struct HadithView: View {
         }
     }
 
-    @ViewBuilder private var toolbarActions: some View {
+    private var toolbarActions: some View {
         HadithTranslationPicker()
-        ReadingBackgroundPicker()
     }
 
     @ViewBuilder private var chapterResults: some View {
@@ -328,7 +325,6 @@ struct HadithView: View {
                         .foregroundStyle(.primary)
                     }
                     .tint(.primary)
-                    .readingRowBackground()
                     .accessibilityIdentifier("hadith-chapter-\(chapter.id)")
                     .modifier(HadithListAnchor(id: "chapter:\(chapter.bookID):\(chapter.index)", visibleRows: $visibleRows))
                     .id("chapter:\(chapter.bookID):\(chapter.index)")
@@ -495,7 +491,6 @@ struct HadithView: View {
                         .foregroundStyle(.primary)
                 }
                 .tint(.primary)
-                .readingRowBackground()
                 .contextMenu {
                     Button("Open", systemImage: "arrow.up.forward") {
                         searchFocused = false

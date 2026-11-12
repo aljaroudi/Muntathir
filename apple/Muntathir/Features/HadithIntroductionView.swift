@@ -63,7 +63,6 @@ struct HadithIntroductionView: View {
         .toolbar {
             Menu {
                 HadithTranslationPicker()
-                ReadingBackgroundPicker()
                 ReadingSizeMenu(isPresented: $textSizePresented)
             } label: {
                 Label("Reading options", systemImage: "textformat")

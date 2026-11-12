@@ -12,6 +12,21 @@ import Testing
         return ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
     }
 
+    @Test func multiVerseHighlightsSaveTogetherAndRejectInvalidBatches() throws {
+        let store = QuranUserStore(configuration: configuration(), installationID: "A")
+        let first = ReadingHighlight(source: "1:1", isHadith: false, excerpt: "first", reference: "1:1", color: .green, note: "Shared note")
+        let second = ReadingHighlight(source: "1:2", isHadith: false, excerpt: "second", reference: "1:2", color: .green, note: "Shared note")
+        try store.save([first, second])
+        #expect(store.highlights.count == 2)
+        #expect(store.highlights.allSatisfy { $0.color == .green && $0.note == "Shared note" })
+        var invalid = second
+        invalid.source = ""
+        var changed = first
+        changed.note = "Must not save"
+        #expect(throws: QuranUserStoreError.self) { try store.save([changed, invalid]) }
+        #expect(store.highlights.first { $0.id == first.id }?.note == "Shared note")
+    }
+
     @Test func installationIdentityPersistsAndIsExcludedFromBackups() throws {
         let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: directory) }

@@ -62,6 +62,12 @@ actor RakaatCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         if camera.isExposureModeSupported(.continuousAutoExposure) {
             camera.exposureMode = .continuousAutoExposure
         }
+        if camera.isWhiteBalanceModeSupported(.continuousAutoWhiteBalance) {
+            camera.whiteBalanceMode = .continuousAutoWhiteBalance
+        }
+        if camera.isFocusModeSupported(.continuousAutoFocus) {
+            camera.focusMode = .continuousAutoFocus
+        }
         if camera.activeFormat.videoSupportedFrameRateRanges.contains(where: { $0.minFrameRate <= 10 && $0.maxFrameRate >= 10 }) {
             camera.activeVideoMinFrameDuration = CMTime(value: 1, timescale: 10)
             camera.activeVideoMaxFrameDuration = CMTime(value: 1, timescale: 10)
@@ -129,27 +135,39 @@ actor RakaatCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
             finish()
             return
         }
+        let source = CIImage(cvPixelBuffer: buffer).oriented(.leftMirrored)
+        let preview = context.createCGImage(source, from: source.extent)
         if !exposureLocked, let device {
-            // Exposure compensation would otherwise erase the shadow we are measuring.
-            guard !device.isAdjustingExposure else { publish(preview: nil); return }
+            // Keep the preview live while the camera settles, before measuring the baseline.
+            guard !device.isAdjustingExposure, !device.isAdjustingWhiteBalance, !device.isAdjustingFocus else {
+                publish(preview: preview)
+                return
+            }
             do {
                 try device.lockForConfiguration()
-                if device.isExposureModeSupported(.locked) {
-                    device.exposureMode = .locked
+                defer { device.unlockForConfiguration() }
+                guard device.isExposureModeSupported(.locked) else { finish(); return }
+                // Exposure compensation would otherwise erase the shadow we are measuring.
+                device.exposureMode = .locked
+                if device.isWhiteBalanceModeSupported(.locked) {
+                    device.whiteBalanceMode = .locked
                 }
-                device.unlockForConfiguration()
+                if device.isFocusModeSupported(.locked) {
+                    device.focusMode = .locked
+                }
+                guard device.exposureMode == .locked else { finish(); return }
                 exposureLocked = true
             } catch { finish(); return }
+            // This frame predates the lock. Start baseline sampling with the next frame.
+            publish(preview: preview)
+            return
         }
+        guard exposureLocked else { finish(); return }
         detector.sample(light, at: time)
         if detector.baseline != nil {
             preparationTimeout?.cancel()
             preparationTimeout = nil
         }
-        let source = CIImage(cvPixelBuffer: buffer).oriented(.leftMirrored)
-        let tiny = source.transformed(by: CGAffineTransform(scaleX: 24 / source.extent.width, y: 24 / source.extent.width))
-        let blurred = tiny.clampedToExtent().applyingFilter("CIGaussianBlur", parameters: [kCIInputRadiusKey: 4]).cropped(to: tiny.extent)
-        let preview = detector.complete ? nil : context.createCGImage(blurred, from: tiny.extent)
         publish(preview: preview)
         if detector.complete {
             // Finish the callback before the consumer stops the capture session.

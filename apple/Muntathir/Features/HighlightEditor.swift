@@ -27,6 +27,7 @@ struct HighlightEditor: View {
     @Environment(\.dismiss) private var dismiss
     let original: ReadingHighlight
     let existing: Bool
+    let additionalHighlights: [ReadingHighlight]
     // A draft is seeded once when the editor opens; incoming sync never replaces unsaved typing.
     @State private var draft: ReadingHighlight
     @State private var discard = false
@@ -36,7 +37,8 @@ struct HighlightEditor: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     @FocusState private var noteFocused: Bool
 
-    init(highlight: ReadingHighlight, existing: Bool = false) {
+    init(highlight: ReadingHighlight, existing: Bool = false, additionalHighlights: [ReadingHighlight] = []) {
+        self.additionalHighlights = additionalHighlights
         original = highlight
         self.existing = existing
         _draft = State(initialValue: highlight)
@@ -150,7 +152,13 @@ struct HighlightEditor: View {
             if deleting {
                 try store.delete(original)
             } else {
-                try store.save(draft)
+                let additional = additionalHighlights.map { highlight in
+                    var value = highlight
+                    value.color = draft.color
+                    value.note = draft.note
+                    return value
+                }
+                try store.save([draft] + additional)
             }
             dismiss()
         } catch { failed = true }

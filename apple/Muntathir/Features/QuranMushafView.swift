@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 struct QuranMushafView: View {
     @Environment(\.locale) private var locale
@@ -17,7 +16,7 @@ struct QuranMushafView: View {
     @State private var initialized = false
     @State private var current: Int?
     @State private var visiblePage: QuranPage?
-    @State private var selected: Ayah?
+    @State private var reportedInitialPage = false
 
     var body: some View {
         Group {
@@ -28,12 +27,12 @@ struct QuranMushafView: View {
                         LazyHStack(spacing: 0) {
                             // Reverse page order without reversing the scroll position's coordinate system.
                             ForEach((1 ... QuranPage.count).reversed(), id: \.self) { number in
-                                QuranPageView(number: number, reader: reader, revision: translationStore.revision, surahs: surahs, selected: selected?.id, active: number == current) { page in
+                                QuranPageView(number: number, reader: reader, revision: translationStore.revision, surahs: surahs, highlight: highlight, active: number == current) { page in
                                     if number == current {
                                         visiblePage = page
                                         reportPosition(page)
                                     }
-                                } select: { selected = $0; positionChanged($0.surah, $0.number) }
+                                } select: { positionChanged($0.surah, $0.number) }
                                     .environment(\.layoutDirection, .rightToLeft)
                                     .frame(width: viewport.size.width, height: height)
                                     .id(number)
@@ -69,7 +68,6 @@ struct QuranMushafView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     QuranReadingModePicker()
-                    ReadingBackgroundPicker()
                     QuranTranslationPicker()
                 } label: {
                     Label("Reading options", systemImage: "textformat")
@@ -96,15 +94,17 @@ struct QuranMushafView: View {
                 initializationFailed = true
                 return
             }
-            if let highlight, let reference = try? QuranSearchText.reference(highlight.source),
-               let ayah = try? await reader.verses(references: ["\(reference.surah):\(reference.verse)"]).first
-            {
-                selected = ayah
-            }
         }
     }
 
     private func reportPosition(_ page: QuranPage) {
+        if !reportedInitialPage {
+            reportedInitialPage = true
+            if let verse = page.verses.values.first(where: { $0.surah == surah.id && $0.number == initialVerse }) {
+                positionChanged(verse.surah, verse.number)
+                return
+            }
+        }
         if let verse = page.verses.min(by: { $0.key < $1.key })?.value {
             positionChanged(verse.surah, verse.number)
         }
@@ -123,42 +123,23 @@ private struct QuranPageView: View {
     let reader: QuranReader
     let revision: Int
     let surahs: [QuranSurah]
-    let selected: String?
+    let highlight: ReadingHighlight?
     let active: Bool
     let loaded: (QuranPage) -> Void
     let select: (Ayah) -> Void
-    @Environment(\.quranUserStore) private var store
-    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiate
-    @State private var actions = VerseActionState()
     @State private var page: QuranPage?
-    @State private var referenceLineWidth: CGFloat = 0
     @State private var failed = false
     @State private var retry = 0
-
-    static let font = "KFGQPCHAFSUthmanicScript-Regula"
-    static let referenceFontSize: CGFloat = 100
-    static let basmala = "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ"
 
     var body: some View {
         Group {
             if let page {
-                GeometryReader { geometry in
-                    let width = max(1, geometry.size.width - 32)
-                    let lineHeight = max(1, (geometry.size.height - 56) / 15)
-                    let size = fontSize(width: width, lineHeight: lineHeight)
-                    let colors = highlightColors(page)
-                    VStack(spacing: 0) {
-                        VStack(spacing: 0) {
-                            ForEach(page.lines) { line in
-                                row(line, page: page, size: size, colors: colors)
-                                    .frame(width: width, height: lineHeight)
-                            }
-                        }
-                        .frame(maxHeight: .infinity)
-                        footer(page)
-                    }
-                    .padding(.horizontal, 16)
+                VStack(spacing: 0) {
+                    QuranPageReader(page: page, surahs: surahs, highlight: highlight, select: select)
+                    footer(page)
                 }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
             } else if failed {
                 ContentUnavailableView {
                     Label("Unable to load Quran", systemImage: "exclamationmark.triangle")
@@ -174,7 +155,6 @@ private struct QuranPageView: View {
             do {
                 let loaded = try await reader.page(number)
                 try Task.checkCancellation()
-                referenceLineWidth = measureLineWidth(loaded)
                 page = loaded
                 self.loaded(loaded)
             } catch is CancellationError {
@@ -189,64 +169,8 @@ private struct QuranPageView: View {
                 loaded(page)
             }
         }
-        .modifier(VerseActionPresentation(actions: actions))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("quran-page-\(number)")
-    }
-
-    @ViewBuilder private func row(_ line: QuranPage.Line, page: QuranPage, size: CGFloat, colors: [String: Color]) -> some View {
-        switch line.kind {
-        case .surahName:
-            let name = surahs.first { $0.id == line.surah }?.arabic ?? ""
-            Text(verbatim: "سُورَةُ " + name)
-                .font(.custom(Self.font, fixedSize: size))
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(RoundedRectangle(cornerRadius: 6).strokeBorder(.secondary, lineWidth: 1).padding(.vertical, 2))
-                .accessibilityAddTraits(.isHeader)
-        case .basmallah:
-            Text(verbatim: Self.basmala).font(.custom(Self.font, fixedSize: size))
-        case .ayah:
-            JustifiedLine(justified: !line.centered, spacing: size * 0.25) {
-                ForEach(line.words) { word in
-                    wordView(word, page: page, size: size, colors: colors)
-                }
-            }
-            .environment(\.layoutDirection, .leftToRight)
-        }
-    }
-
-    private func highlightColors(_ page: QuranPage) -> [String: Color] {
-        let ids = Set(page.verses.values.map(\.id))
-        var latest: [String: ReadingHighlight] = [:]
-        for highlight in store?.highlights ?? [] where !highlight.isHadith && ids.contains(highlight.source) {
-            if latest[highlight.source].map({ $0.modifiedAt < highlight.modifiedAt }) ?? true {
-                latest[highlight.source] = highlight
-            }
-        }
-        return latest.mapValues { $0.color.color }
-    }
-
-    @ViewBuilder private func wordView(_ word: QuranPage.Word, page: QuranPage, size: CGFloat, colors: [String: Color]) -> some View {
-        if let ayah = page.verses[word.index] {
-            wordButton(word, ayah: ayah, color: colors[ayah.id], size: size)
-                .contextMenu { VerseActionMenu(ayah: ayah, translation: nil, actions: actions) }
-        }
-    }
-
-    private func wordButton(_ word: QuranPage.Word, ayah: Ayah, color: Color?, size: CGFloat) -> some View {
-        Button {
-            select(ayah)
-        } label: {
-            Text(verbatim: word.text)
-                .font(.custom(Self.font, fixedSize: size))
-                .foregroundStyle(.primary)
-                .fixedSize()
-                .background(ayah.id == selected ? Color.accentColor.opacity(0.25) : color?.opacity(0.3) ?? .clear)
-                .underline(differentiate && color != nil)
-        }
-        .buttonStyle(.plain)
-        .accessibilityHint(Text("Verse \(QuranReference.display(ayah.id, locale: locale))"))
-        .accessibilityIdentifier(word.word == 1 ? "quran-verse-\(ayah.id)" : "")
     }
 
     private func footer(_ page: QuranPage) -> some View {
@@ -264,50 +188,5 @@ private struct QuranPageView: View {
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .foregroundStyle(.secondary)
         .frame(height: 40)
-    }
-
-    /// The largest size at which the widest justified line still fits.
-    private func fontSize(width: CGFloat, lineHeight: CGFloat) -> CGFloat {
-        let fit = referenceLineWidth > 0 ? Self.referenceFontSize * width / referenceLineWidth : lineHeight * 0.55
-        return min(fit, lineHeight * 0.6)
-    }
-
-    private func measureLineWidth(_ page: QuranPage) -> CGFloat {
-        let font = UIFont(name: Self.font, size: Self.referenceFontSize) ?? .systemFont(ofSize: Self.referenceFontSize)
-        let space = (" " as NSString).size(withAttributes: [.font: font]).width
-        return page.lines.filter { $0.kind == .ayah }.map { line in
-            let gap = line.centered ? Self.referenceFontSize * 0.25 : space
-            return line.words.reduce(0) { $0 + ($1.text as NSString).size(withAttributes: [.font: font]).width } + gap * CGFloat(max(0, line.words.count - 1))
-        }.max() ?? 0
-    }
-}
-
-/// Lays words out right to left, spreading the leftover width between them unless centered.
-private struct JustifiedLine: Layout {
-    let justified: Bool
-    let spacing: CGFloat
-
-    func makeCache(subviews: Subviews) -> [CGSize] {
-        subviews.map { $0.sizeThatFits(.unspecified) }
-    }
-
-    func updateCache(_ cache: inout [CGSize], subviews: Subviews) {
-        cache = makeCache(subviews: subviews)
-    }
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews _: Subviews, cache sizes: inout [CGSize]) -> CGSize {
-        CGSize(width: proposal.width ?? sizes.reduce(0) { $0 + $1.width }, height: sizes.map(\.height).max() ?? 0)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal _: ProposedViewSize, subviews: Subviews, cache sizes: inout [CGSize]) {
-        let total = sizes.reduce(0) { $0 + $1.width }
-        let gap = justified && subviews.count > 1 ? max(0, bounds.width - total) / CGFloat(subviews.count - 1) : spacing
-        let used = total + gap * CGFloat(max(0, subviews.count - 1))
-        var x = justified ? bounds.maxX : bounds.midX + used / 2
-        for (subview, size) in zip(subviews, sizes) {
-            x -= size.width
-            subview.place(at: CGPoint(x: x, y: bounds.midY - size.height / 2), proposal: ProposedViewSize(size))
-            x -= gap
-        }
     }
 }

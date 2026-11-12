@@ -26,7 +26,6 @@ struct QuranView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         QuranTranslationPicker()
-                        ReadingBackgroundPicker()
                     } label: {
                         Label("Reading options", systemImage: "textformat")
                     }.accessibilityIdentifier("quran-reading-options")

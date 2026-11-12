@@ -85,7 +85,6 @@ struct SupplicationsView: View {
                                     }
                                     .padding(.vertical, 4)
                                 }
-                                .readingRowBackground()
                                 .accessibilityIdentifier(prayer.collectionID == Hadith.supplicationCollectionID ? "supplication-\(prayer.number - 1)" : "supplication-\(prayer.source?.key ?? String(prayer.id))")
                             }
                         }
@@ -101,7 +100,6 @@ struct SupplicationsView: View {
         .toolbar {
             Menu {
                 SupplicationTranslationPicker(languages: languages)
-                ReadingBackgroundPicker()
             } label: {
                 Label("Reading options", systemImage: "textformat")
             }

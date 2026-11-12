@@ -154,7 +154,6 @@ struct HadithActions: View {
             } else {
                 HadithTranslationPicker()
             }
-            ReadingBackgroundPicker()
             ReadingSizeMenu(isPresented: $textSizePresented)
             BookmarkButton(source: narration.source?.key ?? "", isHadith: true, excerpt: content.body, reference: content.reference, failed: $bookmarkFailed)
         } label: {
