@@ -28,6 +28,32 @@
       }
     },
     {
+      "id": "naked-eye-middle-east-1448-06",
+      "revision": 1,
+      "method": "nakedEye",
+      "sourceID": "naked-eye-middle-east",
+      "coverage": {
+        "countries": [
+          "SA",
+          "KW",
+          "BH",
+          "OM",
+          "AE",
+          "QA"
+        ],
+        "polygons": []
+      },
+      "month": {
+        "year": 1448,
+        "month": 6
+      },
+      "start": {
+        "year": 2026,
+        "month": 11,
+        "day": 12
+      }
+    },
+    {
       "id": "government-SA-1448-05",
       "revision": 1,
       "method": "government",
