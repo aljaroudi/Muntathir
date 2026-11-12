@@ -1,8 +1,33 @@
 import CoreGraphics
 @testable import Muntathir
+import RealityKit
 import Testing
 
 struct TasbihSessionTests {
+    @MainActor @Test func beadLayersStayAlignedAcrossDepthTransitions() {
+        let scene = TasbihBeadScene()
+        let rear = scene.rearRoot.children.compactMap { $0 as? ModelEntity }
+        let front = scene.frontRoot.children.compactMap { $0 as? ModelEntity }
+        #expect(rear.count == 193)
+        #expect(front.count == rear.count)
+        for phase: Float in [0, 0.25, 0.5, 1, 16.5, 33, 100] {
+            scene.update(phase: phase, animated: false)
+            for (back, near) in zip(rear, front) {
+                #expect(back.position == near.position)
+                let backOpacity = back.components[OpacityComponent.self]?.opacity ?? -1
+                let frontOpacity = near.components[OpacityComponent.self]?.opacity ?? -1
+                #expect(abs(frontOpacity + backOpacity * (1 - frontOpacity) - 1) < 0.0001)
+                if near.position.z >= 0.12 {
+                    #expect(frontOpacity == 1)
+                } else if near.position.z <= -0.12 {
+                    #expect(backOpacity == 1)
+                } else {
+                    #expect(frontOpacity > 0 && backOpacity > 0)
+                }
+            }
+        }
+    }
+
     @Test func countsTheThreePhrasesAndStops() {
         var session = TasbihSession()
         var total = 0

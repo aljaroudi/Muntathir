@@ -5,26 +5,21 @@ struct TasbihView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.scenePhase) private var scenePhase
+    @AppStorage("tasbihSwipeHintSeen") private var swipeHintSeen = false
     @State private var session = TasbihSession()
     @State private var beads = TasbihBeadScene()
     @State private var pull: Float = 0
     @State private var settling = false
     @State private var confirmingReset = false
+    @State private var showingSwipeHint = false
     @GestureState private var dragging = false
 
     var body: some View {
         GeometryReader { geometry in
             ScrollView {
                 VStack(spacing: 16) {
-                    Text(verbatim: session.phrase)
-                        .font(.largeTitle)
-                        .multilineTextAlignment(.center)
-                        .accessibilityIdentifier("tasbih-phrase")
-                    Text("\(session.count) / \(session.target)")
-                        .font(.title2.monospacedDigit())
-                        .accessibilityIdentifier("tasbih-count")
                     beadView
-                        .frame(height: max(240, min(480, geometry.size.height - (dynamicTypeSize.isAccessibilitySize ? 360 : 240))))
+                        .frame(height: max(320, min(640, geometry.size.height - (dynamicTypeSize.isAccessibilitySize ? 200 : 120))))
                     if session.complete {
                         Label("Count complete", systemImage: "checkmark.circle.fill")
                             .foregroundStyle(.tint)
@@ -32,10 +27,6 @@ struct TasbihView: View {
                         Button("Restart", action: reset)
                             .buttonStyle(.borderedProminent)
                             .accessibilityIdentifier("tasbih-restart")
-                    } else {
-                        Text("Pull a bead down to count")
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
                     }
                     Text("\(session.total) / \(100)")
                         .font(.footnote.monospacedDigit())
@@ -48,7 +39,7 @@ struct TasbihView: View {
             }
         }
         .background(Color(.systemGroupedBackground))
-        .navigationTitle("Tasbih")
+        .navigationTitle(Text("\(session.count) / \(session.target)"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -62,6 +53,13 @@ struct TasbihView: View {
             Button("Cancel", role: .cancel) {}
         }
         .sensoryFeedback(.impact(weight: .light), trigger: session.total) { old, new in new > old }
+        .task {
+            guard !swipeHintSeen else { return }
+            showingSwipeHint = true
+            swipeHintSeen = true
+            do { try await Task.sleep(for: .seconds(4)) } catch { return }
+            showingSwipeHint = false
+        }
         .task(id: settling) {
             guard settling else { return }
             do { try await Task.sleep(for: .milliseconds(220)) } catch { return }
@@ -77,17 +75,24 @@ struct TasbihView: View {
                 pull = 0; settling = false
             }
         }
-        .onDisappear { reset() }
+        .onDisappear {
+            showingSwipeHint = false
+            reset()
+        }
     }
 
     private var beadView: some View {
-        RealityView { content in
-            content.camera = .virtual
-            content.add(beads.root)
-        } update: { _ in
-            beads.update(phase: Float(session.total) + (reduceMotion ? 0 : pull), animated: settling && !reduceMotion)
+        ZStack {
+            beadLayer(beads.rearRoot)
+                .blur(radius: 3)
+            Text(verbatim: session.phrase)
+                .font(.largeTitle)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 16)
+                .accessibilityIdentifier("tasbih-phrase")
+            beadLayer(beads.frontRoot)
         }
-        .allowsHitTesting(false)
+        .clipped()
         .overlay {
             Color.clear
                 .contentShape(.rect)
@@ -102,21 +107,58 @@ struct TasbihView: View {
                             guard !settling, !session.complete else { return }
                             if TasbihSession.acceptsPull(value.translation) {
                                 session.advance()
+                                showingSwipeHint = false
                             }
                             settle()
                         }
                 )
+                .accessibilityLabel("Count one bead")
+                .accessibilityHint("Pull a bead down to count")
+                .accessibilityValue(Text("\(session.phrase) \(session.count) / \(session.target)"))
+                .accessibilityAddTraits(.isButton)
+                .accessibilityAction {
+                    guard !settling, !session.complete else { return }
+                    session.advance()
+                    showingSwipeHint = false
+                    settle()
+                }
+                .accessibilityIdentifier("tasbih-beads")
         }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Count one bead")
-        .accessibilityValue(Text("\(session.phrase) \(session.count) / \(session.target)"))
-        .accessibilityAddTraits(.isButton)
-        .accessibilityAction {
-            guard !settling, !session.complete else { return }
-            session.advance()
-            settle()
+        .overlay {
+            if showingSwipeHint {
+                GeometryReader { geometry in
+                    Image(systemName: "hand.draw.fill")
+                        .font(.system(size: 32))
+                        .foregroundStyle(.primary)
+                        .padding(12)
+                        .background(.regularMaterial, in: .circle)
+                        .keyframeAnimator(initialValue: CGFloat.zero, repeating: !reduceMotion) { content, offset in
+                            content.offset(y: offset)
+                        } keyframes: { _ in
+                            CubicKeyframe(56, duration: 1.3)
+                            LinearKeyframe(56, duration: 0.3)
+                            MoveKeyframe(0)
+                            LinearKeyframe(0, duration: 0.4)
+                        }
+                        .position(x: geometry.size.width / 2 + geometry.size.height * 0.11, y: geometry.size.height * 0.35)
+                        .accessibilityLabel("Pull a bead down to count")
+                        .accessibilityIdentifier("tasbih-swipe-hint")
+                }
+                .allowsHitTesting(false)
+            }
         }
-        .accessibilityIdentifier("tasbih-beads")
+        .accessibilityElement(children: .contain)
+    }
+
+    private func beadLayer(_ root: Entity) -> some View {
+        RealityView { content in
+            content.camera = .virtual
+            content.add(root)
+        } update: { _ in
+            beads.update(phase: Float(session.total) + (reduceMotion ? 0 : pull), animated: settling && !reduceMotion)
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 
     private func settle() {

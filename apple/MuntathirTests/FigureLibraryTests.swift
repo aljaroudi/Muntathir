@@ -104,14 +104,16 @@ struct FigureLibraryTests {
         #expect(sections.map { $0.figures.map(\.id) } == [
             [
                 "prophet-muhammad", "ali-ibn-abi-talib", "fatima-al-zahra", "hasan-ibn-ali",
-                "husayn-ibn-ali", "ali-zayn-al-abidin",
+                "husayn-ibn-ali", "ali-zayn-al-abidin", "muhammad-al-baqir", "jafar-al-sadiq",
+                "musa-al-kadhim", "muhammad-al-jawad", "ali-al-hadi", "hasan-al-askari", "muhammad-al-mahdi",
             ],
-            ["zaynab-bint-ali", "abbas-ibn-ali", "ali-al-akbar"],
+            ["zaynab-bint-ali", "abbas-ibn-ali", "ali-al-akbar", "fatima-al-masuma"],
             ["prophet-ibrahim", "prophet-isa", "prophet-musa"],
             [
                 "abd-al-muttalib", "abdullah-ibn-abd-al-muttalib", "amina-bint-wahb", "abu-talib",
                 "khadija-bint-khuwaylid", "hamza-ibn-abd-al-muttalib", "umm-kulthum-bint-ali", "umm-al-banin",
-                "ruqayya-bint-al-husayn", "muslim-ibn-aqil",
+                "ruqayya-bint-al-husayn", "sukayna-bint-al-husayn", "qasim-ibn-al-hasan", "qasim-ibn-al-kadhim",
+                "muslim-ibn-aqil",
             ],
             ["salman-al-muhammadi", "abu-dharr-al-ghifari", "miqdad-ibn-al-aswad", "ammar-ibn-yasir"],
             ["hani-ibn-urwa", "jabir-ibn-abdullah"],
