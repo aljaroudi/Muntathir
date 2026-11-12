@@ -533,8 +533,10 @@ extension HadithUITests {
         book.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
         let introduction = app.buttons["hadith-introduction-1"]
         XCTAssertTrue(introduction.waitForExistence(timeout: 10))
+        XCTAssertEqual(introduction.label, "Introduction")
         introduction.tap()
         XCTAssertTrue(app.navigationBars["Introduction"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Test introduction"].exists)
         XCTAssertFalse(app.buttons["hadith-bookmark"].exists)
         XCTAssertFalse(app.buttons["hadith-next"].exists)
         app.navigationBars.buttons.element(boundBy: 0).tap()
