@@ -240,7 +240,7 @@ struct HadithView: View {
         .autocorrectionDisabled()
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Menu { toolbarActions } label: {
+                Menu { HadithTranslationPicker() } label: {
                     Label("Hadith actions", systemImage: "ellipsis.circle")
                 }
                 .accessibilityIdentifier("hadith-library-menu")
@@ -288,10 +288,6 @@ struct HadithView: View {
                 session?.state.listOffset = listOffset
             }
         }
-    }
-
-    private var toolbarActions: some View {
-        HadithTranslationPicker()
     }
 
     @ViewBuilder private var chapterResults: some View {

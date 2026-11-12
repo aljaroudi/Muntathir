@@ -44,6 +44,20 @@ struct QuranPageTextTests {
         }
     }
 
+    @Test func highlightEligibilityRequiresSelectedVerseText() throws {
+        let content = try QuranPageText(page: database.page(1), surahs: QuranSurah.load())
+        let word = try #require(content.words.first { $0.canonical != nil })
+        let marker = try #require(content.words.first { $0.canonical == nil })
+        let heading = try #require(content.lines.first { $0.kind == .surahName })
+        #expect(!content.canHighlight([]))
+        #expect(!content.canHighlight([heading.range]))
+        #expect(!content.canHighlight([marker.display]))
+        #expect(!content.canHighlight([NSRange(location: NSMaxRange(word.display), length: 1)]))
+        #expect(content.canHighlight([word.display]))
+        #expect(content.canHighlight([heading.range, word.display, marker.display]))
+        #expect(content.canHighlight([NSRange(location: word.display.location, length: 1)]))
+    }
+
     @Test func disjointWordsDoNotHighlightTheWordBetweenThem() throws {
         let content = try QuranPageText(page: database.page(1), surahs: [])
         let words = content.words.filter { $0.source == "1:1" && $0.canonical != nil }

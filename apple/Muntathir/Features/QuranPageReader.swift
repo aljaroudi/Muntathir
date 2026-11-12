@@ -55,7 +55,7 @@ struct QuranPageReader: View {
                     if let source = content.sources(in: [range]).first, let ayah = content.verses[source] {
                         select(ayah)
                     }
-                }, canHighlight: { !content.highlights(in: $0).isEmpty }
+                }, canHighlight: content.canHighlight
             )
             .frame(width: geometry.size.width, height: lineHeight * CGFloat(content.lines.count))
             .frame(maxHeight: .infinity)

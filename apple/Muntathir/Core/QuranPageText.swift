@@ -73,6 +73,12 @@ struct QuranPageText {
             .map(\.source).filter { seen.insert($0).inserted }
     }
 
+    func canHighlight(_ selection: [NSRange]) -> Bool {
+        words.contains { word in
+            word.canonical != nil && selection.contains { NSIntersectionRange(word.display, $0).length > 0 }
+        }
+    }
+
     func highlights(in selection: [NSRange]) -> [ReadingHighlight] {
         sources(in: selection).compactMap { source in
             guard let verse = verses[source] else { return nil }
@@ -125,12 +131,12 @@ struct QuranPageText {
     }
 
     /// Merge adjacent selected words, including their whitespace, without filling unselected words.
-    private static func merged(_ ranges: [NSRange], bridging words: [NSRange]? = nil) -> [NSRange] {
+    private static func merged(_ ranges: [NSRange], bridging words: [NSRange]) -> [NSRange] {
         var result: [NSRange] = []
         for range in ranges.sorted(by: { $0.location < $1.location }) {
             if let last = result.last {
                 let gap = NSRange(location: NSMaxRange(last), length: max(0, range.location - NSMaxRange(last)))
-                let containsWord = words?.contains { NSIntersectionRange($0, gap).length > 0 } ?? false
+                let containsWord = words.contains { NSIntersectionRange($0, gap).length > 0 }
                 if !containsWord {
                     result[result.count - 1] = NSUnionRange(last, range)
                     continue
