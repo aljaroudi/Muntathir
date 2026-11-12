@@ -21,10 +21,10 @@ final class TodayInfoCardsUITests: XCTestCase {
                 XCTAssertLessThan(prayers.frame.maxX, ayah.frame.minX)
             }
             if language == "en" {
-                app.buttons["Settings"].tap()
+                app.openSettingsFromTools()
                 XCUIDevice.shared.orientation = .landscapeLeft
-                XCTAssertTrue(app.buttons["Done"].waitForExistence(timeout: 5))
-                app.buttons["Done"].tap()
+                XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
+                app.leaveSettings()
                 XCTAssertTrue(app.buttons["share-daily-ayah"].isHittable)
             }
             app.terminate()
@@ -51,7 +51,7 @@ final class TodayInfoCardsUITests: XCTestCase {
         add(capture)
         let temperature = app.staticTexts["weather-temperature"]
         let originalTemperature = temperature.label
-        app.buttons["Settings"].tap()
+        app.openSettingsFromTools()
         let toggle = app.switches["Show feels-like temperature"]
         for _ in 0 ..< 6 where !toggle.isHittable || toggle.frame.maxY > app.frame.maxY - 100 {
             app.swipeUp()
@@ -59,7 +59,7 @@ final class TodayInfoCardsUITests: XCTestCase {
         XCTAssertTrue(toggle.isHittable)
         toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
         XCTAssertEqual(toggle.value as? String, "1")
-        app.buttons["Done"].tap()
+        app.leaveSettings()
         for _ in 0 ..< 8 where !temperature.isHittable {
             app.swipeUp()
         }

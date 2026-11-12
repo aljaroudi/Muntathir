@@ -7,6 +7,9 @@ final class RakaatTrackerUITests: XCTestCase {
         app.launchArguments = ["--ui-testing", argument] + (arabic ? [] : ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]) + extraArguments
         app.launch()
         app.buttons[arabic ? "الأدوات" : "Tools"].firstMatch.tap()
+        for _ in 0 ..< 3 where !app.buttons["rakaat-tracker"].exists {
+            app.swipeUp()
+        }
         XCTAssertTrue(app.buttons["rakaat-tracker"].waitForExistence(timeout: 5))
         app.buttons["rakaat-tracker"].tap()
         XCTAssertTrue(app.buttons["rakaat-target-2"].waitForExistence(timeout: 5))
@@ -26,10 +29,28 @@ final class RakaatTrackerUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Rakaat Tracker"].exists)
         XCTAssertTrue(app.descendants(matching: .any)["rakaat-complete"].waitForExistence(timeout: 8))
         XCTAssertEqual(app.staticTexts["rakaat-count"].label, "3 rakaat")
+        app.buttons["rakaat-complete"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["tasbih-beads"].firstMatch.waitForExistence(timeout: 5))
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.buttons["rakaat-complete"].waitForExistence(timeout: 3))
+        XCTAssertEqual(app.staticTexts["rakaat-count"].label, "3 rakaat")
         XCTAssertFalse(app.buttons["End"].exists)
         XCTAssertFalse(app.buttons["New session"].exists)
         app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(app.buttons["rakaat-target-2"].waitForExistence(timeout: 2))
+    }
+
+    @MainActor func testArabicCompletionPushesTasbihWithLargeText() {
+        let app = open("--rakaat-demo", extraArguments: ["-AppleLanguages", "(ar)", "-AppleLocale", "ar_SA", "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
+        app.buttons["rakaat-target-2"].tap()
+        let start = app.buttons["rakaat-complete"]
+        XCTAssertTrue(start.waitForExistence(timeout: 10))
+        XCTAssertEqual(start.label, "ابدأ التسبيح")
+        XCTAssertTrue(start.isHittable)
+        start.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["tasbih-beads"].firstMatch.waitForExistence(timeout: 5))
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(start.waitForExistence(timeout: 3))
     }
 
     @MainActor func testBackDuringPreparationReturnsToSelection() {

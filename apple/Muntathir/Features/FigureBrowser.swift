@@ -1,6 +1,7 @@
 import SwiftUI
 
 enum FigureRoute: Hashable {
+    case tool(AppTool)
     case browser
     case profile(String)
     case tree(String)
@@ -84,6 +85,7 @@ extension View {
     func figureDestinations(hadithAssets: HadithAssetStore? = nil, supplicationAssets: HadithAssetStore? = nil) -> some View {
         navigationDestination(for: FigureRoute.self) { route in
             switch route {
+            case let .tool(tool): ToolDestination(tool: tool)
             case .browser: FigureBrowser()
             case let .profile(id): FigureDestination(id: id)
             case let .tree(id): FigureDestination(id: id, showsTree: true)

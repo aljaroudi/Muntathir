@@ -8,6 +8,13 @@ extension HighlightColor {
         case .blue: .blue
         case .pink: .pink
         case .purple: .purple
+        case .orange: .orange
+        case .red: .red
+        case .mint: .mint
+        case .teal: .teal
+        case .cyan: .cyan
+        case .indigo: .indigo
+        case .brown: .brown
         }
     }
 
@@ -18,6 +25,13 @@ extension HighlightColor {
         case .blue: String(localized: "Blue")
         case .pink: String(localized: "Pink")
         case .purple: String(localized: "Purple")
+        case .orange: String(localized: "Orange")
+        case .red: String(localized: "Red")
+        case .mint: String(localized: "Mint")
+        case .teal: String(localized: "Teal")
+        case .cyan: String(localized: "Cyan")
+        case .indigo: String(localized: "Indigo")
+        case .brown: String(localized: "Brown")
         }
     }
 }
@@ -30,11 +44,10 @@ struct HighlightEditor: View {
     let additionalHighlights: [ReadingHighlight]
     // A draft is seeded once when the editor opens; incoming sync never replaces unsaved typing.
     @State private var draft: ReadingHighlight
-    @State private var discard = false
     @State private var deleting = false
     @State private var failed = false
-    @State private var editingNote = false
-    @Environment(\.dynamicTypeSize) private var typeSize
+    @AppStorage("highlightColorCount") private var colorCount = HighlightPalette.defaultCount
+    @AppStorage("highlightColorOrder") private var colorOrder = HighlightPalette.defaultOrder
     @FocusState private var noteFocused: Bool
 
     init(highlight: ReadingHighlight, existing: Bool = false, additionalHighlights: [ReadingHighlight] = []) {
@@ -48,11 +61,11 @@ struct HighlightEditor: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    HStack(spacing: 12) {
-                        ForEach(HighlightColor.allCases, id: \.self) { color in
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 44), spacing: 12)], spacing: 12) {
+                        ForEach(HighlightPalette.colors(order: colorOrder, count: colorCount), id: \.self) { color in
                             Button {
                                 draft.color = color
-                                if !editingNote {
+                                if !noteFocused, draft.note == original.note {
                                     save()
                                 }
                             } label: {
@@ -60,7 +73,7 @@ struct HighlightEditor: View {
                                     .frame(width: 36, height: 36)
                                     .overlay {
                                         if draft.color == color {
-                                            Image(systemName: "checkmark").font(.body.bold()).foregroundStyle(.black)
+                                            Image(systemName: "checkmark").font(.body.bold()).foregroundStyle(color == .indigo || color == .brown || color == .blue || color == .purple ? .white : .black)
                                         }
                                     }
                                     .frame(minWidth: 44, minHeight: 44)
@@ -71,82 +84,66 @@ struct HighlightEditor: View {
                             .accessibilityIdentifier("highlight-color-\(color.rawValue)")
                         }
                     }
-                    if editingNote {
+                    ZStack(alignment: .topLeading) {
+                        if draft.note.isEmpty {
+                            Text("Add note")
+                                .foregroundStyle(.tertiary)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 8)
+                                .accessibilityHidden(true)
+                        }
                         TextEditor(text: $draft.note)
-                            .frame(minHeight: 140)
+                            .scrollContentBackground(.hidden)
+                            .frame(minHeight: 100)
                             .focused($noteFocused)
                             .accessibilityLabel("Highlight note")
                             .accessibilityIdentifier("highlight-note-editor")
-                    } else if !draft.note.isEmpty {
-                        Text(draft.note)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .textSelection(.enabled)
-                            .accessibilityIdentifier("highlight-note-preview")
                     }
-                    if !editingNote {
+                    if existing {
                         HStack {
-                            Button(draft.note.isEmpty ? "Add note" : "Edit note", systemImage: "square.and.pencil") {
-                                editingNote = true
-                                noteFocused = true
-                            }
-                            .labelStyle(.iconOnly)
-                            .frame(minWidth: 44, minHeight: 44)
-                            .accessibilityIdentifier("highlight-add-note")
+                            Button("Delete highlight", systemImage: "trash", role: .destructive) { deleting = true }
+                                .labelStyle(.iconOnly)
+                                .frame(minWidth: 44, minHeight: 44)
                             Spacer()
-                            if existing {
-                                Button("Delete highlight", systemImage: "trash", role: .destructive) { deleting = true }
-                                    .labelStyle(.iconOnly)
-                                    .frame(minWidth: 44, minHeight: 44)
-                            }
                         }
                     }
                 }
                 .padding(.horizontal, 24)
                 .padding(.vertical, 12)
             }
-            .navigationTitle(editingNote ? Text("Highlight note") : Text(verbatim: ""))
+            .navigationTitle(Text(verbatim: ""))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(editingNote || !existing ? "Cancel" : "Done") {
-                        noteFocused = false
-                        if draft != original {
-                            discard = true
-                        } else {
-                            dismiss()
-                        }
-                    }
-                }
-                if editingNote {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Save") { save() }.accessibilityIdentifier("save-highlight")
-                    }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(role: .confirm) { save() }
+                        .accessibilityIdentifier("save-highlight")
                 }
             }
-            .interactiveDismissDisabled(draft != original)
-            .confirmationDialog("Unsaved highlight", isPresented: $discard, titleVisibility: .visible) {
-                Button("Discard changes", role: .destructive) { dismiss() }
-                Button("Keep editing", role: .cancel) { noteFocused = editingNote }
-            }
+            .interactiveDismissDisabled(existing ? draft != original : !draft.note.isEmpty)
             .confirmationDialog("Delete this highlight?", isPresented: $deleting, titleVisibility: .visible) {
                 Button("Delete highlight", role: .destructive) { save(deleting: true) }
                 Button("Cancel", role: .cancel) {}
             }
-            .alert("Unable to save", isPresented: $failed) { Button("OK", role: .cancel) {} }
+            .alert("Unable to save", isPresented: $failed) {
+                Button("OK", role: .cancel) {}
+                Button("Discard changes", role: .destructive) { dismiss() }
+            }
             message: { Text("Your changes are still here. Please try saving again.") }
         }
-        .presentationDetents(detents)
+        .onAppear {
+            if !existing, let first = HighlightPalette.colors(order: colorOrder, count: colorCount).first {
+                draft.color = first
+            }
+        }
+        .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
     }
 
-    private var detents: Set<PresentationDetent> {
-        if editingNote || typeSize.isAccessibilitySize {
-            return [.medium, .large]
-        }
-        return draft.note.isEmpty ? [.height(220)] : [.height(320), .large]
-    }
-
     private func save(deleting: Bool = false) {
+        if existing, !deleting, draft == original {
+            dismiss()
+            return
+        }
         do {
             guard let store else { throw QuranUserStoreError.unavailable }
             if deleting {
@@ -162,27 +159,6 @@ struct HighlightEditor: View {
             }
             dismiss()
         } catch { failed = true }
-    }
-}
-
-struct HighlightActions: View {
-    let source: String
-    let isHadith: Bool
-    let excerpt: String
-    let reference: String
-    @Environment(\.quranUserStore) private var store
-    @Binding var editing: ReadingHighlight?
-    @Binding var bookmarkFailed: Bool
-
-    var body: some View {
-        BookmarkButton(source: source, isHadith: isHadith, excerpt: excerpt, reference: reference, failed: $bookmarkFailed)
-        ForEach(store?.highlights(for: source, isHadith: isHadith) ?? []) { highlight in
-            Button {
-                editing = highlight
-            } label: {
-                Label(String(localized: "Edit highlight") + " · " + highlight.color.title + " · " + String(highlight.excerpt.prefix(35)), systemImage: "pencil")
-            }
-        }
     }
 }
 

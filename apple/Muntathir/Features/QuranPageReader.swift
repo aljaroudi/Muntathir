@@ -33,9 +33,6 @@ struct QuranPageReader: View {
                     let drafts = content.highlights(in: selection)
                     additionalHighlights = Array(drafts.dropFirst())
                     editing = drafts.first
-                }, edit: { value in
-                    additionalHighlights = []
-                    editing = value
                 }, tap: { matches in
                     additionalHighlights = []
                     if matches.count == 1 {

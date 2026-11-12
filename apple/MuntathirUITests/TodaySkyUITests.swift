@@ -24,9 +24,9 @@ final class TodaySkyUITests: XCTestCase {
             screenshot.lifetime = .keepAlways
             add(screenshot)
             if phase == "Night" {
-                app.buttons["Settings"].tap()
+                app.openSettingsFromTools()
                 XCTAssertFalse(app.switches["Follow device tilt"].exists)
-                app.buttons["Done"].tap()
+                app.leaveSettings()
                 let share = app.buttons["share-daily-ayah"]
                 for _ in 0 ..< 5 where !share.isHittable {
                     app.swipeUp()

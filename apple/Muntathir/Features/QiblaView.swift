@@ -2,7 +2,6 @@ import MapKit
 import SwiftUI
 
 struct QiblaView: View {
-    var isCovered = false
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
     @State private var session = QiblaLocationSession()
@@ -17,7 +16,7 @@ struct QiblaView: View {
     }
 
     private var feedback: QiblaAlignment.Feedback {
-        guard visible, !isCovered, scenePhase == .active else { return .none }
+        guard visible, scenePhase == .active else { return .none }
         return alignment?.feedback(aligned: aligned) ?? .none
     }
 
@@ -96,7 +95,7 @@ struct QiblaView: View {
                 while !Task.isCancelled {
                     generator.prepare()
                     do { try await Task.sleep(for: .seconds(pulse.interval)) } catch { return }
-                    guard !Task.isCancelled, visible, !isCovered, scenePhase == .active else { return }
+                    guard !Task.isCancelled, visible, scenePhase == .active else { return }
                     generator.impactOccurred(intensity: pulse.intensity)
                 }
             }
@@ -104,7 +103,6 @@ struct QiblaView: View {
         .onAppear { visible = true; updateSession() }
         .onDisappear { visible = false; session.stop() }
         .onChange(of: scenePhase) { updateSession() }
-        .onChange(of: isCovered) { updateSession() }
         .task {
             while !Task.isCancelled {
                 do { try await Task.sleep(for: .seconds(1)) } catch { return }
@@ -142,7 +140,7 @@ struct QiblaView: View {
     }
 
     private func updateSession() {
-        if visible, !isCovered, scenePhase == .active {
+        if visible, scenePhase == .active {
             session.start()
         } else {
             session.stop()

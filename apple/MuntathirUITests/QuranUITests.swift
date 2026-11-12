@@ -355,7 +355,7 @@ final class QuranUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.buttons["settings"].firstMatch.tap()
+        app.openSettingsFromTools()
         app.buttons["settings-downloads"].tap()
         XCTAssertTrue(app.buttons["downloads-actions"].waitForExistence(timeout: 10))
         XCTAssertFalse(app.buttons["downloads-remove-hadith"].exists)

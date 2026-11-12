@@ -160,10 +160,14 @@ struct RakaatSessionView: View {
                     count
                         .shadow(color: .black.opacity(0.6), radius: 8)
                     if update?.complete == true {
-                        Label("Count complete", systemImage: "checkmark.circle")
-                            .font(.headline)
-                            .labelStyle(.iconOnly)
-                            .accessibilityIdentifier("rakaat-complete")
+                        NavigationLink {
+                            TasbihView()
+                        } label: {
+                            Text("Start Tasbih")
+                                .font(.headline)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .accessibilityIdentifier("rakaat-complete")
                     }
                 }
             }
@@ -184,6 +188,7 @@ struct RakaatSessionView: View {
     }
 
     private func run(target: Int) async {
+        guard !ended else { return }
         let authorized: Bool
         #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("--ui-testing"), ProcessInfo.processInfo.arguments.contains("--rakaat-denied") {

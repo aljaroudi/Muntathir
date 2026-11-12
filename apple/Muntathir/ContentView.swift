@@ -4,90 +4,70 @@ struct ContentView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
     @State private var hadithSession = HadithSession(defaults: ProcessInfo.processInfo.arguments.contains("--ui-testing") ? UserDefaults(suiteName: "Muntathir.UITests")! : .standard)
-    @State private var selectedTab = 0
+    @State private var selectedTab: AppTab = .today
+    @State private var toolPaths: [AppTool: NavigationPath] = [:]
     @State private var toolsPath: [FigureRoute] = []
-    @State private var restored = false
-    @State private var settings = false
     @State private var hadithAssets = HadithAssetStore()
     @State private var supplicationAssets = HadithAssetStore(backend: AppleAssetPackBackend(identifier: "supplications", resourcePath: "Supplications/supplications.db"), packID: "supplications")
     @State private var translations = QuranTranslationStore.shared
     var body: some View {
         TabView(selection: $selectedTab) {
-            Tab("Today", systemImage: "sun.max", value: 0) {
+            Tab("Today", systemImage: "sun.max", value: AppTab.today) {
                 shell { TodayView(referenceDate: skyTestDate) }
             }
-            Tab("Calendar", systemImage: "calendar", value: 1) {
-                shell { CalendarScreen().figureDestinations() }
+            ForEach(model.preferences.tabShortcuts) { tool in
+                Tab(value: AppTab.tool(tool)) {
+                    toolShell(tool)
+                } label: {
+                    Label { Text(tool.title) } icon: { Image(systemName: tool.symbol) }
+                }
             }
-            Tab("Tools", systemImage: "square.grid.2x2", value: 2) {
+            Tab("Tools", systemImage: "square.grid.2x2", value: AppTab.tools) {
                 NavigationStack(path: $toolsPath) {
                     List {
+                        ForEach(AppTool.groups.indices, id: \.self) { index in
+                            let tools = AppTool.groups[index].filter { !model.preferences.tabShortcuts.contains($0) }
+                            if !tools.isEmpty {
+                                Section {
+                                    ForEach(tools) { tool in
+                                        NavigationLink(value: FigureRoute.tool(tool)) {
+                                            Label { Text(tool.title) } icon: {
+                                                if tool == .tasbih {
+                                                    Text(verbatim: "📿")
+                                                } else {
+                                                    Image(systemName: tool.symbol)
+                                                }
+                                            }
+                                        }
+                                        .accessibilityIdentifier(tool.accessibilityID)
+                                    }
+                                }
+                            }
+                        }
                         Section {
                             NavigationLink {
-                                QuranView()
+                                SettingsView()
                             } label: {
-                                Label("The Holy Quran", systemImage: "book.closed")
+                                Label("Settings", systemImage: "gearshape")
                             }
-                            .accessibilityIdentifier("holy-quran")
-                            NavigationLink(value: FigureRoute.hadith) {
-                                Label("Hadith", systemImage: "text.book.closed")
-                            }
-                            .accessibilityIdentifier("hadith")
-                            NavigationLink(value: FigureRoute.supplications) {
-                                Label("Supplications", systemImage: "hands.sparkles")
-                            }
-                            .accessibilityIdentifier("supplications")
-                        }
-                        NavigationLink(value: FigureRoute.browser) {
-                            Label("Figures", systemImage: "person.2")
-                        }
-                        .accessibilityIdentifier("figures")
-                        Section {
-                            NavigationLink {
-                                TasbihView()
-                            } label: {
-                                Label { Text("Tasbih") } icon: { Text(verbatim: "📿") }
-                            }
-                            .accessibilityIdentifier("tasbih")
-                            NavigationLink {
-                                RakaatTrackerView()
-                            } label: {
-                                Label("Rakaat Tracker", systemImage: "camera.metering.center.weighted")
-                            }
-                            .accessibilityIdentifier("rakaat-tracker")
-                            NavigationLink {
-                                QiblaView(isCovered: settings).toolbar { settingsToolbar }
-                            } label: {
-                                Label("Qibla", systemImage: "location.north.circle")
-                            }
-                            .accessibilityIdentifier("qibla")
+                            .accessibilityIdentifier("settings")
                         }
                     }
                     .navigationTitle("Tools")
                     .figureDestinations(hadithAssets: hadithAssets, supplicationAssets: supplicationAssets)
-                    .toolbar { settingsToolbar }
                 }
             }
         }
         .environment(\.hadithAssets, hadithAssets)
         .environment(\.supplicationAssets, supplicationAssets)
         .environment(\.hadithSession, hadithSession)
-        .task {
-            guard !restored else { return }
-            if hadithSession.state.active {
-                selectedTab = 2; toolsPath = [.hadith]
-            }
-            restored = true
+        .task { updateReadingRoute() }
+        .onChange(of: model.preferences.tabShortcuts) { _, shortcuts in
+            selectedTab = selectedTab.available(in: shortcuts)
         }
         .onChange(of: selectedTab) { _, _ in updateReadingRoute() }
         .onChange(of: toolsPath) { _, _ in updateReadingRoute() }
         .tint(.accentColor)
-        .sheet(isPresented: $settings) {
-            SettingsView()
-                .environment(\.hadithAssets, hadithAssets)
-                .environment(\.supplicationAssets, supplicationAssets)
-                .environment(\.hadithSession, hadithSession)
-        }
         .sheet(item: $translations.downloadRequest) { translation in
             QuranDownloadView(requested: translation.id)
         }
@@ -146,23 +126,26 @@ struct ContentView: View {
     }
 
     private func updateReadingRoute() {
-        guard restored else { return }
-        hadithSession.state.active = selectedTab == 2 && toolsPath.contains(.hadith)
+        hadithSession.state.active = selectedTab == .tool(.hadith)
+            || (selectedTab == .tools && (toolsPath.contains(.hadith) || toolsPath.contains(.tool(.hadith))))
     }
 
     private func shell(@ViewBuilder content: () -> some View) -> some View {
         NavigationStack {
             content()
-                .toolbar { settingsToolbar }
         }
     }
 
-    private var settingsToolbar: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button("Settings", systemImage: "gearshape") {
-                settings = true
-            }.accessibilityIdentifier("settings")
+    private func toolShell(_ tool: AppTool) -> some View {
+        let path = Binding<NavigationPath>(
+            get: { toolPaths[tool] ?? NavigationPath() },
+            set: { toolPaths[tool] = $0 }
+        )
+        return NavigationStack(path: path) {
+            ToolDestination(tool: tool)
+                .figureDestinations(hadithAssets: hadithAssets, supplicationAssets: supplicationAssets)
         }
+        .id(tool)
     }
 }
 

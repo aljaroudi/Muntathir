@@ -1,0 +1,47 @@
+import SwiftUI
+
+struct TabsSettingsView: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        List {
+            Section {
+                Label("Today", systemImage: "sun.max")
+            }
+            Section {
+                ForEach(model.preferences.tabShortcuts) { tool in
+                    Label { Text(tool.title) } icon: { Image(systemName: tool.symbol) }
+                        .accessibilityIdentifier("tab-shortcut-\(tool.rawValue)")
+                }
+                .onDelete { indices in
+                    model.update { $0.tabShortcuts.remove(atOffsets: indices) }
+                }
+                .onMove { indices, destination in
+                    model.update { $0.tabShortcuts.move(fromOffsets: indices, toOffset: destination) }
+                }
+            } header: {
+                Text("Tabs")
+            } footer: {
+                Text("Choose up to three tabs. Everything else stays in Tools.")
+            }
+            Section {
+                Label("Tools", systemImage: "square.grid.2x2")
+            }
+            Section("Available tabs") {
+                // Distinct IDs prevent available rows from carrying their non-editable state into shortcuts.
+                ForEach(AppTool.allCases.filter { !model.preferences.tabShortcuts.contains($0) }, id: \.self) { tool in
+                    Button {
+                        model.update { $0.tabShortcuts.append(tool) }
+                    } label: {
+                        Label { Text(tool.title) } icon: { Image(systemName: "plus.circle.fill") }
+                    }
+                    .disabled(model.preferences.tabShortcuts.count >= AppTool.maximumShortcuts)
+                    .accessibilityIdentifier("add-tab-\(tool.rawValue)")
+                }
+            }
+        }
+        .environment(\.editMode, .constant(.active))
+        .navigationTitle("Tabs")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}

@@ -105,7 +105,7 @@ struct HighlightText: View {
                 guard !saved.isEmpty, !source.isEmpty else { return }
                 editing = ReadingHighlight(source: source, isHadith: isHadith, block: block, ranges: saved,
                                            excerpt: saved.map(\.quote).joined(separator: " … "), reference: reference.isEmpty ? source : reference)
-            }, edit: { editing = $0 }, tap: { matches in
+            }, tap: { matches in
                 if matches.count == 1 {
                     editing = matches.first
                 } else {
@@ -125,7 +125,7 @@ struct HighlightText: View {
         }
         .accessibilityActions {
             ForEach(highlights.filter { !$0.ranges(in: text, block: block).isEmpty }) { highlight in
-                Button(highlight.note.isEmpty ? String(localized: "Edit highlight") + ": " + String(highlight.excerpt.prefix(60)) : String(localized: "Highlight note") + ": " + String(highlight.note.prefix(60))) {
+                Button(highlight.note.isEmpty ? String(highlight.excerpt.prefix(60)) : String(localized: "Highlight note") + ": " + String(highlight.note.prefix(60))) {
                     editing = highlight
                 }
             }
@@ -143,7 +143,6 @@ struct SelectableHighlightText: UIViewRepresentable {
     let focused: ReadingHighlight?
     let differentiate: Bool
     let select: ([NSRange]) -> Void
-    let edit: (ReadingHighlight) -> Void
     let tap: ([ReadingHighlight]) -> Void
     var mappedRanges: [String: [NSRange]]?
     var additionalActions: ([NSRange]) -> [UIMenuElement] = { _ in [] }
@@ -228,6 +227,8 @@ struct SelectableHighlightText: UIViewRepresentable {
             guard gesture.state == .ended, let view = gesture.view as? UITextView else { return }
             let matches = highlights(at: gesture.location(in: view), in: view)
             if !matches.isEmpty {
+                view.selectedTextRange = nil
+                view.resignFirstResponder()
                 parent.tap(matches)
             }
         }
@@ -238,16 +239,15 @@ struct SelectableHighlightText: UIViewRepresentable {
             }
         }
 
-        func textView(_: UITextView, editMenuForTextInRanges ranges: [NSValue], suggestedActions: [UIMenuElement]) -> UIMenu? {
+        func textView(_ textView: UITextView, editMenuForTextInRanges ranges: [NSValue], suggestedActions: [UIMenuElement]) -> UIMenu? {
             let selected = ranges.map(\.rangeValue).filter { $0.length > 0 }
             var actions: [UIMenuElement] = []
             if !selected.isEmpty, parent.canHighlight(selected) {
-                actions.append(UIAction(title: String(localized: "Highlight"), image: UIImage(systemName: "highlighter")) { [weak self] _ in self?.parent.select(selected) })
-            }
-            for highlight in parent.highlights where parent.ranges(for: highlight).contains(where: { existing in
-                selected.contains { NSIntersectionRange(existing, $0).length > 0 }
-            }) {
-                actions.append(UIAction(title: String(localized: "Edit highlight") + " · " + highlight.color.title + " · " + String(highlight.excerpt.prefix(35))) { [weak self] _ in self?.parent.edit(highlight) })
+                actions.append(UIAction(title: String(localized: "Highlight"), image: UIImage(systemName: "highlighter")) { [weak self, weak textView] _ in
+                    textView?.selectedTextRange = nil
+                    textView?.resignFirstResponder()
+                    self?.parent.select(selected)
+                })
             }
             return UIMenu(children: actions + suggestedActions + parent.additionalActions(selected))
         }

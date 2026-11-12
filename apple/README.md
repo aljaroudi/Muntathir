@@ -4,6 +4,12 @@ Native iPhone/iPad app and Apple Watch companion using Swift 6 and SwiftUI. Requ
 
 Open `Muntathir.xcodeproj`. Use `Muntathir` for iPhone/iPad, `MuntathirWatch` for Watch, and `MuntathirWidgets` for widget development. Select your signing team for device builds. Enable iCloud Key-Value Store for the iPhone app and `group.com.aljaroudi.Muntathir` for app/widget targets on both platforms.
 
+## Navigation
+
+Today always opens first. Settings → Tabs lets users add, remove, and reorder up to three shortcuts, synced through iCloud preferences. Tools holds the remaining destinations and Settings; Today and Tools stay fixed. The default layout is Today, Calendar, Tools.
+
+Events is a timeless Hijri reference list, grouped by month and sorted by day. It includes all observances and existing figure links without filtering by today's date or converting dates to a selected Gregorian year.
+
 ## Commands
 
 From repository root: `make apple-format`, `make apple-build`, and `make apple-test`. Build uses an unsigned iOS Simulator destination and includes embedded extensions. Tests select a compatible iPhone simulator; set `TEST_DESTINATION` to override it.
@@ -26,7 +32,7 @@ Apple Weather marks in `Muntathir/Resources/WeatherAttribution.xcassets` are ori
 
 Validate real-device compass/calibration, notifications/background delivery, paired Watch synchronization and complications, CarPlay layouts, signed App Group provisioning, two-device iCloud sync, VoiceOver, and accessibility sizes. Review event dates and Arabic titles editorially.
 
-The app refreshes the version-one calendar feed from https://منتظر.com/calendar/corrections-v1.json on launch/foreground, source changes, and scheduled background refresh. The website publishes confirmed starts for 1448-05 on 2026-10-13 for Middle East naked-eye sightings and Saudi government announcements. Push delivery remains unconfigured. Simulator tests cannot prove hardware behavior or deployed feed delivery.
+The app refreshes the version-one calendar feed from https://منتظر.com/calendar/corrections-v1.json on launch/foreground and scheduled background refresh. The app always follows Middle East naked-eye announcements; Settings → Calendar → Month adjustments retains manual offsets. The website publishes confirmed starts for 1448-05 on 2026-10-13 for Middle East naked-eye sightings and Saudi government announcements. Push delivery remains unconfigured. Simulator tests cannot prove hardware behavior or deployed feed delivery.
 
 ## Fastlane
 

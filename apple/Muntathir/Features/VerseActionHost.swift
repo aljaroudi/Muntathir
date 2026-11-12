@@ -3,7 +3,6 @@ import SwiftUI
 @MainActor @Observable final class VerseActionState {
     var sharedImage: SharedAyah?
     var copied = false
-    var editing: ReadingHighlight?
     var bookmarkFailed = false
     var shareFailed = false
 }
@@ -33,14 +32,10 @@ struct VerseActionHost<Content: View>: View {
 
 struct VerseActionPresentation: ViewModifier {
     @Bindable var actions: VerseActionState
-    @Environment(\.quranUserStore) private var store
 
     func body(content: Content) -> some View {
         content
             .sheet(item: $actions.sharedImage) { AyahShareSheet(image: $0.image) }
-            .sheet(item: $actions.editing) { value in
-                HighlightEditor(highlight: value, existing: store?.highlights.contains { $0.id == value.id } == true)
-            }
             .alert("Text copied", isPresented: $actions.copied) { Button("OK", role: .cancel) {} }
             .alert("Unable to save bookmark", isPresented: $actions.bookmarkFailed) { Button("OK", role: .cancel) {} }
             message: { Text("Please try again.") }
@@ -73,11 +68,6 @@ struct VerseActionMenu: View {
             }
         }
         Divider()
-        if contextMenu {
-            HighlightActions(source: ayah.id, isHadith: false, excerpt: ayah.text, reference: ayah.id,
-                             editing: $actions.editing, bookmarkFailed: $actions.bookmarkFailed)
-        } else {
-            BookmarkButton(source: ayah.id, isHadith: false, excerpt: ayah.text, reference: ayah.id, failed: $actions.bookmarkFailed)
-        }
+        BookmarkButton(source: ayah.id, isHadith: false, excerpt: ayah.text, reference: ayah.id, failed: $actions.bookmarkFailed)
     }
 }

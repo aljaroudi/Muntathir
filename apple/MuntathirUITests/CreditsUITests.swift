@@ -5,7 +5,7 @@ final class CreditsUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.buttons["Settings"].tap()
+        app.openSettingsFromTools()
         for _ in 0 ..< 5 {
             app.swipeUp()
         }

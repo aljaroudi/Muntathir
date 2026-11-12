@@ -265,7 +265,6 @@ extension HadithUITests {
         text.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).press(forDuration: 1.2)
         XCTAssertTrue(app.menuItems["Highlight"].waitForExistence(timeout: 5))
         app.menuItems["Highlight"].tap()
-        app.buttons["highlight-add-note"].tap()
         let editor = app.textViews["highlight-note-editor"]
         XCTAssertTrue(editor.waitForExistence(timeout: 5))
         editor.tap()
@@ -277,6 +276,9 @@ extension HadithUITests {
         app.terminate()
         app.launchArguments.append("--ui-testing-preserve-state")
         app.launch()
+        XCTAssertTrue(app.buttons["Today"].firstMatch.isSelected)
+        app.buttons["Tools"].firstMatch.tap()
+        app.buttons["hadith"].tap()
         XCTAssertTrue(app.buttons["hadith-actions"].waitForExistence(timeout: 15))
         let arabic = app.descendants(matching: .any)["hadith-full-arabic"].firstMatch
         XCTAssertTrue(arabic.waitForExistence(timeout: 5))
@@ -468,6 +470,9 @@ extension HadithUITests {
         app.terminate()
         app.launchArguments.append("--ui-testing-preserve-state")
         app.launch()
+        XCTAssertTrue(app.buttons["Today"].firstMatch.isSelected)
+        app.buttons["Tools"].firstMatch.tap()
+        app.buttons["hadith"].tap()
         XCTAssertTrue(chapter.waitForExistence(timeout: 15))
         XCTAssertEqual(app.searchFields.firstMatch.value as? String, "ch1")
         app.searchFields.firstMatch.tap()
@@ -558,6 +563,9 @@ extension HadithUITests {
         app.terminate()
         app.launchArguments.append("--ui-testing-preserve-state")
         app.launch()
+        XCTAssertTrue(app.buttons["Today"].firstMatch.isSelected)
+        app.buttons["Tools"].firstMatch.tap()
+        app.buttons["hadith"].tap()
         let restored = app.buttons[identifier]
         XCTAssertTrue(restored.waitForExistence(timeout: 15))
         XCTAssertTrue(restored.isHittable)
