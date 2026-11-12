@@ -44,6 +44,12 @@ struct ContentView: View {
                         .accessibilityIdentifier("figures")
                         Section {
                             NavigationLink {
+                                TasbihView()
+                            } label: {
+                                Label { Text("Tasbih") } icon: { Text(verbatim: "📿") }
+                            }
+                            .accessibilityIdentifier("tasbih")
+                            NavigationLink {
                                 RakaatTrackerView()
                             } label: {
                                 Label("Rakaat Tracker", systemImage: "camera.metering.center.weighted")
