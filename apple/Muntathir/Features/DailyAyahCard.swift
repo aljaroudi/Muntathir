@@ -70,15 +70,18 @@ struct AyahText: View {
 struct AyahShareArtwork: View {
     let ayah: Ayah
     var translation: QuranTranslation?
+    var highlights: [ReadingHighlight] = []
     @Environment(\.locale) private var locale
     var body: some View {
         ShareArtwork(reference: VerseShareContent(ayah: ayah, translation: translation, locale: locale).imageReference) {
-            Label("The Holy Quran", systemImage: "book.closed")
-                .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
-            AyahText(ayah: ayah, adjustable: false)
+            ShareHighlightText(text: AttributedString(ayah.text), highlights: highlights, block: "arabic")
+                .readingText(arabic: true, adjustable: false)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .environment(\.layoutDirection, .rightToLeft)
                 .padding()
             if let translation, let text = ayah.translations[translation.id] {
-                Text(text)
+                ShareHighlightText(text: AttributedString(text), highlights: highlights, block: translation.id)
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .environment(\.layoutDirection, Locale(identifier: translation.language).language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight)
@@ -136,12 +139,12 @@ struct ShareArtwork<Content: View>: View {
 }
 
 @MainActor enum AyahImageRenderer {
-    static func canShare(_ ayah: Ayah, locale: Locale, translation: QuranTranslation? = nil) -> Bool {
-        ShareImageRenderer.canShare(AyahShareArtwork(ayah: ayah, translation: translation), locale: locale)
+    static func canShare(_ ayah: Ayah, locale: Locale, translation: QuranTranslation? = nil, highlights: [ReadingHighlight] = []) -> Bool {
+        ShareImageRenderer.canShare(AyahShareArtwork(ayah: ayah, translation: translation, highlights: highlights), locale: locale)
     }
 
-    static func image(for ayah: Ayah, locale: Locale, translation: QuranTranslation? = nil) -> UIImage? {
-        ShareImageRenderer.image(AyahShareArtwork(ayah: ayah, translation: translation), locale: locale)
+    static func image(for ayah: Ayah, locale: Locale, translation: QuranTranslation? = nil, highlights: [ReadingHighlight] = []) -> UIImage? {
+        ShareImageRenderer.image(AyahShareArtwork(ayah: ayah, translation: translation, highlights: highlights), locale: locale)
     }
 }
 

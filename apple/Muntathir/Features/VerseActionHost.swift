@@ -54,6 +54,7 @@ struct VerseActionMenu: View {
     var contextMenu = true
     @Bindable var actions: VerseActionState
     @Environment(\.locale) private var locale
+    @Environment(\.quranUserStore) private var store
 
     var body: some View {
         Button("Copy text", systemImage: "doc.on.doc") {
@@ -63,7 +64,9 @@ struct VerseActionMenu: View {
             }
         }
         Button("Share as image", systemImage: "square.and.arrow.up") {
-            if let image = AyahImageRenderer.image(for: ayah, locale: locale, translation: translation) {
+            if let image = AyahImageRenderer.image(for: ayah, locale: locale, translation: translation,
+                                                   highlights: store?.highlights(for: ayah.id, isHadith: false) ?? [])
+            {
                 actions.sharedImage = SharedAyah(image: image)
             } else {
                 actions.shareFailed = true
