@@ -2,7 +2,7 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {
-
+      "shouldTranslate" : false
     },
     "%@ %@" : {
       "comment" : "A one-line label displaying the day and month of the current Islamic calendar date.",
@@ -406,7 +406,8 @@
             "value" : "%1$@%2$@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%lld / %lld" : {
       "localizations" : {
