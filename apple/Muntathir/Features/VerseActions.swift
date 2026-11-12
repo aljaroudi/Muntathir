@@ -48,7 +48,7 @@ struct HadithShareContent {
         if narration.isSupplication {
             return narration.chapter.title(locale: locale)
         }
-        return narration.chapter.bookTitle(locale: locale) + (narration.displayNumber.map { " • " + String($0) } ?? "")
+        return narration.chapter.bookTitle(locale: locale) + (narration.displayNumber.map { " · " + String($0) } ?? "")
     }
 
     private var translatedTexts: [String] {

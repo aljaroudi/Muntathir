@@ -3,7 +3,6 @@ import SwiftUI
 
 struct TasbihView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("tasbihSwipeHintSeen") private var swipeHintSeen = false
     @State private var session = TasbihSession()
@@ -15,29 +14,29 @@ struct TasbihView: View {
     @GestureState private var dragging = false
 
     var body: some View {
-        GeometryReader { geometry in
-            ScrollView {
+        VStack(spacing: 16) {
+            GeometryReader { geometry in
+                beadView
+                    .frame(height: max(320, geometry.size.height))
+            }
+            if session.complete {
                 VStack(spacing: 16) {
-                    beadView
-                        .frame(height: max(320, min(640, geometry.size.height - (dynamicTypeSize.isAccessibilitySize ? 200 : 120))))
-                    if session.complete {
-                        Label("Count complete", systemImage: "checkmark.circle.fill")
-                            .foregroundStyle(.tint)
-                            .accessibilityIdentifier("tasbih-complete")
-                        Button("Restart", action: reset)
-                            .buttonStyle(.borderedProminent)
-                            .accessibilityIdentifier("tasbih-restart")
-                    }
-                    Text("\(session.total) / \(100)")
-                        .font(.footnote.monospacedDigit())
-                        .foregroundStyle(.secondary)
-                        .accessibilityIdentifier("tasbih-total")
+                    Label("Count complete", systemImage: "checkmark.circle.fill")
+                        .foregroundStyle(.tint)
+                        .accessibilityIdentifier("tasbih-complete")
+                    Button("Restart", action: reset)
+                        .buttonStyle(.borderedProminent)
+                        .accessibilityIdentifier("tasbih-restart")
                 }
-                .padding(24)
-                .frame(maxWidth: 560)
+                .fixedSize(horizontal: false, vertical: true)
+                .layoutPriority(1)
                 .frame(maxWidth: .infinity)
+                .background(Color(.systemGroupedBackground))
             }
         }
+        .padding(24)
+        .frame(maxWidth: 560)
+        .frame(maxWidth: .infinity)
         .background(Color(.systemGroupedBackground))
         .navigationTitle(Text("\(session.count) / \(session.target)"))
         .navigationBarTitleDisplayMode(.inline)
@@ -52,7 +51,10 @@ struct TasbihView: View {
             Button("Reset", role: .destructive, action: reset)
             Button("Cancel", role: .cancel) {}
         }
-        .sensoryFeedback(.impact(weight: .light), trigger: session.total) { old, new in new > old }
+        .sensoryFeedback(trigger: session) { old, new in
+            guard new.total > old.total else { return nil }
+            return old.phrase == new.phrase ? .impact(weight: .light) : .success
+        }
         .task {
             guard !swipeHintSeen else { return }
             showingSwipeHint = true
@@ -92,7 +94,6 @@ struct TasbihView: View {
                 .accessibilityIdentifier("tasbih-phrase")
             beadLayer(beads.frontRoot)
         }
-        .clipped()
         .overlay {
             Color.clear
                 .contentShape(.rect)

@@ -6,7 +6,11 @@ final class TasbihUITests: XCTestCase {
         app.launchArguments = ["--ui-testing", "-AppleLanguages", arabic ? "(ar)" : "(en)", "-AppleLocale", arabic ? "ar_SA" : "en_US"] + extraArguments
         app.launch()
         app.buttons[arabic ? "الأدوات" : "Tools"].firstMatch.tap()
-        app.buttons["tasbih"].tap()
+        let tasbih = app.buttons["tasbih"]
+        for _ in 0 ..< 4 where !tasbih.isHittable {
+            app.swipeUp()
+        }
+        tasbih.tap()
         XCTAssertTrue(stageCounter(app).waitForExistence(timeout: 5))
         return app
     }
@@ -37,7 +41,6 @@ final class TasbihUITests: XCTestCase {
         app.buttons["tasbih-reset"].tap()
         app.alerts.buttons["Reset"].tap()
         XCTAssertTrue(app.alerts.firstMatch.waitForNonExistence(timeout: 5))
-        XCTAssertEqual(app.staticTexts["tasbih-total"].label, "0 / 100")
         XCTAssertTrue(stageCounter(app).wait(for: \.label, toEqual: "0 / 34", timeout: 5))
         pull(app)
         app.navigationBars.buttons.element(boundBy: 0).tap()
@@ -59,7 +62,7 @@ final class TasbihUITests: XCTestCase {
         }
         XCTAssertTrue(app.descendants(matching: .any)["tasbih-complete"].firstMatch.exists)
         pull(app)
-        XCTAssertEqual(app.staticTexts["tasbih-total"].label, "100 / 100")
+        XCTAssertEqual(stageCounter(app).label, "33 / 33")
         app.buttons["tasbih-restart"].tap()
         XCTAssertEqual(stageCounter(app).label, "0 / 34")
     }
@@ -103,10 +106,14 @@ final class TasbihUITests: XCTestCase {
 
     @MainActor func testLargeArabicTextAndBackgroundResume() {
         let app = open(arabic: true, extraArguments: ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
+        let beads = app.descendants(matching: .any)["tasbih-beads"].firstMatch
+        let initialFrame = beads.frame
+        XCTAssertFalse(app.scrollViews.firstMatch.exists)
         let initial = stageCounter(app).label
         pull(app, dy: 60)
         let counted = stageCounter(app).label
         XCTAssertNotEqual(initial, counted)
+        XCTAssertEqual(beads.frame, initialFrame)
         let screenshot = XCTAttachment(screenshot: app.screenshot())
         screenshot.lifetime = .keepAlways
         add(screenshot)
