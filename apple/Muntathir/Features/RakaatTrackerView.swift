@@ -2,6 +2,7 @@ import AVFoundation
 import SwiftUI
 
 struct RakaatTrackerView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
     @State private var camera = RakaatCamera()
@@ -81,11 +82,25 @@ struct RakaatTrackerView: View {
         }
     }
 
+    private var rakaatCount: Int {
+        (update?.count ?? 0) / 2
+    }
+
+    private var showsMilestoneTint: Bool {
+        guard let target, let update, update.calibrated, update.failure == nil, !denied, !failed else { return false }
+        return update.count.isMultiple(of: 2) && (rakaatCount == 2 || rakaatCount == target)
+    }
+
+    private var showsSujoodProgress: Bool {
+        guard let update, update.calibrated, update.failure == nil, !denied, !failed else { return false }
+        return !update.count.isMultiple(of: 2)
+    }
+
     private var count: some View {
-        Text((update?.count ?? 0) / 2, format: .number)
+        Text(rakaatCount, format: .number)
             .font(.largeTitle.scaled(by: 4)).monospacedDigit()
             .lineLimit(1).minimumScaleFactor(0.3)
-            .accessibilityLabel(Text("\((update?.count ?? 0) / 2) rakaat"))
+            .accessibilityLabel(Text("\(rakaatCount) rakaat"))
             .accessibilityIdentifier("rakaat-count")
     }
 
@@ -101,6 +116,23 @@ struct RakaatTrackerView: View {
             }
             .background(.black)
             .overlay(.black.opacity(0.25))
+            .overlay {
+                GeometryReader { geometry in
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 0)
+                        Color.black.opacity(0.45)
+                            .frame(height: showsSujoodProgress ? geometry.size.height / 2 : 0)
+                    }
+                    .animation(reduceMotion ? nil : .easeInOut(duration: 0.7), value: showsSujoodProgress)
+                }
+            }
+            .overlay {
+                // Darken the preview without adding screen light that can reflect into the camera.
+                Color.green.opacity(showsMilestoneTint ? 0.65 : 0)
+                    .blendMode(.multiply)
+            }
+            .compositingGroup()
+            .overlay(Color.green.opacity(update?.complete == true ? 0.32 : 0))
             .ignoresSafeArea()
             .accessibilityHidden(true)
 
@@ -126,12 +158,7 @@ struct RakaatTrackerView: View {
                         Text("Camera capture ended. Start a new session to try again.")
                     }
                 } else if preparing {
-                    if let seconds = update?.countdown, seconds > 0 {
-                        Text("Starting in \(seconds)…")
-                            .font(.largeTitle.bold())
-                    } else {
-                        ProgressView().tint(.white)
-                    }
+                    ProgressView().tint(.white)
                     Text("Keep the camera uncovered in steady light while it calibrates.")
                         .font(.body)
                 } else {
@@ -237,18 +264,18 @@ struct RakaatTrackerView: View {
                 denied = true; ended = true; return
             }
             if ProcessInfo.processInfo.arguments.contains("--ui-testing"), ProcessInfo.processInfo.arguments.contains("--rakaat-dark") {
-                update = .init(preview: nil, count: 0, countdown: 0, calibrated: false, complete: false, failure: .tooDark)
+                update = .init(preview: nil, count: 0, calibrated: false, complete: false, failure: .tooDark)
                 ended = true
                 return
             }
             if ProcessInfo.processInfo.arguments.contains("--ui-testing"), ProcessInfo.processInfo.arguments.contains("--rakaat-demo") {
-                update = .init(preview: nil, count: 0, countdown: 5, calibrated: false, complete: false)
+                update = .init(preview: nil, count: 0, calibrated: false, complete: false)
                 do { try await Task.sleep(for: .seconds(2)) } catch { return }
                 guard !ended else { return }
-                update = .init(preview: nil, count: 2, countdown: 0, calibrated: true, complete: false)
+                update = .init(preview: nil, count: 2, calibrated: true, complete: false)
                 do { try await Task.sleep(for: .seconds(3)) } catch { return }
                 guard !ended else { return }
-                update = .init(preview: nil, count: target * 2, countdown: 0, calibrated: true, complete: true)
+                update = .init(preview: nil, count: target * 2, calibrated: true, complete: true)
                 ended = true
                 return
             }

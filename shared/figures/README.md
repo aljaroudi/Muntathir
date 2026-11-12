@@ -2,6 +2,8 @@
 
 Use JSON as the editable source format, matching `shared/events.json`. The web build serves the published subset of the canonical dataset at `/figures/figures.json` and its schema at `/figures/schema.json`. The app bundles the dataset and loads it offline. New data ships with app updates. The web feed retains legacy string notes and required citation arrays for previously released apps.
 
+The optional `browser_groups` array sets the app's section order. Give each group a unique, stable `id` and list its members in display order in `figure_ids`. When adding a figure, add its ID to exactly one group, even if the figure is unverified. The app hides empty sections and shows one section when the field is absent.
+
 Set `verified: true` on a person after review. Missing or false flags exclude that person from app browsing and the web feed. Relationships involving excluded people are also omitted. The source stays valid JSON, so editors with JSON Schema support can still check all records.
 
 - `figures.json`: production dataset, starting with the Prophet Muhammad and his family.

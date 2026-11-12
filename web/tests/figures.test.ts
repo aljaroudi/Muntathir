@@ -5,6 +5,8 @@ import { legacyDataset, legacySchema } from "../src/lib/figures"
 describe("legacy figures feed", () => {
   test("publishes verified people and only complete relationships", () => {
     const published = legacyDataset()
+    expect("browser_groups" in published).toBe(false)
+    expect("browser_groups" in legacySchema().properties).toBe(false)
     const ids = new Set(published.people.map(person => person.id))
     expect([...ids]).toEqual(
       dataset.people

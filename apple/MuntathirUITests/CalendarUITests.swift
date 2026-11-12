@@ -37,7 +37,7 @@ final class CalendarUITests: XCTestCase {
 
     @MainActor func testSettingsMonthAdjustmentSaveResetAndDiscard() {
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "--sky-date", "2026-10-23T06:00:00Z", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
         openAdjustments(app)
         let stepper = app.steppers["month-offset"]

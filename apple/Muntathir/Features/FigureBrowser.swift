@@ -18,25 +18,22 @@ struct FigureBrowser: View {
         Group {
             switch library {
             case let .success(library):
-                let matches = library.search(query, locale: locale)
+                let sections = library.browserSections(matching: query, locale: locale)
                 List {
-                    ForEach(FigureGroup.allCases, id: \.self) { group in
-                        let people = matches.filter { FigureGroup.group(for: $0.id) == group }
-                        if !people.isEmpty {
-                            Section {
-                                ForEach(people) { person in
-                                    NavigationLink(value: FigureRoute.profile(person.id)) {
-                                        Text(verbatim: person.title(locale))
-                                    }
-                                    .accessibilityIdentifier("figure-\(person.id)")
+                    ForEach(sections) { section in
+                        Section {
+                            ForEach(section.figures) { person in
+                                NavigationLink(value: FigureRoute.profile(person.id)) {
+                                    Text(verbatim: person.title(locale))
                                 }
+                                .accessibilityIdentifier("figure-\(person.id)")
                             }
                         }
                     }
                 }
                 .searchable(text: $query)
                 .overlay {
-                    if matches.isEmpty {
+                    if sections.isEmpty {
                         ContentUnavailableView("No figures found", systemImage: "person.crop.circle.badge.questionmark")
                     }
                 }
@@ -167,47 +164,4 @@ private struct ObservanceFigurePicker: View {
             library = await FigureStore.shared.load()
         }
     }
-}
-
-enum FigureGroup: CaseIterable {
-    case infallibles, otherInfallibles, messengers, prophets, prophetRelatives, companions, otherCompanions, other
-
-    static func group(for id: String) -> Self {
-        if infallibleIDs.contains(id) {
-            return .infallibles
-        }
-        if ["abbas-ibn-ali", "ali-al-akbar", "zaynab-bint-ali", "fatima-al-masuma"].contains(id) {
-            return .otherInfallibles
-        }
-        if ["prophet-ibrahim", "prophet-musa", "prophet-isa"].contains(id) {
-            return .messengers
-        }
-        if id.hasPrefix("prophet-") {
-            return .prophets
-        }
-        if ["abd-al-muttalib", "abdullah-ibn-abd-al-muttalib", "amina-bint-wahb", "abu-talib",
-            "hamza-ibn-abd-al-muttalib", "khadija-bint-khuwaylid", "umm-kulthum-bint-ali",
-            "umm-al-banin", "ruqayya-bint-al-husayn", "sukayna-bint-al-husayn", "qasim-ibn-al-hasan",
-            "qasim-ibn-al-kadhim", "muslim-ibn-aqil"].contains(id)
-        {
-            return .prophetRelatives
-        }
-        if companionIDs.contains(id) {
-            return .companions
-        }
-        if ["jabir-ibn-abdullah", "hani-ibn-urwa", "abu-bakr"].contains(id) {
-            return .otherCompanions
-        }
-        return .other
-    }
-
-    private static let infallibleIDs: Set<String> = [
-        "prophet-muhammad", "fatima-al-zahra", "ali-ibn-abi-talib", "hasan-ibn-ali",
-        "husayn-ibn-ali", "ali-zayn-al-abidin", "muhammad-al-baqir", "jafar-al-sadiq",
-        "musa-al-kadhim", "ali-al-ridha", "muhammad-al-jawad", "ali-al-hadi",
-        "hasan-al-askari", "muhammad-al-mahdi",
-    ]
-    private static let companionIDs: Set<String> = [
-        "salman-al-muhammadi", "abu-dharr-al-ghifari", "miqdad-ibn-al-aswad", "ammar-ibn-yasir",
-    ]
 }

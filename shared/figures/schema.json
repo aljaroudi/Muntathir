@@ -11,6 +11,22 @@
     "schema_version": {
       "const": 1
     },
+    "browser_groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "figure_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["id", "figure_ids"]
+      }
+    },
     "people": {
       "type": "array",
       "items": {

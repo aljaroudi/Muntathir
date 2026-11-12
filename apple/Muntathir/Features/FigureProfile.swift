@@ -127,14 +127,15 @@ struct FigureProfile: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    private func formattedAge(_ years: Int) -> String {
+    private func formattedAge(_ age: DateComponents) -> String {
         var calendar = Calendar(identifier: .gregorian)
         calendar.locale = locale
         let formatter = DateComponentsFormatter()
         formatter.calendar = calendar
-        formatter.allowedUnits = [.year]
+        formatter.allowedUnits = (age.month ?? 0) == 0 ? [.year] : [.year, .month]
+        formatter.maximumUnitCount = 2
         formatter.unitsStyle = .full
-        return formatter.string(from: DateComponents(year: years)) ?? years.formatted(.number.locale(locale))
+        return formatter.string(from: age) ?? (age.year ?? 0).formatted(.number.locale(locale))
     }
 
     @ViewBuilder

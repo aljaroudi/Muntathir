@@ -22,7 +22,6 @@ actor RakaatCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     struct Update: Sendable {
         let preview: CGImage?
         let count: Int
-        let countdown: Int
         let calibrated: Bool
         let complete: Bool
         var failure: RakaatPreparation.Failure?
@@ -125,35 +124,33 @@ actor RakaatCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         if detector.baseline == nil,
            let failure = preparation.sample(light, elapsed: elapsed)
         {
-            continuation?.yield(Update(preview: nil, count: 0, countdown: 0, calibrated: false,
+            continuation?.yield(Update(preview: nil, count: 0, calibrated: false,
                                        complete: false, failure: failure))
             finish()
             return
         }
-        if elapsed >= 5 {
-            if !exposureLocked, let device {
-                // Exposure compensation would otherwise erase the shadow we are measuring.
-                guard !device.isAdjustingExposure else { publish(preview: nil, countdown: 0); return }
-                do {
-                    try device.lockForConfiguration()
-                    if device.isExposureModeSupported(.locked) {
-                        device.exposureMode = .locked
-                    }
-                    device.unlockForConfiguration()
-                    exposureLocked = true
-                } catch { finish(); return }
-            }
-            detector.sample(light, at: time)
-            if detector.baseline != nil {
-                preparationTimeout?.cancel()
-                preparationTimeout = nil
-            }
+        if !exposureLocked, let device {
+            // Exposure compensation would otherwise erase the shadow we are measuring.
+            guard !device.isAdjustingExposure else { publish(preview: nil); return }
+            do {
+                try device.lockForConfiguration()
+                if device.isExposureModeSupported(.locked) {
+                    device.exposureMode = .locked
+                }
+                device.unlockForConfiguration()
+                exposureLocked = true
+            } catch { finish(); return }
+        }
+        detector.sample(light, at: time)
+        if detector.baseline != nil {
+            preparationTimeout?.cancel()
+            preparationTimeout = nil
         }
         let source = CIImage(cvPixelBuffer: buffer).oriented(.leftMirrored)
         let tiny = source.transformed(by: CGAffineTransform(scaleX: 24 / source.extent.width, y: 24 / source.extent.width))
         let blurred = tiny.clampedToExtent().applyingFilter("CIGaussianBlur", parameters: [kCIInputRadiusKey: 4]).cropped(to: tiny.extent)
         let preview = detector.complete ? nil : context.createCGImage(blurred, from: tiny.extent)
-        publish(preview: preview, countdown: max(0, Int(ceil(5 - elapsed))))
+        publish(preview: preview)
         if detector.complete {
             // Finish the callback before the consumer stops the capture session.
             finish()
@@ -162,7 +159,7 @@ actor RakaatCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
 
     private func expirePreparation() {
         guard !Task.isCancelled, continuation != nil, detector.baseline == nil else { return }
-        continuation?.yield(Update(preview: nil, count: 0, countdown: 0, calibrated: false,
+        continuation?.yield(Update(preview: nil, count: 0, calibrated: false,
                                    complete: false, failure: .unstable))
         finish()
     }
@@ -174,8 +171,8 @@ actor RakaatCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         continuation = nil
     }
 
-    private func publish(preview: CGImage?, countdown: Int) {
-        continuation?.yield(Update(preview: preview, count: detector.sujoodCount, countdown: countdown,
+    private func publish(preview: CGImage?) {
+        continuation?.yield(Update(preview: preview, count: detector.sujoodCount,
                                    calibrated: detector.baseline != nil, complete: detector.complete))
     }
 }

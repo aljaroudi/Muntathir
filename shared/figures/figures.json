@@ -1,6 +1,90 @@
 {
   "$schema": "./schema.json",
   "schema_version": 1,
+  "browser_groups": [
+    {
+      "id": "infallibles",
+      "figure_ids": [
+        "prophet-muhammad",
+        "ali-ibn-abi-talib",
+        "fatima-al-zahra",
+        "hasan-ibn-ali",
+        "husayn-ibn-ali",
+        "ali-zayn-al-abidin",
+        "muhammad-al-baqir",
+        "jafar-al-sadiq",
+        "musa-al-kadhim",
+        "ali-al-ridha",
+        "muhammad-al-jawad",
+        "ali-al-hadi",
+        "hasan-al-askari",
+        "muhammad-al-mahdi"
+      ]
+    },
+    {
+      "id": "otherInfallibles",
+      "figure_ids": [
+        "zaynab-bint-ali",
+        "abbas-ibn-ali",
+        "ali-al-akbar",
+        "fatima-al-masuma"
+      ]
+    },
+    {
+      "id": "messengers",
+      "figure_ids": [
+        "prophet-ibrahim",
+        "prophet-isa",
+        "prophet-musa"
+      ]
+    },
+    {
+      "id": "prophets",
+      "figure_ids": []
+    },
+    {
+      "id": "prophetRelatives",
+      "figure_ids": [
+        "abd-al-muttalib",
+        "abdullah-ibn-abd-al-muttalib",
+        "amina-bint-wahb",
+        "abu-talib",
+        "khadija-bint-khuwaylid",
+        "hamza-ibn-abd-al-muttalib",
+        "umm-kulthum-bint-ali",
+        "umm-al-banin",
+        "ruqayya-bint-al-husayn",
+        "sukayna-bint-al-husayn",
+        "qasim-ibn-al-hasan",
+        "qasim-ibn-al-kadhim",
+        "muslim-ibn-aqil"
+      ]
+    },
+    {
+      "id": "companions",
+      "figure_ids": [
+        "salman-al-muhammadi",
+        "abu-dharr-al-ghifari",
+        "miqdad-ibn-al-aswad",
+        "ammar-ibn-yasir"
+      ]
+    },
+    {
+      "id": "otherCompanions",
+      "figure_ids": [
+        "hani-ibn-urwa",
+        "jabir-ibn-abdullah",
+        "abu-bakr"
+      ]
+    },
+    {
+      "id": "other",
+      "figure_ids": [
+        "ali-ibn-muhammad-al-samarri",
+        "yazid-ibn-muawiya"
+      ]
+    }
+  ],
   "people": [
     {
       "id": "prophet-muhammad",
@@ -536,7 +620,8 @@
             }
           ]
         }
-      ]
+      ],
+      "verified": true
     },
     {
       "id": "muhammad-al-baqir",
@@ -1633,10 +1718,7 @@
           ]
         }
       ],
-      "notes": {
-        "en": "Popular marked death is Safar 5, 61 AH. No popular birth day is recorded.",
-        "ar": "الوفاة المرعية ٥ صفر ٦١ هـ. لا يُذكر مولد مشهور."
-      }
+      "verified": true
     },
     {
       "id": "sukayna-bint-al-husayn",

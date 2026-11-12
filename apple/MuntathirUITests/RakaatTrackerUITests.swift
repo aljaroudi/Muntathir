@@ -7,7 +7,9 @@ final class RakaatTrackerUITests: XCTestCase {
         app.launchArguments = ["--ui-testing", argument] + (arabic ? [] : ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]) + extraArguments
         app.launch()
         app.buttons[arabic ? "الأدوات" : "Tools"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["rakaat-tracker"].waitForExistence(timeout: 5))
         app.buttons["rakaat-tracker"].tap()
+        XCTAssertTrue(app.buttons["rakaat-target-2"].waitForExistence(timeout: 5))
         return app
     }
 
@@ -17,7 +19,7 @@ final class RakaatTrackerUITests: XCTestCase {
             XCTAssertTrue(app.buttons["rakaat-target-\(target)"].exists)
         }
         app.buttons["rakaat-target-3"].tap()
-        XCTAssertTrue(app.staticTexts["Starting in 5…"].waitForExistence(timeout: 2))
+        XCTAssertFalse(app.staticTexts["Starting in 5…"].exists)
         XCTAssertTrue(app.otherElements["rakaat-prayer-screen"].exists)
         XCTAssertTrue(app.staticTexts["rakaat-count"].waitForExistence(timeout: 4))
         XCTAssertEqual(app.staticTexts["rakaat-count"].label, "1 rakaat")

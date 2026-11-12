@@ -16,14 +16,11 @@ struct FigureLibraryTests {
         #expect(library.events[prophet.id]?.contains { $0.id == "prophet-khadija-marriage" } == true)
     }
 
-    @Test func namesAndBrowserGroupsMatchTheSimplifiedDataset() throws {
+    @Test func productionDataUsesSimplifiedNames() throws {
         let library = try productionLibrary()
         let prophet = try #require(library.byID["prophet-muhammad"])
         #expect(prophet.names(.personal, locale: Locale(identifier: "ar")) == ["محمد"])
         #expect(prophet.names(.full, locale: Locale(identifier: "ar")) == ["محمد بن عبد الله"])
-        #expect(library.people.filter { FigureGroup.group(for: $0.id) == .infallibles }.count == 5)
-        #expect(library.people.filter { FigureGroup.group(for: $0.id) == .companions }.count == 1)
-        #expect(library.people.filter { FigureGroup.group(for: $0.id) == .messengers }.count == 3)
     }
 
     @Test func exampleDerivesFullAndHalfSiblingsAndGroupsChildren() throws {
@@ -97,21 +94,63 @@ struct FigureLibraryTests {
         }
     }
 
-    @Test func figureGroupsHaveTheRequestedOrderAndMembership() {
-        #expect(FigureGroup.allCases == [.infallibles, .otherInfallibles, .messengers, .prophets,
-                                         .prophetRelatives, .companions, .otherCompanions, .other])
-        #expect(FigureGroup.group(for: "prophet-muhammad") == .infallibles)
-        for id in ["abbas-ibn-ali", "ali-al-akbar", "zaynab-bint-ali", "fatima-al-masuma"] {
-            #expect(FigureGroup.group(for: id) == .otherInfallibles)
+    @Test func browserSectionsPreservePublishedFigureOrder() throws {
+        let library = try productionLibrary()
+        let locale = Locale(identifier: "en")
+        let sections = library.browserSections(matching: "", locale: locale)
+        #expect(sections.map(\.id) == [
+            "infallibles", "otherInfallibles", "messengers", "prophetRelatives", "companions", "otherCompanions",
+        ])
+        #expect(sections.map { $0.figures.map(\.id) } == [
+            [
+                "prophet-muhammad", "ali-ibn-abi-talib", "fatima-al-zahra", "hasan-ibn-ali",
+                "husayn-ibn-ali", "ali-zayn-al-abidin",
+            ],
+            ["zaynab-bint-ali", "abbas-ibn-ali", "ali-al-akbar"],
+            ["prophet-ibrahim", "prophet-isa", "prophet-musa"],
+            [
+                "abd-al-muttalib", "abdullah-ibn-abd-al-muttalib", "amina-bint-wahb", "abu-talib",
+                "khadija-bint-khuwaylid", "hamza-ibn-abd-al-muttalib", "umm-kulthum-bint-ali", "umm-al-banin",
+                "ruqayya-bint-al-husayn", "muslim-ibn-aqil",
+            ],
+            ["salman-al-muhammadi", "abu-dharr-al-ghifari", "miqdad-ibn-al-aswad", "ammar-ibn-yasir"],
+            ["hani-ibn-urwa", "jabir-ibn-abdullah"],
+        ])
+
+        let results = library.browserSections(matching: "abbas ibn ali", locale: locale)
+        #expect(results.map(\.id) == ["otherInfallibles"])
+        #expect(results.flatMap(\.figures).map(\.id) == ["abbas-ibn-ali"])
+    }
+
+    @Test func datasetsWithoutBrowserGroupsUseOneSection() throws {
+        let library = try FigureLibrary(data: exampleData(), verifiedOnly: false)
+        let sections = library.browserSections(matching: "", locale: Locale(identifier: "en"))
+        #expect(sections.map(\.id) == ["all"])
+        #expect(sections.flatMap(\.figures).map(\.id) == library.people.map(\.id))
+    }
+
+    @Test(arguments: ["duplicate group", "duplicate figure", "unknown figure", "unassigned figure"])
+    func invalidBrowserGroupsAreRejected(_ problem: String) throws {
+        let data = try exampleData()
+        let library = try FigureLibrary(data: data, verifiedOnly: false)
+        let ids = library.people.map(\.id)
+        var dataset = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let groups: [[String: Any]]
+        switch problem {
+        case "duplicate group":
+            groups = [["id": "group", "figure_ids": ids], ["id": "group", "figure_ids": [String]()]]
+        case "duplicate figure":
+            groups = [["id": "group", "figure_ids": ids + [ids[0]]]]
+        case "unknown figure":
+            groups = [["id": "group", "figure_ids": Array(ids.dropFirst()) + ["missing-figure"]]]
+        default:
+            groups = [["id": "group", "figure_ids": Array(ids.dropFirst())]]
         }
-        #expect(FigureGroup.group(for: "prophet-musa") == .messengers)
-        #expect(FigureGroup.group(for: "prophet-example") == .prophets)
-        #expect(FigureGroup.group(for: "hamza-ibn-abd-al-muttalib") == .prophetRelatives)
-        #expect(FigureGroup.group(for: "salman-al-muhammadi") == .companions)
-        for id in ["jabir-ibn-abdullah", "hani-ibn-urwa"] {
-            #expect(FigureGroup.group(for: id) == .otherCompanions)
+        dataset["browser_groups"] = groups
+        let invalid = try JSONSerialization.data(withJSONObject: dataset)
+        #expect(throws: FigureLibrary.Failure.invalidBrowserGroups) {
+            try FigureLibrary(data: invalid)
         }
-        #expect(FigureGroup.group(for: "unknown") == .other)
     }
 
     @Test func optionalPlacesDecodeAndLocalizeWithoutChangingLegacyRecords() throws {
@@ -136,19 +175,29 @@ struct FigureLibraryTests {
             decoder.keyDecodingStrategy = .convertFromSnakeCase
             return try decoder.decode(Figure.self, from: Data(json.utf8))
         }
-        func date(_ year: Int, era: String = "AH", calendar: String = "hijri") -> String {
-            """
-            [{"calendar":"\(calendar)","era":"\(era)","precision":"approximate","start":{"year":\(year)},"original":"estimate","status":"accepted"}]
+        func date(_ year: Int, month: Int? = nil, day: Int? = nil, era: String = "AH", calendar: String = "hijri") -> String {
+            var point = #""year":\#(year)"#
+            if let month { point += #","month":\#(month)"# }
+            if let day { point += #","day":\#(day)"# }
+            return """
+            [{"calendar":"\(calendar)","era":"\(era)","precision":"approximate","start":{\(point)},"original":"estimate","status":"accepted"}]
             """
         }
-        #expect(try person(birth: date(26), death: date(61)).age == 35)
-        #expect(try person(birth: date(53, era: "BH"), death: date(11)).age == 63)
-        #expect(try person(birth: date(85, era: "BH"), death: date(4, era: "BH")).age == 81)
-        #expect(try person(birth: date(1, era: "BCE", calendar: "gregorian"), death: date(1, era: "CE", calendar: "gregorian")).age == 1)
+        #expect(try person(birth: date(26), death: date(61)).age == DateComponents(year: 35))
+        #expect(try person(birth: date(53, era: "BH"), death: date(11)).age == DateComponents(year: 63))
+        #expect(try person(birth: date(85, era: "BH"), death: date(4, era: "BH")).age == DateComponents(year: 81))
+        #expect(try person(birth: date(1, era: "BCE", calendar: "gregorian"), death: date(1, era: "CE", calendar: "gregorian")).age == DateComponents(year: 1))
         #expect(try person(birth: "[]", death: date(61)).age == nil)
         #expect(try person(birth: date(255), death: "[]").age == nil)
         #expect(try person(birth: date(61), death: date(26)).age == nil)
         #expect(try person(birth: date(26), death: date(680, era: "CE", calendar: "gregorian")).age == nil)
+
+        #expect(try person(birth: date(26, month: 12, day: 20), death: date(61)).age == DateComponents(year: 35))
+        #expect(try person(birth: date(26, month: 12, day: 20), death: date(28, month: 1)).age == DateComponents(year: 1, month: 1))
+        #expect(try person(birth: date(26, month: 12, day: 20), death: date(28, month: 1, day: 19)).age == DateComponents(year: 1, month: 0))
+        #expect(try person(birth: date(26, month: 12, day: 20), death: date(28, month: 1, day: 20)).age == DateComponents(year: 1, month: 1))
+        #expect(try person(birth: date(26, month: 12), death: date(26, month: 11)).age == nil)
+        #expect(try person(birth: date(26, month: 12, day: 20), death: date(26, month: 12, day: 19)).age == nil)
     }
 
     private func productionLibrary() throws -> FigureLibrary {

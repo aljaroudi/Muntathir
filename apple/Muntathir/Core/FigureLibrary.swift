@@ -58,8 +58,8 @@ struct Figure: Decodable, Identifiable, Sendable {
     let deathDates: [FigureDate]
     let notes: [String: String]?
 
-    /// Year-based estimate in the recorded calendar, not a claim of completed birthdays.
-    var age: Int? {
+    /// Estimate at the precision shared by the recorded dates.
+    var age: DateComponents? {
         let births = birthDates.filter { $0.status == .accepted }
         let deaths = deathDates.filter { $0.status == .accepted }
         for birth in births.isEmpty ? birthDates : births {
@@ -67,9 +67,16 @@ struct Figure: Decodable, Identifiable, Sendable {
                 let birthYear = birth.era == .bh || birth.era == .bce ? 1 - birth.start.year : birth.start.year
                 let deathYear = death.era == .bh || death.era == .bce ? 1 - death.start.year : death.start.year
                 let years = deathYear - birthYear
-                if years >= 0 {
-                    return years
+                guard years >= 0 else { continue }
+                guard let birthMonth = birth.start.month, let deathMonth = death.start.month else {
+                    return DateComponents(year: years)
                 }
+                var months = years * 12 + deathMonth - birthMonth
+                if let birthDay = birth.start.day, let deathDay = death.start.day, deathDay < birthDay {
+                    months -= 1
+                }
+                guard months >= 0 else { continue }
+                return DateComponents(year: months / 12, month: months % 12)
             }
         }
         return nil
@@ -210,8 +217,18 @@ struct FigureUnion: Decodable, Identifiable, Sendable {
 }
 
 struct FigureLibrary: Sendable {
-    enum Failure: Error, Equatable { case unsupportedVersion, invalidRelationships }
+    enum Failure: Error, Equatable { case unsupportedVersion, invalidRelationships, invalidBrowserGroups }
     enum SiblingDegree: String, CaseIterable, Sendable { case full, half, unknown }
+
+    private struct BrowserGroup: Decodable, Sendable {
+        let id: String
+        let figureIds: [String]
+    }
+
+    struct BrowserSection: Identifiable {
+        let id: String
+        let figures: [Figure]
+    }
 
     private struct Source: Decodable, Sendable {
         let id: String
@@ -228,9 +245,11 @@ struct FigureLibrary: Sendable {
         let parentages: [FigureParentage]
         let unions: [FigureUnion]
         let sources: [Source]
+        let browserGroups: [BrowserGroup]?
     }
 
     let people: [Figure]
+    private let browserGroups: [BrowserGroup]
     let byID: [String: Figure]
     let parents: [String: [FigureParentage]]
     let children: [String: [FigureParentage]]
@@ -258,6 +277,15 @@ struct FigureLibrary: Sendable {
               dataset.unions.allSatisfy({ $0.partnerIds.count == 2 && Set($0.partnerIds).count == 2
                       && $0.partnerIds.allSatisfy(ids.contains) })
         else { throw Failure.invalidRelationships }
+        if let groups = dataset.browserGroups {
+            let assignedIDs = groups.flatMap(\.figureIds)
+            guard Set(groups.map(\.id)).count == groups.count,
+                  assignedIDs.count == ids.count, Set(assignedIDs) == ids
+            else { throw Failure.invalidBrowserGroups }
+            browserGroups = groups
+        } else {
+            browserGroups = [BrowserGroup(id: "all", figureIds: dataset.people.map(\.id))]
+        }
         people = dataset.people.filter { !verifiedOnly || $0.verified == true }
         let publishedIDs = Set(people.map(\.id))
         let unions = dataset.unions.filter { $0.partnerIds.allSatisfy(publishedIDs.contains) }
@@ -286,6 +314,15 @@ struct FigureLibrary: Sendable {
         sources = dataset.sources.filter { sourceIDs.contains($0.id) }
         searchTerms = people.reduce(into: [:]) { terms, figure in
             terms[figure.id] = Array(figure.displayNames.values) + figure.names.values.flatMap(\.aliases)
+        }
+    }
+
+    func browserSections(matching query: String, locale: Locale) -> [BrowserSection] {
+        let matches = Set(search(query, locale: locale).map(\.id))
+        return browserGroups.compactMap { group in
+            let figures = group.figureIds.filter(matches.contains).compactMap { byID[$0] }
+            guard !figures.isEmpty else { return nil }
+            return BrowserSection(id: group.id, figures: figures)
         }
     }
 

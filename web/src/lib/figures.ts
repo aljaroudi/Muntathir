@@ -18,7 +18,7 @@ function legacyClaim<T extends Claim>(claim: T) {
 }
 
 // Installed apps still consume the original string-note, required-citations contract.
-export function legacyDataset(source = dataset) {
+export function legacyDataset({ browser_groups: _, ...source } = dataset) {
   const people = source.people
     .filter(person => "verified" in person && person.verified === true)
     .map(person => {
@@ -70,6 +70,7 @@ export function legacyDataset(source = dataset) {
 
 export function legacySchema() {
   const legacy = structuredClone(schema)
+  const { browser_groups: _, ...properties } = legacy.properties
   const definitions = legacy.$defs as unknown as Record<
     string,
     { properties: Record<string, unknown>; required?: string[] }
@@ -81,5 +82,5 @@ export function legacySchema() {
     definitions[name].properties.notes = { type: "string" }
   }
   definitions.dateClaim.required!.push("citations")
-  return legacy
+  return { ...legacy, properties }
 }
