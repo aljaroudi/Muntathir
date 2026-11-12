@@ -84,11 +84,11 @@ struct PrayerWidgetView: View {
 
     private var compactContent: some View {
         let upcoming = entry.settings?.upcomingPrayers(after: entry.date) ?? []
-        return ViewThatFits {
-            prayerContent(upcoming, rows: 2, countdown: true, symbols: true).fixedSize()
-            prayerContent(upcoming, rows: 1, countdown: true, symbols: true).fixedSize()
-            prayerContent(upcoming, rows: 0, countdown: true, symbols: true).fixedSize()
-            prayerContent(upcoming, rows: 0, countdown: false, symbols: true).fixedSize()
+        return ViewThatFits(in: .vertical) {
+            prayerContent(upcoming, rows: 2, countdown: true, symbols: true).fixedSize(horizontal: false, vertical: true)
+            prayerContent(upcoming, rows: 1, countdown: true, symbols: true).fixedSize(horizontal: false, vertical: true)
+            prayerContent(upcoming, rows: 0, countdown: true, symbols: true).fixedSize(horizontal: false, vertical: true)
+            prayerContent(upcoming, rows: 0, countdown: false, symbols: true).fixedSize(horizontal: false, vertical: true)
             prayerContent(upcoming, rows: 0, countdown: false, symbols: false)
         }
     }
@@ -97,13 +97,15 @@ struct PrayerWidgetView: View {
         VStack(alignment: .leading, spacing: 6) {
             if let first = upcoming.first {
                 VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 4) {
+                    ViewThatFits(in: .horizontal) {
                         if symbols {
-                            Image(systemName: first.name.symbol).accessibilityHidden(true)
+                            Label(first.name.title, systemImage: first.name.symbol)
+                                .fixedSize()
                         }
                         Text(first.name.title)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                    .font(.subheadline.weight(.semibold)).lineLimit(1)
+                    .font(.subheadline.weight(.semibold))
                     time(first.date)
                         .font(symbols ? .title2.weight(.semibold) : .body.weight(.semibold))
                         .minimumScaleFactor(symbols ? 1 : 0.7)
@@ -116,18 +118,37 @@ struct PrayerWidgetView: View {
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text("\(Text(first.name.title)) \(Text(first.date, format: .dateTime.hour().minute().locale(locale).inZone(entry.zone))) \(Text(PrayerCountdownFormat(target: first.date, locale: locale).format(entry.date)))"))
                 ForEach(Array(upcoming.dropFirst().prefix(rows))) { prayer in
-                    HStack(spacing: 8) {
-                        Label(prayer.name.title, systemImage: prayer.name.symbol).lineLimit(1)
-                        Spacer(minLength: 0)
-                        time(prayer.date)
-                    }.font(.caption).accessibilityElement(children: .combine)
+                    ViewThatFits(in: .horizontal) {
+                        prayerRow(prayer, symbols: true)
+                        prayerRow(prayer, symbols: false)
+                        prayerRow(prayer, symbols: false, wraps: true)
+                    }
+                    .font(.caption)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text("\(Text(prayer.name.title)) \(Text(prayer.date, format: .dateTime.hour().minute().locale(locale).inZone(entry.zone)))"))
                 }
             }
         }
     }
 
+    private func prayerRow(_ prayer: PrayerMoment, symbols: Bool, wraps: Bool = false) -> some View {
+        HStack(spacing: 6) {
+            HStack(spacing: 4) {
+                if symbols {
+                    Image(systemName: prayer.name.symbol).accessibilityHidden(true)
+                }
+                Text(prayer.name.title)
+                    .lineLimit(wraps ? nil : 1)
+            }
+            .fixedSize(horizontal: !wraps, vertical: true)
+            Spacer(minLength: 0)
+            time(prayer.date).fixedSize()
+        }
+        .frame(maxWidth: .infinity)
+    }
+
     private func time(_ date: Date) -> some View {
-        Text(date.formatted(.dateTime.hour().minute().locale(locale).inZone(entry.zone)))
+        Text(date.formatted(.dateTime.hour(.defaultDigits(amPM: .omitted)).minute().locale(locale).inZone(entry.zone)))
             .monospacedDigit().lineLimit(1)
     }
 }

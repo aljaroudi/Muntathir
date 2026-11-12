@@ -26,6 +26,14 @@ struct HadithDownloadsSection: View {
                 AssetDownloadButton(pack: assets.packID) { Task { await assets.download() } }
                     .accessibilityIdentifier("downloads-get-\(assets.packID)")
             }
+            if assets.packID == AppleAssetPackBackend.packID {
+                Button("Remove Hadith downloads", systemImage: "trash", role: .destructive) {
+                    removal = nil
+                    confirming = true
+                }
+                .accessibilityIdentifier("downloads-remove-hadith")
+                .disabled(assets.busy || assets.isDownloading)
+            }
             ForEach(assets.books) { book in
                 HStack {
                     Text(book.title(locale: locale))
@@ -70,7 +78,8 @@ struct HadithDownloadsSection: View {
             }
         }
         .confirmationDialog("Remove downloaded content?", isPresented: $confirming, titleVisibility: .visible) {
-            Button("Remove download", role: .destructive) {
+            let action: LocalizedStringKey = removal == nil ? "Remove Hadith downloads" : "Remove download"
+            Button(action, role: .destructive) {
                 let title = removal
                 Task {
                     if let title {

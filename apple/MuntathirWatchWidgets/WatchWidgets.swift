@@ -45,13 +45,16 @@ struct WatchPrayerWidgetView: View {
     var body: some View {
         Group {
             if let next = entry.next {
-                let time = next.date.formatted(.dateTime.hour().minute().locale(locale).inZone(entry.settings?.prayers.location?.timeZone ?? .current))
+                let time = next.date.formatted(.dateTime.hour(.defaultDigits(amPM: .omitted)).minute().locale(locale).inZone(entry.settings?.prayers.location?.timeZone ?? .current))
+                let spokenTime = next.date.formatted(.dateTime.hour().minute().locale(locale).inZone(entry.settings?.prayers.location?.timeZone ?? .current))
                 let remaining = String(PrayerCountdownFormat(target: next.date, locale: locale).format(entry.date).characters)
                 if family == .accessoryInline {
                     Text("\(next.name.title) \(countdown ? remaining : time)")
+                        .accessibilityLabel(Text("\(next.name.title) \(countdown ? remaining + " " + spokenTime : spokenTime)"))
                 } else if family == .accessoryCorner {
                     Image(systemName: next.name.symbol)
                         .widgetLabel { Text("\(next.name.title) \(countdown ? remaining : time)") }
+                        .accessibilityLabel(Text("\(next.name.title) \(countdown ? remaining + " " + spokenTime : spokenTime)"))
                 } else {
                     ViewThatFits {
                         prayerContent(next, time: time, remaining: remaining, details: true, symbol: true).fixedSize()
@@ -63,7 +66,7 @@ struct WatchPrayerWidgetView: View {
                     .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: family == .accessoryRectangular ? .leading : .center)
                     .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(Text("\(Text(next.name.title)) \(countdown ? remaining + " " + time : time)"))
+                    .accessibilityLabel(Text("\(Text(next.name.title)) \(countdown ? remaining + " " + spokenTime : spokenTime)"))
                 }
             } else {
                 if family == .accessoryInline {

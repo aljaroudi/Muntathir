@@ -115,8 +115,16 @@ struct RakaatSessionView: View {
                 GeometryReader { geometry in
                     VStack(spacing: 0) {
                         Spacer(minLength: 0)
-                        Color.black.opacity(0.45)
-                            .frame(height: showsSujoodProgress ? geometry.size.height / 2 : 0)
+                        LinearGradient(
+                            stops: [
+                                .init(color: .clear, location: 0),
+                                .init(color: .black.opacity(0.45), location: 0.1),
+                                .init(color: .black.opacity(0.45), location: 1),
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .frame(height: showsSujoodProgress ? geometry.size.height / 2 : 0)
                     }
                     .animation(reduceMotion ? nil : .easeInOut(duration: 0.7), value: showsSujoodProgress)
                 }

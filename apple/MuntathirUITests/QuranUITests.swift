@@ -358,7 +358,8 @@ final class QuranUITests: XCTestCase {
         app.openSettingsFromTools()
         app.buttons["settings-downloads"].tap()
         XCTAssertTrue(app.buttons["downloads-actions"].waitForExistence(timeout: 10))
-        XCTAssertFalse(app.buttons["downloads-remove-hadith"].exists)
+        let removeHadith = app.buttons["downloads-remove-hadith"]
+        XCTAssertTrue(removeHadith.waitForExistence(timeout: 10))
         XCTAssertFalse(app.descendants(matching: .any)["downloads-bundled-ar"].firstMatch.exists)
         XCTAssertTrue(app.descendants(matching: .any)["downloads-bundled-en"].firstMatch.exists)
         XCTAssertTrue(app.buttons["downloads-get-de.bubenheim"].exists)
@@ -366,6 +367,11 @@ final class QuranUITests: XCTestCase {
         screenshot.name = "Downloads settings"
         screenshot.lifetime = .keepAlways
         add(screenshot)
+        removeHadith.tap()
+        let confirm = app.buttons.matching(NSPredicate(
+            format: "label == %@ AND identifier != %@", "Remove Hadith downloads", "downloads-remove-hadith"
+        )).firstMatch
+        XCTAssertTrue(confirm.waitForExistence(timeout: 5))
     }
 
     @MainActor func testSearchReferenceAndNavigateToVerse() {

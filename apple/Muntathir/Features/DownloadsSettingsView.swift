@@ -8,11 +8,10 @@ struct DownloadsSettingsView: View {
     @State private var removal: Removal?
 
     private enum Removal: Identifiable {
-        case translations, language(String), hadith, supplications
+        case translations, language(String), supplications
         var id: String {
             switch self {
             case .translations: "translations"
-            case .hadith: "hadith"
             case .supplications: "supplications"
             case let .language(id): id
             }
@@ -65,11 +64,6 @@ struct DownloadsSettingsView: View {
         .navigationTitle("Downloads")
         .toolbar {
             Menu {
-                if let hadith, hadith.hasLocalAsset {
-                    Button("Remove Hadith downloads", systemImage: "trash", role: .destructive) { removal = .hadith }
-                        .accessibilityIdentifier("downloads-remove-hadith")
-                        .disabled(hadith.busy || hadith.isDownloading)
-                }
                 if let supplications, supplications.hasLocalAsset {
                     Button("Remove Supplication downloads", systemImage: "trash", role: .destructive) { removal = .supplications }
                         .disabled(supplications.busy || supplications.isDownloading)
@@ -83,7 +77,7 @@ struct DownloadsSettingsView: View {
                 Label("Download actions", systemImage: "ellipsis.circle")
             }
             .accessibilityIdentifier("downloads-actions")
-            .disabled(quran.installedSizes.isEmpty && hadith?.hasLocalAsset != true && supplications?.hasLocalAsset != true)
+            .disabled(quran.installedSizes.isEmpty && supplications?.hasLocalAsset != true)
         }
         .task { await quran.refresh() }
         .confirmationDialog("Remove downloaded content?", isPresented: Binding(get: { removal != nil }, set: {
@@ -95,7 +89,6 @@ struct DownloadsSettingsView: View {
                 Button("Remove download", role: .destructive) {
                     Task {
                         switch removal {
-                        case .hadith: await hadith?.remove()
                         case .supplications: await supplications?.remove()
                         case .translations: await quran.remove(QuranTranslation.downloadable.map(\.id))
                         case let .language(id): await quran.remove([id])
