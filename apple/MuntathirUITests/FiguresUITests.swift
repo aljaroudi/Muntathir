@@ -1,6 +1,46 @@
 import XCTest
 
 final class FiguresUITests: XCTestCase {
+    @MainActor func testLaqabDisclosureInEnglish() throws {
+        try checkLaqabDisclosure(language: "en", locale: "en_US", tools: "Tools",
+                                 more: "Show more laqabs", fewer: "Show fewer laqabs")
+    }
+
+    @MainActor func testLaqabDisclosureInArabic() throws {
+        try checkLaqabDisclosure(language: "ar", locale: "ar_SA", tools: "الأدوات",
+                                 more: "عرض المزيد من الألقاب", fewer: "عرض ألقاب أقل")
+    }
+
+    @MainActor private func checkLaqabDisclosure(language: String, locale: String, tools: String,
+                                                 more: String, fewer: String) throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "-AppleLanguages", "(\(language))", "-AppleLocale", locale]
+        try launchWithFigures(app)
+        app.buttons[tools].firstMatch.tap()
+        app.buttons["figures"].tap()
+        let hasan = app.buttons["figure-hasan-ibn-ali"]
+        XCTAssertTrue(hasan.waitForExistence(timeout: 10))
+        hasan.tap()
+
+        let showMore = app.buttons[more]
+        let showFewer = app.buttons[fewer]
+        let fourthLaqab = app.staticTexts["كَريم أهل البيت"]
+        XCTAssertTrue(showMore.waitForExistence(timeout: 5))
+        XCTAssertFalse(fourthLaqab.exists)
+        showMore.tap()
+        XCTAssertTrue(showFewer.waitForExistence(timeout: 5))
+        XCTAssertTrue(fourthLaqab.exists)
+        showFewer.tap()
+        XCTAssertTrue(showMore.waitForExistence(timeout: 5))
+        XCTAssertFalse(fourthLaqab.exists)
+
+        showMore.tap()
+        XCTAssertTrue(showFewer.waitForExistence(timeout: 5))
+        app.navigationBars.buttons.firstMatch.tap()
+        app.buttons["figure-husayn-ibn-ali"].tap()
+        XCTAssertTrue(showMore.waitForExistence(timeout: 5))
+    }
+
     @MainActor func testArabicAccessibilityTreeRecenters() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "-AppleLanguages", "(ar)", "-AppleLocale", "ar_SA",

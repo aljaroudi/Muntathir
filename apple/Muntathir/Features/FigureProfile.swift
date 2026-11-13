@@ -27,6 +27,7 @@ extension FigureLibrary.SiblingDegree {
 
 struct FigureProfile: View {
     @Environment(\.locale) private var locale
+    @State private var laqabsExpanded = false
     let figure: Figure
     let library: FigureLibrary
 
@@ -41,10 +42,24 @@ struct FigureProfile: View {
             }
             .accessibilityIdentifier("figure-family-tree")
             ForEach(Figure.NameKind.allCases.filter { $0 != .personal }, id: \.self) { kind in
-                let names = figure.names(kind, locale: locale)
+                let names = Array(Set(figure.names(kind, locale: locale))).sorted()
+                let hasMoreLaqabs = kind == .laqab && names.count > 3
                 if !names.isEmpty {
                     Section(kind.label) {
-                        ForEach(Array(Set(names)).sorted(), id: \.self) { name in Text(verbatim: name) }
+                        ForEach(names.prefix(hasMoreLaqabs && !laqabsExpanded ? 3 : names.count), id: \.self) { name in
+                            Text(verbatim: name)
+                        }
+                        if hasMoreLaqabs {
+                            Button {
+                                withAnimation { laqabsExpanded.toggle() }
+                            } label: {
+                                if laqabsExpanded {
+                                    Text("Show fewer laqabs")
+                                } else {
+                                    Text("Show more laqabs")
+                                }
+                            }
+                        }
                     }
                 }
             }

@@ -65,6 +65,7 @@ struct FigureDestination: View {
                         FigureFamilyTree(originalID: id, library: library)
                     } else {
                         FigureProfile(figure: figure, library: library)
+                            .id(figure.id)
                     }
                 } else {
                     ContentUnavailableView("Figures unavailable", systemImage: "exclamationmark.triangle")
