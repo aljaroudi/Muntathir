@@ -78,7 +78,12 @@ enum PrayerProgress {
             }
         }
         let end: PrayerName = prayer == .fajr ? .sunrise : ([.dhuhr, .asr].contains(prayer) ? .sunset : .midnight)
-        let athan = moments.first { $0.name == prayer }?.date
+        let start: PrayerName = switch prayer {
+        case .asr: .dhuhr
+        case .isha: .maghrib
+        default: prayer
+        }
+        let athan = moments.first { $0.name == start }?.date
         let deadline = moments.first { $0.name == end }?.date
         let timing: PrayerTiming = if prayer.isPrayer, let athan, let deadline, deadline > athan {
             date >= athan && date < deadline ? .onTime : .outsideTime

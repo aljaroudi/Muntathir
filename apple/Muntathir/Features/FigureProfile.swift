@@ -20,7 +20,7 @@ extension FigureLibrary.SiblingDegree {
         switch self {
         case .full: "Full siblings"
         case .half: "Half-siblings"
-        case .unknown: "Siblings of uncertain degree"
+        case .unknown: "Siblings"
         }
     }
 }
@@ -37,10 +37,6 @@ struct FigureProfile: View {
         let primary = parents.filter(\.isDefault)
         let siblings = library.siblings(of: id, account: primary.count == 1 ? primary.first : nil)
         List {
-            NavigationLink(value: FigureRoute.tree(id)) {
-                Label("Family tree", systemImage: "point.3.connected.trianglepath.dotted")
-            }
-            .accessibilityIdentifier("figure-family-tree")
             ForEach(Figure.NameKind.allCases.filter { $0 != .personal }, id: \.self) { kind in
                 let names = Array(Set(figure.names(kind, locale: locale))).sorted()
                 let hasMoreLaqabs = kind == .laqab && names.count > 3
@@ -138,6 +134,7 @@ struct FigureProfile: View {
                 }
             }
         }
+        .accessibilityIdentifier("figure-profile-\(id)")
         .navigationTitle(figure.title(locale))
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -156,13 +153,16 @@ struct FigureProfile: View {
     @ViewBuilder
     private func relative(_ id: String?, role: LocalizedStringKey? = nil) -> some View {
         if let id, let person = library.byID[id] {
-            NavigationLink(value: FigureRoute.profile(id)) {
+            NavigationLink {
+                FigureDestination(id: id)
+            } label: {
                 if let role {
                     LabeledContent(role) { Text(verbatim: person.title(locale)) }
                 } else {
                     Text(verbatim: person.title(locale))
                 }
             }
+            .accessibilityIdentifier("figure-relative-\(id)")
         }
     }
 

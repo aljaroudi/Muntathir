@@ -16,14 +16,21 @@ struct PrayerProgressTests {
         #expect(AppTool.groups.flatMap(\.self).contains(.prayerProgress))
     }
 
-    @Test(arguments: PrayerProgress.prayers)
-    func boundaries(prayer: PrayerName) throws {
-        let times = PrayerCalculator.times(on: day, location: location, method: .jafari)
-        let start = try #require(times.first { $0.name == prayer }?.date)
+    @Test(arguments: PrayerProgress.prayers, PrayerMethod.allCases)
+    func boundaries(prayer: PrayerName, method: PrayerMethod) throws {
+        let times = PrayerCalculator.times(on: day, location: location, method: method)
+        let startName: PrayerName = [.asr: .dhuhr, .isha: .maghrib][prayer] ?? prayer
+        let start = try #require(times.first { $0.name == startName }?.date)
         let endName: PrayerName = prayer == .fajr ? .sunrise : ([.dhuhr, .asr].contains(prayer) ? .sunset : .midnight)
         let end = try #require(times.first { $0.name == endName }?.date)
-        for (date, expected) in [(start.addingTimeInterval(-1), PrayerTiming.outsideTime), (start, .onTime), (end.addingTimeInterval(-1), .onTime), (end, .outsideTime)] {
-            let record = PrayerProgress.snapshot(prayer: prayer, at: date, location: location, method: .jafari)
+        for (date, expected) in [
+            (start.addingTimeInterval(-1), PrayerTiming.outsideTime),
+            (start, .onTime),
+            (start.addingTimeInterval(1), .onTime),
+            (end.addingTimeInterval(-1), .onTime),
+            (end, .outsideTime),
+        ] {
+            let record = PrayerProgress.snapshot(prayer: prayer, at: date, location: location, method: method)
             #expect(record.timing == expected)
             #expect(record.athan == start)
             #expect(record.deadline == end)
@@ -37,6 +44,9 @@ struct PrayerProgressTests {
         let record = PrayerProgress.snapshot(prayer: .isha, at: midnight, location: location, method: .jafari)
         let yesterday = try #require(calendar.date(byAdding: .day, value: -1, to: midnight))
         #expect(record.prayerDay == PrayerProgress.dayKey(yesterday, timeZone: location.timeZone))
+        let previousTimes = PrayerCalculator.times(on: yesterday, location: location, method: .jafari)
+        let previousMaghrib = try #require(previousTimes.first { $0.name == .maghrib }?.date)
+        #expect(record.athan == previousMaghrib)
         let missing = PrayerProgress.snapshot(prayer: .fajr, at: day, location: nil, method: .jafari, fallbackTimeZone: .gmt)
         #expect(missing.timing == .unavailable)
         #expect(missing.timeZoneID == "GMT")

@@ -26,7 +26,7 @@ struct ActivityProgressView: View {
             VStack(alignment: .leading, spacing: 24) {
                 if store?.unavailable == true {
                     VStack(alignment: .leading, spacing: 8) {
-                        Label("Unable to save or load progress.", systemImage: "exclamationmark.circle")
+                        Label("Unable to save or load activity.", systemImage: "exclamationmark.circle")
                         Button("Try again") { store?.retry() }
                     }.card()
                 }
@@ -46,7 +46,7 @@ struct ActivityProgressView: View {
             .frame(maxWidth: .infinity)
         }
         .background(Color(.systemGroupedBackground))
-        .navigationTitle("Progress")
+        .navigationTitle("Activity")
         .accessibilityIdentifier("progress-screen")
     }
 

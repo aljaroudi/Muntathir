@@ -4,7 +4,7 @@ final class PrayerProgressUITests: XCTestCase {
     @MainActor private func launch(_ arguments: [String] = []) -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-testing", "--rakaat-demo", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"] + arguments
+        app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "--ui-testing-supplications-fixture", "--rakaat-demo", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"] + arguments
         app.launch()
         return app
     }
@@ -36,13 +36,14 @@ final class PrayerProgressUITests: XCTestCase {
         app.buttons["add-tab-prayerProgress"].tap()
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        app.buttons["Progress"].firstMatch.tap()
-        XCTAssertTrue(app.navigationBars["Progress"].exists)
+        app.buttons["Activity"].firstMatch.tap()
+        XCTAssertTrue(app.navigationBars["Activity"].exists)
     }
 
-    @MainActor func testArabicProgressAtAccessibilitySize() {
+    @MainActor func testArabicActivityAtAccessibilitySize() {
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-testing", "-AppleLanguages", "(ar)", "-AppleLocale", "ar_SA",
+        app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "--ui-testing-supplications-fixture",
+                               "-AppleLanguages", "(ar)", "-AppleLocale", "ar_SA",
                                "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         app.launch()
         app.buttons["الأدوات"].firstMatch.tap()
@@ -50,20 +51,20 @@ final class PrayerProgressUITests: XCTestCase {
             app.swipeUp()
         }
         app.buttons["prayer-progress"].tap()
-        XCTAssertTrue(app.navigationBars["التقدم"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["النشاط"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.descendants(matching: .any)["prayer-total-fajr"].firstMatch.exists)
         let screenshot = XCTAttachment(screenshot: app.screenshot())
-        screenshot.name = "Prayer Progress — Arabic accessibility"
+        screenshot.name = "Activity — Arabic accessibility"
         screenshot.lifetime = .keepAlways
         add(screenshot)
-        XCTAssertFalse(app.staticTexts["Progress"].exists)
+        XCTAssertFalse(app.staticTexts["Activity"].exists)
         let card = app.descendants(matching: .any)["progress-tasbih"].firstMatch
         for _ in 0 ..< 12 where !card.isHittable {
             app.swipeUp()
         }
         XCTAssertTrue(card.isHittable)
         let cards = XCTAttachment(screenshot: app.screenshot())
-        cards.name = "Progress cards — Arabic accessibility"
+        cards.name = "Activity cards — Arabic accessibility"
         cards.lifetime = .keepAlways
         add(cards)
     }
@@ -113,7 +114,7 @@ final class PrayerProgressUITests: XCTestCase {
         openTool("prayer-progress", app: app)
         XCTAssertTrue(app.descendants(matching: .any)["progress-prayer-chart"].firstMatch.exists)
         let overview = XCTAttachment(screenshot: app.screenshot())
-        overview.name = "Progress overview"
+        overview.name = "Activity overview"
         overview.lifetime = .keepAlways
         add(overview)
         for _ in 0 ..< 4 where !app.descendants(matching: .any)["progress-highlights"].firstMatch.isHittable {
@@ -150,7 +151,7 @@ final class PrayerProgressUITests: XCTestCase {
 
     @MainActor func testReadingTimeIsAttributedToEachReader() {
         for (tool, kind, mode) in [("hadith", "hadithReading", "verses"), ("supplications", "supplicationReading", "verses"), ("holy-quran", "quranReading", "verses"), ("holy-quran", "quranReading", "mushaf")] {
-            let app = launch(["--ui-testing-hadith-fixture", "--ui-testing-supplications-fixture", "-quranReadingMode", mode])
+            let app = launch(["-quranReadingMode", mode])
             openTool(tool, app: app)
             if tool == "hadith" {
                 app.buttons["hadith-book-bukhari"].tap()

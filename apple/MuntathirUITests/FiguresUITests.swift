@@ -42,24 +42,43 @@ final class FiguresUITests: XCTestCase {
         XCTAssertTrue(showMore.waitForExistence(timeout: 5))
     }
 
-    @MainActor func testArabicAccessibilityTreeRecenters() throws {
+    @MainActor func testSiblingSectionInEnglish() throws {
+        try checkSiblingSection(language: "en", locale: "en_US", tools: "Tools", siblings: "Siblings")
+    }
+
+    @MainActor func testArabicSiblingSectionAtAccessibilitySize() throws {
+        try checkSiblingSection(language: "ar", locale: "ar_SA", tools: "الأدوات", siblings: "الإخوة والأخوات",
+                                textSize: "UICTContentSizeCategoryAccessibilityXXXL")
+    }
+
+    @MainActor private func checkSiblingSection(language: String, locale: String, tools: String, siblings: String,
+                                                textSize: String = "UICTContentSizeCategoryL") throws
+    {
+        continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-testing", "-AppleLanguages", "(ar)", "-AppleLocale", "ar_SA",
-                               "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+        app.launchArguments = ["--ui-testing", "-AppleLanguages", "(\(language))", "-AppleLocale", locale,
+                               "-UIPreferredContentSizeCategoryName", textSize]
         try launchWithFigures(app)
-        app.buttons["الأدوات"].firstMatch.tap()
+        app.buttons[tools].firstMatch.tap()
         app.buttons["figures"].tap()
         let prophet = app.buttons["figure-prophet-muhammad"]
         XCTAssertTrue(prophet.waitForExistence(timeout: 10))
         prophet.tap()
-        app.buttons["figure-family-tree"].tap()
-        let father = app.buttons["family-node-abdullah-ibn-abd-al-muttalib"]
-        XCTAssertTrue(father.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.descendants(matching: .any)["figure-profile-prophet-muhammad"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["figure-family-tree"].exists)
+        let father = app.buttons["figure-relative-abdullah-ibn-abd-al-muttalib"]
+        for _ in 0 ..< 15 where !father.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(father.isHittable)
         father.tap()
-        let reset = app.buttons["العودة إلى الشخصية الأولى"]
-        XCTAssertTrue(reset.waitForExistence(timeout: 5))
-        reset.tap()
-        XCTAssertTrue(father.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["figure-profile-abdullah-ibn-abd-al-muttalib"].firstMatch.waitForExistence(timeout: 5))
+        let header = app.staticTexts[siblings]
+        for _ in 0 ..< 10 where !header.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(header.isHittable)
+        XCTAssertTrue(app.buttons["figure-relative-abu-talib"].exists)
     }
 
     @MainActor func testCalendarProfileAndMarriagePicker() throws {
@@ -83,18 +102,19 @@ final class FiguresUITests: XCTestCase {
         XCTAssertTrue(prophet.waitForExistence(timeout: 5))
         XCTAssertTrue(khadija.exists)
         prophet.tap()
-        XCTAssertTrue(app.buttons["figure-family-tree"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["figure-profile-prophet-muhammad"].firstMatch.waitForExistence(timeout: 5))
         app.navigationBars.buttons.firstMatch.tap()
         app.navigationBars.buttons.firstMatch.tap()
         jump.tap()
         app.buttons["calendar-day-1448-3-17"].tap()
         app.buttons["observance-prophet-birth"].tap()
-        XCTAssertTrue(app.buttons["figure-family-tree"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["figure-profile-prophet-muhammad"].firstMatch.waitForExistence(timeout: 5))
     }
 
-    private func launchWithFigures(_ app: XCUIApplication) throws {
+    @MainActor private func launchWithFigures(_ app: XCUIApplication) throws {
         let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "figures", withExtension: "json"))
         app.launchEnvironment["UITEST_FIGURES"] = try Data(contentsOf: url).base64EncodedString()
+        app.launchArguments += ["--ui-testing-hadith-fixture", "--ui-testing-supplications-fixture"]
         app.launch()
     }
 }

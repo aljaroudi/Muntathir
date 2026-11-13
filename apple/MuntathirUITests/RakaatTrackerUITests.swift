@@ -4,7 +4,7 @@ final class RakaatTrackerUITests: XCTestCase {
     @MainActor private func open(_ argument: String, extraArguments: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
         let arabic = extraArguments.contains("(ar)")
-        app.launchArguments = ["--ui-testing", argument] + (arabic ? [] : ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]) + extraArguments
+        app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "--ui-testing-supplications-fixture", argument] + (arabic ? [] : ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]) + extraArguments
         app.launch()
         app.buttons[arabic ? "الأدوات" : "Tools"].firstMatch.tap()
         for _ in 0 ..< 3 where !app.buttons["rakaat-tracker"].exists {

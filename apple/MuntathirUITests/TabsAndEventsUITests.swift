@@ -1,14 +1,14 @@
 import XCTest
 
 final class TabsAndEventsUITests: XCTestCase {
-    @MainActor private func launch(language: String = "en", largeText: Bool = false) -> XCUIApplication {
+    @MainActor private func launch(language: String = "en", largeText: Bool = false, arguments: [String] = []) -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "--ui-testing-hadith-fixture",
+        app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "--ui-testing-hadith-fixture", "--ui-testing-supplications-fixture",
                                "--sky-date", "2026-10-23T06:00:00Z",
                                "-AppleLanguages", "(\(language))", "-AppleLocale", language == "ar" ? "ar_SA" : "en_US"]
         app.launchArguments += ["-UIPreferredContentSizeCategoryName",
-                                largeText ? "UICTContentSizeCategoryAccessibilityXXXL" : "UICTContentSizeCategoryL"]
+                                largeText ? "UICTContentSizeCategoryAccessibilityXXXL" : "UICTContentSizeCategoryL"] + arguments
         app.launch()
         return app
     }
@@ -27,7 +27,7 @@ final class TabsAndEventsUITests: XCTestCase {
         let event = app.buttons["observance-husayn-arrival-karbala"]
         XCTAssertTrue(event.waitForExistence(timeout: 10))
         event.tap()
-        XCTAssertTrue(app.buttons["figure-family-tree"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.descendants(matching: .any)["figure-profile-husayn-ibn-ali"].firstMatch.waitForExistence(timeout: 10))
         app.openSettingsFromTools()
         app.buttons["settings-tabs"].tap()
         let reorder = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] 'Reorder'"))
@@ -35,7 +35,7 @@ final class TabsAndEventsUITests: XCTestCase {
         XCTAssertEqual(reorder.count, 3)
         reorder.element(boundBy: 1).press(forDuration: 1, thenDragTo: reorder.element(boundBy: 0))
         let calendar = app.cells.containing(.any, identifier: "tab-shortcut-calendar").firstMatch
-        XCTAssertLessThan(app.staticTexts["tab-shortcut-events"].frame.minY, app.staticTexts["tab-shortcut-calendar"].frame.minY)
+        XCTAssertLessThan(app.cells.containing(.any, identifier: "tab-shortcut-events").firstMatch.frame.minY, calendar.frame.minY)
         calendar.images["minus.circle.fill"].firstMatch.tap()
         if app.buttons["Delete"].waitForExistence(timeout: 1) {
             app.buttons["Delete"].firstMatch.tap()
@@ -48,7 +48,7 @@ final class TabsAndEventsUITests: XCTestCase {
         XCTAssertFalse(app.buttons["events"].exists)
         XCTAssertFalse(app.buttons["hadith"].exists)
         app.buttons["Events"].firstMatch.tap()
-        XCTAssertTrue(app.buttons["figure-family-tree"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["figure-profile-husayn-ibn-ali"].firstMatch.waitForExistence(timeout: 5))
         app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(app.staticTexts["events-month-1"].waitForExistence(timeout: 5))
         app.buttons["Hadith"].firstMatch.tap()
@@ -64,7 +64,8 @@ final class TabsAndEventsUITests: XCTestCase {
         app.buttons["settings-tabs"].tap()
         let rows = app.cells.allElementsBoundByIndex.filter { $0.staticTexts["tab-shortcut-events"].exists || $0.staticTexts["tab-shortcut-hadith"].exists }
         XCTAssertEqual(rows.count, 2)
-        XCTAssertLessThan(app.staticTexts["tab-shortcut-events"].frame.minY, app.staticTexts["tab-shortcut-hadith"].frame.minY)
+        XCTAssertLessThan(app.cells.containing(.any, identifier: "tab-shortcut-events").firstMatch.frame.minY,
+                          app.cells.containing(.any, identifier: "tab-shortcut-hadith").firstMatch.frame.minY)
     }
 
     @MainActor func testEventsStartAtMuharramAndOpenFigure() {
@@ -77,7 +78,40 @@ final class TabsAndEventsUITests: XCTestCase {
         let event = app.buttons["observance-husayn-arrival-karbala"]
         XCTAssertTrue(event.waitForExistence(timeout: 10))
         event.tap()
-        XCTAssertTrue(app.buttons["figure-family-tree"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.descendants(matching: .any)["figure-profile-husayn-ibn-ali"].firstMatch.waitForExistence(timeout: 10))
+    }
+
+    @MainActor func testRakaatShortcutCanSwitchTabsBeforeAndAfterSession() {
+        let app = launch(arguments: ["--rakaat-denied"])
+        app.openSettingsFromTools()
+        app.buttons["settings-tabs"].tap()
+        let addRakaat = app.buttons["add-tab-rakaat"]
+        for _ in 0 ..< 5 where !addRakaat.isHittable {
+            app.swipeUp()
+        }
+        addRakaat.tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+
+        let rakaatTab = app.buttons["Rakaat Tracker"].firstMatch
+        let todayTab = app.buttons["Today"].firstMatch
+        let target = app.buttons["rakaat-target-2"]
+        rakaatTab.tap()
+        XCTAssertTrue(target.waitForExistence(timeout: 5))
+        XCTAssertTrue(todayTab.isHittable)
+        todayTab.tap()
+        XCTAssertTrue(todayTab.isSelected)
+
+        rakaatTab.tap()
+        target.tap()
+        app.buttons["rakaat-prayer-other"].firstMatch.tap()
+        XCTAssertTrue(app.staticTexts["Camera unavailable"].waitForExistence(timeout: 5))
+        XCTAssertFalse(todayTab.isHittable)
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(target.waitForExistence(timeout: 5))
+        XCTAssertTrue(todayTab.isHittable)
+        todayTab.tap()
+        XCTAssertTrue(todayTab.isSelected)
     }
 
     @MainActor func testQuranNavigationSurvivesTabReordering() {

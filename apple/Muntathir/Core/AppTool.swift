@@ -17,7 +17,7 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
         case .figures: "Figures"
         case .tasbih: "Tasbih"
         case .rakaat: "Rakaat Tracker"
-        case .prayerProgress: "Progress"
+        case .prayerProgress: "Activity"
         case .qibla: "Qibla"
         }
     }

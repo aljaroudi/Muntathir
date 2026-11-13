@@ -13,7 +13,6 @@ struct RakaatTrackerView: View {
             .background { RakaatHeadingOrientation(onChange: qibla.orientHeading).allowsHitTesting(false) }
             .navigationTitle("Rakaat Tracker")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar(.hidden, for: .tabBar)
             .navigationDestination(item: $target) { target in
                 RakaatSessionView(target: target, prayer: selectedPrayer)
             }
