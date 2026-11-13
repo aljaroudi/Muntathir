@@ -17,6 +17,7 @@ import WidgetKit
     var preparingDownload: Bool {
         downloadState == .downloading && !downloadStarted
     }
+
     private(set) var installedSizes: [String: Int64] = [:]
     private(set) var busy = false
     var storageError = false

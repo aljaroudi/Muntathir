@@ -12,7 +12,8 @@ final class FiguresUITests: XCTestCase {
     }
 
     @MainActor private func checkLaqabDisclosure(language: String, locale: String, tools: String,
-                                                 more: String, fewer: String) throws {
+                                                 more: String, fewer: String) throws
+    {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "-AppleLanguages", "(\(language))", "-AppleLocale", locale]
         try launchWithFigures(app)

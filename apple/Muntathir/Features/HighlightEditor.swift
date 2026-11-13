@@ -77,39 +77,33 @@ struct HighlightEditor: View {
     // A draft is seeded once when the editor opens; incoming sync never replaces unsaved typing.
     @State private var draft: ReadingHighlight
     @State private var deleting = false
+    @State private var selectedColor: HighlightColor?
+    @State private var lastSaved: ReadingHighlight?
+    @State private var pendingRetry: SaveAction?
     @State private var failed = false
+    @State private var paletteHeight: CGFloat = 136
+
+    private enum SaveAction {
+        case note, color, delete
+    }
+
     @AppStorage("highlightColorCount") private var colorCount = HighlightPalette.defaultCount
     @AppStorage("highlightColorOrder") private var colorOrder = HighlightPalette.defaultOrder
-    @FocusState private var noteFocused: Bool
 
     init(highlight: ReadingHighlight, existing: Bool = false, additionalHighlights: [ReadingHighlight] = []) {
         self.additionalHighlights = additionalHighlights
         original = highlight
         self.existing = existing
         _draft = State(initialValue: highlight)
+        _selectedColor = State(initialValue: existing ? highlight.color : nil)
+        _lastSaved = State(initialValue: existing ? highlight : nil)
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 44), spacing: 12)], spacing: 12) {
-                        ForEach(HighlightPalette.colors(order: colorOrder, count: colorCount), id: \.self) { color in
-                            Button {
-                                draft.color = color
-                                if !noteFocused, draft.note == original.note {
-                                    save()
-                                }
-                            } label: {
-                                HighlightSwatch(color: color, size: 36, isSelected: draft.color == color)
-                                    .frame(minWidth: 44, minHeight: 44)
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel(color.title)
-                            .accessibilityAddTraits(draft.color == color ? .isSelected : [])
-                            .accessibilityIdentifier("highlight-color-\(color.rawValue)")
-                        }
-                    }
+        ScrollView {
+            VStack(spacing: 20) {
+                palette
+                if existing {
                     ZStack(alignment: .topLeading) {
                         if draft.note.isEmpty {
                             Text("Add note")
@@ -121,60 +115,66 @@ struct HighlightEditor: View {
                         TextEditor(text: $draft.note)
                             .scrollContentBackground(.hidden)
                             .frame(minHeight: 100)
-                            .focused($noteFocused)
                             .accessibilityLabel("Highlight note")
                             .accessibilityIdentifier("highlight-note-editor")
+                            .onChange(of: draft.note) { save(.note) }
                     }
-                    if existing {
-                        HStack {
-                            Button("Delete highlight", systemImage: "trash", role: .destructive) { deleting = true }
-                                .labelStyle(.iconOnly)
-                                .frame(minWidth: 44, minHeight: 44)
-                            Spacer()
-                        }
+                    HStack {
+                        Button("Delete highlight", systemImage: "trash", role: .destructive) { deleting = true }
+                            .labelStyle(.iconOnly)
+                            .frame(minWidth: 44, minHeight: 44)
+                        Spacer()
                     }
                 }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 12)
             }
-            .navigationTitle(Text(verbatim: ""))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(role: .confirm) { save() }
-                        .accessibilityIdentifier("save-highlight")
+            .padding(.horizontal, 24)
+            .padding(.vertical, existing ? 16 : 12)
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .interactiveDismissDisabled(pendingRetry != nil && pendingRetry != .delete)
+        .confirmationDialog("Delete this highlight?", isPresented: $deleting, titleVisibility: .visible) {
+            Button("Delete highlight", role: .destructive) { save(.delete) }
+            Button("Cancel", role: .cancel) {}
+        }
+        .alert("Unable to save", isPresented: $failed) {
+            Button("Retry") {
+                if let pendingRetry {
+                    save(pendingRetry)
                 }
             }
-            .interactiveDismissDisabled(existing ? draft != original : !draft.note.isEmpty)
-            .confirmationDialog("Delete this highlight?", isPresented: $deleting, titleVisibility: .visible) {
-                Button("Delete highlight", role: .destructive) { save(deleting: true) }
-                Button("Cancel", role: .cancel) {}
-            }
-            .alert("Unable to save", isPresented: $failed) {
-                Button("OK", role: .cancel) {}
-                Button("Discard changes", role: .destructive) { dismiss() }
-            }
-            message: { Text("Your changes are still here. Please try saving again.") }
+            Button("Discard changes", role: .destructive) { dismiss() }
         }
-        .onAppear {
-            if !existing, let first = HighlightPalette.colors(order: colorOrder, count: colorCount).first {
-                draft.color = first
-            }
-        }
-        .presentationDetents([.medium, .large])
+        .presentationDetents(existing ? [.medium, .large] : [.height(paletteHeight + 24)])
         .presentationDragIndicator(.visible)
     }
 
-    private func save(deleting: Bool = false) {
-        if existing, !deleting, draft == original {
-            dismiss()
-            return
+    private var palette: some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 44), spacing: 12)], spacing: 12) {
+            ForEach(HighlightPalette.colors(order: colorOrder, count: colorCount), id: \.self) { color in
+                Button {
+                    selectedColor = color
+                    draft.color = color
+                    save(.color)
+                } label: {
+                    HighlightSwatch(color: color, size: 36, isSelected: selectedColor == color)
+                        .frame(minWidth: 44, minHeight: 44)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(color.title)
+                .accessibilityAddTraits(selectedColor == color ? .isSelected : [])
+                .accessibilityIdentifier("highlight-color-\(color.rawValue)")
+            }
         }
+        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { paletteHeight = $0 }
+    }
+
+    private func save(_ action: SaveAction) {
         do {
-            guard let store else { throw QuranUserStoreError.unavailable }
-            if deleting {
+            if action == .delete {
+                guard let store else { throw QuranUserStoreError.unavailable }
                 try store.delete(original)
-            } else {
+            } else if draft != lastSaved {
+                guard let store else { throw QuranUserStoreError.unavailable }
                 let additional = additionalHighlights.map { highlight in
                     var value = highlight
                     value.color = draft.color
@@ -182,9 +182,16 @@ struct HighlightEditor: View {
                     return value
                 }
                 try store.save([draft] + additional)
+                lastSaved = draft
             }
-            dismiss()
-        } catch { failed = true }
+            pendingRetry = nil
+            if action != .note {
+                dismiss()
+            }
+        } catch {
+            pendingRetry = action
+            failed = true
+        }
     }
 }
 
@@ -199,8 +206,12 @@ struct HighlightSummary: View {
     let highlight: ReadingHighlight
     var available = true
     var showReference = true
+    var searchQuery = ""
 
     var body: some View {
+        let searching = !searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let blocks = [SearchMatch.text(highlight.excerpt, query: searchQuery), SearchMatch.text(highlight.note, query: searchQuery)]
+        let visible = SearchMatch.visibleBlocks(blocks, preferred: 0)
         HStack(alignment: .top, spacing: 12) {
             HighlightMarker(color: highlight.color)
                 .frame(width: 4)
@@ -212,16 +223,24 @@ struct HighlightSummary: View {
                         .foregroundStyle(.secondary)
                         .accessibilityLabel(reference + ", " + highlight.color.title)
                 }
-                Text(highlight.excerpt)
-                    .accessibilityLabel(showReference ? highlight.excerpt : reference + ", " + highlight.color.title + ", " + highlight.excerpt)
-                    .font(.body)
-                    .foregroundStyle(.primary)
-                    .lineLimit(4)
-                if !highlight.note.isEmpty {
-                    Label(highlight.note, systemImage: "note.text")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
+                if searching {
+                    ForEach(visible, id: \.self) { index in
+                        SearchMatchText(SearchMatch.preview(blocks[index], compact: true))
+                            .font(index == 0 ? .body : .subheadline)
+                            .lineLimit(2)
+                    }
+                } else {
+                    Text(highlight.excerpt)
+                        .accessibilityLabel(showReference ? highlight.excerpt : reference + ", " + highlight.color.title + ", " + highlight.excerpt)
+                        .font(.body)
+                        .foregroundStyle(.primary)
+                        .lineLimit(4)
+                    if !highlight.note.isEmpty {
+                        Label(highlight.note, systemImage: "note.text")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    }
                 }
                 if !available {
                     Label("Highlighted passage unavailable", systemImage: "exclamationmark.triangle")

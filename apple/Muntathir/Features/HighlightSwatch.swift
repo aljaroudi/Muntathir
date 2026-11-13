@@ -38,12 +38,16 @@ struct HighlightSwatch: View {
             }
             .onAppear { playSheen() }
             .onChange(of: isSelected) { _, selected in
-                if selected { playSheen() }
+                if selected {
+                    playSheen()
+                }
             }
     }
 
     private func playSheen() {
-        if color == .cyan, !reduceMotion { sheenTrigger += 1 }
+        if color == .cyan, !reduceMotion {
+            sheenTrigger += 1
+        }
     }
 }
 

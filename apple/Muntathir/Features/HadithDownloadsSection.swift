@@ -16,14 +16,14 @@ struct HadithDownloadsSection: View {
                 LabeledContent {
                     AssetSizeText(bytes: assets.installedBytes)
                 } label: { Text("Total size") }
-                .accessibilityIdentifier("downloads-size-\(assets.packID)")
-                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                    Button("Remove download", systemImage: "trash", role: .destructive) {
-                        Task { await assets.remove() }
+                    .accessibilityIdentifier("downloads-size-\(assets.packID)")
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button("Remove download", systemImage: "trash", role: .destructive) {
+                            Task { await assets.remove() }
+                        }
+                        .accessibilityIdentifier("downloads-remove-\(assets.packID)")
+                        .disabled(assets.busy || assets.isDownloading)
                     }
-                    .accessibilityIdentifier("downloads-remove-\(assets.packID)")
-                    .disabled(assets.busy || assets.isDownloading)
-                }
             }
             if !assets.isDownloading, assets.state == .checking || assets.busy {
                 ProgressView()
@@ -83,17 +83,17 @@ struct HadithDownloadsSection: View {
                 }
             }
         } header: { Text(title) }
-        .onChange(of: assets.state) { _, state in
-            if state == .ready || state == .missing {
-                requestedBook = nil
+            .onChange(of: assets.state) { _, state in
+                if state == .ready || state == .missing {
+                    requestedBook = nil
+                }
             }
-        }
-        .alert("Unable to finish storage cleanup", isPresented: $assets.storageError) {
-            Button("Try again") { Task { await assets.refresh() } }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text(assets.storageErrorMessage)
-        }
+            .alert("Unable to finish storage cleanup", isPresented: $assets.storageError) {
+                Button("Try again") { Task { await assets.refresh() } }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text(assets.storageErrorMessage)
+            }
     }
 
     @ViewBuilder private var downloadStatus: some View {

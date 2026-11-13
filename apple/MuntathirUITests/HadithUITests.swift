@@ -288,11 +288,17 @@ extension HadithUITests {
         text.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).press(forDuration: 1.2)
         XCTAssertTrue(app.menuItems["Highlight"].waitForExistence(timeout: 5))
         app.menuItems["Highlight"].tap()
+        let yellow = app.buttons["highlight-color-yellow"]
+        XCTAssertTrue(yellow.waitForExistence(timeout: 5))
+        yellow.tap()
+        XCTAssertTrue(yellow.waitForNonExistence(timeout: 5))
+        text.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
         let editor = app.textViews["highlight-note-editor"]
         XCTAssertTrue(editor.waitForExistence(timeout: 5))
         editor.tap()
         editor.typeText("Saved Hadith note")
-        app.buttons["save-highlight"].tap()
+        yellow.tap()
+        XCTAssertTrue(editor.waitForNonExistence(timeout: 5))
         app.swipeUp()
         app.swipeUp()
         let before = app.descendants(matching: .any)["hadith-full-arabic"].firstMatch.frame.minY

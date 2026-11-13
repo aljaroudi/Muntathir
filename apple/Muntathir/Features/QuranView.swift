@@ -21,6 +21,7 @@ struct QuranView: View {
             .readingBackground()
             .navigationTitle("Holy Quran")
             .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Surah, 2:255, or Quran text")
+            .searchHistory(query, area: .quran)
             .autocorrectionDisabled()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -90,6 +91,9 @@ struct QuranVerseRow: View {
     @Environment(\.locale) private var locale
 
     var body: some View {
+        let arabic = SearchMatch.text(ayah.text, query: searchQuery)
+        let translated = SearchMatch.text(translation.flatMap { ayah.translations[$0.id] } ?? "", query: searchQuery)
+        let visible = SearchMatch.visibleBlocks([arabic, translated], preferred: locale.language.languageCode?.identifier == "ar" ? 0 : 1)
         VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Text(QuranReference.display(ayah.id, locale: locale)).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
@@ -102,15 +106,21 @@ struct QuranVerseRow: View {
                 }
             }
             if preview {
-                SearchMatchText(SearchMatch.preview(SearchMatch.text(ayah.text, query: searchQuery))).readingText(arabic: true).frame(maxWidth: .infinity, alignment: .leading).fixedSize(horizontal: false, vertical: true).environment(\.layoutDirection, .rightToLeft).lineLimit(3)
+                if visible.contains(0) {
+                    SearchMatchText(SearchMatch.preview(arabic, compact: true))
+                        .readingText(arabic: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .environment(\.layoutDirection, .rightToLeft)
+                        .lineLimit(2)
+                }
             } else {
                 HighlightText(text: ayah.text, source: ayah.id, block: "arabic", arabic: true)
                     .accessibilityIdentifier("quran-arabic-\(ayah.id)")
             }
-            if let translation, let text = ayah.translations[translation.id] {
+            if let translation, let text = ayah.translations[translation.id], !preview || visible.contains(1) {
                 Group {
                     if preview {
-                        SearchMatchText(SearchMatch.preview(SearchMatch.text(text, query: searchQuery))).readingText().lineLimit(3)
+                        SearchMatchText(SearchMatch.preview(translated, compact: true)).readingText().lineLimit(2)
                     } else {
                         HighlightText(text: text, source: ayah.id, block: translation.id)
                     }

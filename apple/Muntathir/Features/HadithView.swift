@@ -96,7 +96,7 @@ struct HadithView: View {
                         if !books.isEmpty {
                             Section(group.title) {
                                 ForEach(books) { book in
-                                    Button { saveVisibleRow(); searchFocused = false; collectionRestoration = nil; collection = book } label: {
+                                    Button { SearchHistory.shared.record(searchText, in: .hadith); saveVisibleRow(); searchFocused = false; collectionRestoration = nil; collection = book } label: {
                                         VStack(alignment: .leading, spacing: 6) {
                                             Text(book.title(locale: locale)).font(.headline)
                                             if locale.language.languageCode?.identifier != "ar" {
@@ -233,6 +233,7 @@ struct HadithView: View {
         .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search Hadith")
+        .searchHistory(searchText, area: .hadith)
         .onChange(of: searchText) { _, value in
             guard request.query != value else { return }
             update { $0.query = value; $0.number = nil }
@@ -304,6 +305,7 @@ struct HadithView: View {
             Section {
                 ForEach(group.chapters) { chapter in
                     Button {
+                        SearchHistory.shared.record(searchText, in: .hadith)
                         saveVisibleRow()
                         searchFocused = false
                         if request.chapterID == chapter.id {
@@ -491,13 +493,14 @@ struct HadithView: View {
                     .accessibilityIdentifier("hadith-ordered-fallback")
             }
             ForEach(narrations) { narration in
-                Button { saveVisibleRow(); searchFocused = false; selected = narration } label: {
-                    HadithPreviewRow(narration: narration)
+                Button { SearchHistory.shared.record(searchText, in: .hadith); saveVisibleRow(); searchFocused = false; selected = narration } label: {
+                    HadithPreviewRow(narration: narration, searching: !query.isEmpty)
                         .foregroundStyle(.primary)
                 }
                 .tint(.primary)
                 .contextMenu {
                     Button("Open", systemImage: "arrow.up.forward") {
+                        SearchHistory.shared.record(searchText, in: .hadith)
                         saveVisibleRow()
                         searchFocused = false
                         selected = narration

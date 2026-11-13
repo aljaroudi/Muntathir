@@ -52,6 +52,7 @@ struct QuranSearchContent: View {
                     ForEach(matchingSurahs) { surah in
                         NavigationLink {
                             QuranReadingView(surah: surah, reader: reader)
+                                .recordSearchOnOpen(query, area: .quran)
                         } label: {
                             VStack(alignment: .leading, spacing: 6) {
                                 HStack(alignment: .firstTextBaseline, spacing: 0) {
@@ -134,6 +135,7 @@ struct QuranSearchContent: View {
                     let translation = QuranTranslation.catalog.first { $0.id == translationStore.activeID }
                     NavigationLink {
                         QuranReadingView(surah: surah, initialVerse: ayah.number, reader: reader, searchQuery: request.query)
+                            .recordSearchOnOpen(query, area: .quran)
                     } label: {
                         QuranVerseRow(ayah: ayah, translation: translation, searchQuery: request.query, preview: true, showsActions: false)
                             .contentShape(.rect)

@@ -271,9 +271,11 @@ struct SelectableHighlightText: UIViewRepresentable {
 private final class ReaderUnderlineLayoutManager: NSLayoutManager {
     override func drawUnderline(forGlyphRange glyphRange: NSRange, underlineType: NSUnderlineStyle,
                                 baselineOffset: CGFloat, lineFragmentRect lineRect: CGRect,
-                                lineFragmentGlyphRange lineGlyphRange: NSRange, containerOrigin: CGPoint) {
+                                lineFragmentGlyphRange lineGlyphRange: NSRange, containerOrigin: CGPoint)
+    {
         guard underlineType == .thick, let container = textContainers.first,
-              let context = UIGraphicsGetCurrentContext(), let storage = textStorage else {
+              let context = UIGraphicsGetCurrentContext(), let storage = textStorage
+        else {
             super.drawUnderline(forGlyphRange: glyphRange, underlineType: underlineType,
                                 baselineOffset: baselineOffset, lineFragmentRect: lineRect,
                                 lineFragmentGlyphRange: lineGlyphRange, containerOrigin: containerOrigin)
@@ -290,7 +292,8 @@ private final class ReaderUnderlineLayoutManager: NSLayoutManager {
         context.setFillColor((color ?? UIColor(Color.accentColor)).cgColor)
         enumerateEnclosingRects(forGlyphRange: glyphRange,
                                 withinSelectedGlyphRange: NSRange(location: NSNotFound, length: 0),
-                                in: container) { rect, _ in
+                                in: container)
+        { rect, _ in
             context.fill(CGRect(x: rect.minX + containerOrigin.x, y: bottom - thickness + containerOrigin.y,
                                 width: rect.width, height: thickness))
         }
@@ -304,8 +307,12 @@ final class HighlightUITextView: UITextView {
     private var needsSheen = true
     var sheenEnabled = true {
         didSet {
-            if !sheenEnabled { sheen.removeAllAnimations(); sheen.removeFromSuperlayer() }
-            if sheenEnabled != oldValue { setNeedsLayout() }
+            if !sheenEnabled {
+                sheen.removeAllAnimations(); sheen.removeFromSuperlayer()
+            }
+            if sheenEnabled != oldValue {
+                setNeedsLayout()
+            }
         }
     }
 
@@ -325,7 +332,8 @@ final class HighlightUITextView: UITextView {
               let renderedText, renderedText.length > 0 else { return }
         let path = UIBezierPath()
         renderedText.enumerateAttribute(HighlightTextContent.pearlAttribute,
-                                       in: NSRange(location: 0, length: renderedText.length)) { value, range, _ in
+                                        in: NSRange(location: 0, length: renderedText.length))
+        { value, range, _ in
             guard value as? Bool == true,
                   let start = position(from: beginningOfDocument, offset: range.location),
                   let end = position(from: start, offset: range.length),
@@ -354,7 +362,6 @@ final class HighlightUITextView: UITextView {
         animation.duration = 1.5
         sheen.add(animation, forKey: "pearlSheen")
     }
-
 
     func setRenderedText(_ rendered: NSAttributedString) {
         // UIKit normalizes paragraph attributes; comparing its text storage resets selection on SwiftUI updates.

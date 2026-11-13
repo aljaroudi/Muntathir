@@ -74,15 +74,14 @@ struct SettingsView: View {
                         Text($0.title).tag($0)
                     }
                 }
-                .labelsHidden()
                 Stepper(value: Binding(get: { model.preferences.imsakMinutes }, set: { value in
                     model.update { $0.imsakMinutes = value }
                 }), in: 0 ... 30) {
                     LabeledContent(
                         "Imsak before Fajr",
                         value: Duration.seconds(model.preferences.imsakMinutes * 60),
-                            format: .units(allowed: [.minutes], width: .wide)
-                        )
+                        format: .units(allowed: [.minutes], width: .wide)
+                    )
                 }
             } header: {
                 Text("Prayer calculations")
@@ -211,6 +210,7 @@ struct LocationPicker: View {
             ForEach(model.locationService.results, id: \.self) { item in
                 Button {
                     if let location = model.locationService.saved(item) {
+                        SearchHistory.shared.record(query, in: .locations)
                         usingDeviceLocation = false
                         model.select(location)
                         dismiss()
@@ -240,6 +240,7 @@ struct LocationPicker: View {
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: "Search for a city"
         )
+        .searchHistory(query, area: .locations)
         .task(id: query) {
             do {
                 try await Task.sleep(for: .milliseconds(350))

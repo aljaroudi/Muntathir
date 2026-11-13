@@ -260,7 +260,7 @@ actor HadithReader {
             var result = Hadith(id: row.id, collectionID: row.collectionID, number: row.number,
                                 chapter: row.chapter, arabic: String(preview.characters), englishNarrator: "",
                                 english: "", source: row.source, arabicDisplay: preview, readingWords: row.readingWords, readingNumber: row.readingNumber)
-            if !terms.isEmpty, let matched, !titleMatch {
+            if !terms.isEmpty, let matched = titleMatch ? selected : matched {
                 let excerpt = HadithText.preview(matched.text, terms: terms)
                 result.translation = SupplicationTranslation(language: matched.language, edition: matched.edition, text: String(excerpt.characters))
             }

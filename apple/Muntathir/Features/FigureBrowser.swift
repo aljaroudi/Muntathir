@@ -24,7 +24,10 @@ struct FigureBrowser: View {
                     ForEach(sections) { section in
                         Section {
                             ForEach(section.figures) { person in
-                                NavigationLink(value: FigureRoute.profile(person.id)) {
+                                NavigationLink {
+                                    FigureProfile(figure: person, library: library)
+                                        .recordSearchOnOpen(query, area: .figures)
+                                } label: {
                                     Text(verbatim: person.title(locale))
                                 }
                                 .accessibilityIdentifier("figure-\(person.id)")
@@ -33,6 +36,7 @@ struct FigureBrowser: View {
                     }
                 }
                 .searchable(text: $query)
+                .searchHistory(query, area: .figures)
                 .overlay {
                     if sections.isEmpty {
                         ContentUnavailableView("No figures found", systemImage: "person.crop.circle.badge.questionmark")

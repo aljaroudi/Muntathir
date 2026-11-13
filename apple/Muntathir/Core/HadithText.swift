@@ -81,7 +81,7 @@ enum HadithText {
 
     static func preview(_ source: String, terms: [String] = [], marked: Bool = false) -> AttributedString {
         let text = flattened(highlighted(source, terms: terms, marked: marked))
-        return SearchMatch.preview(text)
+        return SearchMatch.preview(text, compact: !terms.isEmpty || marked)
     }
 
     private static func emphasize(_ text: inout AttributedString, range: Range<AttributedString.Index>) {
@@ -155,11 +155,50 @@ enum SearchMatch {
         return ranges
     }
 
-    static func preview(_ text: AttributedString) -> AttributedString {
+    static func visibleBlocks(_ texts: [AttributedString], preferred: Int) -> [Int] {
+        let matching = texts.indices.filter { index in texts[index].runs.contains { $0.underlineStyle != nil } }
+        if !matching.isEmpty {
+            return matching
+        }
+        if texts.indices.contains(preferred), !texts[preferred].characters.isEmpty {
+            return [preferred]
+        }
+        return texts.indices.first { !texts[$0].characters.isEmpty }.map { [$0] } ?? []
+    }
+
+    static func preview(_ text: AttributedString, compact: Bool = false) -> AttributedString {
         let firstHit = text.runs.first { $0.underlineStyle != nil }?.range.lowerBound ?? text.startIndex
         let distance = text.characters.distance(from: text.startIndex, to: firstHit)
-        let start = text.characters.index(text.startIndex, offsetBy: max(0, distance - 45))
-        let end = text.characters.index(start, offsetBy: 260, limitedBy: text.endIndex) ?? text.endIndex
+        var start = text.characters.index(text.startIndex, offsetBy: max(0, distance - (compact ? 12 : 45)))
+        if compact {
+            var wordStart = firstHit
+            while wordStart > text.startIndex, !text.characters[text.characters.index(before: wordStart)].isWhitespace {
+                wordStart = text.characters.index(before: wordStart)
+            }
+            let contextDistance = text.characters.distance(from: text.startIndex, to: wordStart)
+            start = text.characters.index(text.startIndex, offsetBy: max(0, contextDistance - 12))
+            while start > text.startIndex, start < wordStart, !text.characters[text.characters.index(before: start)].isWhitespace {
+                start = text.characters.index(after: start)
+            }
+            if text.characters.distance(from: start, to: firstHit) > 100 {
+                start = text.characters.index(text.startIndex, offsetBy: max(0, distance - 12))
+            }
+            if let newline = text.characters[start ..< firstHit].lastIndex(where: \.isNewline) {
+                start = text.characters.index(after: newline)
+            }
+        }
+        var end = text.characters.index(start, offsetBy: compact ? 160 : 260, limitedBy: text.endIndex) ?? text.endIndex
+        if compact, end < text.endIndex {
+            // Prefer whole words, but keep unbroken source text within the existing preview budget.
+            let limit = text.characters.index(start, offsetBy: 260, limitedBy: text.endIndex) ?? text.endIndex
+            var boundary = end
+            while boundary < limit, !text.characters[boundary].isWhitespace {
+                boundary = text.characters.index(after: boundary)
+            }
+            if boundary == text.endIndex || (boundary < limit && text.characters[boundary].isWhitespace) {
+                end = boundary
+            }
+        }
         var result = AttributedString(text[start ..< end])
         if start > text.startIndex {
             result = AttributedString("… ") + result

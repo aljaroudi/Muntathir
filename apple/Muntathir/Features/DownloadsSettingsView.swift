@@ -23,14 +23,14 @@ struct DownloadsSettingsView: View {
                     LabeledContent {
                         AssetSizeText(bytes: quran.installedSizes.values.reduce(0, +))
                     } label: { Text("Total size") }
-                    .accessibilityIdentifier("downloads-size-translations")
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button("Remove all translations", systemImage: "trash", role: .destructive) {
-                            Task { await quran.remove(QuranTranslation.downloadable.map(\.id)) }
+                        .accessibilityIdentifier("downloads-size-translations")
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button("Remove all translations", systemImage: "trash", role: .destructive) {
+                                Task { await quran.remove(QuranTranslation.downloadable.map(\.id)) }
+                            }
+                            .accessibilityIdentifier("downloads-remove-translations")
+                            .disabled(quran.busy || quran.isDownloading)
                         }
-                        .accessibilityIdentifier("downloads-remove-translations")
-                        .disabled(quran.busy || quran.isDownloading)
-                    }
                 }
                 LabeledContent("English", value: String(localized: "Included"))
                     .accessibilityIdentifier("downloads-bundled-en")

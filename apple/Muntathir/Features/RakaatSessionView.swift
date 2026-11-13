@@ -121,9 +121,9 @@ struct RakaatSessionView: View {
                 }
             }
             .background(.black)
-            .overlay(.ultraThinMaterial)
+            .overlay(.thinMaterial)
             .environment(\.colorScheme, .dark)
-            .overlay(.black.opacity(0.25))
+            .overlay(.black.opacity(0.3))
             .overlay {
                 GeometryReader { geometry in
                     VStack(spacing: 0) {
@@ -131,7 +131,7 @@ struct RakaatSessionView: View {
                         LinearGradient(
                             stops: [
                                 .init(color: .clear, location: 0),
-                                .init(color: .black.opacity(0.45), location: 0.1),
+                                .init(color: .black.opacity(0.45), location: 0.25),
                                 .init(color: .black.opacity(0.45), location: 1),
                             ],
                             startPoint: .top,
