@@ -74,14 +74,52 @@ struct SolarPositionTests {
 
     @Test func arcKeepsSunWithinItsReservedBand() {
         let bounds = CGRect(x: 36, y: 24, width: 330, height: 100)
-        #expect(SolarArcLayout.point(progress: 0, in: bounds) == CGPoint(x: 36, y: 124))
-        #expect(SolarArcLayout.point(progress: 0.5, in: bounds) == CGPoint(x: 201, y: 24))
-        #expect(abs(SolarArcLayout.point(progress: 1, in: bounds).y - 124) < 0.001)
+        #expect(SolarArcLayout.point(progress: 0, elevation: 0, in: bounds) == CGPoint(x: 36, y: 124))
+        #expect(SolarArcLayout.point(progress: 0.5, elevation: 90, in: bounds) == CGPoint(x: 201, y: 24))
+        #expect(abs(SolarArcLayout.point(progress: 1, elevation: 0, in: bounds).y - 124) < 0.001)
         for step in 0 ... 100 {
-            let point = SolarArcLayout.point(progress: Double(step) / 100, in: bounds)
+            let point = SolarArcLayout.point(progress: Double(step) / 100, elevation: Double(step), in: bounds)
             #expect(point.x >= bounds.minX && point.x <= bounds.maxX)
             #expect(point.y >= bounds.minY && point.y <= bounds.maxY)
         }
+    }
+
+    @Test func heightUsesFixedDegreesIndependentlyOfProgress() {
+        let bounds = CGRect(x: 36, y: 24, width: 330, height: 100)
+        for progress in [0.0, 0.25, 0.5, 1.0] {
+            #expect(SolarArcLayout.point(progress: progress, elevation: 45, in: bounds).y == 74)
+            #expect(SolarArcLayout.point(progress: progress, elevation: -0.833, in: bounds).y == 124)
+            #expect(SolarArcLayout.point(progress: progress, elevation: 100, in: bounds).y == 24)
+        }
+        let sun = SolarArcLayout.point(progress: 0.5, elevation: 30, in: bounds)
+        let moon = SolarArcLayout.point(progress: 0.5, elevation: 60, in: bounds)
+        #expect(sun.x == moon.x)
+        #expect(sun.y > moon.y)
+    }
+
+    @Test func solarGuideMatchesPositionAcrossSeasonsAndLatitudes() throws {
+        for latitude in [0.0, 24.7, 60, 90, -90] {
+            for day in ["2026-03-20", "2026-06-21", "2026-12-21"] {
+                for hour in [0, 6, 9, 12, 15, 18] {
+                    let sun = try #require(SolarPosition.calculate(
+                        at: date(String(format: "%@T%02d:00:00Z", day, hour)), latitude: latitude, longitude: 0
+                    ))
+                    if let progress = sun.daylightProgress {
+                        let arc = try #require(sun.arc)
+                        #expect(abs(arc.elevation(at: progress) - sun.elevation) < 0.000001)
+                        for step in 0 ... 60 {
+                            #expect(arc.elevation(at: Double(step) / 60).isFinite)
+                        }
+                    } else {
+                        #expect(sun.arc == nil)
+                    }
+                }
+            }
+        }
+        let winter = try #require(SolarPosition.calculate(at: date("2026-12-21T12:00:00Z"), latitude: 60, longitude: 0)?.arc)
+        #expect(winter.elevation(at: 0.5) < 7)
+        #expect(abs(winter.elevation(at: 0) + 0.833) < 0.000001)
+        #expect(abs(winter.elevation(at: 1) + 0.833) < 0.000001)
     }
 
     @Test func polarDayStaysVisibleAndPolarNightHasNoSun() throws {

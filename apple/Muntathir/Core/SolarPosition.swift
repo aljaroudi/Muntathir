@@ -12,6 +12,19 @@ struct SolarPosition: Sendable {
     /// Sunrise = 0, solar noon = 0.5, sunset = 1; nil while the sun is below the horizon.
     let daylightProgress: Double?
 
+    struct Arc: Sendable {
+        let base: Double
+        let amplitude: Double
+        let halfDayAngle: Double
+
+        func elevation(at progress: Double) -> Double {
+            let hourAngle = (min(1, max(0, progress)) * 2 - 1) * halfDayAngle
+            return asin(min(1, max(-1, base + amplitude * cos(hourAngle)))) * 180 / .pi
+        }
+    }
+
+    var arc: Arc?
+
     static func calculate(at date: Date, latitude: Double, longitude: Double) -> Self? {
         guard date.timeIntervalSince1970.isFinite, latitude.isFinite, longitude.isFinite,
               (-90 ... 90).contains(latitude), (-180 ... 180).contains(longitude) else { return nil }
@@ -61,15 +74,19 @@ struct SolarPosition: Sendable {
         let base = sin(phi) * sin(declination)
         let amplitude = cos(phi) * cos(declination)
         let progress: Double?
+        let arc: Arc?
         if base - amplitude >= horizon {
             // Polar day has no sunrise or sunset; show progress through the full solar day.
+            arc = Arc(base: base, amplitude: amplitude, halfDayAngle: .pi)
             progress = (hourAngle + .pi) / (2 * .pi)
         } else if base + amplitude <= horizon || elevation < -0.833 {
+            arc = nil
             progress = nil
         } else {
             let sunsetAngle = acos(min(1, max(-1, (horizon - base) / amplitude)))
+            arc = Arc(base: base, amplitude: amplitude, halfDayAngle: sunsetAngle)
             progress = min(1, max(0, (hourAngle + sunsetAngle) / (2 * sunsetAngle)))
         }
-        return Self(elevation: elevation, apparentElevation: elevation + refraction, azimuth: azimuth, isRising: hourAngle < 0, daylightProgress: progress)
+        return Self(elevation: elevation, apparentElevation: elevation + refraction, azimuth: azimuth, isRising: hourAngle < 0, daylightProgress: progress, arc: arc)
     }
 }
