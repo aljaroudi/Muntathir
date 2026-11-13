@@ -5,18 +5,7 @@ struct DownloadsSettingsView: View {
     @Environment(\.hadithAssets) private var hadith
     @Environment(\.locale) private var locale
     @State private var quran = QuranTranslationStore.shared
-    @State private var removal: Removal?
-
-    private enum Removal: Identifiable {
-        case translations, language(String), supplications
-        var id: String {
-            switch self {
-            case .translations: "translations"
-            case .supplications: "supplications"
-            case let .language(id): id
-            }
-        }
-    }
+    @State private var requestedTranslation: String?
 
     var body: some View {
         List {
@@ -27,83 +16,78 @@ struct DownloadsSettingsView: View {
                 HadithDownloadsSection(assets: supplications, title: "Supplications")
             }
             Section {
+                if requestedTranslation == nil {
+                    translationDownloadStatus
+                }
+                if !quran.installedSizes.isEmpty {
+                    LabeledContent {
+                        AssetSizeText(bytes: quran.installedSizes.values.reduce(0, +))
+                    } label: { Text("Total size") }
+                    .accessibilityIdentifier("downloads-size-translations")
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button("Remove all translations", systemImage: "trash", role: .destructive) {
+                            Task { await quran.remove(QuranTranslation.downloadable.map(\.id)) }
+                        }
+                        .accessibilityIdentifier("downloads-remove-translations")
+                        .disabled(quran.busy || quran.isDownloading)
+                    }
+                }
                 LabeledContent("English", value: String(localized: "Included"))
                     .accessibilityIdentifier("downloads-bundled-en")
                 ForEach(QuranTranslation.downloadable) { translation in
-                    HStack {
-                        Text(locale.localizedString(forIdentifier: translation.language) ?? translation.language)
-                        Spacer()
-                        if let size = quran.installedSizes[translation.id] {
-                            AssetSizeText(bytes: size).foregroundStyle(.secondary)
-                        } else {
-                            Button(quran.downloadState == .failed ? LocalizedStringKey("Try again") : LocalizedStringKey("Download"), systemImage: "arrow.down.circle") {
-                                Task { await quran.download(requested: translation.id) }
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text(locale.localizedString(forIdentifier: translation.language) ?? translation.language)
+                            Spacer()
+                            if let size = quran.installedSizes[translation.id] {
+                                AssetSizeText(bytes: size).foregroundStyle(.secondary)
+                            } else if requestedTranslation != translation.id || !quran.isDownloading {
+                                Button(quran.downloadState == .failed ? LocalizedStringKey("Try again") : LocalizedStringKey("Download"), systemImage: "arrow.down.circle") {
+                                    requestedTranslation = translation.id
+                                    Task { await quran.download(requested: translation.id) }
+                                }
+                                .labelStyle(.iconOnly)
+                                .accessibilityIdentifier("downloads-get-\(translation.id)")
+                                .disabled(quran.busy || quran.isDownloading)
                             }
-                            .labelStyle(.iconOnly)
-                            .accessibilityIdentifier("downloads-get-\(translation.id)")
+                        }
+                        if requestedTranslation == translation.id {
+                            translationDownloadStatus
                         }
                     }
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         if quran.installedSizes[translation.id] != nil {
                             Button("Remove download", systemImage: "trash", role: .destructive) {
-                                removal = .language(translation.id)
+                                Task { await quran.remove([translation.id]) }
                             }
                             .accessibilityIdentifier("downloads-remove-\(translation.id)")
                             .disabled(quran.busy || quran.isDownloading)
                         }
                     }
-                    .disabled(quran.busy || quran.isDownloading)
-                }
-                if quran.isDownloading {
-                    AssetDownloadProgress(progress: quran.downloadProgress, installing: quran.downloadState == .installing)
-                } else if quran.downloadState == .failed {
-                    Text("Unable to download. Please try again.").foregroundStyle(.secondary)
                 }
             } header: { Text("Quran translations") }
         }
         .navigationTitle("Downloads")
-        .toolbar {
-            Menu {
-                if let supplications, supplications.hasLocalAsset {
-                    Button("Remove Supplication downloads", systemImage: "trash", role: .destructive) { removal = .supplications }
-                        .disabled(supplications.busy || supplications.isDownloading)
-                }
-                if !quran.installedSizes.isEmpty {
-                    Button("Remove all translations", systemImage: "trash", role: .destructive) { removal = .translations }
-                        .disabled(quran.busy || quran.isDownloading)
-                        .accessibilityIdentifier("downloads-remove-translations")
-                }
-            } label: {
-                Label("Download actions", systemImage: "ellipsis.circle")
-            }
-            .accessibilityIdentifier("downloads-actions")
-            .disabled(quran.installedSizes.isEmpty && supplications?.hasLocalAsset != true)
-        }
         .task { await quran.refresh() }
-        .confirmationDialog("Remove downloaded content?", isPresented: Binding(get: { removal != nil }, set: {
-            if !$0 {
-                removal = nil
+        .onChange(of: quran.downloadState) { _, state in
+            if state == .idle {
+                requestedTranslation = nil
             }
-        }), titleVisibility: .visible) {
-            if let removal {
-                Button("Remove download", role: .destructive) {
-                    Task {
-                        switch removal {
-                        case .supplications: await supplications?.remove()
-                        case .translations: await quran.remove(QuranTranslation.downloadable.map(\.id))
-                        case let .language(id): await quran.remove([id])
-                        }
-                    }
-                }
-            }
-        } message: {
-            Text("You can download it again later.")
         }
         .alert("Unable to finish storage cleanup", isPresented: $quran.storageError) {
             Button("Try again") { Task { await quran.refresh() } }
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("Some files remain on this device. Please try again.")
+        }
+    }
+
+    @ViewBuilder private var translationDownloadStatus: some View {
+        if quran.isDownloading {
+            AssetDownloadProgress(progress: quran.downloadProgress, installing: quran.downloadState == .installing,
+                                  preparing: quran.preparingDownload)
+        } else if quran.downloadState == .failed {
+            Text("Unable to download. Please try again.").foregroundStyle(.secondary)
         }
     }
 }

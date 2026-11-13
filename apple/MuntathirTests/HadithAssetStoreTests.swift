@@ -112,6 +112,12 @@ import Testing
         let request = Task { await store.download() }
         await backend.waitForDownload()
         #expect(!store.busy)
+        #expect(store.preparingDownload)
+        let progress = Progress(totalUnitCount: 100)
+        progress.completedUnitCount = 40
+        await store.receive(.progress(progress))
+        #expect(!store.preparingDownload)
+        #expect(store.progress == 0.4)
         await backend.setInstalled(true)
         await store.receive(.finished)
         #expect(store.state == .ready)

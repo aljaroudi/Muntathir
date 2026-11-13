@@ -62,6 +62,7 @@ struct SettingsView: View {
             }
             Section {
                 Picker(
+                    "Prayer calculations",
                     selection: Binding(
                         get: { model.preferences.prayerMethod },
                         set: { value in
@@ -73,6 +74,7 @@ struct SettingsView: View {
                         Text($0.title).tag($0)
                     }
                 }
+                .labelsHidden()
                 Stepper(value: Binding(get: { model.preferences.imsakMinutes }, set: { value in
                     model.update { $0.imsakMinutes = value }
                 }), in: 0 ... 30) {

@@ -27,11 +27,7 @@ struct HadithLibraryView: View {
                         Text("Checking Hadith download…")
                     }
                 case .downloading, .installing:
-                    if supplications {
-                        Text("Downloading supplications…")
-                    } else {
-                        Text("Downloading Hadith…")
-                    }
+                    EmptyView()
                 case .failed:
                     if supplications {
                         Text("Unable to download supplications. Check your connection and try again.")

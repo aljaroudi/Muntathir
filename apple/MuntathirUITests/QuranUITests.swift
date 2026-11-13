@@ -353,25 +353,36 @@ final class QuranUITests: XCTestCase {
 
     @MainActor func testSettingsOffersDownloadManagement() {
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launchEnvironment["HADITH_DOWNLOADS_FIXTURE"] = UUID().uuidString
         app.launch()
         app.openSettingsFromTools()
         app.buttons["settings-downloads"].tap()
-        XCTAssertTrue(app.buttons["downloads-actions"].waitForExistence(timeout: 10))
-        let removeHadith = app.buttons["downloads-remove-hadith"]
-        XCTAssertTrue(removeHadith.waitForExistence(timeout: 10))
-        XCTAssertFalse(app.descendants(matching: .any)["downloads-bundled-ar"].firstMatch.exists)
+
+        let size = app.descendants(matching: .any)["downloads-size-hadith"].firstMatch
+        let books = app.buttons["Books"].firstMatch
+        let book = app.staticTexts["Test book"]
+        XCTAssertTrue(size.waitForExistence(timeout: 10))
+        XCTAssertTrue(books.exists)
+        XCTAssertFalse(book.exists)
         XCTAssertTrue(app.descendants(matching: .any)["downloads-bundled-en"].firstMatch.exists)
         XCTAssertTrue(app.buttons["downloads-get-de.bubenheim"].exists)
-        let screenshot = XCTAttachment(screenshot: app.screenshot())
-        screenshot.name = "Downloads settings"
-        screenshot.lifetime = .keepAlways
-        add(screenshot)
+
+        books.tap()
+        XCTAssertTrue(book.waitForExistence(timeout: 5))
+        book.swipeLeft()
+        let removeBook = app.buttons["downloads-remove-book-bukhari"]
+        XCTAssertTrue(removeBook.waitForExistence(timeout: 5))
+        removeBook.tap()
+        XCTAssertTrue(app.buttons["downloads-get-book-bukhari"].waitForExistence(timeout: 5))
+
+        books.tap()
+        size.swipeLeft()
+        let removeHadith = app.buttons["downloads-remove-hadith"]
+        XCTAssertTrue(removeHadith.waitForExistence(timeout: 5))
         removeHadith.tap()
-        let confirm = app.buttons.matching(NSPredicate(
-            format: "label == %@ AND identifier != %@", "Remove Hadith downloads", "downloads-remove-hadith"
-        )).firstMatch
-        XCTAssertTrue(confirm.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["downloads-get-hadith"].waitForExistence(timeout: 5))
+        XCTAssertFalse(size.exists)
     }
 
     @MainActor func testSearchReferenceAndNavigateToVerse() {

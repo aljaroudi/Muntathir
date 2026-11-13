@@ -17,7 +17,8 @@ struct QuranDownloadView: View {
                 }
             } actions: {
                 if store.isDownloading {
-                    AssetDownloadProgress(progress: store.downloadProgress, installing: store.downloadState == .installing)
+                    AssetDownloadProgress(progress: store.downloadProgress, installing: store.downloadState == .installing,
+                                          preparing: store.preparingDownload)
                         .frame(maxWidth: 300)
                 } else {
                     AssetDownloadButton(pack: "quran-translations", retry: store.downloadState == .failed) {

@@ -61,13 +61,25 @@ import OSLog
     init(backend: any AssetPackBackend = AppleAssetPackBackend(), packID: String = "hadith", reader: HadithReader = HadithReader(), defaults: UserDefaults = .standard, library: HadithLocalLibrary? = nil,
          validateIntegrity: @escaping @Sendable (URL) async throws -> Void = { try HadithDatabase(url: $0).validate() })
     {
-        self.library = library ?? (backend is AppleAssetPackBackend && !ProcessInfo.processInfo.arguments.contains("--ui-testing")
-            ? HadithLocalLibrary(root: URL.applicationSupportDirectory.appending(path: "Libraries/\(packID)")) : nil)
+        #if DEBUG
+            if packID == AppleAssetPackBackend.packID, let fixture = HadithUITestFixture.downloadsDirectory {
+                self.library = HadithLocalLibrary(root: fixture.appending(path: "Library"))
+            } else {
+                self.library = library ?? Self.defaultLibrary(backend: backend, packID: packID)
+            }
+        #else
+            self.library = library ?? Self.defaultLibrary(backend: backend, packID: packID)
+        #endif
         self.packID = packID
         self.validateIntegrity = validateIntegrity
         self.defaults = defaults
         self.backend = backend
         self.reader = reader
+    }
+
+    private static func defaultLibrary(backend: any AssetPackBackend, packID: String) -> HadithLocalLibrary? {
+        guard backend is AppleAssetPackBackend, !ProcessInfo.processInfo.arguments.contains("--ui-testing") else { return nil }
+        return HadithLocalLibrary(root: URL.applicationSupportDirectory.appending(path: "Libraries/\(packID)"))
     }
 
     isolated deinit { integrityWorker?.cancel() }
@@ -127,7 +139,7 @@ import OSLog
                 installedSignature = nil
                 defaults.removeObject(forKey: validationKey)
                 let downloading = await backend.isDownloading()
-                if downloading {
+                if downloading, pendingDownload == nil {
                     downloadStarted = true
                 }
                 state = downloading || pendingDownload != nil ? .downloading : .missing
@@ -140,7 +152,7 @@ import OSLog
             let signature = "validation-1|\(url.path)|\(attributes[.systemFileNumber] ?? "")|\(attributes[.size] ?? "")|\(modified)"
             if signature != installedSignature {
                 integrityWorker?.cancel()
-                state = .checking
+                state = isDownloading ? .installing : .checking
                 Logger(subsystem: "com.aljaroudi.Muntathir", category: "HadithAssets").notice("Validating Hadith database.")
                 let started = Date()
                 let full = defaults.string(forKey: validationKey) != signature
@@ -286,6 +298,7 @@ import OSLog
     func remove() async {
         guard !busy else { return }
         busy = true
+        storageError = false
         integrityWorker?.cancel()
         state = .checking
         revision += 1
