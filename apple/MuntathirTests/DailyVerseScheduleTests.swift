@@ -15,7 +15,10 @@ struct DailyVerseScheduleTests {
                 #expect(library.verse(on: resolved)?.id == records[ids[(month - 1) * 30 + day - 1]]?.id)
             }
         }
-        #expect(ids[39] == 1548)
+        #expect(records[ids[0]]?.id == "89:1")
+        #expect(records[ids[319]]?.id == "26:108")
+        #expect(ids[318] == ids[319])
+        #expect(records[ids[359]]?.id == "114:3")
     }
 
     @Test(arguments: ["Asia/Riyadh", "America/New_York"])
@@ -27,7 +30,7 @@ struct DailyVerseScheduleTests {
         #expect(dates.count == 8)
         for date in dates.dropFirst() {
             #expect(settings.engine.gregorian.component(.hour, from: date) == 0)
-            #expect(library.verse(on: date.addingTimeInterval(-1), engine: settings.engine)?.id != library.verse(on: date, engine: settings.engine)?.id)
+            #expect(library.verse(on: date, engine: settings.engine)?.id == library.verse(on: settings.engine.resolve(date))?.id)
         }
         let renewed = try settings.timelineDates(from: #require(dates.last))
         #expect(renewed.count == 8)
@@ -43,7 +46,7 @@ struct DailyVerseScheduleTests {
         let widget = WidgetCalendarSettings(timeZoneID: "GMT", manual: [correction]).engine
         let library = ContentLibrary()
         let verse = try #require(library.verse(on: date, engine: corrected))
-        #expect(verse.id != library.verse(on: date, engine: baseline)?.id)
+        #expect(verse.id == library.verse(on: corrected.resolve(date))?.id)
         #expect(verse.id == library.verse(on: baseline.start(of: month), engine: baseline)?.id)
         #expect(verse.id == library.verse(on: date, engine: widget)?.id)
         #expect(verse.id == library.verse(on: date.addingTimeInterval(86399), engine: corrected)?.id)
@@ -81,7 +84,7 @@ struct DailyVerseScheduleTests {
         for boundary in dates.dropFirst() {
             #expect(boundary == prayers.sunset(on: boundary))
             #expect(library.verse(on: boundary, engine: engine, prayerSettings: prayers)?.id
-                != library.verse(on: boundary.addingTimeInterval(-1), engine: engine, prayerSettings: prayers)?.id)
+                == library.verse(on: engine.resolve(engine.addingDays(1, to: boundary)))?.id)
         }
     }
 
