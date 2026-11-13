@@ -37,16 +37,21 @@ final class TodayInfoCardsUITests: XCTestCase {
         app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "--ui-testing-weather", "--sky-date", "2026-10-21T21:30:00Z",
                                "-AppleLanguages", "(en)", "-AppleLocale", "en_GB"]
         app.launch()
-        let card = app.descendants(matching: .any)["gregorian-date-card"]
-        for _ in 0 ..< 8 where !card.isHittable {
+        let date = app.staticTexts["gregorian-date"]
+        let fajr = app.descendants(matching: .any)["prayer-fajr"].firstMatch
+        XCTAssertTrue(date.waitForExistence(timeout: 10))
+        XCTAssertTrue(fajr.exists)
+        XCTAssertEqual(date.label, "Thu 22 Oct")
+        XCTAssertLessThan(date.frame.maxY, fajr.frame.minY)
+
+        let weather = app.otherElements["weather-card"]
+        for _ in 0 ..< 8 where !weather.isHittable {
             app.swipeUp()
         }
-        XCTAssertTrue(card.isHittable)
-        XCTAssertTrue(app.staticTexts["22"].exists)
-        XCTAssertTrue(app.otherElements["weather-card"].exists)
+        XCTAssertTrue(weather.isHittable)
         XCTAssertTrue(app.descendants(matching: .any)["weather-attribution"].firstMatch.exists)
         let capture = XCTAttachment(screenshot: app.screenshot())
-        capture.name = "Today date and weather squares"
+        capture.name = "Today weather card"
         capture.lifetime = .keepAlways
         add(capture)
         let temperature = app.staticTexts["weather-temperature"]
@@ -135,15 +140,16 @@ final class TodayInfoCardsUITests: XCTestCase {
         app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "--ui-testing-weather",
                                "-AppleLanguages", "(ar)", "-AppleLocale", "ar_SA"]
         app.launch()
-        let card = app.descendants(matching: .any)["gregorian-date-card"]
-        for _ in 0 ..< 8 where !card.isHittable {
+        let date = app.staticTexts["gregorian-date"]
+        XCTAssertTrue(date.waitForExistence(timeout: 10))
+        let weather = app.otherElements["weather-card"]
+        for _ in 0 ..< 8 where !weather.isHittable {
             app.swipeUp()
         }
-        XCTAssertTrue(card.isHittable)
-        XCTAssertTrue(app.otherElements["weather-card"].exists)
+        XCTAssertTrue(weather.isHittable)
         XCTAssertTrue(app.descendants(matching: .any)["weather-attribution"].firstMatch.exists)
         let capture = XCTAttachment(screenshot: app.screenshot())
-        capture.name = "Arabic date and weather squares"
+        capture.name = "Arabic weather card"
         capture.lifetime = .keepAlways
         add(capture)
     }

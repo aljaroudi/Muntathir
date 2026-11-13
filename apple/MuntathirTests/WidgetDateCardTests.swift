@@ -95,7 +95,7 @@ struct WidgetDateCardTests {
         let model = AppModel(defaults: defaults, cloud: nil)
         model.select(location)
         func renderedCards() throws -> Data {
-            let renderer = ImageRenderer(content: TodayInfoCards(date: date, skyBackground: false, weather: weather, sun: nil, moon: nil)
+            let renderer = ImageRenderer(content: TodayInfoCards(skyBackground: false, weather: weather, sun: nil, moon: nil)
                 .frame(width: 380, height: 500).environment(model))
             return try #require(renderer.uiImage?.pngData())
         }

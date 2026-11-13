@@ -2,28 +2,17 @@ import SwiftUI
 import WeatherKit
 
 struct TodayInfoCards: View {
-    let date: Date
     let skyBackground: Bool
     let weather: CurrentWeatherStore
     let sun: SolarPosition?
     let moon: MoonPosition?
     @Environment(AppModel.self) private var model
-    @Environment(\.locale) private var locale
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var availableWidth: CGFloat = 0
     @ScaledMetric(relativeTo: .body) private var minimumWidth = 160
 
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 18), count: !typeSize.isAccessibilitySize && availableWidth >= minimumWidth * 2 + 18 ? 2 : 1), spacing: 18) {
-            tile {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(date.formatted(style.weekday(.wide))).font(.headline)
-                    Text(date.formatted(style.day())).font(.system(.largeTitle, design: .rounded, weight: .semibold))
-                    Text(date.formatted(style.month(.wide).year())).foregroundStyle(.secondary)
-                }
-                .accessibilityElement(children: .combine)
-                .accessibilityIdentifier("gregorian-date-card")
-            }
             if !weather.failed || weather.reading?.isCurrent(at: .now) == true {
                 tile {
                     weatherContent
@@ -35,10 +24,6 @@ struct TodayInfoCards: View {
             }
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { availableWidth = $0 }
-    }
-
-    private var style: Date.FormatStyle {
-        Date.FormatStyle(locale: locale, calendar: Calendar(identifier: .gregorian), timeZone: model.zone)
     }
 
     private func tile(@ViewBuilder content: () -> some View, @ViewBuilder decoration: () -> some View = { EmptyView() }) -> some View {

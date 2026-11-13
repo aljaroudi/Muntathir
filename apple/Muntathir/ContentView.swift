@@ -156,9 +156,10 @@ struct ContentView: View {
 
 struct Card<Content: View>: View {
     var skyBackground = false
+    var spacing: CGFloat = 16
     @ViewBuilder var content: Content
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) { content }
+        VStack(alignment: .leading, spacing: spacing) { content }
             .frame(maxWidth: .infinity, alignment: .leading).padding(20)
             .background {
                 if skyBackground {
