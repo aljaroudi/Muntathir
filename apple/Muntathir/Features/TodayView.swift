@@ -109,12 +109,9 @@ struct TodayView: View {
                                                     .background(Color.accentColor.opacity(0.1), in: .capsule)
                                             }
                                         }
-                                        Text(
-                                            prayer.date.formatted(.dateTime.hour().minute().inZone(model.zone))
-                                        )
-                                        .font(.system(.title3, design: .monospaced, weight: .medium))
-                                        .fixedSize(horizontal: true, vertical: false)
+                                        prayerTime(prayer.date)
                                     }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                                     .foregroundStyle(
                                         prayer.name == next?.name
                                             ? Color.accentColor : Color.primary
@@ -249,6 +246,24 @@ struct TodayView: View {
             .periodic(from: .now, by: 60)
         }
     #endif
+
+    private func prayerTime(_ date: Date) -> some View {
+        let style = Date.FormatStyle.dateTime.locale(locale).inZone(model.zone)
+        let time = date.formatted(style.hour(.defaultDigits(amPM: .omitted)).minute())
+        let digits = time.filter(\.isWholeNumber)
+        var displayTime = AttributedString(time)
+        if digits.count == 3, let digit = digits.first {
+            // An invisible localized digit reserves the exact width in either writing direction.
+            var padding = AttributedString(String(digit))
+            padding.foregroundColor = .clear
+            displayTime.insert(padding, at: displayTime.startIndex)
+        }
+        return Text(displayTime)
+            .font(.title3.weight(.medium))
+            .monospacedDigit()
+            .fixedSize(horizontal: true, vertical: false)
+            .accessibilityLabel(Text(date, format: style.hour().minute()))
+    }
 
     private func displayDate(_ date: Date) -> Date {
         #if DEBUG

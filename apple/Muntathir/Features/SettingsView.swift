@@ -16,27 +16,42 @@ struct SettingsView: View {
         Form {
             Section { AppLanguageLink() }
             Section {
-                NavigationLink("Tabs") { TabsSettingsView() }
-                    .accessibilityIdentifier("settings-tabs")
+                NavigationLink {
+                    TabsSettingsView()
+                } label: {
+                    Label("Tabs", systemImage: "square.grid.2x2")
+                }
+                .accessibilityIdentifier("settings-tabs")
             }
             Section {
                 ReadingSizeControls()
-                NavigationLink("Highlight colors") { HighlightPaletteSettings() }
-                    .accessibilityIdentifier("settings-highlight-colors")
+                NavigationLink {
+                    HighlightPaletteSettings()
+                } label: {
+                    Label("Highlight colors", systemImage: "paintpalette")
+                }
+                .accessibilityIdentifier("settings-highlight-colors")
             }
             Section {
-                NavigationLink("Downloads") { DownloadsSettingsView() }
-                    .accessibilityIdentifier("settings-downloads")
+                NavigationLink {
+                    DownloadsSettingsView()
+                } label: {
+                    Label("Downloads", systemImage: "arrow.down.circle")
+                }
+                .accessibilityIdentifier("settings-downloads")
             }
             Section {
                 NavigationLink {
                     LocationPicker()
                 } label: {
-                    LabeledContent(
-                        "Location",
-                        value: model.location?.name
-                            ?? String(localized: "Not selected")
-                    )
+                    LabeledContent {
+                        Text(
+                            model.location?.name
+                                ?? String(localized: "Not selected")
+                        )
+                    } label: {
+                        Label("Location", systemImage: "location")
+                    }
                 }
             } header: {
                 Text("Location")
@@ -47,7 +62,6 @@ struct SettingsView: View {
             }
             Section {
                 Picker(
-                    "Method",
                     selection: Binding(
                         get: { model.preferences.prayerMethod },
                         set: { value in
@@ -61,12 +75,12 @@ struct SettingsView: View {
                 }
                 Stepper(value: Binding(get: { model.preferences.imsakMinutes }, set: { value in
                     model.update { $0.imsakMinutes = value }
-                }), in: 0 ... 120) {
+                }), in: 0 ... 30) {
                     LabeledContent(
                         "Imsak before Fajr",
                         value: Duration.seconds(model.preferences.imsakMinutes * 60),
-                        format: .units(allowed: [.minutes], width: .wide)
-                    )
+                            format: .units(allowed: [.minutes], width: .wide)
+                        )
                 }
             } header: {
                 Text("Prayer calculations")
@@ -74,9 +88,11 @@ struct SettingsView: View {
                 Text("Imsak is a precaution before calculated Fajr.")
             }
             Section {
-                NavigationLink("Month adjustments") {
+                NavigationLink {
                     let month = model.engine.resolve(settingsDate).month
                     MonthAdjustmentsView(month: month, offset: model.preferences.monthOffsets.first { $0.month == month }?.days ?? 0)
+                } label: {
+                    Label("Month adjustments", systemImage: "calendar")
                 }
                 .accessibilityIdentifier("month-adjustments")
             } header: {
@@ -87,18 +103,27 @@ struct SettingsView: View {
                 }
             }
             Section("Weather") {
-                Toggle("Show feels-like temperature", isOn: Binding(
+                Toggle(isOn: Binding(
                     get: { model.preferences.showFeelsLikeTemperature },
                     set: { value in model.update { $0.showFeelsLikeTemperature = value } }
-                ))
+                )) {
+                    Label("Show feels-like temperature", systemImage: "thermometer.medium")
+                }
             }
             Section("Prayers") {
-                NavigationLink("Visibility") { PrayerVisibilitySettings() }
-                NavigationLink("Notifications") { PrayerNotificationSettings() }
+                NavigationLink {
+                    PrayerVisibilitySettings()
+                } label: {
+                    Label("Visibility", systemImage: "eye")
+                }
+                NavigationLink {
+                    PrayerNotificationSettings()
+                } label: {
+                    Label("Notifications", systemImage: "bell")
+                }
             }
             Section {
                 Toggle(
-                    "Month confirmations",
                     isOn: Binding(
                         get: {
                             model.preferences.announcementNotifications
@@ -122,7 +147,9 @@ struct SettingsView: View {
                             }
                         }
                     )
-                )
+                ) {
+                    Label("Month confirmations", systemImage: "megaphone")
+                }
             } header: {
                 Text("Announcement notifications")
             } footer: {
@@ -131,7 +158,7 @@ struct SettingsView: View {
                 )
             }
             Section {
-                Toggle("Calendar events", isOn: Binding(get: { model.preferences.calendarEventNotifications }, set: { enabled in
+                Toggle(isOn: Binding(get: { model.preferences.calendarEventNotifications }, set: { enabled in
                     Task {
                         let allowed = enabled ? await model.notifications.authorize() : true
                         if allowed {
@@ -140,7 +167,9 @@ struct SettingsView: View {
                             model.error = String(localized: "Notifications are disabled. Enable them in system Settings.")
                         }
                     }
-                }))
+                })) {
+                    Label("Calendar events", systemImage: "calendar.badge.clock")
+                }
             } footer: {
                 Text("Silent reminders at sunset for observances beginning this evening.")
             }
@@ -247,10 +276,12 @@ struct PrayerNotificationSettings: View {
     var body: some View {
         Form {
             Section {
-                Toggle("Time Sensitive", isOn: Binding(get: { model.preferences.timeSensitiveNotifications }, set: { value in
+                Toggle(isOn: Binding(get: { model.preferences.timeSensitiveNotifications }, set: { value in
                     model.update { $0.timeSensitiveNotifications = value }
-                }))
-                Button("System notification settings") {
+                })) {
+                    Label("Time Sensitive", systemImage: "bell.badge")
+                }
+                Button("System notification settings", systemImage: "gear") {
                     if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
                         openURL(url)
                     }

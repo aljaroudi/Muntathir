@@ -7,7 +7,7 @@ struct HighlightPaletteSettings: View {
     var body: some View {
         List {
             Section {
-                Stepper(value: $count, in: 1 ... HighlightColor.allCases.count) {
+                Stepper(value: $count, in: 3 ... HighlightColor.allCases.count) {
                     LabeledContent("Colors shown", value: count, format: .number)
                 }
                 .accessibilityIdentifier("highlight-color-count")
