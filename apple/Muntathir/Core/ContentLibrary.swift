@@ -41,7 +41,7 @@ struct IslamicEvent: Codable, Identifiable, Hashable, Sendable {
     /// Localized AH year for separate SwiftUI presentation; `nil` when the source has no year.
     func yearText(locale: Locale) -> String? {
         guard let year else { return nil }
-        let format = bundle(for: locale).localizedString(forKey: "%lld AH", value: nil, table: nil)
+        let format = String(localized: "%lld AH", bundle: bundle(for: locale), locale: locale)
         return String(format: format, locale: locale, year)
     }
 }

@@ -157,8 +157,17 @@ struct HadithActions: View {
             ReadingSizeMenu(isPresented: $textSizePresented)
             BookmarkButton(source: narration.source?.key ?? "", isHadith: true, excerpt: content.body, reference: content.reference, failed: $bookmarkFailed)
         } label: {
-            Label(LocalizedStringKey(narration.isSupplication ? "Supplication actions" : "Hadith actions"), systemImage: "ellipsis.circle").labelStyle(.iconOnly)
-                .frame(minWidth: 44, minHeight: 44)
+            Label {
+                if narration.isSupplication {
+                    Text("Supplication actions")
+                } else {
+                    Text("Hadith actions")
+                }
+            } icon: {
+                Image(systemName: "ellipsis.circle")
+            }
+            .labelStyle(.iconOnly)
+            .frame(minWidth: 44, minHeight: 44)
         }
         .accessibilityIdentifier("hadith-actions")
         .sheet(item: $shared) { AyahShareSheet(items: $0.items) }

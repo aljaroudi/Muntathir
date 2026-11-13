@@ -21,11 +21,23 @@ struct HadithLibraryView: View {
             } description: {
                 switch assets.state {
                 case .checking:
-                    Text(LocalizedStringKey(supplications ? "Checking supplications download…" : "Checking Hadith download…"))
+                    if supplications {
+                        Text("Checking supplications download…")
+                    } else {
+                        Text("Checking Hadith download…")
+                    }
                 case .downloading, .installing:
-                    Text(LocalizedStringKey(supplications ? "Downloading supplications…" : "Downloading Hadith…"))
+                    if supplications {
+                        Text("Downloading supplications…")
+                    } else {
+                        Text("Downloading Hadith…")
+                    }
                 case .failed:
-                    Text(LocalizedStringKey(supplications ? "Unable to download supplications. Check your connection and try again." : "Unable to download Hadith. Check your connection and try again."))
+                    if supplications {
+                        Text("Unable to download supplications. Check your connection and try again.")
+                    } else {
+                        Text("Unable to download Hadith. Check your connection and try again.")
+                    }
                 case .incompatible:
                     Text("This download needs an update.")
                 default:

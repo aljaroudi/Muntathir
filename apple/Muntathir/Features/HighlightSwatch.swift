@@ -89,7 +89,7 @@ private struct PearlMarkerSheen: View {
 #Preview("Pearl marker") {
     HStack {
         HighlightMarker(color: .cyan).frame(width: 4, height: 120)
-        Text("Pearl highlight")
+        Text(verbatim: "Pearl highlight")
     }
     .padding()
 }
