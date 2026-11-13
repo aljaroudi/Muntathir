@@ -1,6 +1,33 @@
 import XCTest
 
 final class TodayInfoCardsUITests: XCTestCase {
+    @MainActor func testUpcomingEventCardInEnglishAndArabic() {
+        let app = XCUIApplication()
+        for (language, timing, first, second) in [
+            ("en", "Tonight", "Birth of Imam Husayn", "Imam Husayn enters Mecca"),
+            ("ar", "الليلة", "ولادة الإمام الحسين", "دخول الإمام الحسين مكة"),
+        ] {
+            app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "--ui-testing-weather",
+                                   "--sky-date", "2027-01-10T16:00:00Z", "-AppleLanguages", "(\(language))"]
+            if language == "ar" {
+                app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+            }
+            app.launch()
+            let card = app.descendants(matching: .any)["upcoming-event-card"].firstMatch
+            let countdown = card.descendants(matching: .any)["upcoming-event-timing"].firstMatch
+            for _ in 0 ..< 18 where !countdown.isHittable {
+                app.swipeUp()
+            }
+            XCTAssertTrue(countdown.isHittable)
+            XCTAssertEqual(countdown.label, timing)
+            XCTAssertTrue(card.staticTexts[first].exists)
+            XCTAssertTrue(card.staticTexts[second].exists)
+            XCTAssertGreaterThanOrEqual(card.frame.minX, app.frame.minX)
+            XCTAssertLessThanOrEqual(card.frame.maxX, app.frame.maxX)
+            app.terminate()
+        }
+    }
+
     @MainActor func testWideHomeColumnsAndSettings() throws {
         let app = XCUIApplication()
         defer { XCUIDevice.shared.orientation = .portrait }

@@ -166,6 +166,10 @@ struct TodayView: View {
                     DailyAyahCard(ayah: dailyAyah, skyBackground: sun != nil)
                         .layoutValue(key: TodayColumnKey.self, value: 1)
                 }
+                if let event = model.content.upcomingEvent(on: now, engine: engine, sunset: versePrayerSettings.sunset(on:)) {
+                    UpcomingEventCard(events: event.events, timing: event.timing, skyBackground: sun != nil)
+                        .layoutValue(key: TodayColumnKey.self, value: 1)
+                }
                 TodayInfoCards(skyBackground: sun != nil, weather: weather, sun: sun, moon: moon)
                     .layoutValue(key: TodayColumnKey.self, value: 1)
             }
@@ -210,7 +214,12 @@ struct TodayView: View {
                 #endif
                 guard referenceDate == nil,
                       let boundary = versePrayerSettings.dailyVerseTimelineDates(from: now, engine: engine).dropFirst().first else { return }
+                let midnight = engine.addingDays(1, to: engine.gregorian.startOfDay(for: now))
                 do {
+                    if midnight < boundary {
+                        try await Task.sleep(for: .seconds(max(0, midnight.timeIntervalSinceNow)))
+                        refreshedAt = .now
+                    }
                     try await Task.sleep(for: .seconds(max(0, boundary.timeIntervalSinceNow)))
                     refreshedAt = .now
                 } catch {}
@@ -262,6 +271,51 @@ struct TodayView: View {
         formatter.timeZone = engine.timeZone
         formatter.dateFormat = "MMMM"
         return "\(day.day.formatted(.number.locale(locale))) \(formatter.string(from: engine.baselineStart(day.month)))"
+    }
+}
+
+private struct UpcomingEventCard: View {
+    let events: [IslamicEvent]
+    let timing: ContentLibrary.EventTiming
+    let skyBackground: Bool
+    @Environment(\.locale) private var locale
+
+    var body: some View {
+        Card(skyBackground: skyBackground, spacing: 8) {
+            Label {
+                timingLabel
+            } icon: {
+                Image(systemName: "calendar")
+            }
+            .font(.headline)
+            .foregroundStyle(Color.accentColor)
+            .accessibilityIdentifier("upcoming-event-timing")
+            ForEach(events) { event in
+                Text(verbatim: event.title(locale: locale))
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("upcoming-event-card")
+    }
+
+    private var timingLabel: Text {
+        switch timing {
+        case .today:
+            Text(verbatim: relativeDay(0))
+        case .tonight:
+            Text("Tonight", comment: "Timing for an observance on the evening before its calendar date.")
+        case .tomorrow:
+            Text(verbatim: relativeDay(1))
+        case let .countdown(duration):
+            Text(verbatim: duration.formatted(.units(allowed: [.days, .hours], width: .wide, maximumUnitCount: 1).locale(locale)))
+        }
+    }
+
+    private func relativeDay(_ days: Int) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.locale = locale
+        formatter.dateTimeStyle = .named
+        return formatter.localizedString(from: DateComponents(day: days))
     }
 }
 
