@@ -13,20 +13,9 @@ struct TasbihView: View {
     @GestureState private var dragging = false
 
     var body: some View {
-        VStack(spacing: 16) {
-            GeometryReader { geometry in
-                beadView
-                    .frame(height: max(320, geometry.size.height))
-            }
-            if session.complete {
-                Label("Count complete", systemImage: "checkmark.circle.fill")
-                    .foregroundStyle(.tint)
-                    .accessibilityIdentifier("tasbih-complete")
-                    .fixedSize(horizontal: false, vertical: true)
-                    .layoutPriority(1)
-                    .frame(maxWidth: .infinity)
-                    .background(Color(.systemGroupedBackground))
-            }
+        GeometryReader { geometry in
+            beadView
+                .frame(height: max(320, geometry.size.height))
         }
         .padding(24)
         .frame(maxWidth: 560)
@@ -70,11 +59,19 @@ struct TasbihView: View {
         ZStack {
             beadLayer(beads.rearRoot)
                 .blur(radius: 3)
-            Text(verbatim: session.phrase)
-                .font(.largeTitle)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 16)
-                .accessibilityIdentifier("tasbih-phrase")
+            if session.complete {
+                Image(systemName: "checkmark")
+                    .font(.largeTitle)
+                    .foregroundStyle(.tint)
+                    .accessibilityLabel("Count complete")
+                    .accessibilityIdentifier("tasbih-complete")
+            } else {
+                Text(verbatim: session.phrase)
+                    .font(.largeTitle)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 16)
+                    .accessibilityIdentifier("tasbih-phrase")
+            }
             beadLayer(beads.frontRoot)
         }
         .overlay {
@@ -107,6 +104,7 @@ struct TasbihView: View {
                     settle()
                 }
                 .accessibilityIdentifier("tasbih-beads")
+                .accessibilityHidden(session.complete)
         }
         .overlay {
             if showingSwipeHint {

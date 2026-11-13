@@ -21,7 +21,7 @@ final class TasbihUITests: XCTestCase {
 
     @MainActor private func pull(_ app: XCUIApplication, dx: CGFloat = 0, dy: CGFloat = 100) {
         let beads = app.descendants(matching: .any)["tasbih-beads"].firstMatch
-        let frame = beads.frame
+        let frame = beads.exists ? beads.frame : app.images["tasbih-complete"].frame
         let start = app.coordinate(withNormalizedOffset: .zero)
             .withOffset(CGVector(dx: frame.midX, dy: frame.minY + frame.height * 0.35))
         start.press(forDuration: 0.05, thenDragTo: start.withOffset(CGVector(dx: dx, dy: dy)))
@@ -52,7 +52,8 @@ final class TasbihUITests: XCTestCase {
                 XCTAssertEqual(stageCounter(app).label, "0 / 33")
             }
         }
-        XCTAssertTrue(app.descendants(matching: .any)["tasbih-complete"].firstMatch.exists)
+        XCTAssertTrue(app.images["tasbih-complete"].exists)
+        XCTAssertFalse(app.staticTexts["tasbih-phrase"].exists)
         pull(app)
         XCTAssertEqual(stageCounter(app).label, "33 / 33")
         app.navigationBars.buttons.element(boundBy: 0).tap()

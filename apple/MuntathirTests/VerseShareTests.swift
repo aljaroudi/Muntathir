@@ -115,8 +115,8 @@ struct VerseShareTests {
         selected.modifiedAt = Date(timeIntervalSince1970: 2)
         let segments = ShareHighlightText(text: AttributedString(raw), highlights: [selected, whole], block: "arabic").segments
         #expect(segments.map { String($0.text.characters) }.joined() == raw)
-        #expect(segments.first?.color == UIColor(Color.yellow).withAlphaComponent(0.3))
-        #expect(segments.last?.color == UIColor(Color.blue).withAlphaComponent(0.3))
+        #expect(segments.first?.color?.resolvedColor(with: .current) == HighlightColor.yellow.textBackground.resolvedColor(with: .current))
+        #expect(segments.last?.color?.resolvedColor(with: .current) == HighlightColor.blue.textBackground.resolvedColor(with: .current))
         let translation = ShareHighlightText(text: AttributedString(raw), highlights: [selected], block: "en.qarai")
         #expect(translation.segments.allSatisfy { $0.color == nil })
         let stale = ShareHighlightText(text: AttributedString("changed source"), highlights: [selected], block: "arabic")
