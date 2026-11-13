@@ -5,6 +5,9 @@ struct TasbihView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("tasbihSwipeHintSeen") private var swipeHintSeen = false
+    @Environment(\.progressStore) private var progress
+    @State private var activityID = UUID()
+    @State private var startedAt = Date.now
     @State private var session = TasbihSession()
     @State private var beads = TasbihBeadScene()
     @State private var pull: Float = 0
@@ -87,7 +90,7 @@ struct TasbihView: View {
                         .onEnded { value in
                             guard !settling, !session.complete else { return }
                             if TasbihSession.acceptsPull(value.translation) {
-                                session.advance()
+                                advance()
                                 showingSwipeHint = false
                             }
                             settle()
@@ -99,7 +102,7 @@ struct TasbihView: View {
                 .accessibilityAddTraits(.isButton)
                 .accessibilityAction {
                     guard !settling, !session.complete else { return }
-                    session.advance()
+                    advance()
                     showingSwipeHint = false
                     settle()
                 }
@@ -143,6 +146,14 @@ struct TasbihView: View {
         .accessibilityHidden(true)
     }
 
+    private func advance() {
+        let previous = session.total
+        session.advance()
+        if session.total > previous {
+            progress?.saveActivity(ProgressActivity(id: activityID, kind: .tasbih, amount: Double(session.total), date: startedAt))
+        }
+    }
+
     private func settle() {
         settling = !reduceMotion
         pull = 0
@@ -152,5 +163,7 @@ struct TasbihView: View {
         settling = false
         pull = 0
         session.reset()
+        activityID = UUID()
+        startedAt = .now
     }
 }

@@ -1,7 +1,7 @@
 import Foundation
 
 enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
-    case calendar, events, quran, hadith, supplications, figures, tasbih, rakaat, qibla
+    case calendar, events, quran, hadith, supplications, figures, tasbih, rakaat, prayerProgress, qibla
 
     var id: String {
         rawValue
@@ -17,6 +17,7 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
         case .figures: "Figures"
         case .tasbih: "Tasbih"
         case .rakaat: "Rakaat Tracker"
+        case .prayerProgress: "Progress"
         case .qibla: "Qibla"
         }
     }
@@ -31,6 +32,7 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
         case .figures: "person.2"
         case .tasbih: "circle.dotted"
         case .rakaat: "camera.metering.center.weighted"
+        case .prayerProgress: "chart.bar.fill"
         case .qibla: "location.north.circle"
         }
     }
@@ -38,7 +40,7 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
     var emoji: String? {
         switch self {
         case .supplications: "🙏"
-		case .calendar: "🗓️"
+        case .calendar: "🗓️"
         case .tasbih: "📿"
         case .rakaat: "🧎"
         case .qibla: "🕋"
@@ -50,13 +52,14 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
         switch self {
         case .quran: "holy-quran"
         case .rakaat: "rakaat-tracker"
+        case .prayerProgress: "prayer-progress"
         default: rawValue
         }
     }
 
     static let maximumShortcuts = 3
     static let groups: [[AppTool]] = [
-        [.quran, .hadith, .supplications], [.calendar, .events, .figures], [.tasbih, .rakaat, .qibla],
+        [.quran, .hadith, .supplications], [.calendar, .events, .figures], [.qibla, .rakaat, .tasbih, .prayerProgress],
     ]
 
     static func normalized(_ identifiers: [String]) -> [AppTool] {

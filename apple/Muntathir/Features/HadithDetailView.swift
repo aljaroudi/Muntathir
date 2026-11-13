@@ -138,6 +138,7 @@ struct HadithDetailView: View {
             .padding(.vertical)
         }
         .readingBackground()
+        .trackReading(isSupplication ? .supplicationReading : .hadithReading, enabled: !loading && !failed && detail != nil && !textSizePresented)
         .textSelection(.enabled)
         .environment(\.focusedHighlight, highlight)
         .scrollPosition($scrollPosition)

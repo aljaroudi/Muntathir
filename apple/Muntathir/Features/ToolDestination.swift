@@ -23,6 +23,7 @@ struct ToolDestination: View {
         case .figures: FigureBrowser()
         case .tasbih: TasbihView()
         case .rakaat: RakaatTrackerView()
+        case .prayerProgress: ActivityProgressView()
         case .qibla: QiblaView()
         }
     }

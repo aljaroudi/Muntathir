@@ -16,3 +16,5 @@ Hadith personal-data tests use `--ui-testing-hadith-fixture` together with `--ui
 
 Saved UI tests cover bookmark toggling, search, source/date grouping, persistence, and failure alerts. `--ui-testing-supplications-fixture` uses the isolated Debug library for supplication bookmark coverage without a hosted download.
 The `--ui-testing-legacy-highlights` fixture seeds two whole-verse highlights to verify that existing overlapping highlights remain readable and editable. New highlight creation tests use native text selection.
+
+Progress tests cover named prayer selection, cancelled preparation, local history after relaunch, neutral timing summaries, tool shortcuts, prayer bars, populated dashboard, partial tasbih persistence, reading attribution, and Arabic accessibility layout. Rakaat tests select Other when exercising counter-only behavior. Unit tests cover timing boundaries and daily aggregation; two-device CloudKit delivery remains a release device check.

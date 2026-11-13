@@ -22,6 +22,7 @@ final class RakaatTrackerUITests: XCTestCase {
             XCTAssertTrue(app.buttons["rakaat-target-\(target)"].exists)
         }
         app.buttons["rakaat-target-3"].tap()
+        app.buttons["rakaat-prayer-other"].firstMatch.tap()
         XCTAssertFalse(app.staticTexts["Starting in 5…"].exists)
         XCTAssertTrue(app.otherElements["rakaat-prayer-screen"].exists)
         XCTAssertTrue(app.staticTexts["rakaat-count"].waitForExistence(timeout: 4))
@@ -43,6 +44,7 @@ final class RakaatTrackerUITests: XCTestCase {
     @MainActor func testArabicCompletionPushesTasbihWithLargeText() {
         let app = open("--rakaat-demo", extraArguments: ["-AppleLanguages", "(ar)", "-AppleLocale", "ar_SA", "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
         app.buttons["rakaat-target-2"].tap()
+        app.buttons["rakaat-prayer-other"].firstMatch.tap()
         let start = app.buttons["rakaat-complete"]
         XCTAssertTrue(start.waitForExistence(timeout: 10))
         XCTAssertEqual(start.label, "ابدأ التسبيح")
@@ -56,6 +58,7 @@ final class RakaatTrackerUITests: XCTestCase {
     @MainActor func testBackDuringPreparationReturnsToSelection() {
         let app = open("--rakaat-demo")
         app.buttons["rakaat-target-4"].tap()
+        app.buttons["rakaat-prayer-other"].firstMatch.tap()
         XCTAssertTrue(app.otherElements["rakaat-prayer-screen"].waitForExistence(timeout: 2))
         app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(app.buttons["rakaat-target-2"].waitForExistence(timeout: 3))
@@ -65,6 +68,7 @@ final class RakaatTrackerUITests: XCTestCase {
     @MainActor func testSwipeBackReturnsToSelection() {
         let app = open("--rakaat-demo")
         app.buttons["rakaat-target-2"].tap()
+        app.buttons["rakaat-prayer-other"].firstMatch.tap()
         XCTAssertTrue(app.otherElements["rakaat-prayer-screen"].waitForExistence(timeout: 3))
         let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.01, dy: 0.5))
         let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: 0.5))
@@ -82,6 +86,7 @@ final class RakaatTrackerUITests: XCTestCase {
     @MainActor func testDarknessExplainsFailureAndAllowsRetry() {
         let app = open("--rakaat-dark")
         app.buttons["rakaat-target-2"].tap()
+        app.buttons["rakaat-prayer-other"].firstMatch.tap()
         XCTAssertTrue(app.staticTexts["Too dark to count reliably"].waitForExistence(timeout: 3))
         XCTAssertFalse(app.staticTexts["Camera unavailable"].exists)
         app.buttons["Try again"].tap()
@@ -91,6 +96,7 @@ final class RakaatTrackerUITests: XCTestCase {
     @MainActor func testCameraPermissionDenied() {
         let app = open("--rakaat-denied")
         app.buttons["rakaat-target-2"].tap()
+        app.buttons["rakaat-prayer-other"].firstMatch.tap()
         XCTAssertTrue(app.staticTexts["Camera unavailable"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.buttons["Open Settings"].exists)
         app.navigationBars.buttons.element(boundBy: 0).tap()
