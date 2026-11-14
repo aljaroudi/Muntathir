@@ -41,8 +41,8 @@ struct QuranTranslation: Identifiable, Hashable, Sendable {
 /// Shared by the app and widget. Resolving a URL never starts a download.
 enum QuranTranslationPreferences {
     static let groupID = "group.com.aljaroudi.Muntathir"
-    static let selectionKey = "quranTranslationSelection"
-    static let resolvedKey = "quranTranslationResolvedID"
+    static let selectionKey = "quranTranslationSelection.v2"
+    static let resolvedKey = "quranTranslationResolvedID.v2"
     static var defaults: UserDefaults? {
         UserDefaults(suiteName: groupID)
     }

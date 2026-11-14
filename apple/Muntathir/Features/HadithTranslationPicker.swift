@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct HadithTranslationPicker: View {
-    @AppStorage("hadithEnglishEnabled") private var showEnglish = true
+    @AppStorage("hadithEnglishEnabled.v2") private var showEnglish = SupplicationTranslation.prefersEnglish()
     @Environment(\.locale) private var locale
 
     var body: some View {
@@ -12,6 +12,8 @@ struct HadithTranslationPicker: View {
             Label("Translations", systemImage: "character.bubble")
         }
         .accessibilityIdentifier("hadith-translation-picker")
+        .appTip(.translations)
+        .onChange(of: showEnglish) { AppTip.complete(.translations) }
         .accessibilityValue(showEnglish ? (locale.localizedString(forLanguageCode: "en") ?? "English") : String(localized: "None"))
     }
 }

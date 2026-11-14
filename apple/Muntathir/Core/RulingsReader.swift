@@ -2,11 +2,12 @@ import Foundation
 import SQLite3
 
 struct Rulings: Identifiable, Sendable {
-    struct ID: Hashable, Sendable {
+    struct ID: Codable, Hashable, Sendable {
         let authority: String
         let language: String
         let siteID: String
     }
+
     let id: ID
     let question: String
     let answer: String
@@ -32,18 +33,20 @@ struct RulingsTopic: Identifiable, Sendable {
 }
 
 actor RulingsReader {
-    private var url: URL?
+    private var database: HadithConnection?
 
     func install(_ url: URL?) throws {
-        self.url = nil
+        database = nil
         if let url {
             let db = try HadithConnection(url: url)
             guard try db.query("PRAGMA application_id", row: { sqlite3_column_int($0, 0) }).first == 1_179_809_601,
-                  try db.query("PRAGMA user_version", row: { sqlite3_column_int($0, 0) }).first == 1 else {
+                  try db.query("PRAGMA user_version", row: { sqlite3_column_int($0, 0) }).first == 1
+            else {
                 throw HadithDatabaseError.incompatible
             }
             guard try db.query("PRAGMA quick_check", row: { Self.text($0, 0) }) == ["ok"],
-                  try db.query("PRAGMA foreign_key_check", row: { Self.text($0, 0) }).isEmpty else {
+                  try db.query("PRAGMA foreign_key_check", row: { Self.text($0, 0) }).isEmpty
+            else {
                 throw HadithDatabaseError.incompatible
             }
             _ = try db.query("SELECT code, name_ar, name_en, sort_order FROM authority LIMIT 1") { Self.text($0, 0) }
@@ -52,13 +55,13 @@ actor RulingsReader {
             _ = try db.query("SELECT topic_id, question_id, position FROM placement LIMIT 1") { Self.text($0, 0) }
             _ = try db.query("SELECT authority_code, language_code, site_id, question, answer, url FROM question LIMIT 1") { Self.text($0, 0) }
             _ = try db.query("SELECT rowid FROM question_fts WHERE question_fts MATCH ? LIMIT 1", parameters: ["test"]) { sqlite3_column_int64($0, 0) }
+            database = db
         }
-        self.url = url
     }
 
     private func connection() throws -> HadithConnection {
-        guard let url else { throw HadithDatabaseError.unavailable }
-        return try HadithConnection(url: url)
+        guard let database else { throw HadithDatabaseError.unavailable }
+        return database
     }
 
     func authorities() throws -> [RulingsAuthority] {
@@ -74,7 +77,9 @@ actor RulingsReader {
     }
 
     static func preferredLanguage(saved: String?, locale: String, available: [RulingsLanguage]) -> String? {
-        if let saved, available.contains(where: { $0.id == saved }) { return saved }
+        if let saved, available.contains(where: { $0.id == saved }) {
+            return saved
+        }
         let code = Locale(identifier: locale).language.languageCode?.identifier
         return available.first(where: { $0.id == code })?.id
     }
@@ -89,15 +94,25 @@ actor RulingsReader {
         let terms = query.split(whereSeparator: { $0.isWhitespace }).map { "\"" + $0.replacingOccurrences(of: "\"", with: "\"\"") + "\"" }
         var sql = "SELECT q.authority_code, q.language_code, q.site_id, q.question, q.answer, q.url FROM question q"
         var parameters: [String] = []
-        if !terms.isEmpty { sql += " JOIN question_fts f ON f.rowid = q.id" }
-        if topic != nil { sql += " JOIN placement p ON p.question_id = q.id" }
+        if !terms.isEmpty {
+            sql += " JOIN question_fts f ON f.rowid = q.id"
+        }
+        if topic != nil {
+            sql += " JOIN placement p ON p.question_id = q.id"
+        }
         sql += " WHERE q.authority_code = ? AND q.language_code = ?"
         parameters += [authority, language]
-        if let topic { sql += " AND p.topic_id = ?"; parameters.append(String(topic)) }
-        if !terms.isEmpty { sql += " AND question_fts MATCH ?"; parameters.append(terms.joined(separator: " AND ")) }
+        if let topic {
+            sql += " AND p.topic_id = ?"; parameters.append(String(topic))
+        }
+        if !terms.isEmpty {
+            sql += " AND question_fts MATCH ?"; parameters.append(terms.joined(separator: " AND "))
+        }
         sql += terms.isEmpty ? " ORDER BY \(topic == nil ? "q.site_id" : "p.position")" : " ORDER BY bm25(question_fts), q.site_id"
         // shortcut: search shows the best 100 matches; add paging if users need deeper results.
-        if !terms.isEmpty { sql += " LIMIT 100" }
+        if !terms.isEmpty {
+            sql += " LIMIT 100"
+        }
         return try connection().query(sql, parameters: parameters, row: Self.rulings)
     }
 

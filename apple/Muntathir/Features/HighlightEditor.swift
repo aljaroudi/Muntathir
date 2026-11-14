@@ -182,6 +182,7 @@ struct HighlightEditor: View {
                     return value
                 }
                 try store.save([draft] + additional)
+                AppTip.complete(.reading)
                 lastSaved = draft
             }
             pendingRetry = nil

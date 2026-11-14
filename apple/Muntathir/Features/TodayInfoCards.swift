@@ -6,6 +6,7 @@ struct TodayInfoCards: View {
     let weather: CurrentWeatherStore
     let sun: SolarPosition?
     let moon: MoonPosition?
+    var event: (events: [IslamicEvent], timing: ContentLibrary.EventTiming)?
     @Environment(AppModel.self) private var model
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var availableWidth: CGFloat = 0
@@ -13,6 +14,17 @@ struct TodayInfoCards: View {
 
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 18), count: !typeSize.isAccessibilitySize && availableWidth >= minimumWidth * 2 + 18 ? 2 : 1), spacing: 18) {
+            if let event {
+                NavigationLink {
+                    CalendarScreen()
+                } label: {
+                    tile {
+                        UpcomingEventCard(events: event.events, timing: event.timing)
+                    }
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("upcoming-event-card")
+            }
             if !weather.failed || weather.reading?.isCurrent(at: .now) == true {
                 tile {
                     weatherContent

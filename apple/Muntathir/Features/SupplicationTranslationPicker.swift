@@ -2,7 +2,7 @@ import SwiftUI
 
 struct SupplicationTranslationPicker: View {
     let languages: [String]
-    @AppStorage("supplicationTranslation") private var selection = "auto"
+    @AppStorage("supplicationTranslation.v2") private var selection = "auto"
     @Environment(\.locale) private var locale
 
     var body: some View {
@@ -18,5 +18,7 @@ struct SupplicationTranslationPicker: View {
             Label("Translation", systemImage: "character.bubble")
         }
         .accessibilityIdentifier("supplication-translation-picker")
+        .appTip(.translations)
+        .onChange(of: selection) { AppTip.complete(.translations) }
     }
 }

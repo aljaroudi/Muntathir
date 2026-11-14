@@ -16,7 +16,7 @@ final class TasbihUITests: XCTestCase {
     }
 
     @MainActor private func stageCounter(_ app: XCUIApplication) -> XCUIElement {
-        app.navigationBars.staticTexts.matching(NSPredicate(format: "label MATCHES %@", ".* / .*")).firstMatch
+        app.staticTexts["tasbih-count"]
     }
 
     @MainActor private func pull(_ app: XCUIApplication, dx: CGFloat = 0, dy: CGFloat = 100) {
@@ -32,12 +32,12 @@ final class TasbihUITests: XCTestCase {
         pull(app, dy: 25)
         pull(app, dy: -80)
         pull(app, dx: 100, dy: 10)
-        XCTAssertEqual(stageCounter(app).label, "0 / 34")
+        XCTAssertEqual(stageCounter(app).label, "0")
         pull(app, dy: 180)
-        XCTAssertEqual(stageCounter(app).label, "1 / 34")
+        XCTAssertEqual(stageCounter(app).label, "1")
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.buttons["tasbih"].tap()
-        XCTAssertEqual(stageCounter(app).label, "0 / 34")
+        XCTAssertEqual(stageCounter(app).label, "0")
     }
 
     @MainActor func testStagesCompletion() {
@@ -46,34 +46,34 @@ final class TasbihUITests: XCTestCase {
             pull(app)
             if count == 34 {
                 XCTAssertEqual(app.staticTexts["tasbih-phrase"].label, "الحمد لله")
-                XCTAssertEqual(stageCounter(app).label, "0 / 33")
+                XCTAssertEqual(stageCounter(app).label, "0")
             } else if count == 67 {
                 XCTAssertEqual(app.staticTexts["tasbih-phrase"].label, "سبحان الله")
-                XCTAssertEqual(stageCounter(app).label, "0 / 33")
+                XCTAssertEqual(stageCounter(app).label, "0")
             }
         }
         XCTAssertTrue(app.images["tasbih-complete"].exists)
         XCTAssertFalse(app.staticTexts["tasbih-phrase"].exists)
         pull(app)
-        XCTAssertEqual(stageCounter(app).label, "33 / 33")
+        XCTAssertEqual(stageCounter(app).label, "33")
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.buttons["tasbih"].tap()
-        XCTAssertEqual(stageCounter(app).label, "0 / 34")
+        XCTAssertEqual(stageCounter(app).label, "0")
     }
 
-    @MainActor func testSwipeHintDismissesAfterCountingAndStaysDismissed() {
+    @MainActor func testSwipeHintReturnsOnEveryVisit() {
         let app = open()
         let hint = app.images["tasbih-swipe-hint"]
         XCTAssertTrue(hint.exists)
         pull(app)
-        XCTAssertEqual(stageCounter(app).label, "1 / 34")
+        XCTAssertEqual(stageCounter(app).label, "1")
         XCTAssertFalse(hint.exists)
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.buttons["tasbih"].tap()
-        XCTAssertFalse(hint.exists)
+        XCTAssertTrue(hint.exists)
         app.terminate()
         let relaunched = open(extraArguments: ["--ui-testing-preserve-state"])
-        XCTAssertFalse(relaunched.images["tasbih-swipe-hint"].exists)
+        XCTAssertTrue(relaunched.images["tasbih-swipe-hint"].exists)
     }
 
     @MainActor func testSwipeHintTimesOutWithoutCounting() {
@@ -81,13 +81,13 @@ final class TasbihUITests: XCTestCase {
         let hint = app.images["tasbih-swipe-hint"]
         XCTAssertTrue(hint.exists)
         XCTAssertTrue(hint.waitForNonExistence(timeout: 5))
-        XCTAssertEqual(stageCounter(app).label, "0 / 34")
+        XCTAssertEqual(stageCounter(app).label, "0")
         XCTAssertFalse(app.staticTexts["Pull a bead down to count"].exists)
     }
 
     @MainActor func testArabicLayout() {
         let app = open(arabic: true)
-        XCTAssertEqual(stageCounter(app).label, "٠ / ٣٤")
+        XCTAssertEqual(stageCounter(app).label, "٠")
         XCTAssertEqual(app.staticTexts["tasbih-phrase"].label, "الله أكبر")
         pull(app)
         let screenshot = XCTAttachment(screenshot: app.screenshot())

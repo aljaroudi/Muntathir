@@ -20,10 +20,10 @@ struct HadithDetailView: View {
         detail?.narration.isSupplication ?? supplication
     }
 
-    @AppStorage("supplicationTranslation") private var translation = "auto"
+    @AppStorage("supplicationTranslation.v2") private var translation = "auto"
     @State private var translationLanguages: [String] = []
     @State private var translationChanged = false
-    @AppStorage("hadithEnglishEnabled") private var showEnglish = true
+    @AppStorage("hadithEnglishEnabled.v2") private var showEnglish = SupplicationTranslation.prefersEnglish()
     @Environment(\.locale) private var locale
     @State private var currentID: Int?
     @State private var detail: HadithDetail?

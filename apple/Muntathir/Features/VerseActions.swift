@@ -114,7 +114,7 @@ struct HadithActions: View {
     var translationLanguages: [String] = []
     @Environment(\.locale) private var locale
     @Environment(\.quranUserStore) private var store
-    @AppStorage("hadithEnglishEnabled") private var showEnglish = true
+    @AppStorage("hadithEnglishEnabled.v2") private var showEnglish = SupplicationTranslation.prefersEnglish()
     private struct ShareItem: Identifiable {
         let id = UUID()
         let items: [Any]
@@ -170,6 +170,8 @@ struct HadithActions: View {
             .frame(minWidth: 44, minHeight: 44)
         }
         .accessibilityIdentifier("hadith-actions")
+        .appTip(.translations)
+        .appTip(.reading)
         .sheet(item: $shared) { AyahShareSheet(items: $0.items) }
         .alert("Text copied", isPresented: $copied) { Button("OK", role: .cancel) {} }
         .alert("Unable to save bookmark", isPresented: $bookmarkFailed) {

@@ -72,6 +72,8 @@ struct QuranMushafView: View {
                 } label: {
                     Label("Reading options", systemImage: "textformat")
                 }.accessibilityIdentifier("quran-reading-options")
+                    .appTip(.translations)
+                    .appTip(.reading)
             }
         }
         .task(id: initializationRetry) {

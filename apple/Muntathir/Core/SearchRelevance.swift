@@ -17,11 +17,19 @@ struct SearchRelevance: Comparable, Sendable {
         guard !text.isEmpty, !terms.isEmpty else { return nil }
         let query = terms.map(fold)
         let asciiQuery = query.allSatisfy { $0.utf8.allSatisfy { $0 < 128 } }
-        if asciiQuery && !text.unicodeScalars.contains(where: { $0.value < 128 && CharacterSet.letters.contains($0) }) { return nil }
+        if asciiQuery, query.contains(where: { $0.contains(where: \.isLetter) }),
+           !text.unicodeScalars.contains(where: { $0.value < 128 && CharacterSet.letters.contains($0) })
+        {
+            return nil
+        }
         let normalized = fold(QuranSearchText.normalize(text))
         let absent = query.filter { !normalized.contains($0) }
-        if absent.count > 1 { return nil }
-        if !absent.isEmpty, query.contains(where: { $0.count < 3 }) { return nil }
+        if absent.count > 1 {
+            return nil
+        }
+        if !absent.isEmpty, query.contains(where: { $0.count < 3 }) {
+            return nil
+        }
         let words = QuranSearchText.terms(text).map(fold)
         guard !query.isEmpty, !words.isEmpty else { return nil }
         var positions: [[Int]] = []
@@ -29,11 +37,17 @@ struct SearchRelevance: Comparable, Sendable {
         var corrections = 0
         for term in query {
             let exact = words.indices.filter { words[$0] == term }
-            if !exact.isEmpty { positions.append(exact); continue }
+            if !exact.isEmpty {
+                positions.append(exact); continue
+            }
             let partial = words.indices.filter { words[$0].contains(term) }
-            if !partial.isEmpty { positions.append(partial); fragments += 1; continue }
+            if !partial.isEmpty {
+                positions.append(partial); fragments += 1; continue
+            }
             let corrected = words.indices.filter { close(words[$0], term) }
-            if !corrected.isEmpty { positions.append(corrected); corrections += 1; continue }
+            if !corrected.isEmpty {
+                positions.append(corrected); corrections += 1; continue
+            }
             positions.append([])
         }
         let missing = positions.filter(\.isEmpty).count
@@ -57,7 +71,9 @@ struct SearchRelevance: Comparable, Sendable {
                 distance = min(distance, events[right].0 - events[left].0)
                 let key = events[left].1
                 counts[key, default: 0] -= 1
-                if counts[key] == 0 { counts.removeValue(forKey: key) }
+                if counts[key] == 0 {
+                    counts.removeValue(forKey: key)
+                }
                 left += 1
             }
         }
@@ -75,7 +91,9 @@ struct SearchRelevance: Comparable, Sendable {
         let a = Array(word), b = Array(query)
         if a.count == b.count {
             let differences = a.indices.filter { a[$0] != b[$0] }
-            if differences.count == 1 { return true }
+            if differences.count == 1 {
+                return true
+            }
             if differences.count == 2 {
                 let first = differences[0], second = differences[1]
                 return second == first + 1 && a[first] == b[second] && a[second] == b[first]
@@ -89,7 +107,9 @@ struct SearchRelevance: Comparable, Sendable {
             if longer[index + offset] != shorter[index] {
                 guard offset == 0 else { return false }
                 offset = 1
-                if longer[index + offset] != shorter[index] { return false }
+                if longer[index + offset] != shorter[index] {
+                    return false
+                }
             }
         }
         return true

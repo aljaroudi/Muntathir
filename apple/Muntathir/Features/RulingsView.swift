@@ -9,7 +9,7 @@ struct RulingsView: View {
                 RulingsBrowser(reader: assets.reader)
                     .id(assets.revision)
             } else {
-                List { RulingsDownloadSection(assets: assets) }
+                List { RulingsIntroSection(); RulingsDownloadSection(assets: assets) }
                     .navigationTitle("Rulings")
             }
         }
@@ -61,7 +61,7 @@ private struct RulingsBrowser: View {
     let reader: RulingsReader
     @Environment(\.locale) private var locale
     @AppStorage("rulings.authority") private var authority = "sistani"
-    @AppStorage("rulings.languages") private var savedLanguages = Data()
+    @AppStorage("rulings.languages.v2") private var savedLanguages = Data()
     @State private var results = RulingsResultsState()
     @State private var authorities: [RulingsAuthority] = []
     @State private var languages: [RulingsLanguage] = []
@@ -77,6 +77,7 @@ private struct RulingsBrowser: View {
 
     var body: some View {
         List {
+            RulingsIntroSection()
             Section {
                 Picker("Religious authority", selection: $authority) {
                     ForEach(authorities) { value in
@@ -116,7 +117,9 @@ private struct RulingsBrowser: View {
             guard !value.isEmpty else { return }
             var preferences = languagePreferences
             preferences[authority] = value
-            if let data = try? JSONEncoder().encode(preferences) { savedLanguages = data }
+            if let data = try? JSONEncoder().encode(preferences) {
+                savedLanguages = data
+            }
         }
         .task(id: "\(authority)|\(locale.identifier)|\(retry)") {
             loading = true
@@ -176,12 +179,14 @@ private struct RulingsResults: View {
                                   source == authority, code == language.id else { throw HadithDatabaseError.invalidReference }
                             let key = Rulings.ID(authority: source, language: code, siteID: id)
                             guard let value = try await reader.question(key) else { throw HadithDatabaseError.incompatible }
-                            if seen.insert(key).inserted { found.append(value) }
+                            if seen.insert(key).inserted {
+                                found.append(value)
+                            }
                         }
                         return found
                     }) { rows($0) }
-                    .id([authority, language.id, query])
-                } else if !state.topics.contains(where: { $0.parent == topic?.id }) && state.questions.isEmpty {
+                        .id([authority, language.id, query])
+                } else if !state.topics.contains(where: { $0.parent == topic?.id }), state.questions.isEmpty {
                     ContentUnavailableView("No Results", systemImage: "magnifyingglass")
                 }
             }
@@ -216,7 +221,9 @@ private struct RulingsResults: View {
         loading = true
         failed = false
         do {
-            if !query.isEmpty { try await Task.sleep(for: .milliseconds(150)) }
+            if !query.isEmpty {
+                try await Task.sleep(for: .milliseconds(150))
+            }
             let browsing = query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             let foundTopics = browsing ? try await reader.topics(authority: authority, language: language) : []
             let foundQuestions = !browsing || topic != nil ? try await reader.questions(authority: authority, language: language, query: query, topic: topic?.id) : []
@@ -258,6 +265,7 @@ private struct RulingsDetailView: View {
     let language: RulingsLanguage
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var textSizePresented = false
+    @State private var bookmarkFailed = false
 
     var body: some View {
         List {
@@ -275,7 +283,102 @@ private struct RulingsDetailView: View {
         }
         .navigationTitle("Rulings")
         .readingBackground()
-        .toolbar { ReadingSizeMenu(isPresented: $textSizePresented) }
+        .toolbar {
+            ReadingSizeMenu(isPresented: $textSizePresented)
+            BookmarkButton(source: rulings.id.siteID, isHadith: false, excerpt: rulings.question,
+                           reference: authorityName, ruling: rulings.id, failed: $bookmarkFailed)
+                .appTip(.bookmarks)
+        }
+        .alert("Unable to save bookmark", isPresented: $bookmarkFailed) {
+            Button("OK", role: .cancel) {}
+        } message: { Text("Please try again.") }
         .readingSizePresentation(isPresented: $textSizePresented, compact: sizeClass != .regular)
+    }
+}
+
+private struct RulingsIntroSection: View {
+    var body: some View {
+        Section {
+            Label("This app is not a source of religious rulings. Refer to official sources.", systemImage: "exclamationmark.triangle")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .accessibilityIdentifier("rulings-notice")
+            NavigationLink { RulingsSavedView() } label: { Label("Saved", systemImage: "bookmark") }
+                .accessibilityIdentifier("rulings-saved")
+        }
+    }
+}
+
+private struct RulingsSavedView: View {
+    @Environment(\.quranUserStore) private var store
+
+    var body: some View {
+        Group {
+            if store?.unavailable != false {
+                ContentUnavailableView {
+                    Label("Saved unavailable", systemImage: "exclamationmark.triangle")
+                } description: {
+                    Text("Your saved data could not be opened. Please try again.")
+                } actions: {
+                    Button("Try again") { store?.reopen() }
+                }
+            } else {
+                SavedList(bookmarksOnly: true, highlights: [], bookmarks: store?.bookmarks.filter { $0.kind == .ruling } ?? [],
+                          canOpen: { $0.bookmark?.ruling != nil }, available: { _ in false })
+                { entry in
+                    if let id = entry.bookmark?.ruling {
+                        SavedRulingDestination(id: id)
+                    }
+                }
+            }
+        }
+        .navigationTitle("Saved")
+    }
+}
+
+private struct SavedRulingDestination: View {
+    let id: Rulings.ID
+    @Environment(\.rulingsAssets) private var assets
+    @Environment(\.locale) private var locale
+    @State private var ruling: Rulings?
+    @State private var language: RulingsLanguage?
+    @State private var authorityName = ""
+    @State private var loading = true
+    @State private var retry = 0
+
+    var body: some View {
+        Group {
+            if let assets, assets.state != .ready {
+                List { RulingsDownloadSection(assets: assets) }
+            } else if let ruling, let language {
+                RulingsDetailView(rulings: ruling, authorityName: authorityName, language: language)
+            } else if loading {
+                ProgressView()
+            } else {
+                ContentUnavailableView {
+                    Label("Saved passage unavailable", systemImage: "exclamationmark.triangle")
+                } actions: { Button("Try again") { retry += 1 } }
+            }
+        }
+        .task(id: "\(assets?.revision ?? 0)|\(retry)|\(locale.identifier)") {
+            guard let assets, assets.state == .ready else { loading = false; return }
+            loading = true
+            ruling = nil
+            language = nil
+            do {
+                let found = try await assets.reader.question(id)
+                let languages = try await assets.reader.languages(authority: id.authority)
+                let authorities = try await assets.reader.authorities()
+                try Task.checkCancellation()
+                ruling = found
+                language = languages.first { $0.id == id.language }
+                let authority = authorities.first { $0.id == id.authority }
+                authorityName = (locale.language.languageCode?.identifier == "ar" ? authority?.arabic : authority?.english) ?? id.authority
+                loading = false
+            } catch {
+                guard !Task.isCancelled else { return }
+                loading = false
+            }
+        }
     }
 }

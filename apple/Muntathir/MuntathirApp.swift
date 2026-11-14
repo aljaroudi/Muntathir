@@ -8,6 +8,7 @@ struct MuntathirApp: App {
     @State private var progressStore = ProgressStore.application()
     @State private var quranStore: QuranUserStore
     init() {
+        AppTip.configure()
         let model: AppModel
         #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("--ui-testing") {

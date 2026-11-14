@@ -3,7 +3,7 @@ import XCTest
 final class QuranUITests: XCTestCase {
     @MainActor private func openQuran(arabic: Bool = false, largeText: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-testing", "-quranTranslationSelection", "auto", "-AppleLanguages", arabic ? "(ar)" : "(en)", "-AppleLocale", arabic ? "ar_SA" : "en_US"]
+        app.launchArguments = ["--ui-testing", "-quranTranslationSelection.v2", "auto", "-AppleLanguages", arabic ? "(ar)" : "(en)", "-AppleLocale", arabic ? "ar_SA" : "en_US"]
         if largeText {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         }
@@ -35,7 +35,9 @@ final class QuranUITests: XCTestCase {
     @MainActor func testPassageSearchWaitsForSubmit() {
         let app = openQuran()
         let field = app.searchFields.firstMatch
-        if !field.exists { app.swipeDown() }
+        if !field.exists {
+            app.swipeDown()
+        }
         XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
         field.typeText("2:255")

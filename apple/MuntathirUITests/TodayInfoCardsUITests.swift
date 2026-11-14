@@ -13,17 +13,18 @@ final class TodayInfoCardsUITests: XCTestCase {
                 app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
             }
             app.launch()
-            let card = app.descendants(matching: .any)["upcoming-event-card"].firstMatch
-            let countdown = card.descendants(matching: .any)["upcoming-event-timing"].firstMatch
-            for _ in 0 ..< 18 where !countdown.isHittable {
+            let card = app.buttons["upcoming-event-card"]
+            for _ in 0 ..< 18 where !card.isHittable {
                 app.swipeUp()
             }
-            XCTAssertTrue(countdown.isHittable)
-            XCTAssertEqual(countdown.label, timing)
-            XCTAssertTrue(card.staticTexts[first].exists)
-            XCTAssertTrue(card.staticTexts[second].exists)
+            XCTAssertTrue(card.isHittable)
+            XCTAssertTrue(card.label.contains(timing))
+            XCTAssertTrue(card.label.contains(first))
+            XCTAssertTrue(card.label.contains(second))
             XCTAssertGreaterThanOrEqual(card.frame.minX, app.frame.minX)
             XCTAssertLessThanOrEqual(card.frame.maxX, app.frame.maxX)
+            card.tap()
+            XCTAssertTrue(app.navigationBars[language == "ar" ? "التقويم" : "Calendar"].waitForExistence(timeout: 5))
             app.terminate()
         }
     }
@@ -89,7 +90,7 @@ final class TodayInfoCardsUITests: XCTestCase {
             app.swipeUp()
         }
         XCTAssertTrue(toggle.isHittable)
-        toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        toggle.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5)).withOffset(CGVector(dx: -25, dy: 0)).tap()
         XCTAssertEqual(toggle.value as? String, "1")
         app.leaveSettings()
         for _ in 0 ..< 8 where !temperature.isHittable {

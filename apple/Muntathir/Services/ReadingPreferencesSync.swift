@@ -11,8 +11,8 @@ extension NSUbiquitousKeyValueStore: ReadingPreferencesCloud {}
 
 /// Only user choices cross devices; caches, permissions and session state stay local.
 @MainActor final class ReadingPreferencesSync {
-    static let keys = ["readingSizePercent", "quranReadingMode", "hadithEnglishEnabled",
-                       "supplicationTranslation", "savedGroupByDate", "highlightColorCount", "highlightColorOrder", QuranTranslationPreferences.selectionKey]
+    static let keys = ["readingSizePercent", "quranReadingMode", "hadithEnglishEnabled.v2",
+                       "supplicationTranslation.v2", "savedGroupByDate", "highlightColorCount", "highlightColorOrder", QuranTranslationPreferences.selectionKey]
     private let defaults: UserDefaults
     private let translationDefaults: UserDefaults
     private let cloud: any ReadingPreferencesCloud
@@ -59,11 +59,11 @@ extension NSUbiquitousKeyValueStore: ReadingPreferencesCloud {}
         case "readingSizePercent":
             guard let number = value as? NSNumber, CFGetTypeID(number) != CFBooleanGetTypeID() else { return false }
             return (80 ... 160).contains(number.intValue) && number.doubleValue == Double(number.intValue)
-        case "hadithEnglishEnabled", "savedGroupByDate":
+        case "hadithEnglishEnabled.v2", "savedGroupByDate":
             guard let number = value as? NSNumber else { return false }
             return CFGetTypeID(number) == CFBooleanGetTypeID()
         case "quranReadingMode": return ["verses", "mushaf"].contains(value as? String ?? "")
-        case "supplicationTranslation":
+        case "supplicationTranslation.v2":
             guard let value = value as? String else { return false }
             return ["auto", "none"].contains(value) || Locale.LanguageCode.isoLanguageCodes.contains { $0.identifier == value }
         case QuranTranslationPreferences.selectionKey:

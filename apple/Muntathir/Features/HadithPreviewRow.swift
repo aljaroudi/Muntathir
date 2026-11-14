@@ -3,7 +3,7 @@ import SwiftUI
 struct HadithPreviewRow: View {
     let narration: Hadith
     var searching = false
-    @AppStorage("hadithEnglishEnabled") private var showEnglish = true
+    @AppStorage("hadithEnglishEnabled.v2") private var showEnglish = SupplicationTranslation.prefersEnglish()
     @Environment(\.locale) private var locale
 
     var body: some View {

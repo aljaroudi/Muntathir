@@ -4,8 +4,9 @@ import SwiftUI
 struct TasbihView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
-    @AppStorage("tasbihSwipeHintSeen") private var swipeHintSeen = false
+    @Environment(\.locale) private var locale
     @Environment(\.progressStore) private var progress
+    @ScaledMetric(relativeTo: .largeTitle) private var countHeight = 48
     @State private var activityID = UUID()
     @State private var startedAt = Date.now
     @State private var session = TasbihSession()
@@ -24,16 +25,14 @@ struct TasbihView: View {
         .frame(maxWidth: 560)
         .frame(maxWidth: .infinity)
         .background(Color(.systemGroupedBackground))
-        .navigationTitle(Text("\(session.count) / \(session.target)"))
+        .navigationTitle("Tasbih")
         .navigationBarTitleDisplayMode(.inline)
         .sensoryFeedback(trigger: session) { old, new in
             guard new.total > old.total else { return nil }
             return old.phrase == new.phrase ? .impact(weight: .light) : .success
         }
         .task {
-            guard !swipeHintSeen else { return }
             showingSwipeHint = true
-            swipeHintSeen = true
             do { try await Task.sleep(for: .seconds(4)) } catch { return }
             showingSwipeHint = false
         }
@@ -62,18 +61,30 @@ struct TasbihView: View {
         ZStack {
             beadLayer(beads.rearRoot)
                 .blur(radius: 3)
-            if session.complete {
-                Image(systemName: "checkmark")
-                    .font(.largeTitle)
-                    .foregroundStyle(.tint)
-                    .accessibilityLabel("Count complete")
-                    .accessibilityIdentifier("tasbih-complete")
-            } else {
-                Text(verbatim: session.phrase)
-                    .font(.largeTitle)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 16)
-                    .accessibilityIdentifier("tasbih-phrase")
+            VStack(spacing: 12) {
+                ZStack {
+                    Text(session.count.formatted(.number.locale(locale)))
+                        .font(.largeTitle.monospacedDigit())
+                        .id(session.total)
+                        .transition(reduceMotion ? .identity : .asymmetric(insertion: .move(edge: .top).combined(with: .opacity), removal: .move(edge: .bottom).combined(with: .opacity)))
+                        .accessibilityIdentifier("tasbih-count")
+                }
+                .frame(height: countHeight)
+                .clipped()
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: session.total)
+                if session.complete {
+                    Image(systemName: "checkmark")
+                        .font(.largeTitle)
+                        .foregroundStyle(.tint)
+                        .accessibilityLabel("Count complete")
+                        .accessibilityIdentifier("tasbih-complete")
+                } else {
+                    Text(verbatim: session.phrase)
+                        .font(.largeTitle)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 16)
+                        .accessibilityIdentifier("tasbih-phrase")
+                }
             }
             beadLayer(beads.frontRoot)
         }

@@ -1,7 +1,7 @@
 import Foundation
+@testable import Muntathir
 import SQLite3
 import Testing
-@testable import Muntathir
 
 struct RulingsTests {
     @Test func scopeAndStableReferences() async throws {
@@ -37,7 +37,7 @@ struct RulingsTests {
     @Test func semanticReferenceAndRequestRetainScope() throws {
         let result = try JSONDecoder().decode(SemanticSearchResult.self, from: Data(#"{"kind":"rulings","authority":"sistani","language":"ar","id":"42","score":0.8}"#.utf8))
         #expect(result.id == "rulings:sistani:ar:42")
-        let client = SemanticSearchClient(endpoint: URL(string: "https://example.org/v1/search")!)
+        let client = try SemanticSearchClient(endpoint: #require(URL(string: "https://example.org/v1/search")))
         let request = try client.request("الصلاة", kind: "rulings", sources: ["sistani"], chapter: nil, languages: ["ar"])
         let data = try #require(request.httpBody)
         let body = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
@@ -96,19 +96,88 @@ private actor RulingsTestBackend: AssetPackBackend {
     var installed = false
     var failing = false
     var downloading = false
-    init(url: URL) { self.url = url }
-    func setFailure(_ value: Bool) { failing = value }
-    func setDownloading(_ value: Bool) { downloading = value }
-    func localURL() -> URL? { installed ? url : nil }
-    func isDownloading() -> Bool { downloading }
+    init(url: URL) {
+        self.url = url
+    }
+
+    func setFailure(_ value: Bool) {
+        failing = value
+    }
+
+    func setDownloading(_ value: Bool) {
+        downloading = value
+    }
+
+    func localURL() -> URL? {
+        installed ? url : nil
+    }
+
+    func isDownloading() -> Bool {
+        downloading
+    }
+
     func download() throws {
-        if failing { throw URLError(.notConnectedToInternet) }
+        if failing {
+            throw URLError(.notConnectedToInternet)
+        }
         installed = true
         downloading = false
     }
+
     func remove() throws {
-        if failing { throw URLError(.cannotRemoveFile) }
+        if failing {
+            throw URLError(.cannotRemoveFile)
+        }
         installed = false
     }
-    nonisolated func updates() -> AsyncStream<AssetPackEvent> { AsyncStream { $0.finish() } }
+
+    nonisolated func updates() -> AsyncStream<AssetPackEvent> {
+        AsyncStream { $0.finish() }
+    }
+}
+
+extension RulingsTests {
+    @Test func repeatedReaderQueriesAndRemoval() async throws {
+        let fixture = try RulingsFixture()
+        defer { fixture.remove() }
+        let reader = RulingsReader()
+        try await reader.install(fixture.url)
+        let duration = try await ContinuousClock().measure { () async throws in
+            for _ in 0 ..< 200 {
+                #expect(try await reader.languages(authority: "sistani").count == 2)
+                #expect(try await reader.question(.init(authority: "sistani", language: "en", siteID: "42"))?.answer == "Original answer")
+            }
+        }
+        print("Rulings 400 queries: \(duration)")
+        try await reader.install(nil)
+        await #expect(throws: HadithDatabaseError.self) { _ = try await reader.languages(authority: "sistani") }
+        try await reader.install(fixture.url)
+        #expect(try await reader.authorities().count == 2)
+    }
+}
+
+extension RulingsTests {
+    @Test func connectionReuseMeasurement() throws {
+        let fixture = try RulingsFixture()
+        defer { fixture.remove() }
+        let sql = "SELECT site_id FROM question WHERE authority_code = ? AND language_code = ?"
+        let parameters = ["sistani", "en"]
+        var reopenedRows = 0
+        let reopening = try ContinuousClock().measure {
+            for _ in 0 ..< 400 {
+                let database = try HadithConnection(url: fixture.url)
+                reopenedRows += try database.query(sql, parameters: parameters) { sqlite3_column_int($0, 0) }.count
+            }
+        }
+        let database = try HadithConnection(url: fixture.url)
+        var reusedRows = 0
+        let reusing = try ContinuousClock().measure {
+            for _ in 0 ..< 400 {
+                reusedRows += try database.query(sql, parameters: parameters) { sqlite3_column_int($0, 0) }.count
+            }
+        }
+        #expect(reopenedRows == 400)
+        #expect(reusedRows == reopenedRows)
+        print("Rulings connection comparison (400 identical lookups): reopen \(reopening), reuse \(reusing)")
+    }
 }

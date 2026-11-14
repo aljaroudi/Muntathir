@@ -124,11 +124,18 @@ struct TodayView: View {
                                         Button(model.preferences.enabledPrayers.contains(prayer.name) ? "Mute" : "Alert",
                                                systemImage: model.preferences.enabledPrayers.contains(prayer.name) ? "bell.slash" : "bell")
                                         {
-                                            Task { await model.setPrayer(prayer.name, enabled: !model.preferences.enabledPrayers.contains(prayer.name)) }
+                                            Task {
+                                                let enabled = !model.preferences.enabledPrayers.contains(prayer.name)
+                                                await model.setPrayer(prayer.name, enabled: enabled)
+                                                if model.preferences.enabledPrayers.contains(prayer.name) == enabled {
+                                                    AppTip.complete(.prayers)
+                                                }
+                                            }
                                         }
                                         if !prayer.name.isRequired {
                                             Button("Hide", systemImage: "eye.slash") {
                                                 model.update { $0.hiddenPrayers.insert(prayer.name) }
+                                                AppTip.complete(.prayers)
                                             }
                                         }
                                     }
@@ -159,15 +166,13 @@ struct TodayView: View {
                         }
                     }
                 }
+                .appTip(.prayers, enabled: !prayers.isEmpty)
                 if let dailyAyah {
                     DailyAyahCard(ayah: dailyAyah, skyBackground: sun != nil)
                         .layoutValue(key: TodayColumnKey.self, value: 1)
                 }
-                if let event = model.content.upcomingEvent(on: now, engine: engine, sunset: versePrayerSettings.sunset(on:)) {
-                    UpcomingEventCard(events: event.events, timing: event.timing, skyBackground: sun != nil)
-                        .layoutValue(key: TodayColumnKey.self, value: 1)
-                }
-                TodayInfoCards(skyBackground: sun != nil, weather: weather, sun: sun, moon: moon)
+                TodayInfoCards(skyBackground: sun != nil, weather: weather, sun: sun, moon: moon,
+                               event: model.content.upcomingEvent(on: now, engine: engine, sunset: versePrayerSettings.sunset(on:)))
                     .layoutValue(key: TodayColumnKey.self, value: 1)
             }
             .safeAreaInset(edge: .top, spacing: 0) {
@@ -222,7 +227,8 @@ struct TodayView: View {
                 } catch {}
             }
         }
-        .task(id: model.location) {
+        .task(id: "\(scenePhase)-\(String(describing: model.location))") {
+            guard scenePhase == .active else { return }
             while !Task.isCancelled {
                 await weather.refresh(location: model.location)
                 do { try await Task.sleep(for: .seconds(900)) } catch { break }
@@ -231,7 +237,6 @@ struct TodayView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 refreshedAt = .now
-                Task { await weather.refresh(location: model.location) }
             }
         }
     }
@@ -289,14 +294,14 @@ struct TodayView: View {
     }
 }
 
-private struct UpcomingEventCard: View {
+struct UpcomingEventCard: View {
     let events: [IslamicEvent]
     let timing: ContentLibrary.EventTiming
-    let skyBackground: Bool
+    @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.locale) private var locale
 
     var body: some View {
-        Card(skyBackground: skyBackground, spacing: 8) {
+        VStack(alignment: .leading, spacing: 8) {
             Label {
                 timingLabel
             } icon: {
@@ -305,12 +310,12 @@ private struct UpcomingEventCard: View {
             .font(.headline)
             .foregroundStyle(Color.accentColor)
             .accessibilityIdentifier("upcoming-event-timing")
-            ForEach(events) { event in
-                Text(verbatim: event.title(locale: locale))
-            }
+            Text(verbatim: events.map { $0.title(locale: locale) }.joined(separator: "\n"))
+                .font(.subheadline)
+                .lineLimit(typeSize.isAccessibilitySize ? nil : 3)
+                .accessibilityIdentifier("upcoming-event-names")
         }
         .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("upcoming-event-card")
     }
 
     private var timingLabel: Text {

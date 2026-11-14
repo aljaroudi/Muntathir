@@ -410,6 +410,7 @@
       "shouldTranslate" : false
     },
     "%lld / %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -4162,6 +4163,100 @@
         }
       }
     },
+    "Bookmark a ruling to find it again in Saved." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أضف إشارة مرجعية للحكم لتجده لاحقًا في المحفوظات."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setze ein Lesezeichen für einen Rechtsspruch, um ihn unter Gespeichert wiederzufinden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bookmark a ruling to find it again in Saved."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade un marcador a un dictamen para encontrarlo en Guardados."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "برای یافتن دوباره حکم در ذخیره‌شده‌ها، آن را نشانک‌گذاری کنید."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoutez un signet à un avis juridique pour le retrouver dans les éléments enregistrés."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tandai hukum untuk menemukannya kembali di Tersimpan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi un segnalibro a un responso per ritrovarlo tra gli elementi salvati."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "法的見解をブックマークすると、保存済みから再び開けます。"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tandakan hukum untuk menemuinya semula dalam Disimpan."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавьте решение в закладки, чтобы найти его в сохранённом."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bir hükmü Kaydedilenler’de tekrar bulmak için yer imi ekleyin."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حکم کو محفوظ کردہ میں دوبارہ تلاش کرنے کے لیے بک مارک کریں۔"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "为教法判例添加书签，以便在已保存中再次找到。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "為教法判例加入書籤，以便在已儲存中再次找到。"
+          }
+        }
+      }
+    },
     "Bookmarks" : {
       "localizations" : {
         "ar" : {
@@ -6132,6 +6227,100 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選擇親子關係記載"
+          }
+        }
+      }
+    },
+    "Choose a translation to read alongside Arabic." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اختر ترجمة لقراءتها إلى جانب النص العربي."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle eine Übersetzung, die neben dem arabischen Text angezeigt wird."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a translation to read alongside Arabic."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige una traducción para leer junto al texto árabe."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ترجمه‌ای را برای خواندن در کنار متن عربی انتخاب کنید."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez une traduction à lire avec le texte arabe."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih terjemahan untuk dibaca bersama teks Arab."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli una traduzione da leggere accanto al testo arabo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アラビア語と併せて読む翻訳を選びます。"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih terjemahan untuk dibaca bersama teks Arab."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите перевод для чтения вместе с арабским текстом."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arapça metnin yanında okumak için bir çeviri seçin."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عربی متن کے ساتھ پڑھنے کے لیے ترجمہ منتخب کریں۔"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择与阿拉伯语原文一起阅读的译文。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇與阿拉伯語原文一起閱讀的譯文。"
           }
         }
       }
@@ -13653,6 +13842,100 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "螢光標記"
+          }
+        }
+      }
+    },
+    "Highlights and bookmarks" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التظليل والإشارات المرجعية"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Markierungen und Lesezeichen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Highlights and bookmarks"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resaltados y marcadores"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "برجسته‌سازی‌ها و نشانک‌ها"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Surlignages et signets"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sorotan dan markah"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Evidenziazioni e segnalibri"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ハイライトとブックマーク"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sorotan dan penanda buku"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выделения и закладки"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vurgular ve yer imleri"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نمایاں متن اور بک مارکس"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高亮与书签"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "螢光標示與書籤"
           }
         }
       }
@@ -23727,6 +24010,100 @@
         }
       }
     },
+    "Prayer options" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "خيارات الصلاة"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebetsoptionen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prayer options"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opciones de oración"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "گزینه‌های نماز"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Options de prière"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opsi salat"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opzioni di preghiera"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "礼拝のオプション"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilihan solat"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Параметры молитвы"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namaz seçenekleri"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نماز کے اختیارات"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "礼拜选项"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "禮拜選項"
+          }
+        }
+      }
+    },
     "Prayer reminders" : {
       "localizations" : {
         "ar" : {
@@ -24667,6 +25044,100 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在準備下載…"
+          }
+        }
+      }
+    },
+    "Press and hold a prayer time to mute its alert. Optional times can also be hidden." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اضغط مطولًا على وقت الصلاة لكتم تنبيهه. يمكنك أيضًا إخفاء الأوقات الاختيارية."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Halte eine Gebetszeit gedrückt, um ihre Benachrichtigung stummzuschalten. Optionale Zeiten lassen sich auch ausblenden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Press and hold a prayer time to mute its alert. Optional times can also be hidden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantén pulsada una hora de oración para silenciar su aviso. También puedes ocultar los horarios opcionales."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "برای بی‌صدا کردن هشدار، زمان نماز را نگه دارید. زمان‌های اختیاری را نیز می‌توان پنهان کرد."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maintenez un horaire de prière appuyé pour couper son alerte. Les horaires facultatifs peuvent aussi être masqués."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tekan lama waktu salat untuk membisukan pengingatnya. Waktu opsional juga dapat disembunyikan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tieni premuto un orario di preghiera per silenziarne l’avviso. Puoi anche nascondere gli orari facoltativi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "礼拝時刻を長押しすると通知をミュートできます。任意の時刻は非表示にもできます。"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tekan dan tahan waktu solat untuk membisukan maklumannya. Waktu pilihan juga boleh disembunyikan."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нажмите и удерживайте время молитвы, чтобы отключить её уведомление. Необязательные времена можно также скрыть."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bildirimini sessize almak için namaz vaktine basılı tutun. İsteğe bağlı vakitler de gizlenebilir."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اطلاع خاموش کرنے کے لیے نماز کے وقت کو دبا کر رکھیں۔ اختیاری اوقات کو چھپایا بھی جا سکتا ہے۔"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "长按礼拜时间可将其提醒静音。也可以隐藏可选时间。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "長按禮拜時間可將其提醒靜音。也可以隱藏選用時間。"
           }
         }
       }
@@ -28715,6 +29186,100 @@
         }
       }
     },
+    "Select text to highlight it. Use the passage actions to add a bookmark." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حدد النص لتظليله. استخدم إجراءات المقطع لإضافة إشارة مرجعية."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle Text aus, um ihn zu markieren. Füge über die Aktionen der Textstelle ein Lesezeichen hinzu."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select text to highlight it. Use the passage actions to add a bookmark."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecciona texto para resaltarlo. Usa las acciones del pasaje para añadir un marcador."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "متن را برای برجسته‌سازی انتخاب کنید. از گزینه‌های بخش برای افزودن نشانک استفاده کنید."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sélectionnez du texte pour le surligner. Utilisez les actions du passage pour ajouter un signet."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih teks untuk menyorotnya. Gunakan tindakan bagian teks untuk menambahkan markah."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleziona il testo per evidenziarlo. Usa le azioni del brano per aggiungere un segnalibro."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テキストを選択してハイライトできます。本文の操作からブックマークを追加できます。"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih teks untuk menyerlahkannya. Gunakan tindakan petikan untuk menambah penanda buku."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выделите текст, чтобы подсветить его. Добавьте закладку через меню действий отрывка."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vurgulamak için metni seçin. Yer imi eklemek için metin bölümünün işlemlerini kullanın."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "متن نمایاں کرنے کے لیے اسے منتخب کریں۔ بک مارک شامل کرنے کے لیے عبارت کے اختیارات استعمال کریں۔"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择文本以高亮显示。通过段落操作添加书签。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選取文字以標示重點。透過段落操作加入書籤。"
+          }
+        }
+      }
+    },
     "Selected location" : {
       "localizations" : {
         "ar" : {
@@ -32483,6 +33048,100 @@
         }
       }
     },
+    "This app is not a source of religious rulings. Refer to official sources." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا يُعتبر هذا التطبيق مصدرًا للأحكام الشرعية. يجب الرجوع للمصادر الرسمية"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App ist keine Quelle für religiöse Rechtsurteile. Ziehe offizielle Quellen heran."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app is not a source of religious rulings. Refer to official sources."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta aplicación no es una fuente de dictámenes religiosos. Consulta las fuentes oficiales."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "این برنامه منبع احکام شرعی محسوب نمی‌شود. باید به منابع رسمی مراجعه کنید."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette application ne constitue pas une source d’avis religieux. Consultez les sources officielles."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikasi ini bukan sumber hukum agama. Rujuklah sumber resmi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app non è una fonte di responsi religiosi. Consulta le fonti ufficiali."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアプリは宗教的な法的見解の典拠ではありません。公式の情報源を参照してください。"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikasi ini bukan sumber hukum agama. Sila rujuk sumber rasmi."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Это приложение не является источником религиозных постановлений. Обращайтесь к официальным источникам."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu uygulama dinî hükümler için kaynak değildir. Resmî kaynaklara başvurulmalıdır."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "یہ ایپ شرعی احکام کا ماخذ نہیں ہے۔ سرکاری ذرائع سے رجوع کریں۔"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本应用不是宗教教法判例的来源。请参阅官方来源。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本應用程式不是宗教教法判例的來源。請參閱官方來源。"
+          }
+        }
+      }
+    },
     "This download needs an update." : {
       "localizations" : {
         "ar" : {
@@ -36153,6 +36812,7 @@
       }
     },
     "Use Bookmark in a verse or narration’s actions to save it." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -36242,6 +36902,100 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用經文或傳述操作選單中的書籤選項來儲存。"
+          }
+        }
+      }
+    },
+    "Use Bookmark to save a passage." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استخدم الإشارة المرجعية لحفظ مقطع."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speichere eine Textstelle mit einem Lesezeichen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use Bookmark to save a passage."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa un marcador para guardar un pasaje."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "برای ذخیره یک بخش از نشانک استفاده کنید."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilisez un signet pour enregistrer un passage."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gunakan markah untuk menyimpan bagian teks."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa un segnalibro per salvare un brano."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ブックマークで本文を保存できます。"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gunakan penanda buku untuk menyimpan petikan."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Используйте закладку, чтобы сохранить отрывок."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bir metin bölümünü kaydetmek için yer imi kullanın."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عبارت محفوظ کرنے کے لیے بک مارک استعمال کریں۔"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用书签保存段落。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用書籤儲存段落。"
           }
         }
       }

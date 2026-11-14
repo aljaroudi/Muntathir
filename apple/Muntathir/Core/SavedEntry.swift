@@ -39,7 +39,7 @@ struct SavedEntry: Identifiable {
     }
 
     func title(locale: Locale) -> String {
-        isHadith || locale.language.languageCode?.identifier != "ar"
+        bookmark?.kind == .ruling || isHadith || locale.language.languageCode?.identifier != "ar"
             ? reference : QuranReference.display(source, locale: locale)
     }
 
@@ -56,18 +56,19 @@ struct SavedEntry: Identifiable {
         if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             var ranked: [(SavedEntry, SearchRelevance)] = []
             for entry in entries {
-                if let score = entry.relevance(query, locale: locale) { ranked.append((entry, score)) }
+                if let score = entry.relevance(query, locale: locale) {
+                    ranked.append((entry, score))
+                }
             }
             ranked.sort { $0.1 == $1.1 ? $0.0.id < $1.0.id : $0.1 < $1.1 }
             return [false, true].compactMap { related in
-                let values = ranked.filter { ($0.1.tier == 2) == related }.map { $0.0 }
+                let values = ranked.filter { ($0.1.tier == 2) == related }.map(\.0)
                 return values.isEmpty ? nil : SavedEntrySection(id: related ? "related" : "matches", date: nil, entries: values)
             }
         }
-        let filtered = entries.filter { $0.matches(query, locale: locale) }
-        let groups = Dictionary(grouping: filtered) { entry in
+        let groups = Dictionary(grouping: entries) { entry in
             byDate ? "date:\(calendar.startOfDay(for: entry.createdAt).timeIntervalSince1970)"
-                : (entry.isHadith ? "hadith:" : "quran:") + entry.source
+                : entry.bookmark?.id ?? ((entry.isHadith ? "hadith:" : "quran:") + entry.source)
         }
         return groups.map { key, values in
             let sorted = values.sorted {

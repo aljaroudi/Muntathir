@@ -256,6 +256,7 @@ struct HadithView: View {
                     Label("Hadith actions", systemImage: "ellipsis.circle")
                 }
                 .accessibilityIdentifier("hadith-library-menu")
+                .appTip(.translations)
             }
         }
         .navigationDestination(item: $collection) { book in
@@ -529,7 +530,9 @@ struct HadithView: View {
         let current = request
         loading = completedRequest != current
         failed = false
-        if completedRequest != current { page = HadithPage(rows: [], hasMore: false) }
+        if completedRequest != current {
+            page = HadithPage(rows: [], hasMore: false)
+        }
         do {
             if catalog.isEmpty {
                 let books = try await reader.catalog()

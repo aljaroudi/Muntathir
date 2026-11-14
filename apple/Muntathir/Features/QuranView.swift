@@ -24,7 +24,11 @@ struct QuranView: View {
             .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Surah, 2:255, or Quran text")
             .searchHistory(query, area: .quran)
             .onSubmit(of: .search) { submittedQuery = query }
-            .onChange(of: query) { _, value in if value.isEmpty { submittedQuery = "" } }
+            .onChange(of: query) {
+                _, value in if value.isEmpty {
+                    submittedQuery = ""
+                }
+            }
             .autocorrectionDisabled()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -33,6 +37,7 @@ struct QuranView: View {
                     } label: {
                         Label("Reading options", systemImage: "textformat")
                     }.accessibilityIdentifier("quran-reading-options")
+                        .appTip(.translations)
                 }
             }
     }
@@ -71,6 +76,7 @@ struct QuranTranslationPicker: View {
             Label("Translation", systemImage: "character.bubble")
         }
         .accessibilityIdentifier("quran-translation-picker")
+        .onChange(of: store.selection) { AppTip.complete(.translations) }
         .accessibilityValue(QuranTranslation.catalog.first { $0.id == store.activeID }?.translator ?? String(localized: "None"))
     }
 

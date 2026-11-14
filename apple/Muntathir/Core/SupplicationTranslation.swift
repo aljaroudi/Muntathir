@@ -16,6 +16,17 @@ struct SupplicationTranslation: Identifiable, Hashable, Sendable {
         Locale.Language(identifier: language).characterDirection == .rightToLeft
     }
 
+    static func prefersEnglish(languages: [String] = Locale.preferredLanguages) -> Bool {
+        for language in languages {
+            switch Locale(identifier: language).language.languageCode?.identifier {
+            case "ar": return false
+            case "en": return true
+            default: continue
+            }
+        }
+        return false
+    }
+
     static func selected(from translations: [Self], selection: String, languages: [String]) -> Self? {
         guard selection != "none" else { return nil }
         if selection != "auto" {

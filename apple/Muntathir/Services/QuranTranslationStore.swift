@@ -54,6 +54,7 @@ import WidgetKit
     }
 
     func select(_ value: String) {
+        guard value != selection else { return }
         guard value == "auto" || value.isEmpty || QuranTranslation.catalog.contains(where: { $0.id == value }) else { return }
         selection = value
         activeID = QuranTranslationPreferences.resolve(value, languages: languages)?.id ?? ""

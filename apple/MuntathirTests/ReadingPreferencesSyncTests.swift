@@ -92,11 +92,11 @@ private final class MemoryReadingCloud: ReadingPreferencesCloud {
     @Test func validatesIncomingChoices() {
         #expect(!ReadingPreferencesSync.valid(true, for: "readingSizePercent"))
         #expect(!ReadingPreferencesSync.valid(100.5, for: "readingSizePercent"))
-        #expect(!ReadingPreferencesSync.valid("true", for: "hadithEnglishEnabled"))
-        #expect(ReadingPreferencesSync.valid(false, for: "hadithEnglishEnabled"))
+        #expect(!ReadingPreferencesSync.valid("true", for: "hadithEnglishEnabled.v2"))
+        #expect(ReadingPreferencesSync.valid(false, for: "hadithEnglishEnabled.v2"))
         #expect(!ReadingPreferencesSync.valid("bad", for: "quranReadingMode"))
-        #expect(ReadingPreferencesSync.valid("en", for: "supplicationTranslation"))
-        #expect(!ReadingPreferencesSync.valid("bad-language", for: "supplicationTranslation"))
+        #expect(ReadingPreferencesSync.valid("en", for: "supplicationTranslation.v2"))
+        #expect(!ReadingPreferencesSync.valid("bad-language", for: "supplicationTranslation.v2"))
         #expect(!ReadingPreferencesSync.valid("unknown", for: QuranTranslationPreferences.selectionKey))
     }
 
@@ -127,5 +127,40 @@ extension ReadingPreferencesSyncTests {
         #expect(!ReadingPreferencesSync.valid(13, for: "highlightColorCount"))
         #expect(ReadingPreferencesSync.valid(12, for: "highlightColorCount"))
         #expect(HighlightPalette.colors(order: "bad", count: 6).count == 6)
+    }
+}
+
+extension ReadingPreferencesSyncTests {
+    @Test func versionedLanguagesIgnoreLegacyCloudChoicesAndPreserveNewChoices() throws {
+        let name = UUID().uuidString
+        let defaults = try #require(UserDefaults(suiteName: name))
+        defer { defaults.removePersistentDomain(forName: name) }
+        let cloud = MemoryReadingCloud()
+        for (key, value) in ["quranTranslationSelection": "de.bubenheim", "supplicationTranslation": "en"] {
+            defaults.set(value, forKey: key)
+            cloud.values[key] = value
+        }
+        cloud.values["hadithEnglishEnabled"] = true
+        let store = QuranTranslationStore(defaults: defaults, languages: ["ar", "en"], reloadWidgets: {})
+        let sync = ReadingPreferencesSync(defaults: defaults, translationDefaults: defaults, cloud: cloud) { store.select($0) }
+        #expect(store.selection == "auto")
+        #expect(store.activeID.isEmpty)
+        #expect(defaults.object(forKey: "hadithEnglishEnabled.v2") == nil)
+        #expect(defaults.object(forKey: "supplicationTranslation.v2") == nil)
+        store.select("en.qarai")
+        sync.publishChanges()
+        sync.receive()
+        let reopened = QuranTranslationStore(defaults: defaults, languages: ["ar"], reloadWidgets: {})
+        #expect(reopened.selection == "en.qarai")
+        #expect(reopened.activeID == "en.qarai")
+        #expect(defaults.string(forKey: QuranTranslationPreferences.resolvedKey) == "en.qarai")
+    }
+
+    @Test func hadithLanguageDefaultsRespectPreferenceOrder() {
+        #expect(!SupplicationTranslation.prefersEnglish(languages: ["ar-SA", "en"]))
+        #expect(SupplicationTranslation.prefersEnglish(languages: ["fr", "en-GB", "ar"]))
+        #expect(!SupplicationTranslation.prefersEnglish(languages: ["fr", "ar", "en"]))
+        #expect(!SupplicationTranslation.prefersEnglish(languages: ["ja"]))
+        #expect(!SupplicationTranslation.prefersEnglish(languages: []))
     }
 }

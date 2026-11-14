@@ -17,7 +17,7 @@ struct HadithIntroductionRow: View {
 struct HadithIntroductionView: View {
     let introduction: HadithIntroduction
     let reader: HadithReader
-    @AppStorage("hadithEnglishEnabled") private var showEnglish = true
+    @AppStorage("hadithEnglishEnabled.v2") private var showEnglish = SupplicationTranslation.prefersEnglish()
     @State private var textSizePresented = false
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var loading = true

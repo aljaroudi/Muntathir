@@ -60,6 +60,8 @@ struct SavedEntryTests {
         let bookmark = ReadingBookmark(source: "1:1", isHadith: false, excerpt: "Mercy", reference: "1:1")
         let entry = SavedEntry(bookmark)
         #expect(entry.highlight == nil)
+        let arabicOnly = SavedEntry(ReadingBookmark(source: "1:1", isHadith: false, excerpt: "بِسْمِ اللَّهِ", reference: "1:1"))
+        #expect(arabicOnly.matches("1:1", locale: locale))
         #expect(entry.matches("mercy", locale: locale))
         let narration = SavedEntry(ReadingBookmark(source: "opaque-source-key", isHadith: true, excerpt: "Mercy", reference: "Book 1"))
         #expect(narration.matches("opaque", locale: locale) == false)

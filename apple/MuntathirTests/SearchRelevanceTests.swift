@@ -1,5 +1,5 @@
-import Testing
 @testable import Muntathir
+import Testing
 
 struct SearchRelevanceTests {
     @Test func exactAndProximityPrecedeBroaderMatches() throws {
@@ -21,5 +21,12 @@ struct SearchRelevanceTests {
 
     @Test func arabicNormalizationPreservesExactPriority() {
         #expect(SearchRelevance.score("إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ", terms: QuranSearchText.terms("انما الاعمال بالنيات"))?.tier == 0)
+    }
+}
+
+extension SearchRelevanceTests {
+    @Test func numericReferencesMatchArabicOnlyText() {
+        #expect(SearchRelevance.score("1:1 بِسْمِ اللَّهِ", terms: QuranSearchText.terms("1:1"))?.tier == 0)
+        #expect(SearchRelevance.score("1:1 بِسْمِ اللَّهِ", terms: ["mercy"]) == nil)
     }
 }

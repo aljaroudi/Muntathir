@@ -4,7 +4,7 @@ struct SupplicationsView: View {
     let reader: HadithReader
     @Environment(\.locale) private var locale
     @Environment(\.hadithAssets) private var assets
-    @AppStorage("supplicationTranslation") private var translation = "auto"
+    @AppStorage("supplicationTranslation.v2") private var translation = "auto"
     @State private var languages: [String] = []
     @State private var query = ""
     @State private var prayers: [Hadith] = []

@@ -131,7 +131,7 @@ import Testing
         #expect(rows.contains { $0.bookmarkID == value.id && $0.isTombstone })
     }
 
-    @Test func bookmarkFailuresRollBackAndCanRetry() throws {
+    @Test(arguments: [false, true]) func bookmarkFailuresRollBackAndCanRetry(ruling: Bool) throws {
         var fail = true
         let store = QuranUserStore(configuration: configuration(), installationID: "A") { context in
             if fail {
@@ -139,7 +139,7 @@ import Testing
             }
             try context.save()
         }
-        let value = ReadingBookmark(source: "1:1", isHadith: false, excerpt: "verse", reference: "1:1")
+        let value = ReadingBookmark(source: "1:1", isHadith: false, excerpt: "verse", reference: "1:1", ruling: ruling ? .init(authority: "sistani", language: "ar", siteID: "1:1") : nil)
         #expect(throws: QuranUserStoreError.self) { try store.save(value) }
         #expect(store.bookmarks.isEmpty)
         fail = false
@@ -225,5 +225,39 @@ import Testing
         for block in ["arabic", "english", "englishNarrator", "en.qarai"] {
             #expect(whole.ranges(in: text, block: block) == [NSRange(location: 0, length: text.utf16.count)])
         }
+    }
+}
+
+extension QuranUserStoreTests {
+    @Test func rulingsBookmarksKeepScopeAndLegacyRecords() throws {
+        let directory = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = QuranUserStore(configuration: configuration(url: directory.appending(path: "rulings.store")), installationID: "rulings")
+        let legacy = Data(#"{"source":"42","isHadith":false,"excerpt":"verse","reference":"42","createdAt":0,"modifiedAt":0}"#.utf8)
+        let verse = try JSONDecoder().decode(ReadingBookmark.self, from: legacy)
+        #expect(verse.kind == .quran)
+        #expect(verse.id == "quran:42")
+        try store.save(verse)
+        let ids = [Rulings.ID(authority: "sistani", language: "ar", siteID: "42"),
+                   Rulings.ID(authority: "sistani", language: "en", siteID: "42"),
+                   Rulings.ID(authority: "shirazi", language: "ar", siteID: "42")]
+        for id in ids {
+            let bookmark = ReadingBookmark(source: id.siteID, isHadith: false, excerpt: "Question", reference: id.authority, ruling: id)
+            #expect(try JSONDecoder().decode(ReadingBookmark.self, from: JSONEncoder().encode(bookmark)) == bookmark)
+            let payload = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(bookmark)) as? [String: Any])
+            #expect(payload["isHadith"] == nil)
+            try store.save(bookmark)
+        }
+        #expect(Set(store.bookmarks.map(\.id)).count == 4)
+        #expect(store.bookmarks.filter { $0.kind == .quran }.count == 1)
+        #expect(store.bookmarks.filter { $0.kind == .ruling }.count == 3)
+        let saved = try #require(store.bookmark(for: "42", ruling: ids[0]))
+        #expect(SavedEntry(saved).title(locale: Locale(identifier: "ar")) == "sistani")
+        store.reopen()
+        #expect(store.bookmark(for: "42", ruling: ids[0])?.id == saved.id)
+        try store.delete(saved)
+        #expect(store.bookmarks.count == 3)
+        #expect(store.bookmark(for: "42")?.id == verse.id)
     }
 }
