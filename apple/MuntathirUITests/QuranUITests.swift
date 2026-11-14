@@ -391,10 +391,23 @@ final class QuranUITests: XCTestCase {
         XCTAssertTrue(app.buttons["downloads-get-book-bukhari"].waitForExistence(timeout: 5))
 
         books.tap()
-        size.swipeLeft()
+        app.swipeDown()
+        XCTAssertTrue(size.isHittable)
+        let trailing = size.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5))
+        let leading = size.coordinate(withNormalizedOffset: CGVector(dx: 0.1, dy: 0.5))
+        trailing.press(forDuration: 0.05, thenDragTo: leading)
         let removeHadith = app.buttons["downloads-remove-hadith"]
         XCTAssertTrue(removeHadith.waitForExistence(timeout: 5))
         removeHadith.tap()
+        XCTAssertTrue(app.buttons["downloads-get-hadith"].waitForExistence(timeout: 5))
+        XCTAssertFalse(size.exists)
+
+        app.terminate()
+        app.launchArguments.append("--ui-testing-preserve-state")
+        app.launchEnvironment["HADITH_DOWNLOADS_FIXTURE"] = UUID().uuidString
+        app.launch()
+        app.openSettingsFromTools()
+        app.buttons["settings-downloads"].tap()
         XCTAssertTrue(app.buttons["downloads-get-hadith"].waitForExistence(timeout: 5))
         XCTAssertFalse(size.exists)
     }

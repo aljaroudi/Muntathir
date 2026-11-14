@@ -23,6 +23,10 @@ import OSLog
         "\(packID).cleanup"
     }
 
+    private var removedKey: String {
+        "\(packID).removed"
+    }
+
     let packID: String
     let reader: HadithReader
     private(set) var state: State = .checking
@@ -102,6 +106,10 @@ import OSLog
     }
 
     private func resolve() async {
+        guard !defaults.bool(forKey: removedKey) else {
+            state = .missing
+            return
+        }
         do {
             let lookupStarted = ContinuousClock.now
             var localURL = await library?.localURL()
@@ -212,6 +220,10 @@ import OSLog
 
     func download(title: String? = nil) async {
         guard !busy, state != .ready || title != nil, pendingDownload == nil else { return }
+        if defaults.bool(forKey: removedKey) {
+            guard title == nil else { return }
+            defaults.removeObject(forKey: removedKey)
+        }
         if let title {
             defaults.set(title, forKey: restorationKey)
         } else if library != nil, state == .failed || state == .incompatible,
@@ -251,8 +263,12 @@ import OSLog
         }
         // The network wait must not block finished events or local availability checks.
         await finishOperation()
+        guard generation == downloadGeneration else { return }
         let backend = backend
-        let request = Task { try await backend.download() }
+        let request = Task {
+            try Task.checkCancellation()
+            try await backend.download()
+        }
         downloadTask = request
         do {
             try await request.value
@@ -272,6 +288,7 @@ import OSLog
             }
             // An older compatible pack remains useful if an update fails offline.
             await refresh()
+            guard generation == downloadGeneration else { return }
             if defaults.string(forKey: restorationKey) != nil || (state != .ready && state != .incompatible) {
                 state = .failed
             }
@@ -316,6 +333,7 @@ import OSLog
                 try await backend.remove()
             }
             try await library?.remove()
+            defaults.set(true, forKey: removedKey)
             defaults.removeObject(forKey: restorationKey)
             defaults.removeObject(forKey: cleanupKey)
             books = []
@@ -344,6 +362,7 @@ import OSLog
     }
 
     func receive(_ event: AssetPackEvent) async {
+        guard !defaults.bool(forKey: removedKey) else { return }
         switch event {
         case .began:
             downloadStarted = true
@@ -369,14 +388,14 @@ import OSLog
         case .finished:
             pendingDownload = nil
             await refresh()
-            if state == .missing {
+            if state == .missing, !defaults.bool(forKey: removedKey) {
                 state = .failed
             }
         case .failed:
             pendingDownload = nil
             if !busy {
                 await refresh()
-                if state != .ready, state != .incompatible {
+                if state != .ready, state != .incompatible, !defaults.bool(forKey: removedKey) {
                     state = .failed
                 }
             }

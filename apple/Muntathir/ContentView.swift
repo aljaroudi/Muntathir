@@ -12,14 +12,18 @@ extension AppTool {
 }
 
 struct ContentView: View {
+    private static var defaults: UserDefaults {
+        ProcessInfo.processInfo.arguments.contains("--ui-testing") ? UserDefaults(suiteName: "Muntathir.UITests")! : .standard
+    }
+
     @Environment(AppModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
-    @State private var hadithSession = HadithSession(defaults: ProcessInfo.processInfo.arguments.contains("--ui-testing") ? UserDefaults(suiteName: "Muntathir.UITests")! : .standard)
+    @State private var hadithSession = HadithSession(defaults: ContentView.defaults)
     @State private var selectedTab: AppTab = .today
     @State private var toolPaths: [AppTool: NavigationPath] = [:]
     @State private var toolsPath: [FigureRoute] = []
-    @State private var hadithAssets = HadithAssetStore()
-    @State private var supplicationAssets = HadithAssetStore(backend: AppleAssetPackBackend(identifier: "supplications", resourcePath: "Supplications/supplications.db"), packID: "supplications")
+    @State private var hadithAssets = HadithAssetStore(defaults: ContentView.defaults)
+    @State private var supplicationAssets = HadithAssetStore(backend: AppleAssetPackBackend(identifier: "supplications", resourcePath: "Supplications/supplications.db"), packID: "supplications", defaults: ContentView.defaults)
     @State private var rulingsAssets = RulingsAssetStore()
     @State private var translations = QuranTranslationStore.shared
     var body: some View {
