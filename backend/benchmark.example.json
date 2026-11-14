@@ -1,0 +1,5 @@
+[
+  { "provider": "openai", "model": "gpt-6-luna", "timeout_ms": 2000, "input_usd_per_million": null, "output_usd_per_million": null },
+  { "provider": "jev", "model": "jev-1.13.0", "timeout_ms": 2000, "input_usd_per_million": null, "output_usd_per_million": null },
+  { "provider": "gemini", "model": "gemini-2.5-flash-lite", "timeout_ms": 2000, "input_usd_per_million": null, "output_usd_per_million": null }
+]

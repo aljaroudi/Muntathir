@@ -1,4 +1,5 @@
 import argparse
+from decimal import Decimal
 import json
 from pathlib import Path
 import tempfile
@@ -11,6 +12,65 @@ import ingest
 
 
 class IngestionTests(unittest.TestCase):
+    def test_estimate_counts_distinct_inputs_and_reserves_accepted_retries(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            reuse = root / "reuse"
+            reuse.mkdir()
+            (reuse / "reused.json").touch()
+            passages = [{"input_hash": key, "input": "ص"} for key in ["reused", "pending", "retry", "retry", "rejected"]]
+            manifest = {"passages": passages, "jobs": [
+                {"name": None, "state": "submitting", "keys": ["pending"]},
+                {"name": "batches/accepted", "state": "failed", "keys": ["retry"]},
+                {"name": None, "state": "failed", "keys": ["rejected"]},
+            ]}
+            reusable, missing, estimate = ingest.submission_plan(manifest, root / "vectors", reuse)
+            self.assertEqual(reusable, {"reused"})
+            self.assertEqual([p["input_hash"] for p in missing], ["retry", "rejected"])
+            self.assertEqual(estimate["pending"], 1)
+            self.assertEqual(estimate["missing_utf8_bytes"], 4)
+            self.assertEqual(Decimal(estimate["total_batch_usd_estimate"]), ingest.batch_cost(8))
+
+    def test_submit_rechecks_revision_budget_before_contacting_gemini(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(ingest, "gemini_client") as client:
+            root = Path(tmp)
+            manifest = {"profile": ingest.PROFILE, "passages": [{"input_hash": "retry", "input": "text"}],
+                        "jobs": [{"name": "batches/accepted", "state": "failed", "keys": ["retry"]}]}
+            (root / "manifest.json").write_text(json.dumps(manifest))
+            for cap in (None, ingest.batch_cost(4)):
+                with self.assertRaisesRegex(ValueError, "--max-usd"):
+                    ingest.run(SimpleNamespace(command="submit", workdir=tmp, reuse=None, max_usd=cap))
+            client.assert_not_called()
+            self.assertFalse((root / "vectors").exists())
+            client.return_value.files.upload.return_value.name = "files/requests"
+            client.return_value.batches.create_embeddings.return_value.name = "batches/retry"
+            manifest["revision"] = "retry-test"
+            (root / "manifest.json").write_text(json.dumps(manifest))
+            args = SimpleNamespace(command="submit", workdir=tmp, reuse=None, max_usd=ingest.batch_cost(8))
+            ingest.run(args)
+            ingest.run(args)
+            client.return_value.batches.create_embeddings.assert_called_once()
+            jobs = json.loads((root / "manifest.json").read_text())["jobs"]
+            self.assertEqual(jobs[-1]["state"], "pending")
+            self.assertEqual(jobs[-1]["name"], "batches/retry")
+
+    def test_estimate_is_offline_and_zero_cost_submit_only_reuses(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(ingest, "gemini_client") as client:
+            root = Path(tmp)
+            previous = root / "previous" / "vectors"
+            previous.mkdir(parents=True)
+            vector = [0.1] * 3072
+            (previous / "saved.json").write_text(json.dumps(vector))
+            manifest = {"profile": ingest.PROFILE, "passages": [{"input_hash": "saved", "input": "text"}], "jobs": []}
+            (root / "manifest.json").write_text(json.dumps(manifest))
+            args = SimpleNamespace(command="estimate", workdir=tmp, reuse=previous.parent, max_usd=None)
+            ingest.run(args)
+            self.assertFalse((root / "vectors").exists())
+            args.command = "submit"
+            ingest.run(args)
+            self.assertEqual(json.loads((root / "vectors/saved.json").read_text()), vector)
+            client.assert_not_called()
+
     def test_offsets_preserve_arabic_and_supplication_paragraphs(self):
         text = "اللَّهُمَّ ارحمنا 🌙.\n\n" * 500
         pieces = list(ingest.chunks(text))

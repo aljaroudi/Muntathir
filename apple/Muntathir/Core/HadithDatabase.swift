@@ -18,15 +18,15 @@ struct HadithDatabase: Sendable {
         let db = try connection()
         let identity = try db.query("PRAGMA application_id") { sqlite3_column_int($0, 0) }.first
         let version = try db.query("PRAGMA user_version") { sqlite3_column_int($0, 0) }.first
-        guard identity == 1_230_262_606, version == 7 else {
+        guard identity == 1_230_262_606, (version == 7 || version == 8) else {
             Logger(subsystem: "com.aljaroudi.Muntathir", category: "HadithAssets")
-                .error("Incompatible reader database: application_id=\(identity ?? -1), schema=\(version ?? -1); expected application_id=1230262606, schema=7.")
+                .error("Incompatible reader database: application_id=\(identity ?? -1), schema=\(version ?? -1); expected application_id=1230262606, schema=7 or 8.")
             throw HadithDatabaseError.incompatible
         }
         _ = try db.query("SELECT h.id, h.source_id, c.file_name, g.grade_ar FROM hadith h JOIN chapter c ON c.id = h.chapter_id LEFT JOIN hadith_grading g ON g.hadith_id = h.id LIMIT 1") { sqlite3_column_int($0, 0) }
         _ = try db.query("SELECT id FROM introduction LIMIT 1") { sqlite3_column_int($0, 0) }
         _ = try db.query("SELECT words, display_number FROM hadith_reading LIMIT 1") { sqlite3_column_int($0, 0) }
-        for table in ["hadith_words", "hadith_fts", "hadith_en"] {
+        for table in ["hadith_words", "hadith_en"] {
             _ = try db.query("SELECT rowid FROM \(table) WHERE \(table) MATCH ? LIMIT 1", parameters: ["test"]) { sqlite3_column_int($0, 0) }
         }
     }

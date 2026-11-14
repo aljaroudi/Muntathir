@@ -19,7 +19,8 @@ are in `requirements-eval.txt`. Credentials belong in ignored `backend/.env`.
 ```sh
 python3 backend/ingest.py prepare --workdir backend/work/pilot \
   --quran apple/Muntathir/Resources/Quran/quran.db --limit 100
-python3 backend/ingest.py submit --workdir backend/work/pilot
+python3 backend/ingest.py estimate --workdir backend/work/pilot
+python3 backend/ingest.py submit --workdir backend/work/pilot --max-usd 1
 python3 backend/ingest.py poll --workdir backend/work/pilot
 python3 backend/ingest.py upload --workdir backend/work/pilot
 python3 backend/ingest.py activate --workdir backend/work/pilot
@@ -40,6 +41,64 @@ Submission saves batch manifests. Poll can resume without redownloading complete
 jobs; submit retries missing/failed entries. `--reuse <old-workdir>` reuses saved
 vectors with matching input hashes. Canonical artifacts keep 3,072 dimensions;
 upload derives normalized 1,536-dimensional prefixes without re-embedding.
+
+### Refresh production after database changes
+
+Run from the repository root in Bash with the backend virtualenv installed. Use a
+new workdir for each database revision. Set the previous validated workdir as the
+reuse source and retain its source provenance.
+
+```bash
+work=backend/work/refresh-YYYY-MM-DD
+prior=backend/work/full
+quran=apple/Muntathir/Resources/Quran
+translations=()
+for db in "$quran"/*.db; do
+  edition=${db##*/}
+  edition=${edition%.db}
+  case "$edition" in
+    quran) continue ;;
+    zh.jian) language=zh-Hans ;;
+    zh.majian) language=zh-Hant ;;
+    *) language=${edition%%.*} ;;
+  esac
+  translations+=(--translation "$language:$edition:$db")
+done
+backend/.venv/bin/python backend/ingest.py prepare --workdir "$work" \
+  --quran "$quran/quran.db" --hadith build/hadith/dist/hadith.db \
+  --provenance backend/work/provenance.json "${translations[@]}"
+backend/.venv/bin/python backend/ingest.py estimate --workdir "$work" --reuse "$prior"
+```
+
+Review the estimate, export `GEMINI_API_KEY`, and replace `15` with the approved
+USD cap for the revision. The offline estimate deduplicates new inputs and uses
+UTF-8 bytes as a conservative token proxy at the
+[Gemini Embedding 2 Batch text rate](https://ai.google.dev/gemini-api/docs/pricing/#gemini-embedding-2).
+The cap includes prior accepted or unresolved batches. Recheck the estimate
+before increasing it to cover retries of failed billed inputs.
+
+```bash
+backend/.venv/bin/python backend/ingest.py submit --workdir "$work" --reuse "$prior" --max-usd 15
+backend/.venv/bin/python backend/ingest.py poll --workdir "$work"
+backend/.venv/bin/python backend/ingest.py estimate --workdir "$work" --reuse "$prior"
+```
+
+Poll and resubmit as needed until pending and missing are both zero, then stage
+the candidate and read its collection name from `$work/qdrant-progress.json`.
+
+```bash
+backend/.venv/bin/python backend/ingest.py upload --workdir "$work"
+backend/.venv/bin/python backend/exact_reference.py --corpus "$work" --output "$work/exact-1536.json"
+collection=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["collection"])' "$work/qdrant-progress.json")
+SEARCH_COLLECTION="$collection" bun backend/api/verify.ts quality "$work/quality.json" backend/evaluation.json "$work/exact-1536.json"
+SEARCH_COLLECTION="$collection" TEST_RATE=2 TEST_SECONDS=60 bun backend/api/verify.ts load "$work/sustained.json"
+SEARCH_COLLECTION="$collection" TEST_RATE=20 TEST_SECONDS=10 bun backend/api/verify.ts load "$work/burst.json"
+```
+
+Record the active collection for rollback. Once all checks pass and the matching
+Hadith pack is available to external testers, run
+`backend/.venv/bin/python backend/ingest.py activate --workdir "$work"`. Smoke-test
+Quran and scoped Hadith search against the running API.
 
 Content IDs preserve source identity. Text revisions retain original text,
 translation edition/attribution and exact code-point passage offsets. The compact
@@ -76,3 +135,7 @@ expert review; judgments are not exhaustive.
 `exact_reference.py` can generate new exhaustive references from corpus artifacts.
 Historical PostgreSQL benchmark reports remain for comparison; their retired
 commands and infrastructure are not part of current deployment.
+
+### Hosted reranker benchmark
+
+See [RERANK_BENCHMARK.md](RERANK_BENCHMARK.md) for the frozen-candidate comparison of OpenAI Decisions, Jev, and Gemini Flash-Lite. Preparation and dry runs need no provider keys; paid runs require explicit execution. Production search remains unchanged.

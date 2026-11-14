@@ -38,7 +38,7 @@ Check that progress survives leaving and reopening Hadith. After installation, t
 
 The selected Hadith library contains 145,479 reading entries and 9 separate introductions. Unnumbered chapters, commentary, and appendices remain reading entries; only explicitly titled prefaces are separated as introductions. The separate supplications asset contains 54 Sahifa prayers and three additional supplications. Installed and archive sizes are generated locally; Apple’s processed download sizes remain unverified.
 
-Schema v7 and application ID `1230262606` identify compatible reader databases. `--experimental-morphology` is off by default; production packaging rejects experimental databases. Packaging regenerates `AssetDownloadSizes.json` from actual archive byte counts. All downloads use native, rounded size formatting; installed sizes come from local files.
+New builds use schema v8 (basic word indexes only); the updated reader accepts v7 and v8. The application ID remains `1230262606`. `--experimental-morphology` is off by default; production packaging rejects experimental databases. Packaging regenerates `AssetDownloadSizes.json` from actual archive byte counts. All downloads use native, rounded size formatting; installed sizes come from local files.
 
 ## Before release
 
@@ -53,3 +53,28 @@ Register the downloader extension and shared app group for signing. Validate hos
 For an existing pack, upload the rebuilt archive, then choose **Replace** in App Store Connect → **Asset Packs** and submit the processed version for review. After the app’s first approval, compatible updates can be submitted independently. Verify the replacement in TestFlight with the previous pack installed. iOS updates installed Hadith and Supplications packs in the background. Quran translations copied into the App Group remain at their installed version until redownloaded. See [Apple’s submission instructions](https://developer.apple.com/help/app-store-connect/manage-submissions-to-app-review/submit-apple-hosted-asset-packs).
 
 Local packaging and the Run scheme do not upload, publish, or bundle Hadith. Production delivery must be verified in TestFlight for both packs before release.
+
+## Compact search rollout
+
+Offline passage search now uses normalized word and phrase indexes. Trigram,
+prefix-accelerator, and Quran morphology indexes are omitted; broader matching
+uses explicit API search. Reader text, references, layout, and annotations stay intact.
+
+Rebuild with the commands above, or rebuild indexes without reimporting Hadith:
+
+```sh
+python3 build/hadith/compact.py build/hadith/dist/hadith.db build/hadith/dist/compact/hadith.db
+bash build/quran/build.sh
+```
+
+The compact script requires a new destination and preserves its source. On the
+current corpus, Hadith shrank from 968,339,456 to 354,398,208 installed bytes;
+the locally packaged Apple archive is 111,519,543 bytes. All 14 Quran databases
+together occupy 26,943,488 bytes. These are local measurements, not Apple's
+processed download-size estimates.
+
+Do not replace externally served packs with these outputs before coordinating a
+compatible app build. Existing v7-only builds reject v8 Hadith; older Quran
+readers expect the removed trigram index. Use new pack IDs for the compact
+release if older builds must remain supported. Keep the current published packs
+available through that transition. No compact packs have been uploaded.

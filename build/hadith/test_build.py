@@ -260,7 +260,7 @@ class AdditionalBooksTests(unittest.TestCase):
             self.assertEqual(db.execute('SELECT count(*) FROM grader').fetchone()[0], 0)
             self.assertEqual(db.execute('SELECT hadith_count FROM chapter').fetchall(), [(1,), (1,)])
             db.executemany('INSERT INTO hadith_en(rowid,text) VALUES (?,?)', db.execute('SELECT id,text FROM hadith_english_content').fetchall())
-            highlighted = db.execute("SELECT highlight(hadith_en,0,'[',']') FROM hadith_en WHERE hadith_en MATCH 'passages'").fetchone()[0]
+            highlighted = db.execute("SELECT highlight(hadith_en,0,'[',']') FROM hadith_en WHERE hadith_en MATCH 'passage'").fetchone()[0]
             self.assertIn('[passage]', highlighted)
 
     def test_four_filters_base_books_and_combines_with_sittah(self):
@@ -440,7 +440,7 @@ class GradingTests(unittest.TestCase):
         row, = self.records()
         self.assertIsNone(row['grader_id'])
         self.assertEqual(row['grade_ar'], 'مجهول')
-        self.assertEqual(self.db.execute('PRAGMA user_version').fetchone()[0], 7)
+        self.assertEqual(self.db.execute('PRAGMA user_version').fetchone()[0], 8)
         self.assertEqual(self.db.execute('PRAGMA foreign_key_check').fetchall(), [])
 
 
@@ -455,7 +455,7 @@ class ShippingSchemaTests(unittest.TestCase):
         with sqlite3.connect(':memory:') as db:
             builder.apply_schema(db, HERE / 'schema.sql')
             names = {r[0] for r in db.execute('SELECT name FROM sqlite_master')}
-            self.assertTrue({'hadith', 'hadith_grading', 'hadith_fts', 'hadith_en'} <= names)
+            self.assertTrue({'hadith', 'hadith_grading', 'hadith_words', 'hadith_en'} <= names)
             self.assertFalse({'word_form', 'root', 'narrator', 'concordance', 'hadith_relation'} & names)
             self.assertEqual([r[1] for r in db.execute('PRAGMA table_info(hadith_words)')], ['text'])
             builder.build_fts(db)

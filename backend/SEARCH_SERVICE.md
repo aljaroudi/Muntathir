@@ -32,7 +32,7 @@ Deploy Quran chapter-filter support before releasing chapter-scoped search in th
 Hadith results use `kind`, `book`, `chapter` (stable chapter file), `number`, and
 `score`. Dua results reserve `kind`, `id`, optional `passage`, and `score`.
 Scores are cosine similarities, not confidence. Explicit references return null.
-Array order is hybrid RRF rank, optionally reranked by LM Studio, so scores need not decrease monotonically.
+Array order is hybrid RRF rank, optionally reranked by Jev, so scores need not decrease monotonically.
 Keyword candidates must contain every normalized query term, matching the previous
 search semantics; native BM25 ranks those candidates.
 Duplicate translations/passages collapse to a content item; the reported score is
@@ -168,3 +168,21 @@ Gemma 4 26B A4B QAT timed out at two seconds on its first evaluation request.
 The other 149 requests used baseline ranking during cooldown, so the run could
 not establish a relevance gain. Reranking remains disabled. Inspect outcome
 counts as well as aggregate latency.
+
+## Jev meaning-search reranking
+
+Set `SEARCH_RERANK_PROVIDER=jev`, `JEV_API_KEY`, and
+`SEARCH_RERANK_MODEL=jev-1.14.0` in `backend/.env`, then restart the supervisor.
+`TYPESAFE_API_KEY` is also accepted. Keys stay server-side and out of cache keys.
+Only explicit meaning-search requests are eligible; direct references bypass
+reranking. The top 20 retrieved winning passages are scored with the benchmarked
+prompt, retaining references and the remaining result order. Responses are
+validated; failures, timeout, cooldown, and busy requests keep baseline ranking.
+The existing concurrency guard permits one rerank in flight per API process.
+Repeated successful searches use the existing five-minute result cache.
+
+The measured reranker-only cost was approximately $0.00022 per uncached query
+at $0.042 per million input tokens. Query embedding costs are additional;
+passage lengths change usage. Set `SEARCH_RERANK_PROVIDER=off` and restart to
+roll back without changing the collection alias. Collection activation still
+requires the corpus release gates.

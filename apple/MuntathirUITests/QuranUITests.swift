@@ -32,6 +32,18 @@ final class QuranUITests: XCTestCase {
         }
     }
 
+    @MainActor func testPassageSearchWaitsForSubmit() {
+        let app = openQuran()
+        let field = app.searchFields.firstMatch
+        if !field.exists { app.swipeDown() }
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.tap()
+        field.typeText("2:255")
+        XCTAssertFalse(app.buttons["quran-result-2:255"].waitForExistence(timeout: 1))
+        field.typeText("\n")
+        XCTAssertTrue(app.buttons["quran-result-2:255"].waitForExistence(timeout: 5))
+    }
+
     @MainActor func testQuranListShowsDistinctReadingTime() {
         let app = openQuran()
         let surah = app.buttons["quran-surah-2"]

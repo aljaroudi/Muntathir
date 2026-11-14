@@ -44,16 +44,26 @@ struct SavedEntry: Identifiable {
     }
 
     func matches(_ query: String, locale: Locale) -> Bool {
-        let terms = QuranSearchText.terms(query).map {
-            $0.folding(options: .diacriticInsensitive, locale: locale)
-        }
-        guard !terms.isEmpty else { return true }
-        let text = QuranSearchText.normalize([isHadith ? "" : source, reference, title(locale: locale), excerpt, note].joined(separator: " "))
-            .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: locale)
-        return terms.allSatisfy { text.contains($0) }
+        query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || relevance(query, locale: locale) != nil
+    }
+
+    func relevance(_ query: String, locale: Locale) -> SearchRelevance? {
+        SearchRelevance.score([isHadith ? "" : source, reference, title(locale: locale), excerpt, note].joined(separator: " "),
+                              terms: QuranSearchText.terms(query))
     }
 
     static func sections(_ entries: [Self], byDate: Bool, query: String, calendar: Calendar, locale: Locale) -> [SavedEntrySection] {
+        if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            var ranked: [(SavedEntry, SearchRelevance)] = []
+            for entry in entries {
+                if let score = entry.relevance(query, locale: locale) { ranked.append((entry, score)) }
+            }
+            ranked.sort { $0.1 == $1.1 ? $0.0.id < $1.0.id : $0.1 < $1.1 }
+            return [false, true].compactMap { related in
+                let values = ranked.filter { ($0.1.tier == 2) == related }.map { $0.0 }
+                return values.isEmpty ? nil : SavedEntrySection(id: related ? "related" : "matches", date: nil, entries: values)
+            }
+        }
         let filtered = entries.filter { $0.matches(query, locale: locale) }
         let groups = Dictionary(grouping: filtered) { entry in
             byDate ? "date:\(calendar.startOfDay(for: entry.createdAt).timeIntervalSince1970)"

@@ -325,3 +325,12 @@ test('reranking cache separates models, skips references and never caches failur
     store.db.close()
   }
 })
+
+test('reranking receives the passage that earned the winning fusion rank', () => {
+  const first = point('first', 'same')
+  const best = point('best', 'same')
+  first.payload.text = 'Unrelated opening passage'
+  best.payload.text = 'Relevant passage near the end'
+  const result = fuse([first, best], [best], new Map([['first', 0.8], ['best', 0.9]]), 20)
+  expect(result[0].text).toBe('Relevant passage near the end')
+})

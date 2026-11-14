@@ -1,7 +1,7 @@
 -- Hadith reader database; experimental morphology is opt-in.
 
 PRAGMA application_id = 1230262606;
-PRAGMA user_version = 7;
+PRAGMA user_version = 8;
 PRAGMA page_size = 4096;
 PRAGMA foreign_keys = ON;
 
@@ -109,17 +109,10 @@ CREATE UNIQUE INDEX hadith_grading_identity ON hadith_grading (
 CREATE VIRTUAL TABLE hadith_words USING fts5 (
   text,
   content = '',
-  tokenize = 'unicode61 remove_diacritics 2',
-  prefix = '2 3'
+  tokenize = 'unicode61 remove_diacritics 2'
 );
 
 CREATE VIRTUAL TABLE hadith_words_vocab USING fts5vocab (hadith_words, col);
-
-CREATE VIRTUAL TABLE hadith_fts USING fts5 (
-  text,
-  content = '',
-  tokenize = 'trigram remove_diacritics 1'
-);
 
 CREATE VIEW hadith_english_content AS
 SELECT id, trim(english_narrator || ' ' || english_text) AS text FROM hadith;
@@ -128,5 +121,5 @@ CREATE VIRTUAL TABLE hadith_en USING fts5 (
   text,
   content = 'hadith_english_content',
   content_rowid = 'id',
-  tokenize = 'porter unicode61 remove_diacritics 2'
+  tokenize = 'unicode61 remove_diacritics 2'
 );

@@ -49,12 +49,20 @@ struct HadithView: View {
     }
 
     private var matchingBooks: [HadithCollection] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard request.collectionID == nil, HadithSearch.number(query) == nil,
               HadithSearch.chapter(query) == nil else { return [] }
-        return catalog.filter { query.isEmpty || $0.matches(query) }
+        return catalog.filter { query.isEmpty || $0.matches(query) }.sorted {
+            guard !query.isEmpty else { return false }
+            let terms = QuranSearchText.terms(query)
+            let lhs = SearchRelevance.score($0.arabic + " " + $0.english, terms: terms)
+            let rhs = SearchRelevance.score($1.arabic + " " + $1.english, terms: terms)
+            return lhs == rhs ? $0.id < $1.id : lhs! < rhs!
+        }
     }
 
     private var matchingChapters: [HadithChapter] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard HadithSearch.number(query) == nil else { return [] }
         if let number = HadithSearch.chapter(query) {
             return chapters.filter { $0.index == number - 1 && (request.chapterID == nil || $0.id == request.chapterID) }
@@ -127,14 +135,14 @@ struct HadithView: View {
                     }
                 }
                 chapterResults
-                if showsNarrations, !page.rows.isEmpty {
+                if showsNarrations, searchText.trimmingCharacters(in: .whitespacesAndNewlines) == query, !page.rows.isEmpty {
                     narrationResults(page.rows, orderedFallback: page.usedOrderedFallback)
                 }
                 if loading {
                     ProgressView("Loading Hadith…").frame(maxWidth: .infinity)
                 } else if failed {
                     HadithLoadError { Task { await assets?.refresh(); retry += 1 } }
-                } else if !query.isEmpty, completedRequest == request, HadithSearch.number(query) == nil, HadithSearch.chapter(query) == nil {
+                } else if searchText.trimmingCharacters(in: .whitespacesAndNewlines) == query, !query.isEmpty, completedRequest == request, HadithSearch.number(query) == nil, HadithSearch.chapter(query) == nil {
                     Group {
                         MeaningSearchResults(query: query, hasLocalResults: !page.rows.isEmpty || !matchingBooks.isEmpty || !matchingChapters.isEmpty, emptyIdentifier: "hadith-empty-results") {
                             guard let client = SemanticSearchClient.configured else { throw URLError(.unsupportedURL) }
@@ -165,7 +173,7 @@ struct HadithView: View {
                             .accessibilityIdentifier("hadith-search-all")
                         }
                     }
-                } else if !query.isEmpty, completedRequest == request, page.rows.isEmpty, matchingBooks.isEmpty, matchingChapters.isEmpty {
+                } else if searchText.trimmingCharacters(in: .whitespacesAndNewlines) == query, !query.isEmpty, completedRequest == request, page.rows.isEmpty, matchingBooks.isEmpty, matchingChapters.isEmpty {
                     ContentUnavailableView.search(text: query)
                         .accessibilityIdentifier("hadith-empty-results")
                 }
@@ -235,11 +243,11 @@ struct HadithView: View {
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search Hadith")
         .searchHistory(searchText, area: .hadith)
         .onChange(of: searchText) { _, value in
-            guard request.query != value else { return }
+            guard value.isEmpty, request.query != value else { return }
             update { $0.query = value; $0.number = nil }
         }
         .searchFocused($searchFocused)
-        .onSubmit(of: .search) { searchFocused = false }
+        .onSubmit(of: .search) { update { $0.query = searchText; $0.number = nil }; searchFocused = false }
         .scrollDismissesKeyboard(.interactively)
         .autocorrectionDisabled()
         .toolbar {
@@ -484,7 +492,7 @@ struct HadithView: View {
         } catch { /* Keep the previous complete session if a query fails. */ }
     }
 
-    private func narrationResults(_ narrations: [Hadith], orderedFallback: Bool = false, online: Bool = false) -> some View {
+    private func narrationResults(_ narrations: [Hadith], orderedFallback: Bool = false, online: Bool = false, related: Bool = false) -> some View {
         Section {
             if orderedFallback, !narrations.isEmpty {
                 Text("No exact phrase found.")
@@ -513,15 +521,15 @@ struct HadithView: View {
                 .id("hadith:" + (narration.source?.key ?? String(narration.id)))
             }
         } header: {
-            Text(online ? LocalizedStringKey("Search by meaning") : LocalizedStringKey("Hadith"))
+            Text(online ? LocalizedStringKey("Search by meaning") : LocalizedStringKey(related ? "Related matches" : "Hadith"))
         }
     }
 
     private func load() async {
         let current = request
-        loading = true
+        loading = completedRequest != current
         failed = false
-        page = HadithPage(rows: [], hasMore: false)
+        if completedRequest != current { page = HadithPage(rows: [], hasMore: false) }
         do {
             if catalog.isEmpty {
                 let books = try await reader.catalog()
@@ -541,9 +549,6 @@ struct HadithView: View {
                 chapters = values
             }
             if showsNarrations {
-                if !current.query.isEmpty {
-                    try await Task.sleep(for: .milliseconds(250))
-                }
                 var search = current
                 if let number = HadithSearch.number(current.query) {
                     search.number = number

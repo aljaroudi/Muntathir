@@ -49,7 +49,7 @@ def validate_hadith(pack_id="hadith"):
     with sqlite3.connect(source.as_uri() + '?mode=ro', uri=True) as db:
         assert db.execute('PRAGMA quick_check').fetchone() == ('ok',)
         assert db.execute('PRAGMA application_id').fetchone() == (1230262606,)
-        assert db.execute('PRAGMA user_version').fetchone() == (7,)
+        assert db.execute('PRAGMA user_version').fetchone() == (8,)
         assert db.execute('SELECT count(*) FROM hadith').fetchone()[0] > 0
         assert not db.execute('PRAGMA foreign_key_check').fetchall()
         prayer_count = db.execute("SELECT count(*) FROM hadith h JOIN book b ON b.id=h.book_id WHERE b.collection_id='openiti-Sahifa-Sajjadiyya'").fetchone()[0]
@@ -61,7 +61,7 @@ def validate_hadith(pack_id="hadith"):
         # Never publish experimental mappings accidentally.
         assert not db.execute("SELECT name FROM sqlite_master WHERE name IN ('word_form','root','narrator','hadith_relation')").fetchall()
         assert [r[1] for r in db.execute('PRAGMA table_info(hadith_words)')] == ['text']
-        for table in ('hadith_words', 'hadith_fts', 'hadith_en'):
+        for table in ('hadith_words', 'hadith_en'):
             db.execute(f'SELECT rowid FROM {table} WHERE {table} MATCH ? LIMIT 1', ('test',)).fetchall()
     return [path]
 

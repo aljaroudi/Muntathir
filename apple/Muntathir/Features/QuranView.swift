@@ -3,6 +3,7 @@ import SwiftUI
 struct QuranView: View {
     @State private var reader = QuranReader()
     @State private var query = Self.initialQuery
+    @State private var submittedQuery = Self.initialQuery
 
     private static var initialQuery: String {
         #if DEBUG
@@ -17,11 +18,13 @@ struct QuranView: View {
     }
 
     var body: some View {
-        QuranSearchContent(query: $query, reader: reader)
+        QuranSearchContent(query: $query, submittedQuery: submittedQuery, reader: reader)
             .readingBackground()
             .navigationTitle("Holy Quran")
             .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Surah, 2:255, or Quran text")
             .searchHistory(query, area: .quran)
+            .onSubmit(of: .search) { submittedQuery = query }
+            .onChange(of: query) { _, value in if value.isEmpty { submittedQuery = "" } }
             .autocorrectionDisabled()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

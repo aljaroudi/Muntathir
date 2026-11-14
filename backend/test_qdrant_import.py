@@ -3,7 +3,7 @@ import unittest
 import json
 from pathlib import Path
 from unittest.mock import patch
-from qdrant_import import project, compact, import_corpus, activate, search_eligibility, backfill_eligibility
+from qdrant_import import project, compact, import_corpus, activate, search_eligibility, backfill_eligibility, point_batches
 from ingest import PROFILE, digest
 
 class Fake:
@@ -28,6 +28,13 @@ class Fake:
         raise AssertionError(path)
 
 class ImportTests(unittest.TestCase):
+    def test_import_batches_respect_encoded_request_size(self):
+        points = [{'id': str(i), 'text': 'ص' * 20} for i in range(3)]
+        with patch('qdrant_import.POINT_BATCH_BYTES', 320):
+            batches = list(point_batches(points))
+            self.assertEqual(batches, [points[:2], points[2:]])
+            self.assertTrue(all(len(json.dumps({'points': b}).encode()) <= 320 for b in batches))
+
     def test_projection_and_reference(self):
         vector=project([1.0]*3072)
         self.assertAlmostEqual(sum(x*x for x in vector),1)

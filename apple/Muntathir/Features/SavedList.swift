@@ -54,7 +54,9 @@ struct SavedList<Destination: View>: View {
                                 .contextMenu { actions(entry) }
                         }
                     } header: {
-                        if let date = section.date {
+                        if !query.isEmpty {
+                            Text(section.id == "related" ? "Related matches" : "Matches")
+                        } else if let date = section.date {
                             if localCalendar.isDateInToday(date) {
                                 Text("Today")
                             } else if localCalendar.isDateInYesterday(date) {

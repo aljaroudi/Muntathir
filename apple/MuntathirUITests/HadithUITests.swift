@@ -20,6 +20,16 @@ final class HadithUITests: XCTestCase {
         return app
     }
 
+    @MainActor func testPassageSearchWaitsForSubmit() throws {
+        let app = try openHadith(fixture: true)
+        let field = app.searchFields.firstMatch
+        field.tap()
+        field.typeText("Sample")
+        XCTAssertFalse(app.buttons["hadith-result-1"].waitForExistence(timeout: 1))
+        field.typeText("\n")
+        XCTAssertTrue(app.buttons["hadith-result-1"].waitForExistence(timeout: 5))
+    }
+
     @MainActor func testLargeSearchScrollPerformance() throws {
         let app = try openHadith(fixture: true)
         let search = app.searchFields.firstMatch
@@ -170,7 +180,7 @@ final class HadithUITests: XCTestCase {
         let app = try openHadith()
         let search = app.searchFields.firstMatch
         search.tap()
-        search.typeText("intentions")
+        search.typeText("intentions\n")
         let rows = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "hadith-result-"))
         XCTAssertTrue(rows.firstMatch.waitForExistence(timeout: 10))
         search.buttons.firstMatch.tap()
@@ -179,7 +189,7 @@ final class HadithUITests: XCTestCase {
         expectation(for: gone, evaluatedWith: rows.firstMatch)
         waitForExpectations(timeout: 10)
         search.buttons.firstMatch.tap()
-        search.typeText("الأعمال")
+        search.typeText("الأعمال\n")
         XCTAssertTrue(rows.firstMatch.waitForExistence(timeout: 10))
         rows.firstMatch.tap()
         XCTAssertTrue(app.descendants(matching: .any)["hadith-full-arabic"].waitForExistence(timeout: 10))

@@ -5,6 +5,9 @@ import SQLite3
 actor HadithReader {
     private var database: HadithDatabase
     static let pageSize = 50
+    private var recentPages: [(HadithRequest, HadithPage)] = []
+    private var rankedRequest: HadithRequest?
+    private var rankedMatches: [(id: Int, phase: HadithCursor.Phase)] = []
 
     init(database: HadithDatabase = HadithDatabase()) {
         self.database = database
@@ -12,6 +15,9 @@ actor HadithReader {
 
     /// Actor serialization drains an active synchronous query before replacing/removing its file.
     func install(_ url: URL?, fullValidation: Bool = true) throws {
+        recentPages = []
+        rankedRequest = nil
+        rankedMatches = []
         guard let url else { database = HadithDatabase(url: nil); return }
         let candidate = HadithDatabase(url: url)
         try candidate.validate(full: fullValidation)
@@ -26,6 +32,9 @@ actor HadithReader {
             throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
         }
         database = HadithDatabase(url: destination)
+        recentPages = []
+        rankedRequest = nil
+        rankedMatches = []
     }
 
     func catalog() throws -> [HadithCollection] {
@@ -89,6 +98,19 @@ actor HadithReader {
 
     func page(_ request: HadithRequest) throws -> HadithPage {
         try Task.checkCancellation()
+        if let index = recentPages.firstIndex(where: { $0.0 == request }) {
+            let entry = recentPages.remove(at: index)
+            recentPages.append(entry)
+            return entry.1
+        }
+        let result = try loadPage(request)
+        recentPages.append((request, result))
+        if recentPages.count > 8 { recentPages.removeFirst() }
+        return result
+    }
+
+    private func loadPage(_ request: HadithRequest) throws -> HadithPage {
+        try Task.checkCancellation()
         let terms = QuranSearchText.terms(request.query)
         if !request.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, terms.isEmpty {
             return HadithPage(rows: [], hasMore: false)
@@ -122,32 +144,35 @@ actor HadithReader {
                 (Int(sqlite3_column_int($0, 0)), .words)
             }
         } else {
-            let indexed = terms.filter { $0.count >= 3 && $0.unicodeScalars.contains { (0x0600 ... 0x06FF).contains($0.value) } }
-            // The shipped trigram index covers Arabic. English/short infixes need source verification.
-            let candidates = indexed.isEmpty ? "" : "AND (h.id IN (SELECT rowid FROM hadith_fts WHERE hadith_fts MATCH ?) OR (h.english_narrator || h.english_text) GLOB '*[\u{0600}-\u{06FF}]*')"
-            let candidateParameters = indexed.isEmpty ? [] : [indexed.map { "\"\($0)\"" }.joined(separator: " AND ")]
-            for phase in HadithCursor.Phase.allCases where phase != .broader && phase.rawValue >= request.cursor.phase.rawValue {
-                let after = phase == request.cursor.phase ? request.cursor.afterID : 0
-                let remaining = 51 - selected.count
-                let phrase = "text : (" + terms.map { "\"\($0)\"" }.joined(separator: " + ") + ")"
-                // FTS is a candidate index only: source verification rejects stem-only hits.
-                let phaseCandidates = phase == .words
-                    ? "AND h.id IN (SELECT rowid FROM hadith_words WHERE hadith_words MATCH ? UNION SELECT rowid FROM hadith_en WHERE hadith_en MATCH ?)"
-                    : candidates
-                let phaseParameters = phase == .words ? [phrase, phrase] : candidateParameters
-                selected += try connection.query("""
-                SELECT h.id \(base) WHERE \(predicate) AND h.id > CAST(? AS INTEGER)
-                  \(phaseCandidates)
-                  AND hadith_literal_rank(h.arabic, h.english_narrator || ' ' || h.english_text, ?) = CAST(? AS INTEGER)
-                ORDER BY h.id LIMIT \(remaining)
-                """, parameters: scopeParameters + [String(after)] + phaseParameters + [request.query, String(phase.rawValue)]) {
-                    (Int(sqlite3_column_int($0, 0)), phase)
+            var key = request
+            key.cursor = HadithCursor()
+            if rankedRequest != key {
+                let words = terms.map { "\"" + $0.replacingOccurrences(of: "\"", with: "\"\"") + "\"" }.joined(separator: " AND ")
+                let phrase = "\"" + terms.joined(separator: " ").replacingOccurrences(of: "\"", with: "\"\"") + "\""
+                let legacy = try connection.query("PRAGMA user_version") { sqlite3_column_int($0, 0) }.first == 7
+                let literalCheck = legacy ? "AND hadith_literal_rank(h.arabic,h.english_narrator || ' ' || h.english_text,?) < 2" : ""
+                // Rank IDs in SQLite; never hydrate and score the entire corpus in Swift.
+                rankedMatches = try connection.query("""
+                WITH matches AS (
+                  SELECT rowid AS id FROM hadith_words WHERE hadith_words MATCH ?
+                  UNION SELECT rowid FROM hadith_en WHERE hadith_en MATCH ?
+                ), phrases AS (
+                  SELECT rowid AS id FROM hadith_words WHERE hadith_words MATCH ?
+                  UNION SELECT rowid FROM hadith_en WHERE hadith_en MATCH ?
+                )
+                SELECT h.id, CASE WHEN h.id IN (SELECT id FROM phrases) THEN 0 ELSE 1 END AS tier
+                \(base) WHERE \(predicate) AND h.id IN (SELECT id FROM matches) \(literalCheck)
+                ORDER BY tier, h.book_id, (SELECT file_name FROM chapter WHERE id=h.chapter_id), h.id_in_book, h.id
+                """, parameters: [words, words, phrase, phrase] + scopeParameters + (legacy ? [request.query] : [])) {
+                    (Int(sqlite3_column_int($0, 0)), HadithCursor.Phase(rawValue: Int(sqlite3_column_int($0, 1)))!)
                 }
-                if selected.count == 51 {
-                    break
-                }
+                rankedRequest = key
             }
+            let start = request.cursor.afterID == 0 ? 0 : (rankedMatches.firstIndex { $0.id == request.cursor.afterID }.map { $0 + 1 } ?? 0)
+            selected = Array(rankedMatches.dropFirst(start).prefix(51))
+
         }
+
         let visible = Array(selected.prefix(Self.pageSize))
         guard !visible.isEmpty else { return HadithPage(rows: [], hasMore: false, usedOrderedFallback: usedOrderedFallback) }
         let placeholders = visible.map { _ in "?" }.joined(separator: ",")
@@ -170,7 +195,8 @@ actor HadithReader {
         let last = visible[visible.count - 1]
         return HadithPage(rows: visible.compactMap { byID[$0.id] }, hasMore: hasMore,
                           usedOrderedFallback: usedOrderedFallback,
-                          nextCursor: hasMore ? HadithCursor(phase: last.phase, afterID: last.id) : nil)
+                          nextCursor: hasMore ? HadithCursor(phase: last.phase, afterID: last.id) : nil,
+                          relatedIDs: Set(visible.filter { $0.phase == .broader }.map(\.id)))
     }
 
     func detail(id: Int, query: String = "", orderedFallback _: Bool = false, translation: String = "auto", languages: [String] = Locale.preferredLanguages) throws -> HadithDetail {

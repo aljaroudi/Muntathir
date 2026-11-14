@@ -1580,7 +1580,6 @@ def build_fts(db: sqlite3.Connection, *, experimental_morphology: bool = False) 
         roots_by_hadith[hid].add(root)
 
     word_rows = []
-    fts_rows = []
     en_rows = []
     for hid, arabic, en_narr, en_text in db.execute(
         "SELECT id, arabic, english_narrator, english_text FROM hadith"
@@ -1596,7 +1595,6 @@ def build_fts(db: sqlite3.Connection, *, experimental_morphology: bool = False) 
             if lemma:
                 lemmas.add(norm(lemma))
         word_rows.append((hid, ntext, " ".join(sorted(roots)), " ".join(sorted(lemmas))) if experimental_morphology else (hid, ntext))
-        fts_rows.append((hid, ntext))
         en = " ".join(x for x in (en_narr, en_text) if x).strip()
         if en:
             en_rows.append((hid, en))
@@ -1605,10 +1603,8 @@ def build_fts(db: sqlite3.Connection, *, experimental_morphology: bool = False) 
                 ("INSERT INTO hadith_words (rowid, text, root, lemma) VALUES (?, ?, ?, ?)" if experimental_morphology else "INSERT INTO hadith_words (rowid, text) VALUES (?, ?)"),
                 word_rows,
             )
-            db.executemany("INSERT INTO hadith_fts (rowid, text) VALUES (?, ?)", fts_rows)
             db.executemany("INSERT INTO hadith_en (rowid, text) VALUES (?, ?)", en_rows)
             word_rows.clear()
-            fts_rows.clear()
             en_rows.clear()
 
     if word_rows:
@@ -1616,10 +1612,9 @@ def build_fts(db: sqlite3.Connection, *, experimental_morphology: bool = False) 
             ("INSERT INTO hadith_words (rowid, text, root, lemma) VALUES (?, ?, ?, ?)" if experimental_morphology else "INSERT INTO hadith_words (rowid, text) VALUES (?, ?)"),
             word_rows,
         )
-        db.executemany("INSERT INTO hadith_fts (rowid, text) VALUES (?, ?)", fts_rows)
         db.executemany("INSERT INTO hadith_en (rowid, text) VALUES (?, ?)", en_rows)
 
-    for table in ("hadith_words", "hadith_fts", "hadith_en"):
+    for table in ("hadith_words", "hadith_en"):
         db.execute(f"INSERT INTO {table} ({table}) VALUES ('optimize')")
     print("  FTS indexes built")
 
@@ -1727,12 +1722,6 @@ def verify_hadith(
     if prefix_hits < 1:
         raise SystemExit("Prefix FTS صل* returned 0")
 
-    tri = db.execute(
-        "SELECT count(*) FROM hadith_fts WHERE hadith_fts MATCH ?",
-        ('"صوم"',),
-    ).fetchone()[0]
-    if tri < 1:
-        raise SystemExit("Trigram FTS صوم returned 0")
     print("  search sanity ok")
 
 

@@ -1,6 +1,196 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+  "Related matches": {
+    "localizations": {
+      "ar": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "نتائج ذات صلة"
+        }
+      },
+      "de": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Ähnliche Treffer"
+        }
+      },
+      "es": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Resultados relacionados"
+        }
+      },
+      "fa": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "نتایج مرتبط"
+        }
+      },
+      "fr": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Résultats associés"
+        }
+      },
+      "id": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Hasil terkait"
+        }
+      },
+      "it": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Risultati correlati"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "関連する結果"
+        }
+      },
+      "ms": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Hasil berkaitan"
+        }
+      },
+      "ru": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Похожие результаты"
+        }
+      },
+      "tr": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "İlgili sonuçlar"
+        }
+      },
+      "ur": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "متعلقہ نتائج"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "相关结果"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "相關結果"
+        }
+      },
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Related matches"
+        }
+      }
+    }
+  }
+,
+  "Matches": {
+    "localizations": {
+      "ar": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "النتائج المطابقة"
+        }
+      },
+      "de": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Treffer"
+        }
+      },
+      "es": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Coincidencias"
+        }
+      },
+      "fa": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "نتایج مطابق"
+        }
+      },
+      "fr": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Correspondances"
+        }
+      },
+      "id": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Hasil cocok"
+        }
+      },
+      "it": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Corrispondenze"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "一致する結果"
+        }
+      },
+      "ms": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Padanan"
+        }
+      },
+      "ru": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Совпадения"
+        }
+      },
+      "tr": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Eşleşmeler"
+        }
+      },
+      "ur": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "مماثل نتائج"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "匹配结果"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "符合結果"
+        }
+      },
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Matches"
+        }
+      }
+    }
+  }
+,
     "Clear history" : {
       "localizations" : {
         "en" : {

@@ -29,7 +29,8 @@ class ExactReferenceTests(unittest.TestCase):
                 key = digest(PROFILE + ':' + identifier)
                 (root / 'vectors' / (key + '.json')).write_text(json.dumps(vector))
                 passages.append({'id': identifier, 'text_id': identifier, 'input': identifier, 'input_hash': key})
-                texts.append({'id': identifier, 'item_id': identifier, 'language': 'en'})
+                texts.append({'id': identifier, 'item_id': identifier,
+                              'language': 'ar' if kind == 'quran' else 'en', 'full_text': 'إنما الأعمال بالنيات'})
                 items.append({'id': identifier, 'kind': kind, 'source_id': 'source'})
             (root / 'manifest.json').write_text(json.dumps({'revision': 'revision', 'passages': passages, 'texts': texts, 'items': items}))
             fixture = root / 'fixture.json'

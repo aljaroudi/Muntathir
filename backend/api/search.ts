@@ -88,16 +88,17 @@ export function fuse(
       found.rank += 1 / (61 + index)
       passages.set(point.id, found)
     })
-  const items = new Map<string, { id: string; ref: Reference; rank: number; score: number }>()
+  const items = new Map<string, { id: string; ref: Reference; rank: number; score: number; text: string }>()
   for (const { point, rank } of passages.values()) {
     const score = scores.get(point.id)
     if (score === undefined || !Number.isFinite(score)) throw new Error('Missing cosine')
     const id = point.payload.item_id,
       previous = items.get(id)
     if (previous) {
+      if (rank > previous.rank) previous.text = point.payload.text ?? ''
       previous.rank = Math.max(previous.rank, rank)
       previous.score = Math.max(previous.score, score)
-    } else items.set(id, { id, ref: point.payload.ref, rank, score })
+    } else items.set(id, { id, ref: point.payload.ref, rank, score, text: point.payload.text ?? '' })
   }
   return [...items.values()]
     .sort((a, b) => b.rank - a.rank || a.id.localeCompare(b.id))
@@ -196,10 +197,11 @@ export async function retrieve(
       id: p.id,
       hit: { ...p.ref, score: p.score },
       text:
-        [...semantic, ...lexical].find((point) => point.payload.item_id === p.id)?.payload.text ??
-        '',
+        p.text,
     })),
     itemIDs: ranked.map((p) => p.id),
     semanticIDs: semantic.map((p) => p.id),
+    semanticItemIDs: [...new Set(semantic.map((p) => p.payload.item_id))],
+    lexicalItemIDs: [...new Set(lexical.map((p) => p.payload.item_id))],
   }
 }
