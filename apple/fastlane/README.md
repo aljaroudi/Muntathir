@@ -21,7 +21,7 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 [bundle exec] fastlane ios check
 ```
 
-Validate local metadata and automation checks without Apple access
+Validate local metadata and release lanes without Apple access
 
 ### ios tests
 
@@ -79,77 +79,21 @@ Capture required localized Apple Watch store screenshots
 
 Generate all screenshots and App Preview videos locally
 
-### ios readiness
+### ios testflight_public
 
 ```sh
-[bundle exec] fastlane ios readiness
+[bundle exec] fastlane ios testflight_public
 ```
 
-Read App Store readiness without changing remote settings
+Test on iPhone and submit a new build to TestFlight Public
 
-### ios build
+### ios app_store
 
 ```sh
-[bundle exec] fastlane ios build
+[bundle exec] fastlane ios app_store
 ```
 
-Validate signing and export an IPA without uploading
-
-### ios beta
-
-```sh
-[bundle exec] fastlane ios beta
-```
-
-Test, archive, upload and submit Public external Beta App Review
-
-### ios upload_beta
-
-```sh
-[bundle exec] fastlane ios upload_beta
-```
-
-Retry TestFlight upload of an already tested and signed IPA
-
-### ios public_beta
-
-```sh
-[bundle exec] fastlane ios public_beta
-```
-
-Distribute an already uploaded build to Public without uploading the binary again
-
-### ios assets
-
-```sh
-[bundle exec] fastlane ios assets
-```
-
-Upload current metadata and media without submitting App Review
-
-### ios prepare
-
-```sh
-[bundle exec] fastlane ios prepare
-```
-
-Upload metadata/media and select a processed TestFlight build without submitting review
-
-### ios upload_prepared
-
-```sh
-[bundle exec] fastlane ios upload_prepared
-```
-
-Upload an approved local archive and replace media without changing the existing review draft
-
-### ios release
-
-```sh
-[bundle exec] fastlane ios release
-```
-
-Generate media and submit App Review using a processed build or a new archive
+Test on iPhone and iPad, refresh the listing, and submit a new build for automatic App Store release
 
 ----
 

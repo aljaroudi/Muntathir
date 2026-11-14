@@ -36,7 +36,7 @@ The app refreshes the version-one calendar feed from https://منتظر.com/cale
 
 ## Fastlane
 
-See [release automation](fastlane/SETUP.md) for local commands, bilingual store metadata, styled screenshots, sunrise-to-sunset previews, and the dedicated GitHub Actions runner.
+See [manual releases](fastlane/SETUP.md) for the local TestFlight Public and App Store commands, localized metadata, and screenshot configuration.
 
 ## Local Hadith development
 

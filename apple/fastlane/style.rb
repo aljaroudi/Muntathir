@@ -3,7 +3,8 @@ require "frameit"
 
 Dir.chdir(MuntathirRelease::ROOT)
 root = File.expand_path("build/marketing")
-headlines = JSON.parse(File.read("fastlane/marketing/headlines.json"))
+config_path = File.expand_path("fastlane/marketing/screenshots.json")
+screens = MuntathirRelease::SCREENSHOTS.fetch("screens")
 raw = MuntathirRelease::LOCALES.flat_map { |locale| Dir.glob("#{root}/raw/#{locale}/*.png") }.reject { |p| p.include?("_framed") }
 raise "No raw screenshots. Run bundle exec fastlane screenshots first." if raw.empty?
 FileUtils.mkdir_p("#{root}/tools")
@@ -13,8 +14,9 @@ MuntathirRelease.run!("xcrun", "swiftc", "fastlane/marketing/compose.swift", "-o
 MuntathirRelease::LOCALES.each do |locale|
   inputs = raw.select { |p| p.include?("/#{locale}/") }
   MuntathirRelease::DEVICES.each do |device|
-    selected = inputs.select { |p| File.basename(p).start_with?(device) && headlines.fetch(locale).keys.any? { |key| File.basename(p).include?(key) } }
-    raise "Missing captures for #{locale}/#{device}" unless selected.size == headlines.fetch(locale).size
+    selected = screens.map do |screen|
+      inputs.find { |path| File.basename(path) == "#{device}-#{screen}.png" } || raise("Missing capture for #{locale}/#{device}/#{screen}")
+    end
     Dir.glob("#{root}/store/#{locale}/#{device}-*.png").each do |path|
       FileUtils.rm_f(path) unless selected.any? { |input| File.basename(input) == File.basename(path) }
     end
@@ -38,12 +40,10 @@ MuntathirRelease::LOCALES.each do |locale|
                                                         force_device_type: type.formatted_name_without_apple)
       Frameit::Runner.new.run(stage)
     end
-    selected.each do |path|
+    selected.zip(screens).each do |path, key|
       name = File.basename(path)
       framed = duo ? File.join(stage, name) : File.join(stage, name.sub(/\.png\z/, "_framed.png"))
       raise "frameit did not create #{framed}" unless File.file?(framed)
-      key = headlines.fetch(locale).keys.find { |candidate| name.include?(candidate) }
-      raise "No headline for #{name}" unless key
       output = "#{root}/store/#{locale}/#{name}"
       FileUtils.mkdir_p(File.dirname(output))
       size = if duo
@@ -53,7 +53,7 @@ MuntathirRelease::LOCALES.each do |locale|
       else
         ipad ? [2064, 2752] : [1320, 2868]
       end
-      MuntathirRelease.run!(compositor, framed, output, *size, locale, headlines.fetch(locale).fetch(key), duo ? "duo" : (ipad ? "tablet" : "phone"))
+      MuntathirRelease.run!(compositor, framed, output, *size, locale, key, duo ? "duo" : (ipad ? "tablet" : "phone"), config_path)
       MuntathirRelease.run!("magick", output, "-alpha", "remove", "-alpha", "off", output)
       actual = MuntathirRelease.run!("magick", "identify", "-format", "%wx%h %[channels]", output)
       raise "Invalid styled export: #{actual}" unless actual.start_with?(size.join("x")) && !actual.include?("rgba")

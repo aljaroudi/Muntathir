@@ -26,6 +26,8 @@ module MuntathirRelease
   LOCALES = %w[en-US ar-SA fr-FR de-DE id it ja ms ru es-ES tr ur-PK zh-Hans zh-Hant].freeze
   DEVICES = ["iPhone 17 Pro Max", "iPad Pro 13-inch (M5)", "iPhone Duo"].freeze
   PREVIEW_DEVICES = DEVICES.reject { |name| name == "iPhone Duo" }.freeze
+  WATCH_SCREENSHOT = "Apple Watch Series 12 (46mm)-01-PrayerTimes.png".freeze
+  SCREENSHOTS = JSON.parse(File.read(File.join(__dir__, "marketing/screenshots.json"))).freeze
 
   def self.capture_runtime(device)
     device == "iPhone Duo" ? ENV.fetch("SCREENSHOT_DUO_IOS_VERSION", "27.2") : ENV.fetch("SCREENSHOT_IOS_VERSION", "27.0")
@@ -72,25 +74,37 @@ module MuntathirRelease
     value
   end
 
-  def self.validate_media!(root = ROOT, screenshots_only: false)
-    headlines = JSON.parse(File.read(File.join(__dir__, "marketing/headlines.json")))
-    LOCALES.each do |locale|
-      DEVICES.each do |device|
-        images = Dir.glob(File.join(root, "build/marketing/store", locale, "#{device}-*.png"))
-        required = headlines.fetch(locale).keys
-        raise "Missing styled screenshots for #{locale}/#{device}; run marketing" unless images.size == required.size && required.all? { |key| images.any? { |path| File.basename(path) == "#{device}-#{key}.png" } }
-      end
-      watch = File.join(root, "build/marketing/store", locale, "Apple Watch Series 12 (46mm)-01-PrayerTimes.png")
-      raise "Missing required Apple Watch screenshot for #{locale}; run watch_screenshots" unless File.file?(watch)
-      next if screenshots_only
-      %w[IPHONE_67 IPAD_PRO_3GEN_129].each do |type|
-        folder = "previews"
-        path = File.join(root, "build/marketing", folder, locale, "01-#{type}-SunriseToSunset.mp4")
-        raise "Missing preview #{path}; run marketing" unless File.file?(path)
-        validate_video!(path, type.start_with?("IPAD") ? [1200, 1600] : [886, 1920])
+  def self.validate_media!(root = ROOT, since: nil)
+    expected = DEVICES.product(SCREENSHOTS.fetch("screens")).map { |device, screen| "#{device}-#{screen}.png" } << WATCH_SCREENSHOT
+    directory = File.join(root, "build/marketing/store")
+    locales = Dir.children(directory).select { |entry| File.directory?(File.join(directory, entry)) }
+    raise "Unexpected screenshot locale directories" unless (locales - LOCALES).empty?
 
+    LOCALES.each do |locale|
+      images = Dir.glob(File.join(directory, locale, "*.{png,jpg,jpeg}"), File::FNM_CASEFOLD)
+      unless images.map { |image| File.basename(image) }.sort == expected.sort &&
+             images.all? { |image| File.size?(image) && (!since || File.mtime(image) >= since) }
+        raise "Missing, unexpected or stale styled screenshots for #{locale}"
       end
     end
+  end
+
+  def self.beta_notes
+    LOCALES.to_h do |locale|
+      notes = File.read(File.join(__dir__, "beta_notes", "#{locale}.txt")).strip
+      raise "Missing or oversized What to Test for #{locale}" unless (1..4000).cover?(notes.length)
+      [locale, notes]
+    end
+  end
+
+  def self.validate_notes_changed!(notes, previous, label, force: false)
+    return if force
+
+    prior = previous.to_h { |entry| [entry.locale, entry.whats_new.to_s.strip] }
+    return unless prior.any? { |locale, text| notes.key?(locale) && !text.empty? }
+    return unless notes.all? { |locale, text| text == prior[locale] }
+
+    raise "#{label} is unchanged from App Store Connect. Update the notes or rerun with force:true."
   end
 
   def self.review_config
@@ -110,15 +124,68 @@ module MuntathirRelease
     raise "#{context}: expected an HTTPS URL"
   end
 
-  def self.next_version(project_version, live_version, editable_version)
-    # Reuse a pending version; after publication, default to the next patch.
-    versions = [project_version, live_version].compact.map { |v| Gem::Version.new(v) }
-    return editable_version if editable_version && (!live_version || Gem::Version.new(editable_version) > Gem::Version.new(live_version))
-    current = versions.max
-    return project_version unless live_version && current == Gem::Version.new(live_version)
-    parts = current.segments.fill(0, current.segments.length...3)
-    parts[2] += 1
-    parts.join(".")
+  def self.validate_draft!(draft, version, expected_id: nil)
+    if !draft || draft.app_version_state == "WAITING_FOR_REVIEW" || Gem::Version.new(draft.version_string) != Gem::Version.new(version)
+      raise "Create or restore an editable iOS App Store draft for version #{version} before running this lane."
+    end
+    raise "The App Store draft for #{version} changed during the release run." if expected_id && draft.id != expected_id
+  end
+
+  def self.with_release_lock(root = ROOT)
+    FileUtils.mkdir_p(File.join(root, "build"))
+    File.open(File.join(root, "build", "fastlane-release.lock"), File::RDWR | File::CREAT, 0o600) do |lock|
+      raise "Another Fastlane release is running in this checkout." unless lock.flock(File::LOCK_EX | File::LOCK_NB)
+
+      yield
+    end
+  end
+
+  def self.build_uploads(app_id, version)
+    versions = [version]
+    versions << version.delete_suffix(".0") if version.count(".") == 2 && version.end_with?(".0")
+    versions << "#{version}.0" if version.count(".") == 1
+    pages = Spaceship::ConnectAPI.get_build_uploads(app_id: app_id, includes: "build", limit: 200,
+                                                  filter: { cfBundleShortVersionString: versions.join(","), platform: "IOS" }).all_pages
+    pages.flat_map { |page| page.body.fetch("data") }.select do |upload|
+      attributes = upload.fetch("attributes")
+      attributes.fetch("platform") == "IOS" && Gem::Version.new(attributes.fetch("cfBundleShortVersionString")) == Gem::Version.new(version)
+    end
+  end
+
+  def self.wait_for_uploaded_build(app_id, version, existing_ids, timeout: 1800)
+    deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + timeout
+    observed_ids = []
+    retry_message = "Check Build Uploads in App Store Connect before retrying."
+    loop do
+      uploads = build_uploads(app_id, version).reject { |upload| existing_ids.include?(upload.fetch("id")) }
+      observed_ids |= uploads.map { |upload| upload.fetch("id") }
+      raise "Multiple new iOS uploads for #{version}. #{retry_message}" if observed_ids.size > 1
+
+      if (upload = uploads.first)
+        attributes = upload.fetch("attributes")
+        number = attributes.fetch("cfBundleVersion")
+        state = attributes.dig("state", "state")
+        raise "Build #{version} (#{number}) failed processing. #{retry_message}" if state == "FAILED"
+
+        build_id = upload.dig("relationships", "build", "data", "id")
+        if state == "COMPLETE" && build_id
+          build = Spaceship::ConnectAPI::Build.get(build_id: build_id)
+          raise "Build #{version} (#{number}) failed processing. #{retry_message}" if %w[FAILED INVALID].include?(build&.processing_state)
+
+          if build&.processing_state == "VALID"
+            unless build.platform == "IOS" && build.version == number && Gem::Version.new(build.app_version) == Gem::Version.new(version)
+              raise "App Store Connect returned an unexpected build for #{version} (#{number}). #{retry_message}"
+            end
+            return build
+          end
+        end
+      end
+
+      remaining = deadline - Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      raise "Timed out waiting for the new iOS build for #{version}. #{retry_message}" if remaining <= 0
+
+      sleep([15, remaining].min)
+    end
   end
 
   def self.project_version
@@ -126,6 +193,30 @@ module MuntathirRelease
     settings = JSON.parse(run!("xcodebuild", "-project", File.join(ROOT, "Muntathir.xcodeproj"), "-scheme", "Muntathir", "-configuration", "Release",
                                "-destination", "generic/platform=iOS", "-showBuildSettings", "-json"))
     settings.find { |target| target["target"] == "Muntathir" }.fetch("buildSettings").fetch("MARKETING_VERSION")
+  end
+
+  def self.test_destinations(include_ipad:, output: nil)
+    output ||= run!("xcodebuild", "-project", File.join(ROOT, "Muntathir.xcodeproj"), "-scheme", "Muntathir", "-showdestinations")
+    simulators = output.split(/Ineligible destinations|Destinations incompatible/).first.to_s.lines.filter_map do |line|
+      next unless line.match?(/platform:\s*iOS Simulator,/) && !line.match?(/\berror:\s*/)
+
+      line.match(/\bid:\s*([\da-f-]+),\s*OS:\s*([\d.]+),\s*name:\s*([^}]+)\}/i)&.captures
+    end
+    # Use the iPhone generation first, then its installed iOS version and model.
+    iphone = simulators.select { |_, _, name| name.match?(/\AiPhone \d/) }.max_by do |_, os, name|
+      [name[/\d+/].to_i, Gem::Version.new(os), name.include?("Pro Max") ? 1 : 0, name]
+    end
+    raise "Install a compatible iPhone simulator for the Muntathir scheme in Xcode." unless iphone
+
+    selected = [iphone]
+    if include_ipad
+      ipad_name = DEVICES.fetch(1)
+      ipad = simulators.select { |_, _, name| name.strip == ipad_name }.max_by { |_, os, _| Gem::Version.new(os) }
+      raise "Install a compatible #{ipad_name} simulator for the Muntathir scheme in Xcode." unless ipad
+
+      selected << ipad
+    end
+    selected.map { |id, _, _| "platform=iOS Simulator,id=#{id}" }
   end
 
   def self.run!(*command)

@@ -46,7 +46,7 @@ end
 MuntathirRelease.capture_passes(devices, locales).each do |pass_devices, pass_locales, runtime, compact|
   capture(pass_devices, pass_locales, runtime, derived_data, buildlog_path, compact)
 end
-screens = JSON.parse(File.read("fastlane/marketing/headlines.json")).fetch("en-US").keys
+screens = MuntathirRelease::SCREENSHOTS.fetch("screens")
 missing = devices.product(locales, screens).reject do |device, locale, screen|
   path = "build/marketing/raw/#{locale}/#{device}-#{screen}.png"
   File.file?(path) && File.mtime(path) >= capture_started

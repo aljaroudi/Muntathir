@@ -52,7 +52,7 @@ begin
     raise "Watch prayer screen is still loading: #{locale}" unless loaded
     dimensions = MuntathirRelease.run!("magick", "identify", "-format", "%wx%h", raw)
     raise "Unexpected Watch screenshot dimensions: #{dimensions}" unless dimensions == "416x496"
-    output = "#{root}/store/#{locale}/Apple Watch Series 12 (46mm)-01-PrayerTimes.png"
+    output = "#{root}/store/#{locale}/#{MuntathirRelease::WATCH_SCREENSHOT}"
     FileUtils.mkdir_p(File.dirname(output))
     MuntathirRelease.run!("magick", raw, "-alpha", "remove", "-alpha", "off", output)
     puts "Captured Watch: #{locale}"
