@@ -128,6 +128,23 @@ def prepare(args):
             source(row["source_id"], row["source_name"])
             add("dua", row["source_id"], {"dua_id": row["id"]}, {"dua_id": row["id"]}, row["title"], row["texts"])
 
+    if getattr(args, "rulings", None):
+        db = read_db(args.rulings)
+        if db.execute("PRAGMA application_id").fetchone()[0] != 1179809601 or db.execute("PRAGMA user_version").fetchone()[0] != 1:
+            raise ValueError("Incompatible rulings database")
+        for authority in db.execute("SELECT * FROM authority ORDER BY sort_order"):
+            source(authority["code"], authority["name_en"] or authority["name_ar"])
+        for row in db.execute("SELECT * FROM question ORDER BY authority_code, language_code, site_id"):
+            if not (row["question"] + row["answer"]).strip():
+                raise ValueError("Empty rulings entry")
+            ref = {"authority": row["authority_code"], "language": row["language_code"], "id": row["site_id"]}
+            add("rulings", row["authority_code"], ref, ref,
+                sources[row["authority_code"]]["name"] + " · " + row["site_id"],
+                [{"language": row["language_code"], "edition": row["url"],
+                  "attribution": sources[row["authority_code"]]["name"],
+                  "text": row["question"] + "\n\n" + row["answer"]}])
+        db.close()
+
     if not records:
         raise ValueError("No content selected")
     if args.pilot:
@@ -135,7 +152,7 @@ def prepare(args):
         required = {key for query in judged for key in query["relevant"]}
         selected = {r["item"]["id"] for r in records if r["item"]["id"] in required}
         # Include both evaluated positives and a deterministic spread of distractors.
-        for kind in ("quran", "hadith", "dua"):
+        for kind in ("quran", "hadith", "dua", "rulings"):
             candidates = [r for r in records if r["item"]["kind"] == kind]
             if candidates:
                 step = max(1, len(candidates) // 100)
@@ -323,6 +340,7 @@ def main():
     parser.add_argument("--translation", action="append", default=[], help="language:edition:SQLite path")
     parser.add_argument("--hadith")
     parser.add_argument("--dua")
+    parser.add_argument("--rulings")
     parser.add_argument("--provenance")
     parser.add_argument("--limit", type=int, help="Pilot item limit")
     parser.add_argument("--pilot", action="store_true", help="Include judged positives and representative distractors")

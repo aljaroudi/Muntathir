@@ -4,7 +4,7 @@ import Observation
 @MainActor @Observable
 final class SearchHistory {
     enum Area: String, CaseIterable {
-        case quran, hadith, supplications, saved, figures, locations
+        case quran, hadith, supplications, rulings, saved, figures, locations
     }
 
     static let shared = SearchHistory(defaults: ProcessInfo.processInfo.arguments.contains("--ui-testing")

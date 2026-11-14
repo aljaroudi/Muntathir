@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct DownloadsSettingsView: View {
+    @Environment(\.rulingsAssets) private var rulings
     @Environment(\.supplicationAssets) private var supplications
     @Environment(\.hadithAssets) private var hadith
     @Environment(\.locale) private var locale
@@ -9,6 +10,7 @@ struct DownloadsSettingsView: View {
 
     var body: some View {
         List {
+            if let rulings { RulingsDownloadSection(assets: rulings) }
             if let hadith {
                 HadithDownloadsSection(assets: hadith, title: "Hadith")
             }

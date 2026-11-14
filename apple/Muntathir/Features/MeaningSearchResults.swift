@@ -30,7 +30,7 @@ struct MeaningSearchResults<Item, Results: View>: View {
                 ContentUnavailableView {
                     Label("Search unavailable", systemImage: "wifi.exclamationmark")
                 } description: {
-                    Text("You can still search downloaded Quran and Hadith text offline.")
+                    Text("You can still search downloaded text offline.")
                 } actions: {
                     Button("Try again") { loading = true; attempt += 1 }
                 }

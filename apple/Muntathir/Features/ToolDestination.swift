@@ -10,6 +10,7 @@ struct ToolDestination: View {
         case .calendar: CalendarScreen()
         case .events: EventsView()
         case .quran: QuranView()
+        case .rulings: RulingsView()
         case .hadith:
             if let hadithAssets {
                 HadithLibraryView(assets: hadithAssets)

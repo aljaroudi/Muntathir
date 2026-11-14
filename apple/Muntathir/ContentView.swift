@@ -20,6 +20,7 @@ struct ContentView: View {
     @State private var toolsPath: [FigureRoute] = []
     @State private var hadithAssets = HadithAssetStore()
     @State private var supplicationAssets = HadithAssetStore(backend: AppleAssetPackBackend(identifier: "supplications", resourcePath: "Supplications/supplications.db"), packID: "supplications")
+    @State private var rulingsAssets = RulingsAssetStore()
     @State private var translations = QuranTranslationStore.shared
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -63,6 +64,7 @@ struct ContentView: View {
                 }
             }
         }
+        .environment(\.rulingsAssets, rulingsAssets)
         .environment(\.hadithAssets, hadithAssets)
         .environment(\.supplicationAssets, supplicationAssets)
         .environment(\.hadithSession, hadithSession)
@@ -77,6 +79,8 @@ struct ContentView: View {
             QuranDownloadView(requested: translation.id)
         }
         .task { model.reschedule() }
+        .task { await rulingsAssets.monitor() }
+        .task { await rulingsAssets.refresh() }
         .task { await hadithAssets.monitor() }
         .task { await supplicationAssets.monitor() }
         .task { await QuranTranslationStore.shared.monitor() }
@@ -96,7 +100,7 @@ struct ContentView: View {
             }
             if phase == .active {
                 model.reschedule()
-                Task { await hadithAssets.refresh(); await supplicationAssets.refresh(); await QuranTranslationStore.shared.refresh() }
+                Task { await rulingsAssets.refresh(); await hadithAssets.refresh(); await supplicationAssets.refresh(); await QuranTranslationStore.shared.refresh() }
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in model.reschedule() }

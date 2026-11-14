@@ -1,7 +1,7 @@
 import Foundation
 
 enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
-    case calendar, events, quran, hadith, supplications, figures, tasbih, rakaat, prayerProgress, qibla
+    case calendar, events, quran, hadith, supplications, rulings, figures, tasbih, rakaat, prayerProgress, qibla
 
     var id: String {
         rawValue
@@ -13,6 +13,7 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
         case .events: "Events"
         case .quran: "Holy Quran"
         case .hadith: "Hadith"
+        case .rulings: "Rulings"
         case .supplications: "Supplications"
         case .figures: "Figures"
         case .tasbih: "Tasbih"
@@ -28,6 +29,7 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
         case .events: "list.bullet.rectangle"
         case .quran: "book.closed"
         case .hadith: "text.book.closed"
+        case .rulings: "text.page"
         case .supplications: "hands.sparkles"
         case .figures: "person.2"
         case .tasbih: "circle.dotted"
@@ -59,7 +61,7 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
 
     static let maximumShortcuts = 3
     static let groups: [[AppTool]] = [
-        [.quran, .hadith, .supplications], [.calendar, .events, .figures], [.qibla, .rakaat, .tasbih, .prayerProgress],
+        [.quran, .hadith, .supplications], [.rulings], [.calendar, .events, .figures], [.qibla, .rakaat, .tasbih, .prayerProgress],
     ]
 
     static func normalized(_ identifiers: [String]) -> [AppTool] {

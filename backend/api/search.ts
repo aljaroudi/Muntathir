@@ -4,6 +4,7 @@ export type Reference =
   | { kind: 'quran'; chapter: number; verse: number }
   | { kind: 'hadith'; book: string; chapter: string; number: number }
   | { kind: 'dua'; id: string; passage?: number }
+  | { kind: 'rulings'; authority: string; language: string; id: string }
 export type Hit = Reference & { score: number | null }
 export type Point = {
   id: string
@@ -151,7 +152,7 @@ export async function retrieve(
   if (!vector) throw new Error('Missing query embedding')
   selected.must.push({
     should: [
-      { key: 'kind', match: { any: ['hadith', 'dua'] } },
+      { key: 'kind', match: { any: ['hadith', 'dua', 'rulings'] } },
       { key: 'search_eligible', match: { value: true } },
     ],
   })

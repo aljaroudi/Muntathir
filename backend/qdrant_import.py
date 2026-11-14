@@ -33,6 +33,7 @@ def compact(item):
     if kind=='quran': return {'kind':kind,'chapter':nav['chapter'],'verse':nav['verse']}
     if kind=='hadith': return {'kind':kind,'book':nav['book'],'chapter':nav['chapterFile'],'number':nav['number']}
     if kind=='dua': return {'kind':kind,'id':nav['dua_id']}
+    if kind=='rulings': return {'kind':kind, 'authority':nav['authority'], 'language':nav['language'], 'id':nav['id']}
     raise ValueError('Unknown content kind')
 
 def load_manifest(work):

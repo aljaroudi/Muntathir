@@ -25,6 +25,12 @@ struct AppleAssetPackBackend: AssetPackBackend {
 
     @concurrent func localURL() async throws -> URL? {
         #if DEBUG
+            if identifier == "rulings", ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+                guard ProcessInfo.processInfo.arguments.contains("--ui-testing-rulings-fixture") else { return nil }
+                let url = URL.temporaryDirectory.appending(path: "rulings-ui-fixture.db")
+                if !FileManager.default.fileExists(atPath: url.path) { _ = try RulingsFixture(url: url) }
+                return url
+            }
             if identifier == Self.packID, let fixture = HadithUITestFixture.downloadsDirectory {
                 let marker = fixture.appending(path: "Removed")
                 return FileManager.default.fileExists(atPath: marker.path) ? nil : try HadithUITestFixture.url()
@@ -56,6 +62,9 @@ struct AppleAssetPackBackend: AssetPackBackend {
     func isDownloading() async -> Bool {
         #if DEBUG
             let arguments = ProcessInfo.processInfo.arguments
+            if identifier == "rulings", arguments.contains("--ui-testing") {
+                return false
+            }
             if arguments.contains("--ui-testing"),
                arguments.contains("--marketing-capture") ||
                (identifier == Self.packID && arguments.contains("--ui-testing-hadith-fixture")) ||
@@ -108,6 +117,9 @@ struct AppleAssetPackBackend: AssetPackBackend {
         #if DEBUG
             // Capture/test databases have no hosted download events or hosting entitlements.
             let arguments = ProcessInfo.processInfo.arguments
+            if identifier == "rulings", arguments.contains("--ui-testing") {
+                return AsyncStream { $0.finish() }
+            }
             if arguments.contains("--ui-testing"),
                arguments.contains("--marketing-capture") ||
                (identifier == Self.packID && arguments.contains("--ui-testing-hadith-fixture")) ||

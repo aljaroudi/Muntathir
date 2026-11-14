@@ -24,7 +24,7 @@ INSERT INTO authority (code, name_ar, name_en, base_url, sort_order, note)
 VALUES
   (
     'sistani',
-    'السيد علي الحسيني السيستاني',
+    'السيد علي السيستاني',
     'Ali al-Husayni al-Sistani',
     'https://www.sistani.org/',
     1,
@@ -32,7 +32,7 @@ VALUES
   ),
   (
     'shirazi',
-    'السيد صادق الحسيني الشيرازي',
+    'السيد صادق الشيرازي',
     'Sadiq al-Husayni al-Shirazi',
     'https://alshirazi.org/',
     2,
@@ -40,8 +40,8 @@ VALUES
   ),
   (
     'khorasani',
-    'السيد حسين الوحيد الخراساني',
-    'Husayn al-Wahid al-Khorasani',
+    'الشيخ الوحيد الخراساني',
+    'Sheikh al-Wahid al-Khorasani',
     'https://wahidkhorasani.com/',
     3,
     'Question URL is https://wahidkhorasani.com/qna/{slug}. Arabic and English locales exist but currently have no Q&A.'

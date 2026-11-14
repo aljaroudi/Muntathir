@@ -78,3 +78,29 @@ compatible app build. Existing v7-only builds reject v8 Hadith; older Quran
 readers expect the removed trigram index. Use new pack IDs for the compact
 release if older builds must remain supported. Keep the current published packs
 available through that transition. No compact packs have been uploaded.
+
+## Rulings
+
+The independent on-demand `rulings` pack contains `Rulings/rulings.db`, built from
+`build/rulings/dist/rulings.db`. Rebuild with `python3 build/rulings/build.py`.
+The crawl mirror remains `build/rulings/data/fatwa.sqlite` so existing database
+connections retain their file identity. Package with `--content rulings`; upload only that pack
+with `bundle exec ruby fastlane/asset_pack_delivery.rb --upload rulings` from
+`apple/` using the Ruby environment in `fastlane/SETUP.md`.
+
+The reader validates application ID `1179809601`, schema version 1, SQLite
+integrity, relationships, and FTS availability. Authority, language, and source
+question ID form its durable references. Sistani is the default authority. Content
+language follows the app locale when available; otherwise the user selects from
+published languages. Authority and per-authority language choices persist locally.
+
+Version 1 was submitted for external TestFlight review on November 14, 2026.
+Apple reported **Waiting for Review** at submission. No new app build was uploaded;
+hosted device delivery remains to be verified with a compatible TestFlight build.
+The earlier `fatwa` upload was superseded during naming and remains unsubmitted.
+
+Version 2 rebuilt the three authority display names and was submitted for external
+TestFlight review on November 14, 2026. Apple reported **Waiting for Review**.
+Upload completed without warnings or errors; archive size is 4,586,711 bytes.
+All 12,960 questions, source links, topics, placements, and stable references match
+version 1, so this update requires no new search embeddings.

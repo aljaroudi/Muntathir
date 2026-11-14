@@ -66,6 +66,28 @@ def validate_hadith(pack_id="hadith"):
     return [path]
 
 
+def validate_rulings():
+    path = MANIFESTS / 'rulings.json'
+    pack = json.loads(path.read_text())
+    selector, = pack['fileSelectors']
+    source = (path.parent / pack['sourceRoot'] / selector['fileSource']).resolve()
+    assert pack['assetPackID'] == 'rulings'
+    assert pack['downloadPolicy'] == {'onDemand': {}} and 'language' not in pack
+    assert pack['platforms'] == ['iOS']
+    assert source == ROOT / 'build/rulings/dist/rulings.db'
+    assert selector['fileDestination'] == 'Rulings/rulings.db'
+    with sqlite3.connect(source.as_uri() + '?mode=ro', uri=True) as db:
+        assert db.execute('PRAGMA quick_check').fetchall() == [('ok',)]
+        assert db.execute('PRAGMA application_id').fetchone() == (1179809601,)
+        assert db.execute('PRAGMA user_version').fetchone() == (1,)
+        assert not db.execute('PRAGMA foreign_key_check').fetchall()
+        assert db.execute('SELECT count(*) FROM question').fetchone()[0] > 0
+        assert not db.execute("SELECT 1 FROM question WHERE trim(question || answer) = '' LIMIT 1").fetchall()
+        assert not db.execute("SELECT 1 FROM placement p JOIN topic t ON t.id=p.topic_id JOIN question q ON q.id=p.question_id WHERE t.authority_code != q.authority_code OR t.language_code != q.language_code LIMIT 1").fetchall()
+        assert db.execute("SELECT count(*) FROM question_fts WHERE question_fts MATCH 'الصلاة'").fetchone()[0] > 0
+    return [path]
+
+
 def check_bundle(path):
     path = Path(path)
     if path.suffix == '.ipa':
@@ -92,7 +114,7 @@ def check_bundle(path):
             sizes = json.loads(archive.read(size_file))
     else:
         sizes = json.loads((path / 'AssetDownloadSizes.json').read_text())
-    assert all(isinstance(sizes.get(pack), int) and sizes[pack] > 0 for pack in ('hadith', 'supplications', 'quran-translations')), 'Missing download size estimates'
+    assert all(isinstance(sizes.get(pack), int) and sizes[pack] > 0 for pack in ('hadith', 'supplications', 'quran-translations', 'rulings')), 'Missing download size estimates'
     info = metadata('Info.plist')
     downloader = metadata('Extensions/MuntathirAssetDownloader.appex/Info.plist')
     assert downloader.get('CFBundleDisplayName'), 'Missing downloader display name required by App Store validation'
@@ -100,7 +122,7 @@ def check_bundle(path):
     assert info.get('BAUsesAppleHosting') is True
     assert info.get('BAAppGroupID') == 'group.com.aljaroudi.Muntathir'
 
-    assert not any(Path(f).name in {'hadith.db', 'supplications.db', 'rijal.db'} for f in files if '.xctest/' not in f), 'Content DB bundled unexpectedly'
+    assert not any(Path(f).name in {'hadith.db', 'supplications.db', 'rijal.db', 'rulings.db'} for f in files if '.xctest/' not in f), 'Content DB bundled unexpectedly'
     print('Verified only Arabic and English are bundled in app and widget')
 
 
@@ -108,13 +130,14 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=['validate', 'package', 'check-bundle'])
     parser.add_argument('path', nargs='?')
-    parser.add_argument('--content', choices=['hadith', 'supplications', 'quran', 'all'], default='hadith')
+    parser.add_argument('--content', choices=['hadith', 'supplications', 'quran', 'rulings', 'all'], default='hadith')
     args = parser.parse_args()
     manifests = []
     if args.command != 'check-bundle':
         if args.content in ('hadith', 'all'): manifests += validate_hadith()
         if args.content in ('supplications', 'all'): manifests += validate_hadith('supplications')
         if args.content in ('quran', 'all'): manifests += validate_quran()
+        if args.content in ('rulings', 'all'): manifests += validate_rulings()
     if args.command == 'package':
         output = Path(args.path).resolve() if args.path else ROOT / 'apple/build/AssetPacks/archives'
         output.mkdir(parents=True, exist_ok=True)

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Build the read-only fatwa database from the crawl mirror.
+"""Build the read-only rulings database from the crawl mirror.
 
     python3 build.py
 
 Reads data/fatwa.sqlite (site language codes, HTML, crawl bookkeeping).
-Writes dist/fatwa.db (one language code, text, links, search index).
+Writes dist/rulings.db (one language code, text, links, search index).
 
 The crawlers key URLs on the site's own codes (arabic, AR, fa). Those stay
 in the mirror. This file is the one the app should open.
@@ -18,7 +18,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 SOURCE = HERE / "data" / "fatwa.sqlite"
-OUTPUT = HERE / "dist" / "fatwa.db"
+OUTPUT = HERE / "dist" / "rulings.db"
 
 # Site path/query code -> one code. hreflang is not copied; nothing reads it.
 SITE_LANGUAGE = {

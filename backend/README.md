@@ -139,3 +139,28 @@ commands and infrastructure are not part of current deployment.
 ### Hosted reranker benchmark
 
 See [RERANK_BENCHMARK.md](RERANK_BENCHMARK.md) for the frozen-candidate comparison of OpenAI Decisions, Jev, and Gemini Flash-Lite. Preparation and dry runs need no provider keys; paid runs require explicit execution. Production search remains unchanged.
+
+### Rulings
+
+Pass `--rulings build/rulings/dist/rulings.db` to corpus preparation. The source folder, API kind, and asset pack are `rulings`. Each item is
+one authority/language/site-ID combination, regardless of SQLite row IDs or topic
+placements. The text retains the original question and answer; empty answer fields
+remain empty when the source supplies its text in the question field.
+
+Requests use `kinds: ["rulings"]`, `sources: ["sistani"]`, and `languages: ["ar"]`.
+Compact results contain `kind`, `authority`, `language`, `id`, and `score`.
+The app hydrates these references from its downloaded `Rulings/rulings.db`.
+Authority and language filters apply before semantic and lexical ranking.
+
+Production corpus additions must retain the currently active corpus, not an
+unactivated local refresh. Reuse saved vectors, validate the candidate collection,
+and retain the previous alias target for rollback before activating.
+
+The November 14, 2026 rollout activated
+`search_c6d8394dc7714732937c9f30d7176249_fdcc5a4c48a8` (81,921 items;
+225,870 passages). Rollback target retained:
+`search_a521108e91d54bda8fbe324c4e3bea67_476773511098`.
+Candidate validation passed 150 relevance queries, all 11 authority/language
+scopes, and 320 load requests without errors. Public Quran, Hadith, and Arabic
+and English Sistani searches passed after activation. Artifacts are stored locally
+under `work/rulings-production-2026-11-14/`.
