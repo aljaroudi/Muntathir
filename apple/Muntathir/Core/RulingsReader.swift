@@ -86,36 +86,36 @@ actor RulingsReader {
     func sections(for id: Rulings.ID) throws -> [RulingsSection] {
         // Resolve old packs with nested topics to the same main sections as rebuilt packs.
         try connection().query("""
-            WITH RECURSIVE sections(id, parent_id, title, position) AS (
-                SELECT t.id, t.parent_id, t.title, t.position FROM topic t
-                JOIN placement p ON p.topic_id = t.id
-                JOIN question q ON q.id = p.question_id
-                WHERE q.authority_code = ?1 AND q.language_code = ?2 AND q.site_id = ?3
-                  AND t.authority_code = ?1 AND t.language_code = ?2
-                UNION
-                SELECT t.id, t.parent_id, t.title, t.position FROM topic t
-                JOIN sections s ON s.parent_id = t.id
-                WHERE t.authority_code = ?1 AND t.language_code = ?2
-            )
-            SELECT id, title FROM sections WHERE parent_id IS NULL ORDER BY position, id
-            """, parameters: [id.authority, id.language, id.siteID]) {
+        WITH RECURSIVE sections(id, parent_id, title, position) AS (
+            SELECT t.id, t.parent_id, t.title, t.position FROM topic t
+            JOIN placement p ON p.topic_id = t.id
+            JOIN question q ON q.id = p.question_id
+            WHERE q.authority_code = ?1 AND q.language_code = ?2 AND q.site_id = ?3
+              AND t.authority_code = ?1 AND t.language_code = ?2
+            UNION
+            SELECT t.id, t.parent_id, t.title, t.position FROM topic t
+            JOIN sections s ON s.parent_id = t.id
+            WHERE t.authority_code = ?1 AND t.language_code = ?2
+        )
+        SELECT id, title FROM sections WHERE parent_id IS NULL ORDER BY position, id
+        """, parameters: [id.authority, id.language, id.siteID]) {
             RulingsSection(id: sqlite3_column_int64($0, 0), title: Self.text($0, 1))
         }
     }
 
     func questions(authority: String, language: String, section: RulingsSection) throws -> [Rulings] {
         try connection().query("""
-            WITH RECURSIVE sections(id) AS (
-                SELECT id FROM topic WHERE authority_code = ?1 AND language_code = ?2 AND id = ?3
-                UNION
-                SELECT t.id FROM topic t JOIN sections s ON t.parent_id = s.id
-                WHERE t.authority_code = ?1 AND t.language_code = ?2
-            )
-            SELECT q.authority_code, q.language_code, q.site_id, q.question, q.answer, q.url
-            FROM question q JOIN placement p ON p.question_id = q.id JOIN sections s ON s.id = p.topic_id
-            WHERE q.authority_code = ?1 AND q.language_code = ?2
-            GROUP BY q.id ORDER BY MIN(p.position), q.site_id
-            """, parameters: [authority, language, String(section.id)], row: Self.rulings)
+        WITH RECURSIVE sections(id) AS (
+            SELECT id FROM topic WHERE authority_code = ?1 AND language_code = ?2 AND id = ?3
+            UNION
+            SELECT t.id FROM topic t JOIN sections s ON t.parent_id = s.id
+            WHERE t.authority_code = ?1 AND t.language_code = ?2
+        )
+        SELECT q.authority_code, q.language_code, q.site_id, q.question, q.answer, q.url
+        FROM question q JOIN placement p ON p.question_id = q.id JOIN sections s ON s.id = p.topic_id
+        WHERE q.authority_code = ?1 AND q.language_code = ?2
+        GROUP BY q.id ORDER BY MIN(p.position), q.site_id
+        """, parameters: [authority, language, String(section.id)], row: Self.rulings)
     }
 
     func questions(authority: String, language: String, query: String = "") throws -> [Rulings] {

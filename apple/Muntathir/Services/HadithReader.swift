@@ -105,7 +105,9 @@ actor HadithReader {
         }
         let result = try loadPage(request)
         recentPages.append((request, result))
-        if recentPages.count > 8 { recentPages.removeFirst() }
+        if recentPages.count > 8 {
+            recentPages.removeFirst()
+        }
         return result
     }
 
@@ -170,7 +172,6 @@ actor HadithReader {
             }
             let start = request.cursor.afterID == 0 ? 0 : (rankedMatches.firstIndex { $0.id == request.cursor.afterID }.map { $0 + 1 } ?? 0)
             selected = Array(rankedMatches.dropFirst(start).prefix(51))
-
         }
 
         let visible = Array(selected.prefix(Self.pageSize))

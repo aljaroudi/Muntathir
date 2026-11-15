@@ -12,7 +12,7 @@ Events is a timeless Hijri reference list, grouped by month and sorted by day. I
 
 ## Commands
 
-From repository root: `make apple-format`, `make apple-build`, and `make apple-test`. Build uses an unsigned iOS Simulator destination and includes embedded extensions. Tests select a compatible iPhone simulator; set `TEST_DESTINATION` to override it.
+From repository root: `just apple-format`, `just apple-build`, and `just apple-test`. Build uses an unsigned iOS Simulator destination and includes embedded extensions. Tests select a compatible iPhone simulator; set `TEST_DESTINATION` to override it.
 
 ## Components
 

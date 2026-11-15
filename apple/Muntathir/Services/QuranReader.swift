@@ -12,6 +12,7 @@ actor QuranReader {
         let surah: Int?
         let revision: Int
     }
+
     private var recentSearches: [(SearchKey, [Ayah])] = []
     private var cachedCatalog: Catalog?
     private(set) var relatedIDs: Set<String> = []
@@ -78,7 +79,9 @@ actor QuranReader {
         let result = try performSearch(query, translationID: translationID, limit: limit, surah: surah)
         if limit <= 201 {
             recentSearches.append((key, result))
-            if recentSearches.count > 8 { recentSearches.removeFirst() }
+            if recentSearches.count > 8 {
+                recentSearches.removeFirst()
+            }
         }
         return result
     }

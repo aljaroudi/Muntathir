@@ -44,10 +44,16 @@ import Observation
             signature = nil
             installedBytes = 0
             try? await reader.install(nil)
-            if case HadithDatabaseError.incompatible = error { state = .incompatible } else { state = .failed }
+            if case HadithDatabaseError.incompatible = error {
+                state = .incompatible
+            } else {
+                state = .failed
+            }
         }
         busy = false
-        if pendingRefresh { pendingRefresh = false; await refresh() }
+        if pendingRefresh {
+            pendingRefresh = false; await refresh()
+        }
     }
 
     func download() async {
@@ -78,7 +84,9 @@ import Observation
             state = .missing
         } catch { storageError = true }
         busy = false
-        if pendingRefresh { pendingRefresh = false; await refresh() }
+        if pendingRefresh {
+            pendingRefresh = false; await refresh()
+        }
     }
 
     func monitor() async {

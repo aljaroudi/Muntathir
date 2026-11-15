@@ -212,11 +212,10 @@ private struct RulingsResults: View {
             if !query.isEmpty {
                 try await Task.sleep(for: .milliseconds(150))
             }
-            let foundQuestions: [Rulings]
-            if let section {
-                foundQuestions = try await reader.questions(authority: authority, language: language, section: section)
+            let foundQuestions: [Rulings] = if let section {
+                try await reader.questions(authority: authority, language: language, section: section)
             } else {
-                foundQuestions = try await reader.questions(authority: authority, language: language, query: query)
+                try await reader.questions(authority: authority, language: language, query: query)
             }
             try Task.checkCancellation()
             questions = foundQuestions

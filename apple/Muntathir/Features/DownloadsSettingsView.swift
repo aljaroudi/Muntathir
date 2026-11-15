@@ -10,7 +10,9 @@ struct DownloadsSettingsView: View {
 
     var body: some View {
         List {
-            if let rulings { RulingsDownloadSection(assets: rulings) }
+            if let rulings {
+                RulingsDownloadSection(assets: rulings)
+            }
             if let hadith {
                 HadithDownloadsSection(assets: hadith, title: "Hadith")
             }

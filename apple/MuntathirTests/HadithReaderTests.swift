@@ -293,11 +293,11 @@ struct HadithReaderTests {
         """)
         defer { fixture.remove() }
         let reader = HadithReader(database: HadithDatabase(url: fixture.url))
-        #expect(try await reader.page(HadithRequest(query: "صلاة")).rows.map(\.id) == [200001])
+        #expect(try await reader.page(HadithRequest(query: "صلاة")).rows.map(\.id) == [200_001])
         #expect(try await reader.page(HadithRequest(query: "صل")).rows.isEmpty)
         #expect(try await reader.page(HadithRequest(query: "pryaer")).rows.isEmpty)
-        #expect(try await reader.page(HadithRequest(query: "prayer")).rows.map(\.id) == [200001])
-        #expect(try await reader.page(HadithRequest(query: "بالصلاه", chapterID: 2)).rows.map(\.id) == [200003])
+        #expect(try await reader.page(HadithRequest(query: "prayer")).rows.map(\.id) == [200_001])
+        #expect(try await reader.page(HadithRequest(query: "بالصلاه", chapterID: 2)).rows.map(\.id) == [200_003])
         try HadithDatabase(url: fixture.url).validate()
     }
 
