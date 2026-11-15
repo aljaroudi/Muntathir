@@ -12,6 +12,7 @@ in the mirror. This file is the one the app should open.
 
 from __future__ import annotations
 
+import argparse
 import sqlite3
 import sys
 from pathlib import Path
@@ -319,8 +320,11 @@ def check(src: sqlite3.Connection, out: sqlite3.Connection) -> None:
 
 
 def main() -> int:
-    build(SOURCE, OUTPUT)
-    print("db: %s" % OUTPUT)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", type=Path, default=OUTPUT)
+    output = parser.parse_args().output
+    build(SOURCE, output)
+    print("db: %s" % output)
     return 0
 
 

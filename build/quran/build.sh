@@ -4,8 +4,8 @@ set -euo pipefail
 
 here=$(cd "$(dirname "$0")" && pwd)
 data="$here/data"
-out="$here/dist"
-ship="$here/../../apple/Muntathir/Resources/Quran"
+out="${1:-$here/dist}"
+ship="${2:-$here/../../apple/Muntathir/Resources/Quran}"
 mkdir -p "$out" "$ship"
 
 # Search key, identical to QuranSearchText.normalize: strip tashkeel and tatweel, unify alef, ya, and ta marbuta.

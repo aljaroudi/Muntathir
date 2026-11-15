@@ -11,13 +11,12 @@ An atomic index records pending installation and pack cleanup. Interrupted insta
 From the repository root:
 
 ```sh
-uv run build/hadith/build.py --sittah --four
-python3 apple/AssetPacks/assets.py package --content all
+python3 build/build.py --assets-only
 ```
 
 The shared **Muntathir** scheme already sets **Run → Options → Background Asset Packs** to `build/AssetPacks/archives`. Run from Xcode, open Hadith, and tap **Download Hadith**. Keep the debug session connected until installation finishes.
 
-The packaging command defaults to the same `apple/build/AssetPacks/archives` folder used by the Run scheme and release upload lane. An explicit output path overrides that default.
+The unified build writes to the same `apple/build/AssetPacks/archives` folder used by the Run scheme and release upload lane. An explicit output path overrides that default.
 
 The folder contains packaged `.aar` files and is ignored by Git. Repackage and restart the debug session after database changes. No separate server, certificates, or manual URL override are needed for this workflow. See [Apple’s Xcode 27 release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-27-release-notes).
 

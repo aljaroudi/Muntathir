@@ -12,10 +12,10 @@ ROOT = Path(__file__).resolve().parents[2]
 MANIFESTS = Path(__file__).parent / 'manifests'
 
 
-def validate_quran():
-    sources = ROOT / 'apple/Muntathir/Resources/Quran'
+def validate_quran(root=ROOT, manifests=MANIFESTS):
+    sources = root / 'apple/Muntathir/Resources/Quran'
     expected = {p.stem for p in sources.glob('*.db') if p.stem not in {'quran', 'en.qarai'}}
-    path = MANIFESTS / 'quran-translations.json'
+    path = manifests / 'quran-translations.json'
     pack = json.loads(path.read_text())
     assert pack['assetPackID'] == 'quran-translations'
     assert pack['downloadPolicy'] == {'onDemand': {}} and 'language' not in pack
@@ -35,16 +35,16 @@ def validate_quran():
     return [path]
 
 
-def validate_hadith(pack_id="hadith"):
+def validate_hadith(pack_id="hadith", root=ROOT, manifests=MANIFESTS):
     folder = "Hadith" if pack_id == "hadith" else "Supplications"
-    path = MANIFESTS / f'{pack_id}.json'
+    path = manifests / f'{pack_id}.json'
     pack = json.loads(path.read_text())
     selector, = pack['fileSelectors']
     source = (path.parent / pack['sourceRoot'] / selector['fileSource']).resolve()
     assert pack['assetPackID'] == pack_id
     assert pack['downloadPolicy'] == {'onDemand': {}} and 'language' not in pack
     assert pack['platforms'] == ['iOS']
-    assert source == ROOT / f'build/hadith/dist/{pack_id}.db'
+    assert source == root / f'build/hadith/dist/{pack_id}.db'
     assert selector['fileDestination'] == f'{folder}/{pack_id}.db'
     with sqlite3.connect(source.as_uri() + '?mode=ro', uri=True) as db:
         assert db.execute('PRAGMA quick_check').fetchone() == ('ok',)
@@ -66,15 +66,15 @@ def validate_hadith(pack_id="hadith"):
     return [path]
 
 
-def validate_rulings():
-    path = MANIFESTS / 'rulings.json'
+def validate_rulings(root=ROOT, manifests=MANIFESTS):
+    path = manifests / 'rulings.json'
     pack = json.loads(path.read_text())
     selector, = pack['fileSelectors']
     source = (path.parent / pack['sourceRoot'] / selector['fileSource']).resolve()
     assert pack['assetPackID'] == 'rulings'
     assert pack['downloadPolicy'] == {'onDemand': {}} and 'language' not in pack
     assert pack['platforms'] == ['iOS']
-    assert source == ROOT / 'build/rulings/dist/rulings.db'
+    assert source == root / 'build/rulings/dist/rulings.db'
     assert selector['fileDestination'] == 'Rulings/rulings.db'
     with sqlite3.connect(source.as_uri() + '?mode=ro', uri=True) as db:
         assert db.execute('PRAGMA quick_check').fetchall() == [('ok',)]

@@ -162,7 +162,7 @@ including question queries:
 bun backend/api/verify.ts rerank backend/work/rerank-evaluation.json
 ```
 
-Set the variables in the benchmark environment, not production, until the gate
+For the local chat-provider experiment, set the variables in the benchmark environment until the gate
 passes. The gate requires a completed evaluation and improved mean NDCG@10.
 Gemma 4 26B A4B QAT timed out at two seconds on its first evaluation request.
 The other 149 requests used baseline ranking during cooldown, so the run could

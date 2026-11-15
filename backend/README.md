@@ -44,9 +44,18 @@ upload derives normalized 1,536-dimensional prefixes without re-embedding.
 
 ### Refresh production after database changes
 
-Run from the repository root in Bash with the backend virtualenv installed. Use a
-new workdir for each database revision. Set the previous validated workdir as the
-reuse source and retain its source provenance.
+From the repository root, run `python3 build/build.py` to rebuild and package the
+four libraries, estimate new Gemini Batch embeddings, and activate the candidate
+after validation. Use `--dry-run` to estimate from the existing databases or
+`--assets-only` for local packaging. Costs up to $10 are approved by default.
+Set `--max-budget USD` to change that threshold. Above it, the script asks for
+approval in a terminal. Rerun the same command to poll outstanding batches and
+continue the refresh. The script needs the backend virtualenv and the validated
+manifest and vectors for the active Qdrant collection. New reader references
+without installed-pack compatibility evidence block activation.
+
+The commands below document the manual recovery path. Use a new workdir for each
+revision and retain the previous validated workdir and its source provenance.
 
 ```bash
 work=backend/work/refresh-YYYY-MM-DD
@@ -138,7 +147,7 @@ commands and infrastructure are not part of current deployment.
 
 ### Hosted reranker benchmark
 
-See [RERANK_BENCHMARK.md](RERANK_BENCHMARK.md) for the frozen-candidate comparison of OpenAI Decisions, Jev, and Gemini Flash-Lite. Preparation and dry runs need no provider keys; paid runs require explicit execution. Production search remains unchanged.
+See [RERANK_BENCHMARK.md](RERANK_BENCHMARK.md) for the frozen-candidate comparison of OpenAI Decisions, Jev, and Gemini Flash-Lite. Preparation and dry runs need no provider keys; paid runs require explicit execution. Production uses Jev for eligible meaning-search reranking.
 
 ### Rulings
 

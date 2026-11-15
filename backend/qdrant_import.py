@@ -13,11 +13,12 @@ SERVING_PROFILE = 'gemini-embedding-2:1536:search-v1'
 POINT_BATCH_BYTES = 32 * 1024 * 1024
 
 class Client:
-    def __init__(self, url=None):
+    def __init__(self, url=None, api_key=None):
+        self.api_key = api_key if api_key is not None else os.environ.get('QDRANT_API_KEY')
         self.url = (url or os.environ.get('QDRANT_URL', 'http://127.0.0.1:56333')).rstrip('/')
     def call(self, method, path, body=None):
         headers = {'Content-Type':'application/json'}
-        if os.environ.get('QDRANT_API_KEY'): headers['api-key'] = os.environ['QDRANT_API_KEY']
+        if self.api_key: headers['api-key'] = self.api_key
         request = urllib.request.Request(self.url + path, data=None if body is None else json.dumps(body).encode(), headers=headers, method=method)
         with urllib.request.urlopen(request, timeout=120) as response:
             return json.load(response)['result']

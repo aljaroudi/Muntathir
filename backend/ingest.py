@@ -123,6 +123,28 @@ def prepare(args):
                     variants.append({"language": language, "edition": provenance[source_id]["edition"], "attribution": provenance[source_id]["attribution"], "text": row[column]})
             chapter_name = row["chapter_name_en"] or row["chapter_name_ar"] or f"Chapter {row['chapter_idx'] + 1}"
             add("hadith", source_id, ref, nav, f"{row['name_en'] or row['name_ar']} · {chapter_name} · {row['id_in_book']}", variants)
+    if getattr(args, "supplications", None):
+        with read_db(args.supplications) as db:
+            translations = {}
+            if db.execute("SELECT 1 FROM sqlite_master WHERE name='supplication_translation'").fetchone():
+                for row in db.execute("SELECT * FROM supplication_translation ORDER BY language, edition"):
+                    translations.setdefault(row["hadith_id"], []).append(dict(row))
+            query = """SELECT h.*, c.file_name, c.name_en AS chapter_en, c.name_ar AS chapter_ar,
+                       b.name_en, b.name_ar FROM hadith h JOIN chapter c ON c.id=h.chapter_id
+                       JOIN book b ON b.id=h.book_id ORDER BY h.book_id,c.file_name,h.id_in_book"""
+            for row in db.execute(query):
+                book = row["book_id"]
+                source(book, row["name_en"] or row["name_ar"])
+                dua_id = identity(book, row["file_name"], row["id_in_book"])
+                variants = [{k: t[k] for k in ("language", "edition", "attribution", "text")}
+                            for t in translations.get(row["id"], [])]
+                for language, column in (("ar", "arabic"), ("en", "english_text")):
+                    if row[column].strip() and not any(t["language"] == language and t["text"] == row[column] for t in variants):
+                        variants.append({"language": language, "text": row[column], **{
+                            k: provenance[book][k] for k in ("edition", "attribution")}})
+                add("dua", book, {"dua_id": dua_id}, {"dua_id": dua_id},
+                    row["chapter_en"] or row["chapter_ar"] or row["name_en"] or row["name_ar"], variants)
+
     if args.dua:
         for row in json.loads(Path(args.dua).read_text()):
             source(row["source_id"], row["source_name"])
@@ -340,6 +362,7 @@ def main():
     parser.add_argument("--translation", action="append", default=[], help="language:edition:SQLite path")
     parser.add_argument("--hadith")
     parser.add_argument("--dua")
+    parser.add_argument("--supplications", help="Built Supplications SQLite database")
     parser.add_argument("--rulings")
     parser.add_argument("--provenance")
     parser.add_argument("--limit", type=int, help="Pilot item limit")

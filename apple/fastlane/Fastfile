@@ -188,7 +188,7 @@ platform :ios do
   private_lane :prepare_release do |options|
     check(skip_media: !options.fetch(:app_store))
     context = release_context(app_store: options.fetch(:app_store), force: options[:force].to_s == "true")
-    sh("python3", File.join(__dir__, "../AssetPacks/assets.py"), "validate", "--content", "all")
+    sh("python3", File.join(__dir__, "../../build/build.py"), "--assets-only")
     tests(include_ipad: options.fetch(:app_store)) unless options[:skip_tests].to_s == "true"
     refresh_screenshots if options.fetch(:app_store)
     context[:asset_packs] = MuntathirRelease.sync_asset_packs!
