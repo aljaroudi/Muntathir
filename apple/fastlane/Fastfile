@@ -8,9 +8,10 @@ default_platform(:ios)
 
 platform :ios do
   desc "Validate local metadata and release lanes without Apple access"
-  lane :check do
+  lane :check do |options|
     sh("python3", File.join(__dir__, "../scripts/check_localizations.py"))
-    sh("bundle", "exec", "ruby", File.join(__dir__, "check.rb"))
+    flags = options[:skip_media] ? ["--skip-media"] : []
+    sh("bundle", "exec", "ruby", File.join(__dir__, "check.rb"), *flags)
   end
 
   desc "Run unit and UI regression tests, excluding marketing captures"
@@ -50,10 +51,16 @@ platform :ios do
     sh("bundle", "exec", "ruby", File.join(__dir__, "watch_screenshots.rb"))
   end
 
-  desc "Generate all screenshots and App Preview videos locally"
+  desc "Export Arabic/English website screenshots as WebP and previews as WebM"
+  lane :web_media do
+    sh("bundle", "exec", "ruby", File.join(__dir__, "web_media.rb"))
+  end
+
+  desc "Generate all screenshots, App Preview videos and website media locally"
   lane :marketing do
     refresh_screenshots
     previews
+    web_media
   end
 
   private_lane :credentials do
@@ -179,10 +186,10 @@ platform :ios do
   end
 
   private_lane :prepare_release do |options|
-    check
+    check(skip_media: !options.fetch(:app_store))
     context = release_context(app_store: options.fetch(:app_store), force: options[:force].to_s == "true")
     sh("python3", File.join(__dir__, "../AssetPacks/assets.py"), "validate", "--content", "all")
-    tests(include_ipad: options.fetch(:app_store))
+    tests(include_ipad: options.fetch(:app_store)) unless options[:skip_tests].to_s == "true"
     refresh_screenshots if options.fetch(:app_store)
     context[:asset_packs] = MuntathirRelease.sync_asset_packs!
     context
@@ -191,7 +198,7 @@ platform :ios do
   desc "Test on iPhone and submit a new build to TestFlight Public"
   lane :testflight_public do |options|
     MuntathirRelease.with_release_lock do
-      context = prepare_release(app_store: false, force: options[:force])
+      context = prepare_release(app_store: false, force: options[:force], skip_tests: options[:skip_tests])
       build = archive_and_upload(context)
       config = context.fetch(:config)
       notes = context.fetch(:beta_notes)

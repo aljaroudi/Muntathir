@@ -74,6 +74,24 @@ module MuntathirRelease
     value
   end
 
+  def self.stage_marketing_assets!(app)
+    raise "Missing capture app: #{app}" unless File.directory?(app)
+    run!("python3", "AssetPacks/assets.py", "validate", "--content", "all")
+    FileUtils.mkdir_p(File.join(app, "Hadith"))
+    FileUtils.cp("../build/hadith/dist/hadith.db", File.join(app, "Hadith/hadith.db"))
+    FileUtils.mkdir_p(File.join(app, "Supplications"))
+    FileUtils.cp("../build/hadith/dist/supplications.db", File.join(app, "Supplications/supplications.db"))
+    FileUtils.mkdir_p(File.join(app, "MarketingQuran"))
+    Dir.glob("Muntathir/Resources/Quran/*.db").reject { |path| %w[quran.db en.qarai.db].include?(File.basename(path)) }.each do |path|
+      FileUtils.cp(path, File.join(app, "MarketingQuran", File.basename(path)))
+    end
+  end
+
+  def self.validate_capture!(path)
+    brightness = run!("magick", path, "-format", "%[fx:mean]", "info:").to_f
+    raise "Blank capture: #{path}" unless brightness.between?(0.01, 0.99)
+  end
+
   def self.validate_media!(root = ROOT, since: nil)
     expected = DEVICES.product(SCREENSHOTS.fetch("screens")).map { |device, screen| "#{device}-#{screen}.png" } << WATCH_SCREENSHOT
     directory = File.join(root, "build/marketing/store")

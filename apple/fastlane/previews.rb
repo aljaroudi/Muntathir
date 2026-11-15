@@ -22,7 +22,9 @@ names.each do |name|
     puts "Building simulator capture app for #{name}"
     MuntathirRelease.run!("xcodebuild", "-project", "Muntathir.xcodeproj", "-scheme", "Muntathir", "-configuration", "Debug",
                          "-destination", "platform=iOS Simulator,id=#{id}", "-derivedDataPath", derived_data, "CODE_SIGNING_ALLOWED=NO", "build")
-    MuntathirRelease.run!("xcrun", "simctl", "install", id, "#{derived_data}/Build/Products/Debug-iphonesimulator/Muntathir.app")
+    app = "#{derived_data}/Build/Products/Debug-iphonesimulator/Muntathir.app"
+    MuntathirRelease.stage_marketing_assets!(app)
+    MuntathirRelease.run!("xcrun", "simctl", "install", id, app)
     MuntathirRelease.run!("xcrun", "simctl", "status_bar", id, "override", "--time", "9:41", "--dataNetwork", "wifi",
                          "--wifiMode", "active", "--wifiBars", "3", "--batteryState", "charged", "--batteryLevel", "100")
     MuntathirRelease::LOCALES.each do |locale|
@@ -35,7 +37,7 @@ names.each do |name|
       puts "Recording #{locale}/#{name}: sunrise through sunset"
       begins_at = Time.now.to_f + 10
       MuntathirRelease.run!("xcrun", "simctl", "launch", "--terminate-running-process", id, "com.aljaroudi.Muntathir",
-                           "--ui-testing", "--ui-testing-mecca", "--marketing-capture", "--sky-date", "2026-10-21T03:19:00Z",
+                           "--ui-testing", "--ui-testing-mecca", "--marketing-capture", "--marketing-local-translations", "--sky-date", "2026-10-21T03:19:00Z",
                            "--sky-end", "2026-10-21T14:52:00Z", "--sky-duration", "15", "--sky-begins-at", begins_at,
                            "--ui-testing-weather", "--weather-condition", "clear",
                            "-AppleLanguages", "(#{locale})", "-AppleLocale", locale.tr('-', '_'), "-AppleInterfaceStyle", "Light")

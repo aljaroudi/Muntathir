@@ -1,12 +1,14 @@
 ---
-import { Image } from "astro:assets";
-import arabic from "../assets/today-ar.png";
-import english from "../assets/today-en.png";
+import media from "../../public/marketing/manifest.json";
 import type { Locale } from "../site";
 interface Props { locale: Locale }
 const { locale } = Astro.props;
+const { images, video } = media[locale];
+const labels = locale === "ar"
+  ? { previous: "السابق", next: "التالي", pause: "إيقاف مؤقت", play: "تشغيل", tour: "جولة في التطبيق", unavailable: "معاينة التطبيق غير متاحة الآن" }
+  : { previous: "Previous", next: "Next", pause: "Pause", play: "Play", tour: "App tour", unavailable: "App preview is currently unavailable" };
 ---
-<figure data-phone-preview class="mx-auto w-full max-w-[286px] px-2 py-5">
+<figure data-phone-preview data-unavailable={labels.unavailable} class="mx-auto w-full max-w-[286px] px-2 py-5">
   <div class="perspective-distant">
     <div style={locale === "ar" ? "--phone-y: 13deg; --phone-z: -3deg; --edge-x: -1" : undefined} class="phone">
       <span aria-hidden="true" class="phone-button phone-button-action"></span>
@@ -15,7 +17,12 @@ const { locale } = Astro.props;
       <span aria-hidden="true" class="phone-button phone-button-power"></span>
       <span aria-hidden="true" class="phone-button phone-button-camera"></span>
       <div class="phone-screen">
-        <Image src={locale === "ar" ? arabic : english} widths={[286, 572, 858]} sizes="(max-width: 360px) 80vw, 286px" width={286} format="webp" loading="eager" fetchpriority="high" alt={locale === "ar" ? "شاشة اليوم في منتظِر: التاريخ الهجري ومواقيت الصلاة وآية اليوم" : "Muntathir Today screen with the Hijri date, prayer times, and daily ayah"} class="block h-auto w-full" />
+        {images.map((item, index) => <img data-preview-slide data-active={String(index === 0)} data-caption={item.caption}
+          src={item.src} srcset={item.srcset} sizes="(max-width: 360px) 80vw, 270px" width={item.width} height={item.height}
+          loading={index === 0 ? "eager" : "lazy"} fetchpriority={index === 0 ? "high" : "low"}
+          alt={item.alt} aria-hidden={index !== 0} />)}
+        <video data-preview-slide data-active="false" data-caption={video.caption} data-src={video.src}
+          poster={video.poster} preload="none" muted playsinline aria-label={video.caption} aria-hidden="true"></video>
         <span aria-hidden="true" class="phone-camera"><span></span></span>
         <div aria-hidden="true" class="phone-reflection"></div>
         <svg aria-hidden="true" class="phone-light" viewBox="0 0 300 650" preserveAspectRatio="none">
@@ -33,9 +40,33 @@ const { locale } = Astro.props;
       </div>
     </div>
   </div>
+  <figcaption class="mt-7 text-center text-sm leading-relaxed">
+    <p data-preview-caption class="min-h-12">{images[0].caption}</p>
+    <div data-preview-controls hidden role="group" aria-label={labels.tour} class="preview-controls">
+      <button type="button" data-preview-step="-1">{labels.previous}</button>
+      <button type="button" data-preview-toggle data-play={labels.play} data-pause={labels.pause}>{labels.pause}</button>
+      <button type="button" data-preview-step="1">{labels.next}</button>
+    </div>
+  </figcaption>
 </figure>
 
 <style>
+  [data-preview-slide] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 350ms ease;
+    pointer-events: none;
+  }
+  [data-preview-slide][data-active="true"] { opacity: 1; }
+  .preview-controls:not([hidden]) { display: flex; justify-content: center; gap: 0.5rem; }
+  .preview-controls button { min-height: 44px; padding: 0.5rem; border-radius: 0.5rem; cursor: pointer; }
+  .preview-controls button:hover { background: #e9eedf; }
+  .preview-controls button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  .preview-controls button:disabled { opacity: 0.5; cursor: default; }
   .phone {
     position: relative;
     direction: ltr;
@@ -50,6 +81,7 @@ const { locale } = Astro.props;
     transition: transform 180ms ease-out;
   }
   .phone-screen {
+    aspect-ratio: 1320 / 2868;
     position: relative;
     overflow: hidden;
     border: 3px solid #101410;
@@ -104,16 +136,19 @@ const { locale } = Astro.props;
   .phone-light { mix-blend-mode: screen; opacity: 0.65; }
   @media (prefers-reduced-motion: reduce) {
     .phone { transform: none; transition: none; }
+    [data-preview-slide] { transition: none; }
   }
 </style>
 
 <script>
+  import { mountPhoneSequence } from "../phone-sequence";
   import { phoneTilt } from "../phone-motion";
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const mouse = window.matchMedia("(hover: hover) and (pointer: fine)");
 
   for (const preview of document.querySelectorAll<HTMLElement>("[data-phone-preview]")) {
+    mountPhoneSequence(preview);
     const phone = preview.querySelector<HTMLElement>(".phone");
     if (!phone) continue;
     const light = phone.querySelector<SVGFEPointLightElement>("[data-glass-light]");

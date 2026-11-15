@@ -71,13 +71,21 @@ Record continuous sunrise-to-sunset simulator previews in every store locale
 
 Capture required localized Apple Watch store screenshots
 
+### ios web_media
+
+```sh
+[bundle exec] fastlane ios web_media
+```
+
+Export Arabic/English website screenshots as WebP and previews as WebM
+
 ### ios marketing
 
 ```sh
 [bundle exec] fastlane ios marketing
 ```
 
-Generate all screenshots and App Preview videos locally
+Generate all screenshots, App Preview videos and website media locally
 
 ### ios testflight_public
 

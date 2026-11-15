@@ -2,6 +2,7 @@ require_relative "support"
 require "tmpdir"
 require "spaceship"
 Dir.chdir(MuntathirRelease::ROOT)
+check_media = !ARGV.include?("--skip-media")
 
 def assert(value, message)
   raise message unless value
@@ -16,30 +17,34 @@ def rejects(message)
   raise message
 end
 
-passes = MuntathirRelease.capture_passes(MuntathirRelease::DEVICES, %w[en-US ja])
-assert(passes.map { |pass| pass[0] }.flatten.uniq.sort == MuntathirRelease::DEVICES.sort, "Capture device missing")
-assert(passes.select { |pass| pass[0] == ["iPhone Duo"] }.map { |pass| [pass[1], pass[3]] } == [[["en-US"], false], [["ja"], true]], "Duo locale capture layouts changed")
-assert(!MuntathirRelease::PREVIEW_DEVICES.include?("iPhone Duo"), "Unsupported preview must not block releases")
-
 MuntathirRelease.validate_metadata!
 MuntathirRelease.validate_metadata!(File.join(__dir__, "listing-drafts"), locales: ["fa"])
 require "fastlane_core/languages"
 assert((MuntathirRelease::LOCALES - FastlaneCore::Languages::ALL_LANGUAGES).empty?, "Unsupported App Store locale")
-require "snapshot"
-snapshot_config = FastlaneCore::Configuration.create(Snapshot::Options.available_options, {})
-snapshot_options = FastlaneCore::ConfigurationFile.new(snapshot_config, File.join(__dir__, "Snapfile"), nil, true).options
-assert(snapshot_options[:languages] == MuntathirRelease::LOCALES, "Screenshot locales must match metadata")
-screenshot_config = MuntathirRelease::SCREENSHOTS
-screens = screenshot_config.fetch("screens")
-headlines = screenshot_config.fetch("headlines")
-assert(headlines.keys.sort == MuntathirRelease::LOCALES.sort, "Store headline locale mismatch")
-assert(screens == screens.uniq.sort && screens.each_with_index.all? { |screen, i| screen.start_with?(format("%02d-", i + 1)) }, "Screens must use ordered, unique upload filenames")
-marketing_tests = File.read("MuntathirUITests/MarketingScreenshotTests.swift")
-assert(marketing_tests.scan(/snapshot\("([^"]+)"/).flatten.uniq.sort == screens, "Capture and screenshot config disagree")
-assert(headlines.values.all? { |entries| entries.keys.sort == screens && entries.values.all? { |text| !text.strip.empty? } }, "Missing localized screenshot headline")
-assert(!screenshot_config.fetch("brand").strip.empty?, "Screenshot brand is empty")
-colors = screenshot_config.fetch("background")
-assert(colors.size == 2 && colors.all? { |rgb| rgb.size == 3 && rgb.all? { |value| (0..1).cover?(value) } }, "Invalid screenshot gradient")
+if check_media
+  passes = MuntathirRelease.capture_passes(MuntathirRelease::DEVICES, %w[en-US ja])
+  assert(passes.map { |pass| pass[0] }.flatten.uniq.sort == MuntathirRelease::DEVICES.sort, "Capture device missing")
+  assert(passes.select { |pass| pass[0] == ["iPhone Duo"] }.map { |pass| [pass[1], pass[3]] } == [[["en-US"], false], [["ja"], true]], "Duo locale capture layouts changed")
+  assert(!MuntathirRelease::PREVIEW_DEVICES.include?("iPhone Duo"), "Unsupported preview must not block releases")
+
+  require "snapshot"
+  snapshot_config = FastlaneCore::Configuration.create(Snapshot::Options.available_options, {})
+  snapshot_options = FastlaneCore::ConfigurationFile.new(snapshot_config, File.join(__dir__, "Snapfile"), nil, true).options
+  assert(snapshot_options[:languages] == MuntathirRelease::LOCALES, "Screenshot locales must match metadata")
+  screenshot_config = MuntathirRelease::SCREENSHOTS
+  screens = screenshot_config.fetch("screens")
+  assert(screens.length <= 10, "Store screenshot limit exceeded")
+  headlines = screenshot_config.fetch("headlines")
+  assert(headlines.keys.sort == MuntathirRelease::LOCALES.sort, "Store headline locale mismatch")
+  assert(screens == screens.uniq.sort && screens.each_with_index.all? { |screen, i| screen.start_with?(format("%02d-", i + 1)) }, "Screens must use ordered, unique upload filenames")
+  marketing_tests = File.read("MuntathirUITests/MarketingScreenshotTests.swift")
+  assert(marketing_tests.scan(/snapshot\("([^"]+)"/).flatten.uniq.sort == screens, "Capture and screenshot config disagree")
+  assert(headlines.values.all? { |entries| entries.keys.sort == screens && entries.values.all? { |text| !text.strip.empty? } }, "Missing localized screenshot headline")
+  assert(!screenshot_config.fetch("brand").strip.empty?, "Screenshot brand is empty")
+  colors = screenshot_config.fetch("background")
+  assert(colors.size == 2 && colors.all? { |rgb| rgb.size == 3 && rgb.all? { |value| (0..1).cover?(value) } }, "Invalid screenshot gradient")
+
+end
 
 notes = MuntathirRelease.beta_notes
 previous = notes.map { |locale, text| Struct.new(:locale, :whats_new).new(locale, "  #{text}  ") }
@@ -76,50 +81,55 @@ pack_files = { "archive" => { "attributes" => { "sourceFileChecksums" => { "file
 assert(MuntathirRelease.matching_pack_version([pack_version], pack_files, ["a1b2"]) == pack_version, "Known archive must reuse its uploaded version")
 assert(MuntathirRelease.matching_pack_version([pack_version], pack_files, ["changed"]).nil?, "Changed archive matched an old upload")
 
-# Preserve Duo proportions inside Apple's required portrait preview canvas.
-Dir.mktmpdir do |dir|
-  output = File.join(dir, "duo.png")
-  MuntathirRelease.run!("ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=white:s=1398x2034", "-frames:v", "1",
-                       "-vf", MuntathirRelease.preview_filter([886, 1920], duo: true), output)
-  assert(MuntathirRelease.run!("magick", "identify", "-format", "%wx%h", output).strip == "886x1920", "Duo preview canvas mismatch")
-  bounds = MuntathirRelease.run!("magick", output, "-threshold", "99%", "-format", "%@", "info:").split(/[x+]/).map(&:to_i)
-  assert((bounds[0].to_f / bounds[1] - 1398.0 / 2034).abs < 0.001, "Duo preview stretched the captured screen")
-  assert(bounds[2] > 0 && bounds[3] > 0, "Duo frame/background missing")
+if check_media
+  # Preserve Duo proportions inside Apple's required portrait preview canvas.
+  Dir.mktmpdir do |dir|
+    output = File.join(dir, "duo.png")
+    MuntathirRelease.run!("ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=white:s=1398x2034", "-frames:v", "1",
+                         "-vf", MuntathirRelease.preview_filter([886, 1920], duo: true), output)
+    assert(MuntathirRelease.run!("magick", "identify", "-format", "%wx%h", output).strip == "886x1920", "Duo preview canvas mismatch")
+    bounds = MuntathirRelease.run!("magick", output, "-threshold", "99%", "-format", "%@", "info:").split(/[x+]/).map(&:to_i)
+    assert((bounds[0].to_f / bounds[1] - 1398.0 / 2034).abs < 0.001, "Duo preview stretched the captured screen")
+    assert(bounds[2] > 0 && bounds[3] > 0, "Duo frame/background missing")
+  end
+
+  # Every supported device/locale must include Quran, not merely four arbitrary images.
+  Dir.mktmpdir do |dir|
+    %w[color=blue:s=32x64:d=2:r=30 testsrc2=s=32x64:d=2:r=30].each_with_index do |source, index|
+      path = File.join(dir, "motion-#{index}.mp4")
+      MuntathirRelease.run!("ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", source, "-c:v", "libx264", "-pix_fmt", "yuv420p", path)
+      if index.zero?
+        rejects("Frozen preview accepted") { MuntathirRelease.validate_video!(path, [32, 64], seconds: 2) }
+      else
+        MuntathirRelease.validate_video!(path, [32, 64], seconds: 2)
+      end
+    end
+  end
+  Dir.mktmpdir do |root|
+    started = Time.now
+    MuntathirRelease::LOCALES.each do |locale|
+      directory = File.join(root, "build/marketing/store", locale)
+      FileUtils.mkdir_p(directory)
+      MuntathirRelease::DEVICES.product(screens).each do |device, screen|
+        File.write(File.join(directory, "#{device}-#{screen}.png"), "PNG")
+      end
+      File.write(File.join(directory, MuntathirRelease::WATCH_SCREENSHOT), "PNG")
+    end
+    MuntathirRelease.validate_media!(root, since: started)
+    foreign = File.join(root, "build/marketing/store/fa")
+    FileUtils.mkdir_p(foreign)
+    rejects("Unexpected locale accepted") { MuntathirRelease.validate_media!(root) }
+    Dir.rmdir(foreign)
+    quran = File.join(root, "build/marketing/store/en-US/#{MuntathirRelease::DEVICES.first}-#{screens.find { |screen| screen.end_with?('-Quran') }}.png")
+    stale = started - 10
+    File.utime(stale, stale, quran)
+    rejects("Stale screenshot accepted") { MuntathirRelease.validate_media!(root, since: started) }
+    FileUtils.mv(quran, File.join(File.dirname(quran), "99-Extra.png"))
+    rejects("Missing Quran screenshot accepted") { MuntathirRelease.validate_media!(root) }
+  end
 end
 
-# Every supported device/locale must include Quran, not merely four arbitrary images.
-Dir.mktmpdir do |dir|
-  %w[color=blue:s=32x64:d=2:r=30 testsrc2=s=32x64:d=2:r=30].each_with_index do |source, index|
-    path = File.join(dir, "motion-#{index}.mp4")
-    MuntathirRelease.run!("ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", source, "-c:v", "libx264", "-pix_fmt", "yuv420p", path)
-    if index.zero?
-      rejects("Frozen preview accepted") { MuntathirRelease.validate_video!(path, [32, 64], seconds: 2) }
-    else
-      MuntathirRelease.validate_video!(path, [32, 64], seconds: 2)
-    end
-  end
-end
 Dir.mktmpdir do |root|
-  started = Time.now
-  MuntathirRelease::LOCALES.each do |locale|
-    directory = File.join(root, "build/marketing/store", locale)
-    FileUtils.mkdir_p(directory)
-    MuntathirRelease::DEVICES.product(screens).each do |device, screen|
-      File.write(File.join(directory, "#{device}-#{screen}.png"), "PNG")
-    end
-    File.write(File.join(directory, MuntathirRelease::WATCH_SCREENSHOT), "PNG")
-  end
-  MuntathirRelease.validate_media!(root, since: started)
-  foreign = File.join(root, "build/marketing/store/fa")
-  FileUtils.mkdir_p(foreign)
-  rejects("Unexpected locale accepted") { MuntathirRelease.validate_media!(root) }
-  Dir.rmdir(foreign)
-  quran = File.join(root, "build/marketing/store/en-US/iPhone 17 Pro Max-03-Quran.png")
-  stale = started - 10
-  File.utime(stale, stale, quran)
-  rejects("Stale screenshot accepted") { MuntathirRelease.validate_media!(root, since: started) }
-  FileUtils.mv(quran, quran.sub("03-Quran", "99-Extra"))
-  rejects("Missing Quran screenshot accepted") { MuntathirRelease.validate_media!(root) }
   MuntathirRelease.with_release_lock(root) do
     rejects("Concurrent release accepted") { MuntathirRelease.with_release_lock(root) { nil } }
   end
@@ -251,7 +261,7 @@ MuntathirRelease.define_singleton_method(:sync_asset_packs!) do
   [{ name: "hadith", version: "2", version_id: "pack-v2", store_version_id: "pack-v1", external_version_id: "pack-v2" },
    { name: "rulings", version: "1", version_id: "rulings-v1", store_version_id: "rulings-v1", external_version_id: "rulings-v1" }]
 end
-check.define_singleton_method(:check) {}
+check.define_singleton_method(:check) { |**_| }
 check.define_singleton_method(:release_context) { |**options| calls << [:release_context, options]; context }
 
 Dir.mktmpdir do |root|
@@ -330,4 +340,27 @@ assert([listing, review].all? { |options| options[:skip_binary_upload] && option
 end
 
 assert(!File.exist?(File.expand_path("../../.github/workflows/apple-deploy.yml", __dir__)), "CI release workflow still exists")
+
+if check_media
+  require_relative "web_media"
+  # Failed web exports must leave the last usable website assets intact.
+  Dir.mktmpdir do |dir|
+    destination = File.join(dir, "web")
+    FileUtils.mkdir_p(destination)
+    marker = File.join(destination, "existing.webp")
+    File.write(marker, "previous export")
+    rejects("Missing capture inputs accepted") { MuntathirRelease.export_web_media!(marketing: dir, destination: destination) }
+    %w[en-US ar-SA].each do |locale|
+      FileUtils.mkdir_p(File.join(dir, "raw", locale))
+      screens.each do |screen|
+        MuntathirRelease.run!("magick", "-size", "32x64", "xc:black", File.join(dir, "raw", locale, "iPhone 17 Pro Max-#{screen}.png"))
+      end
+      FileUtils.mkdir_p(File.join(dir, "previews", locale))
+      File.write(File.join(dir, "previews", locale, "01-IPHONE_67-SunriseToSunset.mp4"), "unreached")
+    end
+    rejects("Blank captures accepted") { MuntathirRelease.export_web_media!(marketing: dir, destination: destination) }
+    assert(File.read(marker) == "previous export", "Failed export replaced existing website media")
+  end
+end
+
 puts "Metadata, screenshots, build selection and both manual release lanes passed offline checks."

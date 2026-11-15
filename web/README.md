@@ -34,7 +34,19 @@ vp create astro --package-manager bun --no-git --no-hooks --no-agent --no-editor
 - `src/styles/global.css`: Tailwind theme tokens, language-level fonts, and shared accessibility defaults. Layout and component styles use Tailwind utilities.
 - `public/social/`: localized 1200×630 social images. Browser typography uses Noto Sans Arabic for both languages and Amiri for the Quran verse through Astro’s Google font provider. Astro downloads and self-hosts the font at build time; the first build requires network access.
 
-The phone preview uses tracked Arabic and English Today screenshots from `apple/build/marketing/raw/{ar-SA,en-US}/iPhone 17 Pro Max-01-Today.png`. Refresh the copies in `src/assets/today-{ar,en}.png` after recapturing with Fastlane; Astro generates responsive WebP images at build time. The metal frame retains scroll and pointer tilt, with glass reflections from CSS gradients and SVG specular lighting. Reduced motion disables tilt and keeps lighting static. The download link points to the published App Store listing. Do not add pricing, ratings, or claims without evidence.
+The phone preview uses `public/marketing/manifest.json` and tracked WebP screenshots
+and WebM video exported by `cd apple && bundle exec fastlane web_media` (run from
+the repository root). Run `fastlane marketing` there to regenerate captures first.
+The exporter validates both locales before replacing the web assets; web builds
+need no simulator. Store assets remain PNG/MP4 in `apple/build/marketing`.
+
+The tour shows ten screenshots for four seconds each, followed by the muted
+15-second sky video. Previous/next controls pause automatic cycling; Play resumes.
+Offscreen and hidden tabs pause playback. Reduced motion disables automatic
+cycling, video, tilt, and crossfades; manual navigation stays available. Without
+JavaScript, Today remains visible. The metal frame retains pointer/scroll tilt
+and glass reflections. The download link points to the published App Store listing.
+Do not add pricing, ratings, or claims without evidence.
 
 ## Git hooks
 

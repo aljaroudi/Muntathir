@@ -23,13 +23,15 @@ struct AppleAssetPackBackend: AssetPackBackend {
     var identifier = Self.packID
     var resourcePath = "Hadith/hadith.db"
 
+    #if DEBUG
+        private static let rulingsFixture = Result { try RulingsFixture().url }
+    #endif
+
     @concurrent func localURL() async throws -> URL? {
         #if DEBUG
             if identifier == "rulings", ProcessInfo.processInfo.arguments.contains("--ui-testing") {
                 guard ProcessInfo.processInfo.arguments.contains("--ui-testing-rulings-fixture") else { return nil }
-                let url = URL.temporaryDirectory.appending(path: "rulings-ui-fixture.db")
-                if !FileManager.default.fileExists(atPath: url.path) { _ = try RulingsFixture(url: url) }
-                return url
+                return try Self.rulingsFixture.get()
             }
             if identifier == Self.packID, let fixture = HadithUITestFixture.downloadsDirectory {
                 let marker = fixture.appending(path: "Removed")

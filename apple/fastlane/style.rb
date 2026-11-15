@@ -26,6 +26,7 @@ MuntathirRelease::LOCALES.each do |locale|
     FileUtils.rm_rf(stage)
     FileUtils.mkdir_p(stage)
     selected.each do |path|
+      MuntathirRelease.validate_capture!(path)
       destination = File.join(stage, File.basename(path))
       if ipad
         # frameit has a 12.9-inch bezel; fit the 13-inch capture without stretching the UI.

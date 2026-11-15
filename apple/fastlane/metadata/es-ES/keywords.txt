@@ -1,1 +1,1 @@
-oración,salat,corán,aleya,hégira,calendario,alquibla,islam,recordatorios
+oración,corán,hadiz,tasbih,alquibla,hégira,súplicas,rakas,notas,calendario,islam

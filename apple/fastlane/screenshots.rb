@@ -19,15 +19,7 @@ app = File.join(products, "Debug-iphonesimulator/Muntathir.app")
 raise "Missing capture app" unless File.directory?(app)
 # Snapshot runs only UI tests. Avoid installing the second full corpus in the unit-test bundle.
 FileUtils.rm_rf(File.join(app, "PlugIns/MuntathirTests.xctest"))
-MuntathirRelease.run!("python3", "AssetPacks/assets.py", "validate", "--content", "all")
-FileUtils.mkdir_p(File.join(app, "Hadith"))
-FileUtils.cp("../build/hadith/dist/hadith.db", File.join(app, "Hadith/hadith.db"))
-FileUtils.mkdir_p(File.join(app, "Supplications"))
-FileUtils.cp("../build/hadith/dist/supplications.db", File.join(app, "Supplications/supplications.db"))
-FileUtils.mkdir_p(File.join(app, "MarketingQuran"))
-Dir.glob("Muntathir/Resources/Quran/*.db").reject { |path| %w[quran.db en.qarai.db].include?(File.basename(path)) }.each do |path|
-  FileUtils.cp(path, File.join(app, "MarketingQuran", File.basename(path)))
-end
+MuntathirRelease.stage_marketing_assets!(app)
 
 def capture(devices, locales, os, derived_data, buildlog_path, compact = false)
   options = {

@@ -176,45 +176,23 @@ def build(source: Path, output: Path) -> None:
             [(code, LANGUAGES[code][0], LANGUAGES[code][1]) for code in sorted(used)],
         )
 
-        topic_id = {}
-        next_topic = 1
-        topic_rows = []
-        for row in src.execute(
-            """
-            SELECT authority_code, language_code, site_id, title, letter, position, parent_site_id, url
-            FROM topic
-            ORDER BY authority_code, language_code, position, site_id
-            """
-        ):
-            code = language_code(row["authority_code"], row["language_code"])
-            topic_id[(row["authority_code"], code, row["site_id"])] = next_topic
-            topic_rows.append((
-                next_topic,
-                row["authority_code"],
-                code,
-                row["site_id"],
-                row["title"],
-                row["letter"],
-                row["position"],
-                row["parent_site_id"],
-                row["url"],
-            ))
-            next_topic += 1
-        out.executemany(
-            """
-            INSERT INTO topic (id, authority_code, language_code, site_id, title, letter, position, url)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            [(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[8]) for row in topic_rows],
-        )
-        out.executemany(
-            "UPDATE topic SET parent_id = ? WHERE id = ?",
-            [
-                (topic_id[(row[1], row[2], row[7])], row[0])
-                for row in topic_rows
-                if row[7]
-            ],
-        )
+        topics = {
+            (row["authority_code"], row["language_code"], row["site_id"]): row
+            for row in src.execute("SELECT * FROM topic ORDER BY authority_code, language_code, position, site_id")
+        }
+        root_ids = {}
+        for key, row in topics.items():
+            if not row["parent_site_id"]:
+                root_ids[key] = len(root_ids) + 1
+
+        def main_section(key: tuple[str, str, str]) -> int:
+            visited = set()
+            while key not in root_ids:
+                if key in visited:
+                    raise ValueError(f"Cycle in topic hierarchy: {key}")
+                visited.add(key)
+                key = (*key[:2], topics[key]["parent_site_id"])
+            return root_ids[key]
 
         question_id = {}
         next_question = 1
@@ -247,20 +225,39 @@ def build(source: Path, output: Path) -> None:
         )
 
         placements = []
+        seen = set()
+        positions = {}
         for row in src.execute(
             """
-            SELECT authority_code, language_code, topic_site_id, question_site_id, number_value, position
-            FROM placement
-            ORDER BY authority_code, language_code, topic_site_id, position
+            SELECT p.*
+            FROM placement AS p LEFT JOIN topic AS t
+              ON (p.authority_code, p.language_code, p.topic_site_id)
+               = (t.authority_code, t.language_code, t.site_id)
+            ORDER BY p.authority_code, p.language_code, t.position, t.site_id, p.position
             """
         ):
-            code = language_code(row["authority_code"], row["language_code"])
-            placements.append((
-                topic_id[(row["authority_code"], code, row["topic_site_id"])],
-                question_id[(row["authority_code"], code, row["question_site_id"])],
-                row["number_value"],
-                row["position"],
-            ))
+            authority, site_language = row["authority_code"], row["language_code"]
+            section = main_section((authority, site_language, row["topic_site_id"]))
+            question = question_id[(authority, language_code(authority, site_language), row["question_site_id"])]
+            if (section, question) not in seen:
+                seen.add((section, question))
+                positions[section] = positions.get(section, 0) + 1
+                placements.append((section, question, row["number_value"], positions[section]))
+
+        sections = []
+        for key, section in root_ids.items():
+            if section in positions:
+                authority, site_language, site_id = key
+                row = topics[key]
+                sections.append((section, authority, language_code(authority, site_language), site_id,
+                                 row["title"], row["letter"], row["position"], row["url"]))
+        out.executemany(
+            """
+            INSERT INTO topic (id, authority_code, language_code, site_id, title, letter, position, url)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            sections,
+        )
         out.executemany(
             "INSERT INTO placement (topic_id, question_id, number, position) VALUES (?, ?, ?, ?)",
             placements,
@@ -278,22 +275,25 @@ def build(source: Path, output: Path) -> None:
 
 def check(src: sqlite3.Connection, out: sqlite3.Connection) -> None:
     source_questions = src.execute("SELECT COUNT(*) FROM question").fetchone()[0]
-    source_placements = src.execute("SELECT COUNT(*) FROM placement").fetchone()[0]
     built_questions = out.execute("SELECT COUNT(*) FROM question").fetchone()[0]
+    if built_questions != source_questions:
+        raise SystemExit(f"Question count mismatch: {built_questions}/{source_questions}")
+    expected_placed = {
+        (authority, language_code(authority, language), site_id)
+        for authority, language, site_id in src.execute(
+            "SELECT DISTINCT authority_code, language_code, question_site_id FROM placement"
+        )
+    }
+    actual_placed = set(out.execute("SELECT DISTINCT authority_code, language_code, question_id FROM qa"))
+    if actual_placed != expected_placed:
+        raise SystemExit("Flattening changed which questions have a section")
+    if out.execute("""
+        SELECT 1 FROM topic AS t
+        WHERE parent_id IS NOT NULL OR NOT EXISTS (SELECT 1 FROM placement WHERE topic_id = t.id)
+        LIMIT 1
+    """).fetchone():
+        raise SystemExit("Built sections must be flat and nonempty")
     built_placements = out.execute("SELECT COUNT(*) FROM placement").fetchone()[0]
-    if built_questions != source_questions or built_placements != source_placements:
-        raise SystemExit("count mismatch questions %s/%s placements %s/%s" % (
-            built_questions, source_questions, built_placements, source_placements,
-        ))
-    orphans = out.execute(
-        """
-        SELECT COUNT(*) FROM topic AS child
-        LEFT JOIN topic AS parent ON parent.id = child.parent_id
-        WHERE child.parent_id IS NOT NULL AND parent.id IS NULL
-        """
-    ).fetchone()[0]
-    if orphans:
-        raise SystemExit("%s topics point at a missing parent" % orphans)
     sample = out.execute(
         "SELECT language_code, url FROM question WHERE authority_code = 'sistani' AND site_id = '6357'"
     ).fetchone()

@@ -13,13 +13,23 @@ final class RulingsUITests: XCTestCase {
         XCTAssertTrue(app.buttons["rulings-authority"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["rulings-authority"].label.contains("Sistani"))
         XCTAssertTrue(app.descendants(matching: .any)["rulings-notice"].firstMatch.exists)
+        let result = app.buttons["rulings-question-42"]
+        XCTAssertTrue(result.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Original answer"].exists)
         let search = app.searchFields.firstMatch
         search.tap()
         search.typeText("Prayer")
-        let result = app.buttons["rulings-question-42"]
         XCTAssertTrue(result.waitForExistence(timeout: 5))
         result.tap()
         XCTAssertTrue(app.staticTexts["Original answer"].waitForExistence(timeout: 5))
+        let section = app.buttons["rulings-section-3"]
+        XCTAssertTrue(section.waitForExistence(timeout: 5))
+        section.tap()
+        XCTAssertTrue(app.navigationBars["Worship"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["rulings-question-43"].waitForExistence(timeout: 5))
+        XCTAssertTrue(result.exists)
+        XCTAssertFalse(app.buttons["rulings-question-44"].exists)
+        app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(app.buttons["reading-size"].exists)
         XCTAssertFalse(app.descendants(matching: .any)["rulings-notice"].firstMatch.exists)
         let bookmark = app.buttons["ruling-bookmark"]

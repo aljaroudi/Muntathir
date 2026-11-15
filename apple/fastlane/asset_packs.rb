@@ -97,7 +97,7 @@ module MuntathirRelease
                   external_version_id: asset.dig("relationships", "externalBetaVersion", "data", "id") }
         end
         if !match && !uploaded
-          UI.message("Uploading changed or missing asset pack #{name}")
+          FastlaneCore::UI.message("Uploading changed or missing asset pack #{name}")
           unless system("bundle", "exec", "ruby", File.join(__dir__, "asset_pack_delivery.rb"), "--upload", name)
             raise "Asset pack upload failed for #{name}. Check App Store Connect before retrying."
           end

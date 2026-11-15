@@ -17,8 +17,15 @@ struct RulingsTests {
         #expect(try await reader.questions(authority: "sistani", language: "ar", query: "\" OR nope").isEmpty)
         let id = try #require(found.first?.id)
         #expect(try await reader.question(id)?.answer == "نص أصلي")
-        #expect(try await reader.topics(authority: "sistani", language: "ar").count == 1)
-        #expect(try await reader.questions(authority: "shirazi", language: "ar", topic: 1).isEmpty)
+        let sections = try await reader.sections(for: id)
+        #expect(sections.map(\.title) == ["الصلاة"])
+        let section = try #require(sections.first)
+        #expect(try await reader.questions(authority: "sistani", language: "ar", section: section).map(\.id) == [id])
+        #expect(try await reader.questions(authority: "sistani", language: "en", section: section).isEmpty)
+        let sample = try await reader.questions(authority: "shirazi", language: "ar")
+        #expect(sample.map(\.id) == [.init(authority: "shirazi", language: "ar", siteID: "42")])
+        let otherID = try #require(sample.first?.id)
+        #expect(try await reader.sections(for: otherID).isEmpty)
         let task = Task {
             try Task.checkCancellation()
             return try await reader.questions(authority: "sistani", language: "ar", query: "الصلاة")
@@ -160,8 +167,8 @@ extension RulingsTests {
     @Test func connectionReuseMeasurement() throws {
         let fixture = try RulingsFixture()
         defer { fixture.remove() }
-        let sql = "SELECT site_id FROM question WHERE authority_code = ? AND language_code = ?"
-        let parameters = ["sistani", "en"]
+        let sql = "SELECT site_id FROM question WHERE authority_code = ? AND language_code = ? AND site_id = ?"
+        let parameters = ["sistani", "en", "42"]
         var reopenedRows = 0
         let reopening = try ContinuousClock().measure {
             for _ in 0 ..< 400 {

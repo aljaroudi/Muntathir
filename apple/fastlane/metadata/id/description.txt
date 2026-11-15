@@ -1,21 +1,11 @@
-Salat dan zikir harian, bersama Muntathir.
+Salat dan zikir harian bersama Muntathir.
 
-Lihat waktu salat di lokasi Anda, pilih metode perhitungan, dan atur pengingat. Ikuti perjalanan Matahari di layar Hari Ini.
+Lihat waktu salat setempat, pilih metode perhitungan dan pengingat. Ikuti perubahan langit, bagikan ayat harian dan temukan kiblat. Gunakan tasbih 3D interaktif, kamera depan untuk membantu menghitung rakaat, serta tinjau aktivitas ibadah dan membaca.
 
-Baca satu ayat Al-Quran setiap hari dan bagikan sebagai gambar. Baca Al-Quran dan cari surah.
+Baca Al-Quran per ayat atau halaman mushaf dengan terjemahan dan posisi baca tersimpan. Pilih buku hadis yang ingin disimpan untuk membaca dan mencari secara offline. Jelajahi doa, hukum agama, dan tokoh Islam. Tandai, sorot, beri catatan, dan bagikan kutipan. Sorotan dan catatan disinkronkan melalui akun iCloud pribadi jika tersedia.
 
-Jelajahi tanggal Hijriah dan hari peringatan Islam. Pilih kalender sistem, rukyat lokal dengan mata telanjang di Timur Tengah, atau pengumuman pemerintah. Sesuaikan setiap bulan dari −2 hingga +2 hari. Jika belum ada pengumuman yang sesuai, tanggal menggunakan perhitungan Umm al-Qura.
+Cari teks yang diunduh secara offline. Jika tidak ada hasil, coba pencarian berdasarkan makna secara online dalam buku dan bab yang dipilih.
 
-Temukan arah kiblat. Tersedia untuk iPhone dan iPad, dengan app Apple Watch dan widget. Antarmuka tersedia dalam 15 bahasa.
+Ikuti tanggal dan peringatan Islam. Pilih kalender sistem, rukyat mata telanjang di Timur Tengah, atau pengumuman pemerintah Saudi. Sesuaikan awal bulan hingga dua hari. Perhitungan Umm al-Qura digunakan hingga konfirmasi yang sesuai tersedia.
 
-Perhitungan salat dan tanggal kalender bergantung pada pengaturan Anda. Ikuti otoritas setempat bila diperlukan.
-
-AL-QURAN
-Baca Al-Quran dengan terjemahan bawaan, cari ayat, dan simpan posisi membaca.
-
-HADIS
-Unduh pustaka hadis, lalu telusuri koleksi dan bab, cari dalam bahasa Arab dan Inggris, dan baca secara luring. Simpan favorit, tambahkan catatan, dan bagikan riwayat sebagai teks atau gambar.
-
-Sorot ayat Al-Qur’an dan kutipan hadis, lalu buka kembali di Sorotan.
-
-Temukan ayat Al-Quran dan hadis berdasarkan makna. Jika pencarian lokal tidak menemukan hasil, coba pencarian online dari kolom yang sama. Buku dan bab yang dipilih tetap digunakan. Pencarian teks lokal tetap tersedia secara offline.
+Untuk iPhone dan iPad, dengan pendamping Apple Watch dan widget. Antarmuka dalam 15 bahasa. Al-Quran Arab dan terjemahan Inggris disertakan; unduh konten lain sebelum membaca offline. Pencarian makna memerlukan internet. Waktu dan tanggal bergantung pada pengaturan; ikuti otoritas setempat bila diperlukan.

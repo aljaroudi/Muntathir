@@ -1,0 +1,200 @@
+{
+  "en": {
+    "images": [
+      {
+        "id": "01-Today",
+        "src": "/marketing/en/01-Today-572.webp",
+        "srcset": "/marketing/en/01-Today-286.webp 286w, /marketing/en/01-Today-572.webp 572w, /marketing/en/01-Today-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "Prayer times and a verse for your day.",
+        "alt": "Muntathir Today screen"
+      },
+      {
+        "id": "02-Quran",
+        "src": "/marketing/en/02-Quran-572.webp",
+        "srcset": "/marketing/en/02-Quran-286.webp 286w, /marketing/en/02-Quran-572.webp 572w, /marketing/en/02-Quran-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "Read the Quran, wherever you are.",
+        "alt": "Muntathir Quran screen"
+      },
+      {
+        "id": "03-Hadith",
+        "src": "/marketing/en/03-Hadith-572.webp",
+        "srcset": "/marketing/en/03-Hadith-286.webp 286w, /marketing/en/03-Hadith-572.webp 572w, /marketing/en/03-Hadith-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "Browse and search Hadith.",
+        "alt": "Muntathir Hadith screen"
+      },
+      {
+        "id": "04-Highlights",
+        "src": "/marketing/en/04-Highlights-572.webp",
+        "srcset": "/marketing/en/04-Highlights-286.webp 286w, /marketing/en/04-Highlights-572.webp 572w, /marketing/en/04-Highlights-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "Keep meaningful passages close.",
+        "alt": "Muntathir Highlights screen"
+      },
+      {
+        "id": "05-Supplications",
+        "src": "/marketing/en/05-Supplications-572.webp",
+        "srcset": "/marketing/en/05-Supplications-286.webp 286w, /marketing/en/05-Supplications-572.webp 572w, /marketing/en/05-Supplications-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "Supplications for daily remembrance.",
+        "alt": "Muntathir Supplications screen"
+      },
+      {
+        "id": "06-Tasbih",
+        "src": "/marketing/en/06-Tasbih-572.webp",
+        "srcset": "/marketing/en/06-Tasbih-286.webp 286w, /marketing/en/06-Tasbih-572.webp 572w, /marketing/en/06-Tasbih-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "Count with a touch of calm.",
+        "alt": "Muntathir Tasbih screen"
+      },
+      {
+        "id": "07-Rakaat",
+        "src": "/marketing/en/07-Rakaat-572.webp",
+        "srcset": "/marketing/en/07-Rakaat-286.webp 286w, /marketing/en/07-Rakaat-572.webp 572w, /marketing/en/07-Rakaat-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "A helping hand for your rakaat.",
+        "alt": "Muntathir Rakaat screen"
+      },
+      {
+        "id": "08-Activity",
+        "src": "/marketing/en/08-Activity-572.webp",
+        "srcset": "/marketing/en/08-Activity-286.webp 286w, /marketing/en/08-Activity-572.webp 572w, /marketing/en/08-Activity-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "See your daily activity.",
+        "alt": "Muntathir Activity screen"
+      },
+      {
+        "id": "09-Calendar",
+        "src": "/marketing/en/09-Calendar-572.webp",
+        "srcset": "/marketing/en/09-Calendar-286.webp 286w, /marketing/en/09-Calendar-572.webp 572w, /marketing/en/09-Calendar-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "Your Hijri calendar, close at hand.",
+        "alt": "Muntathir Calendar screen"
+      },
+      {
+        "id": "10-Qibla",
+        "src": "/marketing/en/10-Qibla-572.webp",
+        "srcset": "/marketing/en/10-Qibla-286.webp 286w, /marketing/en/10-Qibla-572.webp 572w, /marketing/en/10-Qibla-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "Find your direction for prayer.",
+        "alt": "Muntathir Qibla screen"
+      }
+    ],
+    "video": {
+      "src": "/marketing/en/sky.webm",
+      "poster": "/marketing/en/01-Today-572.webp",
+      "caption": "From sunrise to sunset"
+    }
+  },
+  "ar": {
+    "images": [
+      {
+        "id": "01-Today",
+        "src": "/marketing/ar/01-Today-572.webp",
+        "srcset": "/marketing/ar/01-Today-286.webp 286w, /marketing/ar/01-Today-572.webp 572w, /marketing/ar/01-Today-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "مواقيت صلاتك وآية ليومك",
+        "alt": "شاشة اليوم في منتظِر"
+      },
+      {
+        "id": "02-Quran",
+        "src": "/marketing/ar/02-Quran-572.webp",
+        "srcset": "/marketing/ar/02-Quran-286.webp 286w, /marketing/ar/02-Quran-572.webp 572w, /marketing/ar/02-Quran-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "القرآن الكريم بين يديك",
+        "alt": "شاشة القرآن في منتظِر"
+      },
+      {
+        "id": "03-Hadith",
+        "src": "/marketing/ar/03-Hadith-572.webp",
+        "srcset": "/marketing/ar/03-Hadith-286.webp 286w, /marketing/ar/03-Hadith-572.webp 572w, /marketing/ar/03-Hadith-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "تصفح الأحاديث وابحث فيها",
+        "alt": "شاشة الحديث في منتظِر"
+      },
+      {
+        "id": "04-Highlights",
+        "src": "/marketing/ar/04-Highlights-572.webp",
+        "srcset": "/marketing/ar/04-Highlights-286.webp 286w, /marketing/ar/04-Highlights-572.webp 572w, /marketing/ar/04-Highlights-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "احتفظ بما يلامس قلبك",
+        "alt": "شاشة التظليلات في منتظِر"
+      },
+      {
+        "id": "05-Supplications",
+        "src": "/marketing/ar/05-Supplications-572.webp",
+        "srcset": "/marketing/ar/05-Supplications-286.webp 286w, /marketing/ar/05-Supplications-572.webp 572w, /marketing/ar/05-Supplications-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "أدعية لذكرك اليومي",
+        "alt": "شاشة الأدعية في منتظِر"
+      },
+      {
+        "id": "06-Tasbih",
+        "src": "/marketing/ar/06-Tasbih-572.webp",
+        "srcset": "/marketing/ar/06-Tasbih-286.webp 286w, /marketing/ar/06-Tasbih-572.webp 572w, /marketing/ar/06-Tasbih-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "سبّح بطمأنينة",
+        "alt": "شاشة التسبيح في منتظِر"
+      },
+      {
+        "id": "07-Rakaat",
+        "src": "/marketing/ar/07-Rakaat-572.webp",
+        "srcset": "/marketing/ar/07-Rakaat-286.webp 286w, /marketing/ar/07-Rakaat-572.webp 572w, /marketing/ar/07-Rakaat-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "عون لك في عدّ الركعات",
+        "alt": "شاشة الركعات في منتظِر"
+      },
+      {
+        "id": "08-Activity",
+        "src": "/marketing/ar/08-Activity-572.webp",
+        "srcset": "/marketing/ar/08-Activity-286.webp 286w, /marketing/ar/08-Activity-572.webp 572w, /marketing/ar/08-Activity-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "تابع نشاطك اليومي",
+        "alt": "شاشة النشاط في منتظِر"
+      },
+      {
+        "id": "09-Calendar",
+        "src": "/marketing/ar/09-Calendar-572.webp",
+        "srcset": "/marketing/ar/09-Calendar-286.webp 286w, /marketing/ar/09-Calendar-572.webp 572w, /marketing/ar/09-Calendar-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "تقويمك الهجري بين يديك",
+        "alt": "شاشة التقويم في منتظِر"
+      },
+      {
+        "id": "10-Qibla",
+        "src": "/marketing/ar/10-Qibla-572.webp",
+        "srcset": "/marketing/ar/10-Qibla-286.webp 286w, /marketing/ar/10-Qibla-572.webp 572w, /marketing/ar/10-Qibla-858.webp 858w",
+        "width": 1320,
+        "height": 2868,
+        "caption": "وجهتك إلى القبلة",
+        "alt": "شاشة القبلة في منتظِر"
+      }
+    ],
+    "video": {
+      "src": "/marketing/ar/sky.webm",
+      "poster": "/marketing/ar/01-Today-572.webp",
+      "caption": "من الشروق إلى الغروب"
+    }
+  }
+}

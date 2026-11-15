@@ -111,7 +111,7 @@ private struct RulingsBrowser: View {
         .scrollDismissesKeyboard(.interactively)
         .task(id: [authority, language, query, String(results.retry)]) {
             guard !language.isEmpty else { return }
-            await results.load(reader: reader, authority: authority, language: language, query: query, topic: nil)
+            await results.load(reader: reader, authority: authority, language: language, query: query)
         }
         .onChange(of: language) { _, value in
             guard !value.isEmpty else { return }
@@ -149,7 +149,6 @@ private struct RulingsResults: View {
     let authorityName: String
     let language: RulingsLanguage
     var query = ""
-    var topic: RulingsTopic?
     let state: RulingsResultsState
 
     var body: some View {
@@ -159,14 +158,6 @@ private struct RulingsResults: View {
             } else if state.failed {
                 Button("Try again") { state.retry += 1 }
             } else {
-                ForEach(state.topics.filter { $0.parent == topic?.id }) { child in
-                    NavigationLink {
-                        RulingsTopicView(reader: reader, authority: authority, authorityName: authorityName, language: language, topic: child)
-                    } label: {
-                        Text(child.title)
-                            .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)
-                    }
-                }
                 rows(state.questions)
                 if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     MeaningSearchResults(query: query, hasLocalResults: !state.questions.isEmpty, search: {
@@ -186,7 +177,7 @@ private struct RulingsResults: View {
                         return found
                     }) { rows($0) }
                         .id([authority, language.id, query])
-                } else if !state.topics.contains(where: { $0.parent == topic?.id }), state.questions.isEmpty {
+                } else if state.questions.isEmpty {
                     ContentUnavailableView("No Results", systemImage: "magnifyingglass")
                 }
             }
@@ -196,14 +187,12 @@ private struct RulingsResults: View {
     private func rows(_ values: [Rulings]) -> some View {
         ForEach(values) { value in
             NavigationLink {
-                RulingsDetailView(rulings: value, authorityName: authorityName, language: language)
+                RulingsDetailView(reader: reader, rulings: value, authorityName: authorityName, language: language)
                     .recordSearchOnOpen(query, area: .rulings)
             } label: {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(value.question).font(.headline).lineLimit(3)
-                    Text(value.answer).foregroundStyle(.secondary).lineLimit(2)
-                }
-                .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)
+                Text(value.question)
+                    .font(.headline)
+                    .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)
             }
             .accessibilityIdentifier("rulings-question-\(value.id.siteID)")
         }
@@ -211,24 +200,25 @@ private struct RulingsResults: View {
 }
 
 @MainActor @Observable private final class RulingsResultsState {
-    var topics: [RulingsTopic] = []
     var questions: [Rulings] = []
     var loading = true
     var failed = false
     var retry = 0
 
-    func load(reader: RulingsReader, authority: String, language: String, query: String, topic: RulingsTopic?) async {
+    func load(reader: RulingsReader, authority: String, language: String, query: String = "", section: RulingsSection? = nil) async {
         loading = true
         failed = false
         do {
             if !query.isEmpty {
                 try await Task.sleep(for: .milliseconds(150))
             }
-            let browsing = query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            let foundTopics = browsing ? try await reader.topics(authority: authority, language: language) : []
-            let foundQuestions = !browsing || topic != nil ? try await reader.questions(authority: authority, language: language, query: query, topic: topic?.id) : []
+            let foundQuestions: [Rulings]
+            if let section {
+                foundQuestions = try await reader.questions(authority: authority, language: language, section: section)
+            } else {
+                foundQuestions = try await reader.questions(authority: authority, language: language, query: query)
+            }
             try Task.checkCancellation()
-            topics = foundTopics
             questions = foundQuestions
             loading = false
         } catch {
@@ -239,33 +229,35 @@ private struct RulingsResults: View {
     }
 }
 
-private struct RulingsTopicView: View {
+private struct RulingsSectionView: View {
     let reader: RulingsReader
     let authority: String
     let authorityName: String
     let language: RulingsLanguage
-    let topic: RulingsTopic
+    let section: RulingsSection
     @State private var results = RulingsResultsState()
 
     var body: some View {
         List {
-            RulingsResults(reader: reader, authority: authority, authorityName: authorityName, language: language, topic: topic, state: results)
+            RulingsResults(reader: reader, authority: authority, authorityName: authorityName, language: language, state: results)
         }
-        .navigationTitle(topic.title)
+        .navigationTitle(section.title)
         .readingBackground()
         .task(id: results.retry) {
-            await results.load(reader: reader, authority: authority, language: language.id, query: "", topic: topic)
+            await results.load(reader: reader, authority: authority, language: language.id, section: section)
         }
     }
 }
 
 private struct RulingsDetailView: View {
+    let reader: RulingsReader
     let rulings: Rulings
     let authorityName: String
     let language: RulingsLanguage
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var textSizePresented = false
     @State private var bookmarkFailed = false
+    @State private var sections: [RulingsSection] = []
 
     var body: some View {
         List {
@@ -279,6 +271,24 @@ private struct RulingsDetailView: View {
             LabeledContent("Religious authority", value: authorityName)
             if let source = rulings.source {
                 Link(destination: source) { Label("Source", systemImage: "arrow.up.right.square") }
+            }
+            if !sections.isEmpty {
+                Section {
+                    ForEach(sections) { section in
+                        NavigationLink {
+                            RulingsSectionView(reader: reader, authority: rulings.id.authority, authorityName: authorityName, language: language, section: section)
+                        } label: {
+                            Label(section.title, systemImage: "tag")
+                                .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)
+                        }
+                        .accessibilityIdentifier("rulings-section-\(section.id)")
+                    }
+                }
+            }
+        }
+        .task(id: rulings.id) {
+            if let found = try? await reader.sections(for: rulings.id), !Task.isCancelled {
+                sections = found
             }
         }
         .navigationTitle("Rulings")
@@ -350,8 +360,8 @@ private struct SavedRulingDestination: View {
         Group {
             if let assets, assets.state != .ready {
                 List { RulingsDownloadSection(assets: assets) }
-            } else if let ruling, let language {
-                RulingsDetailView(rulings: ruling, authorityName: authorityName, language: language)
+            } else if let assets, let ruling, let language {
+                RulingsDetailView(reader: assets.reader, rulings: ruling, authorityName: authorityName, language: language)
             } else if loading {
                 ProgressView()
             } else {

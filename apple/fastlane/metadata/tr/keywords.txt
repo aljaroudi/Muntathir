@@ -1,1 +1,1 @@
-namaz,vakit,kuran,ayet,hicri,takvim,kıble,islam,hatırlatıcı
+namaz,kuran,hadis,tesbih,kıble,hicri,dua,rekât,not,takvim,islam
