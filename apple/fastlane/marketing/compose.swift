@@ -60,17 +60,7 @@ let available = NSSize(width: width * 0.9, height: height * 0.735)
 let scale = min(available.width / device.size.width, available.height / device.size.height)
 let size = NSSize(width: device.size.width * scale, height: device.size.height * scale)
 let deviceRect = NSRect(x: (width - size.width) / 2, y: height * 0.765 - size.height, width: size.width, height: size.height)
-if kind == "duo" {
-    let bezel = deviceRect.insetBy(dx: -width * 0.012, dy: -width * 0.012)
-    NSColor(srgbRed: 0.08, green: 0.09, blue: 0.10, alpha: 1).setFill()
-    NSBezierPath(roundedRect: bezel, xRadius: width * 0.035, yRadius: width * 0.035).fill()
-}
-
 NSGraphicsContext.saveGraphicsState()
-if kind == "duo" {
-    NSBezierPath(roundedRect: deviceRect, xRadius: width * 0.023, yRadius: width * 0.023).addClip()
-}
-
 device.draw(in: deviceRect)
 NSGraphicsContext.restoreGraphicsState()
 context.flushGraphics()

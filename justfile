@@ -16,7 +16,7 @@ apple-build:
 apple-localizations:
     python3 apple/scripts/check_localizations.py
 
-# Run Apple unit tests (optional TEST_DESTINATION override)
+[doc("Run Apple unit tests after localizations; set TEST_DESTINATION to override simulator")]
 apple-test: apple-localizations
     #!/usr/bin/env sh
     set -eu
@@ -38,9 +38,57 @@ apple-test: apple-localizations
     xcodebuild test -project apple/Muntathir.xcodeproj -scheme Muntathir \
         -destination "$destination" -only-testing:MuntathirTests
 
-# Run the landing page (pass -- --background for background mode)
+[arg("args", help="Fastlane lane + key:value options: check | tests | cleanup | screenshots languages:ar,en workers:2 | style | previews | watch_screenshots | web_media | marketing | testflight_public | app_store")]
+[doc("Run a Fastlane lane from apple/ (Homebrew Ruby + vendor/bundle; see apple/fastlane/SETUP.md)")]
+apple-lane *args:
+    #!/usr/bin/env sh
+    set -eu
+    export PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/bin:${PATH:-}"
+    export BUNDLE_PATH=vendor/bundle
+    cd apple
+    bundle exec fastlane {{ args }}
+
+[arg("args", help="languages=ar,en workers=2 → apple/build/marketing/raw/ (default workers 2)")]
+[doc("Capture raw Apple screenshots into apple/build/marketing/raw")]
+apple-screenshots *args:
+    #!/usr/bin/env sh
+    set -eu
+    languages=""
+    workers=""
+    set -- {{ args }}
+    for argument in "$@"; do
+        case "$argument" in
+            languages=*) languages=${argument#languages=} ;;
+            workers=*) workers=${argument#workers=} ;;
+            *) echo "Unknown option: $argument (use languages=ar,en workers=2)" >&2; exit 2 ;;
+        esac
+    done
+    set -- screenshots
+    [ -n "$languages" ] && set -- "$@" "languages:$languages"
+    [ -n "$workers" ] && set -- "$@" "workers:$workers"
+    just apple-lane "$@"
+
+[arg("args", help="languages=ar,en → apple/build/marketing/store/")]
+[doc("Style raw screenshots into apple/build/marketing/store")]
+apple-style *args:
+    #!/usr/bin/env sh
+    set -eu
+    languages=""
+    set -- {{ args }}
+    for argument in "$@"; do
+        case "$argument" in
+            languages=*) languages=${argument#languages=} ;;
+            *) echo "Unknown option: $argument (use languages=ar,en)" >&2; exit 2 ;;
+        esac
+    done
+    set -- style
+    [ -n "$languages" ] && set -- "$@" "languages:$languages"
+    just apple-lane "$@"
+
+[arg("args", help="astro/bun flags after dev, e.g. -- --background")]
+[doc("Run the Astro landing page (web/); uses bun run dev")]
 web-dev *args:
-    cd web && bun run dev {{args}}
+    cd web && bun run dev {{ args }}
 
 # Format web sources
 web-format:
@@ -50,7 +98,7 @@ web-format:
 web-lint:
     cd web && bun run lint
 
-# Typecheck the landing page
+[doc("Typecheck the landing page (astro check); not format/lint/build")]
 web-check:
     cd web && bun run check
 
@@ -58,15 +106,15 @@ web-check:
 web-build:
     cd web && bun run build
 
-# Test built web output
+[doc("Test built web output; run web-build first (or use web-validate)")]
 web-test:
     cd web && bun test
 
-# Format, lint, typecheck, build, and test the site
+[doc("Full web gate: format + lint + check + build + test")]
 web-validate:
     cd web && bun run validate
 
-# Run the search API
+[doc("Start the Bun search API in backend/api")]
 backend-start:
     cd backend/api && bun run start
 
@@ -78,18 +126,19 @@ backend-test:
 backend-check:
     cd backend/api && bun run check
 
-# Rebuild reader databases and refresh search
+[arg("args", help="flags for build/build.py: --dry-run | --assets-only | --max-budget USD")]
+[doc("Rebuild reader databases, package assets, and refresh search")]
 data-build *args:
-    python3 build/build.py {{args}}
+    python3 build/build.py {{ args }}
 
-# Format Apple and web sources
+[doc("Format Apple Swift and web sources (apple-format + web-format)")]
 format: apple-format web-format
 
-# Run Apple and web tests
+[doc("Run Apple unit tests and web output tests (apple-test + web-test)")]
 test: apple-test web-test
 
-# Checks run by the pre-commit hook
+[doc("Same checks as .githooks/pre-commit: apple-format + web-check + web-lint")]
 pre-commit: apple-format web-check web-lint
 
-# Checks run by the pre-push hook
+[doc("Same checks as .githooks/pre-push: apple-test + web-check + web-build + web-test")]
 pre-push: apple-test web-check web-build web-test

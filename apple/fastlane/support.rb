@@ -24,6 +24,7 @@ module MuntathirRelease
   ROOT = File.expand_path("..", __dir__)
   # Apple does not support Persian store metadata; its copy stays in listing-drafts/fa.
   LOCALES = %w[en-US ar-SA fr-FR de-DE id it ja ms ru es-ES tr ur-PK zh-Hans zh-Hant].freeze
+  LANGUAGE_ALIASES = { "ar" => "ar-SA", "en" => "en-US" }.freeze
   DEVICES = ["iPhone 17 Pro Max", "iPad Pro 13-inch (M5)", "iPhone Duo"].freeze
   PREVIEW_DEVICES = DEVICES.reject { |name| name == "iPhone Duo" }.freeze
   WATCH_SCREENSHOT = "Apple Watch Series 12 (46mm)-01-PrayerTimes.png".freeze
@@ -31,6 +32,31 @@ module MuntathirRelease
 
   def self.capture_runtime(device)
     device == "iPhone Duo" ? ENV.fetch("SCREENSHOT_DUO_IOS_VERSION", "27.2") : ENV.fetch("SCREENSHOT_IOS_VERSION", "27.0")
+  end
+
+  def self.capture_locales(value)
+    return LOCALES if value.to_s.strip.empty?
+
+    locales = value.split(",").map(&:strip).map { |locale| LANGUAGE_ALIASES.fetch(locale, locale) }
+    raise "Unknown or duplicate screenshot locale" if locales.empty? || locales.uniq != locales || (locales - LOCALES).any?
+
+    locales
+  end
+
+  MAX_SCREENSHOT_WORKERS = 8
+
+  # Workers serialize on the shared simulator lock; keep a small default.
+  def self.default_screenshot_workers
+    2
+  end
+
+  def self.capture_shards(locales, workers)
+    count = Integer(workers)
+    raise "Screenshot workers must be between 1 and #{MAX_SCREENSHOT_WORKERS}" unless (1..MAX_SCREENSHOT_WORKERS).cover?(count)
+
+    Array.new([count, locales.length].min) { |index| locales.each_slice(count).filter_map { |slice| slice[index] } }
+  rescue ArgumentError, TypeError
+    raise "Screenshot workers must be between 1 and #{MAX_SCREENSHOT_WORKERS}"
   end
 
   def self.capture_passes(devices, locales)
@@ -241,6 +267,18 @@ module MuntathirRelease
     output, status = Open3.capture2e(*command.map(&:to_s))
     raise "#{command.first} failed: #{output.lines.last(12).join}" unless status.success?
     output
+  end
+
+  def self.run_parallel!(*commands)
+    remaining = commands.to_h { |command| [Process.spawn(*command, chdir: ROOT, pgroup: true), command] }
+    failed = nil
+    until remaining.empty?
+      pid, status = Process.wait2(-1)
+      remaining.delete(pid)
+      failed ||= [pid, status] unless status.success?
+      remaining.each_key { |other| Process.kill("TERM", -other) rescue nil } if failed
+    end
+    raise "Parallel command failed with #{failed.last.exitstatus || "signal #{failed.last.termsig}"}" if failed
   end
 
   def self.preview_filter(size, duo: false)

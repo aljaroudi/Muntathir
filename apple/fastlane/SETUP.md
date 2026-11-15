@@ -37,7 +37,7 @@ Manage localized names, descriptions, keywords, promotional text, support/privac
 
 - `check` validates localization, metadata, screenshot configuration, and lane behavior offline.
 - `tests` runs the local unit/UI regressions on one iPhone. Both release lanes run screenshot capture separately.
-- `screenshots`, `watch_screenshots`, and `style` capture and compose the five iOS screens and the Watch prayer screen in all 14 store locales.
+- `screenshots`, `watch_screenshots`, and `style` capture and compose the iOS screens and Watch prayer screen in all 14 store locales. From the repo root prefer `just apple-screenshots languages=ar,en` and `just apple-style languages=ar,en` (`key=value`). Raw Fastlane in `apple/` uses `key:value` (`languages:ar,en`). Canonical locale IDs remain supported. Screenshot workers default to 2 (override with `workers=N`, max 8); they share one simulator lock.
 - `previews` generates optional videos. `previews devices:"iPhone Duo"` generates Duo videos for manual upload.
 - `marketing` refreshes screenshots and generates the standard previews locally.
 
@@ -47,18 +47,18 @@ Captures use a clean isolated test preferences suite, Mecca, 23 October 2026, li
 
 Screenshot captures use ayah 94:6 (index 6096). Quran capture builds stage downloaded translations locally, with English where no capture translation matches and Arabic alone in Arabic. Release bundles only Arabic and English. The capture runner stages the production Hadith database in its Debug bundle under the marketing launch flag; Release uses the hosted Hadith pack.
 
-Standard devices use `SCREENSHOT_IOS_VERSION` (default 27.0), with iPhone and iPad captured concurrently for each locale. Duo uses `SCREENSHOT_DUO_IOS_VERSION` (default 27.2) in a separate snapshot pass without deleting the standard captures. Keep these passes sequential: Snapshot shares locale/launch-argument caches and shuts down booted simulators when preparing a pass. Install the runtimes in Xcode. Current snapshot captures use the native 1398 × 2034 Duo output; validation also accepts 2007 × 2853 and both landscape equivalents. Duo video recording explicitly selects the outer `primary` display; the simulator default can target the blank inner display. QA rejects blank frames. Capturing a single display does not establish layout correctness across folding transitions.
+Standard devices use `SCREENSHOT_IOS_VERSION` (default 27.0), with iPhone and iPad captured concurrently for each locale. Locale workers use separate DerivedData clones, logs and raw directories, but serialize simulator access because Snapshot selects the same device UUIDs across workers. Duo uses `SCREENSHOT_DUO_IOS_VERSION` (default 27.2) after standard devices within each worker. Install the runtimes in Xcode. Current snapshot captures use the native 1398 × 2034 Duo output; validation also accepts 2007 × 2853 and both landscape equivalents. Duo video recording explicitly selects the outer `primary` display; the simulator default can target the blank inner display. QA rejects blank frames. Capturing a single display does not establish layout correctness across folding transitions.
 
-Edit [the screenshot config](marketing/screenshots.json) to set the ordered screen IDs, headlines for each locale, brand text, and two RGB gradient stops. Numbered screen IDs control upload order and match the snapshot names in `MarketingScreenshotTests`. The Watch slot captures the native app. Standard iPhone bezels sit closer to headlines. Frameit provides standard phone/tablet bezels; Duo uses a neutral native bezel because frameit has no Duo bezel. The iPad capture fits the available 12.9-inch bezel without stretching and exports on the accepted 13-inch canvas. ImageMagick is required (`brew install imagemagick`). AppKit draws localized text, and final images are flattened with no alpha channel.
+Edit [the screenshot config](marketing/screenshots.json) to set the ordered screen IDs, headlines for each locale, brand text, and two RGB gradient stops. Numbered screen IDs control upload order and match the snapshot names in `MarketingScreenshotTests`. The Watch slot captures the native app. Frameit provides the iPhone 17 Pro Max, iPad and Duo bezels. The iPad capture fits the available 12.9-inch bezel without stretching and exports on the accepted 13-inch canvas. ImageMagick is required (`brew install imagemagick`). AppKit draws localized text, and final images are flattened with no alpha channel.
 
 The Debug capture clock advances the actual Today UI continuously from sunrise to sunset. `ffmpeg` exports H.264/yuv420p video at 30 fps, with silent stereo AAC audio. `ffprobe` checks format and duration. Release builds exclude the capture controls.
 
-Generated files live under ignored `build/marketing/`:
+Generated files live under ignored `apple/build/marketing/` (from the repo root):
 
+- `raw/<locale>/`: original simulator PNGs from `screenshots` / `just apple-screenshots`. Each run deletes that locale’s prior raw (and `frames/`) files before writing.
+- `store/<locale>/`: framed App Store PNGs from `style` / `just apple-style` (Watch slot kept if present). Device shots for the styled locales are replaced each run.
+- `frames/`: intermediate bezel images (disposable).
 - `watch/`: native Watch captures required for the embedded companion.
-- `raw/`: original screenshots and snapshot HTML summary.
-- `frames/`: intermediate bezel images.
-- `store/`: styled store screenshots, screenshots across iPhone, iPad, Duo and Apple Watch in 14 locales.
 - `previews/`: 15-second standard iPhone/iPad videos and start/middle/end QA frames.
 - `duo-previews/`: 15-second Duo videos at 886 × 1920, with QA frames. Duo keeps the native screen proportions inside a neutral frame and background on Apple’s required 886 × 1920 canvas.
 

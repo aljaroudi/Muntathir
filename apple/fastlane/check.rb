@@ -22,12 +22,23 @@ MuntathirRelease.validate_metadata!(File.join(__dir__, "listing-drafts"), locale
 require "fastlane_core/languages"
 assert((MuntathirRelease::LOCALES - FastlaneCore::Languages::ALL_LANGUAGES).empty?, "Unsupported App Store locale")
 if check_media
+  assert(MuntathirRelease.capture_locales("ar,en") == %w[ar-SA en-US], "Screenshot language aliases changed")
+  assert(MuntathirRelease.capture_locales("en-US,ar-SA") == %w[en-US ar-SA], "Canonical screenshot locales rejected")
+  rejects("Unknown screenshot alias accepted") { MuntathirRelease.capture_locales("english") }
+  rejects("Duplicate screenshot locale accepted") { MuntathirRelease.capture_locales("en,en-US") }
+  assert(MuntathirRelease.capture_shards(%w[en-US ar-SA fr-FR], 2) == [["en-US", "fr-FR"], ["ar-SA"]], "Screenshot shards changed")
+  assert(MuntathirRelease.capture_shards(["en-US"], 2) == [["en-US"]], "Single locale created an empty worker")
+  assert(MuntathirRelease.capture_shards(%w[en-US ar-SA fr-FR], 3) == [["en-US"], ["ar-SA"], ["fr-FR"]], "Three screenshot shards changed")
+  rejects("Too many screenshot workers accepted") { MuntathirRelease.capture_shards(%w[en-US ar-SA], 99) }
+  assert(MuntathirRelease.default_screenshot_workers == 2, "Default screenshot workers changed")
   passes = MuntathirRelease.capture_passes(MuntathirRelease::DEVICES, %w[en-US ja])
   assert(passes.map { |pass| pass[0] }.flatten.uniq.sort == MuntathirRelease::DEVICES.sort, "Capture device missing")
   assert(passes.select { |pass| pass[0] == ["iPhone Duo"] }.map { |pass| [pass[1], pass[3]] } == [[["en-US"], false], [["ja"], true]], "Duo locale capture layouts changed")
   assert(!MuntathirRelease::PREVIEW_DEVICES.include?("iPhone Duo"), "Unsupported preview must not block releases")
 
   require "snapshot"
+  require "frameit"
+  assert(Frameit::Devices.const_defined?(:IPHONE_DUO_OUTER) && Frameit::Devices.const_defined?(:IPHONE_DUO_INNER), "Pinned Fastlane lacks native Duo frames")
   snapshot_config = FastlaneCore::Configuration.create(Snapshot::Options.available_options, {})
   snapshot_options = FastlaneCore::ConfigurationFile.new(snapshot_config, File.join(__dir__, "Snapfile"), nil, true).options
   assert(snapshot_options[:languages] == MuntathirRelease::LOCALES, "Screenshot locales must match metadata")
@@ -180,6 +191,12 @@ class LaneCheck
 end
 check = LaneCheck.new
 check.instance_eval(File.read(File.join(__dir__, "Fastfile")), File.join(__dir__, "Fastfile"))
+check.screenshots(languages: "ar,en", workers: 1)
+screenshot_command = check.calls.assoc(:sh).last
+assert(screenshot_command.last(3) == ["", "ar,en", "1"], "Screenshot lane options changed")
+check.calls.clear
+check.style(languages: "ar,en")
+assert(check.calls.assoc(:sh).last.last == "ar,en", "Style locale filter changed")
 version = "1.1.0"
 draft_version = Struct.new(:id, :version_string, :app_version_state, :release_type)
                      .new("draft", "1.1", "READY_FOR_REVIEW", "AFTER_APPROVAL")

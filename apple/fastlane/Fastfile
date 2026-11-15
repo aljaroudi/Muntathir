@@ -33,12 +33,13 @@ platform :ios do
 
   desc "Capture localized iPhone, iPad and Duo screenshots"
   lane :screenshots do |options|
-    sh("bundle", "exec", "ruby", File.join(__dir__, "screenshots.rb"), options[:devices].to_s, options[:languages].to_s)
+    sh("bundle", "exec", "ruby", File.join(__dir__, "screenshots.rb"), options[:devices].to_s, options[:languages].to_s,
+       options.fetch(:workers) { MuntathirRelease.default_screenshot_workers }.to_s)
   end
 
   desc "Style raw screenshots with frames, backgrounds and localized headlines"
-  lane :style do
-    sh("bundle", "exec", "ruby", File.join(__dir__, "style.rb"))
+  lane :style do |options|
+    sh("bundle", "exec", "ruby", File.join(__dir__, "style.rb"), options[:languages].to_s)
   end
 
   desc "Record continuous sunrise-to-sunset simulator previews in every store locale"
@@ -75,8 +76,7 @@ platform :ios do
 
   private_lane :refresh_screenshots do
     started = Time.now
-    screenshots
-    watch_screenshots
+    sh("bundle", "exec", "ruby", File.join(__dir__, "refresh_screenshots.rb"))
     style
     MuntathirRelease.validate_media!(since: started)
   end

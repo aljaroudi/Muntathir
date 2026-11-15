@@ -21,11 +21,18 @@ just apple-format
 just apple-build
 just apple-test
 TEST_DESTINATION='platform=iOS Simulator,id=YOUR-SIMULATOR-UUID' just apple-test
+just apple-lane marketing
+just apple-lane web_media
+just apple-screenshots languages=ar,en
+just apple-screenshots languages=ar,en workers=2
 just web-dev
 just web-validate
 just backend-start
 just data-build --dry-run
 ```
+
+Fastlane lanes still live under `apple/`. Prefer `just apple-screenshots` / `just apple-style` with `key=value` options; use `just apple-lane` for other lanes with Fastlane’s `key:value` syntax. See [Apple Fastlane setup](apple/fastlane/SETUP.md).
+
 
 ## Git hooks
 
