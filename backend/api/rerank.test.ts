@@ -7,14 +7,15 @@ const candidates: Candidate[] = Array.from({ length: 22 }, (_, i) => ({
   hit: { kind: 'quran', chapter: 2, verse: i + 1, score: i / 30 },
 }))
 const env = {
-  SEARCH_RERANK_URL: 'http://localhost:1234/v1',
+  SEARCH_RERANK_PROVIDER: 'jev',
+  JEV_API_KEY: 'test',
   SEARCH_RERANK_MODEL: 'test',
 }
 const fake = (fn: (url: any, init: any) => Promise<Response>) =>
   Object.assign(fn, { preconnect: fetch.preconnect }) as typeof fetch
 const reply = (ids: unknown) =>
   Response.json({
-    choices: [{ message: { content: JSON.stringify({ ids }) } }],
+    answers: Object.fromEntries((Array.isArray(ids) ? ids : []).map((id, i) => [`p${id}`, { type: 'noul', noul: ((ids as unknown[]).length - i) / (ids as unknown[]).length }])) ,
   })
 
 test('reranking bounds input and preserves references, scores and tail', async () => {
@@ -22,7 +23,7 @@ test('reranking bounds input and preserves references, scores and tail', async (
   const ranker = new Reranker(
     env,
     fake(async (url, init) => {
-      expect(url).toBe('http://localhost:1234/v1/chat/completions')
+      expect(url).toBe('https://api.typesafe.ai/v1/systemone')
       body = JSON.parse(init.body)
       return reply(
         candidates
@@ -38,9 +39,11 @@ test('reranking bounds input and preserves references, scores and tail', async (
   expect(result.results).toEqual(
     [...candidates.slice(0, 20).reverse(), ...candidates.slice(20)].map((c) => c.hit),
   )
-  const data = JSON.parse(body.messages[1].content)
+  const data = JSON.parse(body.state)
   expect(data.candidates).toHaveLength(20)
-  expect([...data.candidates[0].text]).toHaveLength(1000)
+  expect(data.candidates[0].text).toBe(candidates[0].text)
+  expect(typeof data.instructions).toBe('string')
+  expect(body.questions.p0.instructions).toBe('Evaluate passage "0".')
   expect(body.tools).toBeUndefined()
 })
 
@@ -57,29 +60,60 @@ for (const ids of [['0', '0'], ['0', 'unknown'], ['0'], null]) {
   })
 }
 
-test('disabled, busy, timeout and cooldown preserve baseline', async () => {
+test('disabled, bounded concurrency, timeout without cooldown, and failure cooldown preserve baseline', async () => {
   expect((await new Reranker({}).rank('q', candidates)).outcome).toBe('disabled')
   let now = 1000,
     calls = 0
+  const gates: (() => void)[] = []
+  const concurrentRanker = new Reranker(
+    { ...env, SEARCH_RERANK_URL: 'https://custom.rerank.local/v1/systemone' },
+    fake(async (url) => {
+      expect(url).toBe('https://custom.rerank.local/v1/systemone')
+      calls++
+      await new Promise<void>((resolve) => gates.push(resolve))
+      return reply(candidates.slice(0, 2).map((c) => c.id))
+    }),
+    () => now,
+  )
+  const inFlight = Array.from({ length: 4 }, () => concurrentRanker.rank('q', candidates.slice(0, 2)))
+  expect((await concurrentRanker.rank('q', candidates.slice(0, 2))).outcome).toBe('busy')
+  expect(calls).toBe(4)
+  for (const done of gates) done()
+  expect((await Promise.all(inFlight)).map((r) => r.outcome)).toEqual([
+    'success',
+    'success',
+    'success',
+    'success',
+  ])
+
+  calls = 0
+  let mode: 'timeout' | 'error' = 'timeout'
   const ranker = new Reranker(
     { ...env, SEARCH_RERANK_TIMEOUT_MS: '10' },
     fake(async (_, init) => {
       calls++
-      await new Promise((_, reject) => {
-        init.signal.addEventListener('abort', () => reject(new Error('timeout')), { once: true })
-      })
-      return reply([])
+      if (mode === 'timeout') {
+        await new Promise((_, reject) => {
+          init.signal.addEventListener('abort', () => reject(new Error('timeout')), { once: true })
+        })
+      }
+      return new Response('', { status: 503 })
     }),
     () => now,
   )
-  const pending = ranker.rank('q', candidates)
-  expect((await ranker.rank('q', candidates)).outcome).toBe('busy')
-  expect((await pending).outcome).toBe('failed')
-  expect((await ranker.rank('q', candidates)).outcome).toBe('cooldown')
-  expect(calls).toBe(1)
-  now += 30001
+  // Timeout falls back without activating 30s cooldown.
+  expect((await ranker.rank('q', candidates)).outcome).toBe('failed')
   expect((await ranker.rank('q', candidates)).outcome).toBe('failed')
   expect(calls).toBe(2)
+
+  // HTTP/parse failure activates 30s cooldown.
+  mode = 'error'
+  expect((await ranker.rank('q', candidates)).outcome).toBe('failed')
+  expect((await ranker.rank('q', candidates)).outcome).toBe('cooldown')
+  expect(calls).toBe(3)
+  now += 30_001
+  expect((await ranker.rank('q', candidates)).outcome).toBe('failed')
+  expect(calls).toBe(4)
 })
 
 test('unavailable service and malformed content are non-fatal', async () => {

@@ -256,36 +256,35 @@ test('reranking cache separates models, skips references and never caches failur
     b = point('b', 'item-b')
   b.payload.ref = { kind: 'quran', chapter: 2, verse: 2 }
   db.query = async () => [a, b]
-  db.call = async () => ({ points: [a], next_page_offset: null })
+  db.call = async (path) =>
+    path.endsWith('/points/scroll')
+      ? { points: [a], next_page_offset: null }
+      : [
+          { id: 'a', payload: { text: 'First passage text' } },
+          { id: 'b', payload: { text: 'Second passage text' } },
+        ]
   const original = globalThis.fetch
   let calls = 0,
     fail = false
   try {
     globalThis.fetch = Object.assign(
       async (url: any) => {
-        if (!String(url).includes('localhost:1234'))
+        if (!String(url).includes('api.typesafe.ai'))
           return Response.json({
             embedding: { values: Array(1536).fill(0.1) },
           })
         calls++
         return fail
           ? new Response('', { status: 503 })
-          : Response.json({
-              choices: [
-                {
-                  message: {
-                    content: JSON.stringify({ ids: ['item-b', 'item-a'] }),
-                  },
-                },
-              ],
-            })
+          : Response.json({ answers: { p0: { type: 'noul', noul: .1 }, p1: { type: 'noul', noul: .9 } } })
       },
       { preconnect: original.preconnect },
     )
     const env = {
       GEMINI_API_KEY: 'test',
       SEARCH_RATE_SALT: 'test',
-      SEARCH_RERANK_URL: 'http://localhost:1234/v1',
+      SEARCH_RERANK_PROVIDER: 'jev',
+      JEV_API_KEY: 'test',
       SEARCH_RERANK_MODEL: 'one',
     }
     const request = (query: string) =>
@@ -333,4 +332,94 @@ test('reranking receives the passage that earned the winning fusion rank', () =>
   best.payload.text = 'Relevant passage near the end'
   const result = fuse([first, best], [best], new Map([['first', 0.8], ['best', 0.9]]), 20)
   expect(result[0].text).toBe('Relevant passage near the end')
+})
+
+test('bulk retrieval omits passage text, caps semantic at 100, and fetches top-20 text only when requested', async () => {
+  const db = new Qdrant('unused')
+  const queries: any[] = []
+  const pointCalls: any[] = []
+  const semanticPoints: Point[] = Array.from({ length: 25 }, (_, i) => ({
+    id: `p-${i}`,
+    score: i === 0 ? 0.98 : i === 1 ? 1 : 1 - i * 0.01,
+    payload: { item_id: `item-${i}`, ref: { kind: 'quran', chapter: 2, verse: i + 1 } },
+  }))
+  const winningOther: Point = {
+    id: 'p-0-win',
+    score: 0.9,
+    payload: { item_id: 'item-0', ref: { kind: 'quran', chapter: 2, verse: 1 } },
+  }
+  db.query = async (_, body: any) => {
+    queries.push(body)
+    return body.using === 'search_text' ? [winningOther] : semanticPoints
+  }
+  db.call = async (path, body: any) => {
+    pointCalls.push({ path, body })
+    if (body.with_vector) return [{ id: 'p-0-win', vector: [1, 0] }]
+    return body.ids.map((id: string) => ({ id, payload: { text: `text:${id}` } }))
+  }
+
+  const input = parseRequest({ query: 'patience', limit: 25 })
+  const withoutText = await retrieve(db, 'test', input, [1, 0], null, false)
+  expect(queries).toHaveLength(2)
+  expect(queries[0].limit).toBe(100)
+  for (const q of queries) expect(q.with_payload).toEqual(['item_id', 'ref'])
+  expect(pointCalls.filter((c) => c.body.with_payload)).toHaveLength(0)
+  expect(withoutText.results).toHaveLength(25)
+  expect((withoutText.results[0] as any).text).toBeUndefined()
+
+  queries.length = 0
+  pointCalls.length = 0
+  const withText = await retrieve(db, 'test', input, [1, 0], null, true)
+  for (const q of queries) expect(q.with_payload).toEqual(['item_id', 'ref'])
+  const textFetches = pointCalls.filter((c) => Array.isArray(c.body.with_payload))
+  expect(textFetches).toHaveLength(1)
+  expect(textFetches[0].body.with_payload).toEqual(['text'])
+  expect(textFetches[0].body.ids).toHaveLength(20)
+  expect(textFetches[0].body.ids[0]).toBe('p-0-win')
+  expect(withText.candidates![0].text).toBe('text:p-0-win')
+  expect(withText.candidates![20].text).toBe('')
+  expect((withText.results[0] as any).text).toBeUndefined()
+})
+
+test('Qdrant active() caches alias within TTL, coalesces concurrent calls, and invalidates on 404', async () => {
+  const original = globalThis.fetch
+  let now = 1000,
+    aliasCalls = 0,
+    collection = 'rev-1',
+    queryStatus = 200
+  try {
+    globalThis.fetch = Object.assign(
+      async (url: any) => {
+        if (String(url).endsWith('/aliases')) {
+          aliasCalls++
+          await Bun.sleep(5)
+          return Response.json({ result: { aliases: [{ alias_name: 'search', collection_name: collection }] } })
+        }
+        return new Response(queryStatus === 200 ? JSON.stringify({ result: { points: [] } }) : '', {
+          status: queryStatus,
+        })
+      },
+      { preconnect: original.preconnect },
+    )
+    const db = new Qdrant('http://qdrant.local', '', 30_000, () => now)
+    expect(await Promise.all([db.active(), db.active()])).toEqual(['rev-1', 'rev-1'])
+    expect(aliasCalls).toBe(1)
+
+    now += 10_000
+    collection = 'rev-2'
+    expect(await db.active()).toBe('rev-1')
+    expect(aliasCalls).toBe(1)
+
+    now += 20_001
+    expect(await db.active()).toBe('rev-2')
+    expect(aliasCalls).toBe(2)
+
+    queryStatus = 404
+    await expect(db.query('rev-2', {})).rejects.toThrow('Qdrant HTTP 404')
+    collection = 'rev-3'
+    expect(await db.active()).toBe('rev-3')
+    expect(aliasCalls).toBe(3)
+  } finally {
+    globalThis.fetch = original
+  }
 })

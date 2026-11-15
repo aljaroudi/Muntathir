@@ -103,7 +103,7 @@ export function createHandler(
         return reply(429, { error: 'rate_limited' })
       stage = 'revision'
       const collection = await db.active()
-      const key = `result:${await hash(JSON.stringify({ input, collection, profile: PROFILE, pipeline: 'literal-eligible-rerank-v2', reranker: direct ? null : reranker.config }))}`
+      const key = `result:${await hash(JSON.stringify({ input, collection, profile: PROFILE, pipeline: 'literal-eligible-rerank-v3', reranker: direct ? null : reranker.config }))}`
       const cached = disabled ? undefined : store.get(key)
       if (cached) {
         console.log(
