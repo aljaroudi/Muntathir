@@ -1,1 +1,8 @@
-Lisez le Coran par versets ou pages du Mushaf, gérez vos livres de hadiths hors ligne et découvrez les invocations, le tasbih 3D interactif, le suivi des rakats par caméra avant et le journal d’activité quotidien. Inclut le ciel selon la hauteur solaire, les événements islamiques liés au coucher du soleil, des aperçus de recherche sémantique affinés et un surlignage amélioré.
+Nouveautés :
+• Recherche intelligente avancée dans le Coran et les hadiths
+• Sections dédiées aux invocations, aux règles religieuses et aux événements islamiques
+• Tasbih 3D interactif et compteur de rakats par caméra avant
+• Suivi de l’activité quotidienne pour la prière, la lecture et le dhikr
+
+Mises à jour :
+• Affichage de la direction de la Qibla sur la carte

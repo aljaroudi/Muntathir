@@ -1,1 +1,8 @@
-Read the Quran verse by verse or in Mushaf pages, manage Hadith books for offline reading, and explore supplications, interactive 3D tasbih, front-camera rakaat tracking, and daily activity logs. Includes a solar-elevation sky view, sunset-aware upcoming Islamic events, smarter semantic search previews, and improved highlighting and prayer experiences.
+New:
+• Advanced smart search across Quran and Hadith
+• Dedicated sections for Supplications, Islamic Rulings, and Islamic Events
+• Interactive 3D Tasbih and front-camera Rakaat counter
+• Daily prayer, reading, and remembrance activity tracking
+
+Updated:
+• Qibla direction on the map
