@@ -1,11 +1,11 @@
-Muntathir ile namaz ve günlük zikir.
+Namaz ve günlük zikir Muntathir'de bir arada.
 
-Yerel namaz vakitlerini görün, hesaplama yöntemini ve hatırlatıcıları seçin. Değişen gökyüzünü izleyin, günün ayetini paylaşın ve kıbleyi bulun. Etkileşimli 3D tesbih, ön kamerayla rekât sayım desteği ve ibadet etkinliklerinizi gözden geçirme olanağı.
+Yerel namaz vakitlerini görün, hesaplama yöntemini seçin ve hatırlatıcılar kurun. Bugün ekranında gerçek güneş yüksekliğine göre çizilen gökyüzünü izleyin, gün batımına duyarlı yakındaki İslami günleri görün, günlük ayeti paylaşın ve kıbleyi bulun. Etkileşimli 3B tesbih taneleriyle sayın, rekât sayımı için ön kamera desteğini kullanın ve günlük namaz, okuma ve zikir etkinliğinizi kaydedip inceleyin.
 
-Kuranı ayet ayet veya mushaf sayfalarında, çeviriler ve kayıtlı okuma konumuyla okuyun. Çevrimdışı okumak ve aramak için saklamak istediğiniz hadis kitaplarını seçin. Duaları, dinî hükümleri ve İslam şahsiyetlerini keşfedin. Yer imi, vurgu ve not ekleyin; metin veya kart paylaşın. Vurgular ve notlar, kullanılabilir olduğunda özel iCloud hesabınızla eşzamanlanır.
+Kur'an'ı ayet ayet veya Mushaf sayfaları halinde okuyun, mealleri seçin ve kaldığınız yerden devam edin. Çevrimdışı gezinme ve arama için hangi hadis kitaplarının indirileceğini veya kaldırılacağını yönetin. Duaları, hükümleri ve İslam büyüklerini genişletilebilir unvanlarıyla keşfedin. Yer imi ekleyin, metin vurgulayın, not alın ve metin ya da görsel kart olarak paylaşın. Kişisel vurgular ve notlar kullanılabilir olduğunda özel iCloud hesabınızla eşzamanlanır.
 
-İndirilen metinlerde çevrimdışı arama yapın. Sonuç yoksa seçili kitap ve bölüm kapsamında çevrimiçi anlam aramasını deneyin.
+İndirilen Kur'an ve hadis metinlerinde çevrimdışı arama yapın. Yerel arama sonuç bulamadığında seçili kitap ve bölüm kapsamında sonuç önizlemeli çevrimiçi anlamsal aramayı deneyin.
 
-İslami tarihleri ve günleri takip edin. Sistem takvimi, Orta Doğu’da çıplak gözle hilal gözlemi veya Suudi resmî duyurularını seçin. Ay başlangıçlarını iki güne kadar ayarlayın. Uygun doğrulama gelene kadar Ümmü’l-Kura hesabı kullanılır.
+İslami takvim ve özel günleri takip edin. Sistem takvimi, Orta Doğu çıplak gözle hilal gözlemi veya Suudi Arabistan resmi duyuruları arasından seçim yapın, her ayı iki güne kadar ayarlayın; onay gelene kadar hesaplanan Ümmü'l-Kura değerleri uygulanır.
 
-iPhone ve iPad, Apple Watch eşlikçi uygulaması ve araç takımları. 15 arayüz dili. Arapça Kuran ve İngilizce çeviri dahildir; diğer içerikleri çevrimdışı okumadan önce indirin. Anlam araması internet gerektirir. Vakitler ve tarihler ayarlara bağlıdır; gerektiğinde yerel yetkililere uyun.
+iPhone ve iPad için, Apple Watch eşlikçisi ve ana ekran araç takımlarıyla 15 dilde. Arapça Kur'an ve İngilizce meal dahildir; diğer içerikler indirme gerektirir. Anlamsal arama internet bağlantısı gerektirir. Vakitler ve tarihler ayarlarınıza bağlıdır.
