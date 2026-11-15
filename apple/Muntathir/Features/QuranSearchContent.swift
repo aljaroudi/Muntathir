@@ -130,7 +130,7 @@ struct QuranSearchContent: View {
     }
 
     private func verseResults(_ verses: [Ayah], online: Bool = false, related: Bool = false) -> some View {
-        Section(online ? LocalizedStringKey("Search by meaning") : LocalizedStringKey(related ? "Related matches" : "Verses")) {
+        Section(online ? LocalizedStringKey("Smart search") : LocalizedStringKey(related ? "Related matches" : "Verses")) {
             ForEach(verses) { ayah in
                 if let surah = surahs.first(where: { $0.id == ayah.surah }) {
                     let translation = QuranTranslation.catalog.first { $0.id == translationStore.activeID }

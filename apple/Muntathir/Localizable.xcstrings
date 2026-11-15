@@ -28434,96 +28434,96 @@
         }
       }
     },
-    "Search by meaning" : {
+    "Smart search" : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "البحث بالمعنى"
+            "value" : "البحث الذكي"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nach Bedeutung suchen"
+            "value" : "Intelligente Suche"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Search by meaning"
+            "value" : "Smart search"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Buscar por significado"
+            "value" : "Búsqueda inteligente"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "جست‌وجو بر اساس معنا"
+            "value" : "جست‌وجوی هوشمند"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rechercher par sens"
+            "value" : "Recherche intelligente"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cari berdasarkan makna"
+            "value" : "Pencarian cerdas"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cerca per significato"
+            "value" : "Ricerca intelligente"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "意味で検索"
+            "value" : "スマート検索"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cari mengikut makna"
+            "value" : "Carian pintar"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Поиск по смыслу"
+            "value" : "Умный поиск"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Anlama göre ara"
+            "value" : "Akıllı arama"
           }
         },
         "ur" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "معنی کے لحاظ سے تلاش کریں"
+            "value" : "سمارٹ تلاش"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "按含义搜索"
+            "value" : "智能搜索"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "按含義搜尋"
+            "value" : "智慧搜尋"
           }
         }
       }

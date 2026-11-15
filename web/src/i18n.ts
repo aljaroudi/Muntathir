@@ -23,7 +23,7 @@ const en = {
       },
       {
         title: "Build your reading library",
-        text: "Choose which Hadith books to keep, explore supplications and rulings, and read downloaded content offline. Search text locally or try online meaning search when no text matches are found.",
+        text: "Choose which Hadith books to keep, explore supplications and rulings, and read downloaded content offline. Search text locally or try online smart search when no text matches are found.",
       },
       {
         title: "Keep what matters",
@@ -64,7 +64,7 @@ const en = {
     items: [
       {
         q: "Can I read offline?",
-        a: "Quran Arabic and English are bundled. Download other Quran translations, the Hadith books you want to keep, supplications, and rulings before reading them offline. Meaning search needs an internet connection.",
+        a: "Quran Arabic and English are bundled. Download other Quran translations, the Hadith books you want to keep, supplications, and rulings before reading them offline. Smart search needs an internet connection.",
       },
       {
         q: "Can I keep highlights and notes?",
@@ -112,7 +112,7 @@ const ar: typeof en = {
       },
       {
         title: "مكتبتك للقراءة",
-        text: "اختر كتب الحديث التي تريد الاحتفاظ بها، وتصفّح الأدعية والأحكام، واقرأ المحتوى المنزّل دون اتصال. ابحث في النصوص محليًا، أو جرّب البحث بالمعنى عبر الإنترنت عندما لا تجد نتائج نصية.",
+        text: "اختر كتب الحديث التي تريد الاحتفاظ بها، وتصفّح الأدعية والأحكام، واقرأ المحتوى المنزّل دون اتصال. ابحث في النصوص محليًا، أو جرّب البحث الذكي عبر الإنترنت عندما لا تجد نتائج نصية.",
       },
       {
         title: "احتفظ بما يهمّك",
@@ -153,7 +153,7 @@ const ar: typeof en = {
     items: [
       {
         q: "هل يمكنني القراءة دون اتصال؟",
-        a: "النص القرآني العربي والترجمة الإنجليزية مضمّنان. نزّل ترجمات القرآن الأخرى وكتب الحديث والأدعية والأحكام قبل قراءتها دون اتصال. يحتاج البحث بالمعنى إلى اتصال بالإنترنت.",
+        a: "النص القرآني العربي والترجمة الإنجليزية مضمّنان. نزّل ترجمات القرآن الأخرى وكتب الحديث والأدعية والأحكام قبل قراءتها دون اتصال. يحتاج البحث الذكي إلى اتصال بالإنترنت.",
       },
       {
         q: "هل يمكنني حفظ التظليلات والملاحظات؟",

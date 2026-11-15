@@ -20,7 +20,7 @@ struct MeaningSearchResults<Item, Results: View>: View {
                         .accessibilityIdentifier(emptyIdentifier)
                 }
                 if SemanticSearchClient.configured != nil, query.count <= 512 {
-                    Button("Search by meaning") { loading = true; attempt += 1 }
+                    Button("Smart search") { loading = true; attempt += 1 }
                         .buttonStyle(.borderedProminent)
                         .accessibilityIdentifier("search-by-meaning")
                 }

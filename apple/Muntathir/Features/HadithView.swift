@@ -522,7 +522,7 @@ struct HadithView: View {
                 .id("hadith:" + (narration.source?.key ?? String(narration.id)))
             }
         } header: {
-            Text(online ? LocalizedStringKey("Search by meaning") : LocalizedStringKey(related ? "Related matches" : "Hadith"))
+            Text(online ? LocalizedStringKey("Smart search") : LocalizedStringKey(related ? "Related matches" : "Hadith"))
         }
     }
 

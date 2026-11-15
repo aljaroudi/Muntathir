@@ -7,7 +7,7 @@ READ AND REFLECT
 Read the Quran verse by verse or in Mushaf pages, choose translations, and return to your reading position. Choose which Hadith books to download or remove for offline browsing and search. Explore supplications and rulings, bookmark passages, highlight selected text, add notes, and share text or image cards. Personal highlights and notes sync through your private iCloud account when available.
 
 SEARCH YOUR WAY
-Search downloaded Quran and Hadith text offline. Try online semantic meaning search with result previews when local text search finds no results; your selected book and chapter stay in scope.
+Search downloaded Quran and Hadith text offline. Try online smart search with result previews when local text search finds no results; your selected book and chapter stay in scope.
 
 DATES AND PEOPLE
 Browse Islamic observances and explore figures, family relationships, and expandable titles. Choose the system calendar, local naked-eye sighting for the Middle East, or Saudi government announcements. Adjust individual months by up to two days. Dates follow calculated Umm al-Qura values until matching confirmations are available.
@@ -15,4 +15,4 @@ Browse Islamic observances and explore figures, family relationships, and expand
 ACROSS YOUR DEVICES
 Made for iPhone and iPad, with an Apple Watch companion and Home Screen widgets. Available in 15 interface languages, including Arabic and English.
 
-Arabic Quran text and English translation are bundled. Other translations and library content require downloads before offline reading. Online meaning search requires an internet connection. Prayer times and calendar dates depend on your settings; follow your local authority where appropriate.
+Arabic Quran text and English translation are bundled. Other translations and library content require downloads before offline reading. Online smart search requires an internet connection. Prayer times and calendar dates depend on your settings; follow your local authority where appropriate.
