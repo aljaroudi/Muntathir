@@ -50,10 +50,6 @@ object DataModule {
     @Singleton
     fun clock(): Clock = Clock.systemDefaultZone()
 
-    // Replaced by the notification poster in P2.6.
-    @Provides
-    fun announcer(): Announcer = Announcer { false }
-
     @Provides
     @Singleton
     fun transport(): FeedTransport = KtorFeedTransport()

@@ -3,4 +3,6 @@
     <color name="window_background">#FFFBFAF4</color>
     <color name="icon_background_start">#FF174F45</color>
     <color name="icon_background_end">#FF082F2B</color>
+    <!-- Notification accent; the iOS accent emerald. -->
+    <color name="brand">#FF0D664F</color>
 </resources>

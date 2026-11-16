@@ -116,6 +116,31 @@ class NotificationPlanTest {
     }
 
     @Test
+    fun alarmChainWalksPrayersAndEventRemindersInOrder() {
+        val now = midnight(LocalDate.of(2026, 10, 18))
+        val engine = CalendarEngine(mecca.zone)
+        val tomorrow = engine.resolve(LocalDate.of(2026, 10, 19))
+        val events = listOf(IslamicEvent("e", tomorrow.month.month, tomorrow.day, mapOf("en" to "E")))
+        val options =
+            Preferences(enabledPrayers = setOf(PrayerName.Fajr, PrayerName.Maghrib), calendarEventNotifications = true)
+        val alerts = NotificationPlan.alerts(now, options, mecca, engine, events)
+        assertEquals(alerts.sortedWith(compareBy({ it.time }, { it.id })), alerts)
+        assertEquals(listOf(PrayerName.Fajr, null, PrayerName.Maghrib), alerts.take(3).map { it.prayer })
+        // Each alarm asks for the alerts strictly after the one that just fired.
+        var cursor = now
+        val walked = mutableListOf<String>()
+        repeat(6) {
+            val next = NotificationPlan.alerts(cursor, options, mecca, engine, events).first()
+            walked += next.id
+            cursor = next.time
+        }
+        assertEquals(alerts.take(6).map { it.id }, walked)
+        assertTrue(
+            NotificationPlan.alerts(now, Preferences(enabledPrayers = emptySet()), mecca, engine, events).isEmpty(),
+        )
+    }
+
+    @Test
     fun polarDatesWithoutSunsetDoNotInventEventTimes() {
         val polar = SavedLocation(78.2232, 15.6469, "Longyearbyen", "NO", "Arctic/Longyearbyen")
         val today = LocalDate.of(2026, 6, 21)

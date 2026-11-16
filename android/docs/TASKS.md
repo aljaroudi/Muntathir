@@ -34,7 +34,11 @@ Verified 2026-11-16: `just android-build` and `just android-test` pass; screensh
   - The card shows the English translation except in Arabic (the picker is P3.3).
   - Share draws the artwork off screen at 2× into a `GraphicsLayer` (1080 px wide) and shares it through a `FileProvider`.
 - [x] **P2.5** Calendar, month adjustments, Events. `core/calendar/CalendarYear` builds the month sections. Names, digits and dates use ICU (Umm al-Qura month symbols, date skeletons, relative days), like Foundation. The jump sheet is a `ModalBottomSheet` grid. Event rows don't link to Figures yet (P5.4).
-- [ ] **P2.6** Notifications: alarms, channels, sounds, boot/time receivers, event reminders, month announcements.
+- [x] **P2.6** Notifications: alarms, channels, sounds, boot/time receivers, event reminders, month announcements.
+  - Deviation: a **single chained alarm**. `AlarmScheduler` sets one alarm for the next alert from `NotificationPlan.alerts`. `AlarmReceiver` recomputes from current settings, posts what's due and sets the next one, so there's no 10-day/50-alert cap or list of pending alarms. The alarm is exact when `SCHEDULE_EXACT_ALARM` is granted (it's denied by default on API 34+), otherwise a 10-minute window.
+  - Channels are versioned by sound (`prayers.chime.v1`); old ones are deleted. There is no Time Sensitive toggle and no adhan foreground service, since the bundled clips play fully as channel sounds.
+  - `Rescheduler` follows the settings flow; `RescheduleReceiver` handles boot, time, zone, locale, package-replaced and exact-alarm permission changes.
+  - `Notifier` is the `AppModel` announcer for month confirmations.
 - [ ] **P2.7** Feed WorkManager + launch refresh.
 - [ ] **P2.8** Settings (prayers, calendar, tabs, downloads entry, language, credits).
 
