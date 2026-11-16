@@ -74,6 +74,17 @@ object QuranTestDatabase {
         return QuranPage(number, lines, verses)
     }
 
+    /** Swift `QuranDatabase.verses(ids:)`: verses by global index; unknown indices are absent. */
+    fun verses(ids: Set<Int>): Map<Int, Ayah> =
+        ids
+            .chunked(500)
+            .flatMap { chunk ->
+                val marks = chunk.joinToString(",") { "?" }
+                query("SELECT \"index\", sura, aya, text FROM quran WHERE \"index\" IN ($marks)", *chunk.toIntArray()) {
+                    it.getInt(1) to Ayah(it.getInt(2), it.getInt(3), it.getString(4))
+                }
+            }.toMap()
+
     fun page(
         surah: Int,
         verse: Int,

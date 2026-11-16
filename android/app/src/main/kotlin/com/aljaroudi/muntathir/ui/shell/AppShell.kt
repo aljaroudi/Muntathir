@@ -16,6 +16,10 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.aljaroudi.muntathir.core.app.AppTool
+import com.aljaroudi.muntathir.ui.calendar.CalendarScreen
+import com.aljaroudi.muntathir.ui.calendar.EventsScreen
+import com.aljaroudi.muntathir.ui.calendar.EventsViewModel
+import com.aljaroudi.muntathir.ui.calendar.MonthAdjustmentsScreen
 import com.aljaroudi.muntathir.ui.components.isTwoPane
 import com.aljaroudi.muntathir.ui.location.LocationScreen
 import com.aljaroudi.muntathir.ui.navigation.AppNavigator
@@ -34,6 +38,7 @@ import com.aljaroudi.muntathir.ui.navigation.tabTitle
 import com.aljaroudi.muntathir.ui.navigation.tabs
 import com.aljaroudi.muntathir.ui.navigation.testTag
 import com.aljaroudi.muntathir.ui.navigation.title
+import com.aljaroudi.muntathir.ui.today.TodayScreen
 
 /** Today, up to three tool shortcuts and Tools; a bar on phones, a rail on larger windows. */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
@@ -69,7 +74,14 @@ fun AppShell(
                 navigator.entries(
                     entryProvider {
                         entry<TodayRoute> {
-                            ComingSoonScreen(stringResource(TodayRoute.tabTitle), null)
+                            TodayScreen(
+                                hiltViewModel(),
+                                onChooseLocation = { navigator.push(LocationRoute) },
+                                onOpenCalendar = {
+                                    val calendar = ToolRoute(AppTool.Calendar)
+                                    if (calendar in tabs) navigator.select(calendar) else navigator.push(calendar)
+                                },
+                            )
                         }
                         entry<ToolsRoute> {
                             ToolsScreen(
@@ -89,10 +101,7 @@ fun AppShell(
                             TabsSettingsScreen(hiltViewModel(), detailBack)
                         }
                         entry<MonthAdjustmentsRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
-                            ComingSoonScreen(
-                                stringResource(com.aljaroudi.muntathir.R.string.month_adjustments),
-                                detailBack,
-                            )
+                            MonthAdjustmentsScreen(hiltViewModel(), detailBack)
                         }
                         entry<DownloadsRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
                             ComingSoonScreen(stringResource(com.aljaroudi.muntathir.R.string.downloads), detailBack)
@@ -118,6 +127,8 @@ private fun ToolScreen(
     onBack: (() -> Unit)?,
 ) {
     when (tool) {
+        AppTool.Calendar -> CalendarScreen(hiltViewModel(), onBack)
+        AppTool.Events -> EventsScreen(hiltViewModel<EventsViewModel>().library, onBack)
         else -> ComingSoonScreen(stringResource(tool.title), onBack)
     }
 }

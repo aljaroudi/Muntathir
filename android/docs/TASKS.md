@@ -26,8 +26,14 @@ Verified 2026-11-16: `just android-build` and `just android-test` pass; screensh
 - [x] **P2.1** Preferences DataStore + device-local store + backup rules. `Preferences`, `AppTool` and `AppModel` live in `core/app` (JVM-tested with in-memory `AppStorage`); `NotificationOptions` is gone. The app stores `files/datastore/preferences.v1.json` (backed up) and `no_backup/device.v1.json` (onboarding, GPS fix, delivered announcements). Hilt loads `AppModel` with one short blocking read per process.
 - [x] **P2.2** App shell: NavigationSuiteScaffold, Nav3 stacks, Tools grid, tab shortcuts. Skills: navigation-3, adaptive. `AppNavigator` keeps one saved stack per possible tab root (Today, Tools, each tool) and scopes entry state per stack, since a route can sit in two shown stacks. Settings and its subpages use the Material list-detail scene. Shortcuts reorder with move buttons rather than drag. Tools not yet ported show a Coming soon screen.
 - [x] **P2.3** Onboarding (language, location, method, notifications). Deviation: location is **GPS only** (no city search or history). A Fused coarse fix (falling back to the last known fix) is named by reverse `Geocoder` and zoned with the offline `timezonemap` (falling back to the device zone), and stored only in the device store. The language step is an in-app AppCompat picker. On each start, a granted fix refreshes the place when it moved more than 5 km or changed zone. `OnboardingTest` swaps storage and locator with Hilt.
-- [ ] **P2.4** Today (sky, prayer list, long-press actions, daily ayah + share).
-- [ ] **P2.5** Calendar, month adjustments, Events.
+- [x] **P2.4** Today (sky, prayer list, long-press actions, daily ayah + share).
+  - `core/quran/DailyAyah` ports `DailyVerseScheduleTests`.
+  - A Gradle `SharedContent` task bundles `quran.db`, `en.qarai.db`, the daily ids and surah names as assets, and the alert `.wav`s as `res/raw` (lowercased). The databases are copied to `no_backup/quran` per install or update.
+  - The sky is the `TodaySky.metal` formula sampled into a vertical gradient plus seeded stars.
+  - Long-press opens a menu and the same actions are TalkBack custom actions.
+  - The card shows the English translation except in Arabic (the picker is P3.3).
+  - Share draws the artwork off screen at 2× into a `GraphicsLayer` (1080 px wide) and shares it through a `FileProvider`.
+- [x] **P2.5** Calendar, month adjustments, Events. `core/calendar/CalendarYear` builds the month sections. Names, digits and dates use ICU (Umm al-Qura month symbols, date skeletons, relative days), like Foundation. The jump sheet is a `ModalBottomSheet` grid. Event rows don't link to Figures yet (P5.4).
 - [ ] **P2.6** Notifications: alarms, channels, sounds, boot/time receivers, event reminders, month announcements.
 - [ ] **P2.7** Feed WorkManager + launch refresh.
 - [ ] **P2.8** Settings (prayers, calendar, tabs, downloads entry, language, credits).

@@ -41,6 +41,37 @@ class CalendarTargetsTest {
     }
 
     @Test
+    fun yearSectionsListCorrectedEventDaysAndExpectedMonths() {
+        val zone = ZoneId.of("Asia/Riyadh")
+        val library = EventLibrary.bundled()
+        val month = HijriMonth(1448, 1)
+        val engine = CalendarEngine.withOffsets(zone, listOf(MonthOffset(month, 1)))
+        val now = engine.startOfDay(engine.start(month))
+        val sections = CalendarYear.sections(1448, now, engine, library, emptyList())
+        assertEquals((1..12).map { HijriMonth(1448, it) }, sections.map { it.month })
+        assertEquals(listOf(false) + List(11) { true }, sections.map { it.expected })
+        for (section in sections) {
+            val expected =
+                library.events.filter {
+                    it.month == section.month.month &&
+                        it.day <= engine.days(section.month).size
+                }
+            assertEquals(expected.map { it.day }.distinct().sorted(), section.days.map { it.day.day })
+            for (day in section.days) assertEquals(day.day, engine.resolve(day.date))
+        }
+        // +1 starts Muharram a day earlier, so its first event day moves a civil day earlier too.
+        val base = CalendarYear.sections(1448, now, CalendarEngine(zone), library, emptyList())
+        assertEquals(
+            base[0]
+                .days
+                .first()
+                .date
+                .minusDays(1),
+            sections[0].days.first().date,
+        )
+    }
+
+    @Test
     fun calendarJumpUsesNextEventOrMonthHeading() {
         val engine = CalendarEngine(ZoneId.of("Asia/Riyadh"))
         val month = HijriMonth(1448, 9)

@@ -39,6 +39,8 @@ android {
 
     // Content databases ship as Play Asset Delivery packs; only the Quran text is in the base APK.
     assetPacks += listOf(":packs:hadith", ":packs:supplications")
+    // Databases are copied out once; storing them uncompressed keeps that a plain stream copy.
+    androidResources.noCompress += "db"
 
     testOptions {
         // Required by Compose Preview screenshot tests to resolve themes and fonts.
@@ -52,6 +54,35 @@ android {
             }
         }
     }
+}
+
+// The Arabic Quran, the bundled English translation and the daily-verse schedule are shared with iOS.
+val appleResources = rootProject.file("../apple/Muntathir/Resources")
+val quranAssets =
+    tasks.register<SharedContent>("quranAssets") {
+        files.from(
+            appleResources.resolve("Quran/quran.db"),
+            appleResources.resolve("Quran/en.qarai.db"),
+            appleResources.resolve("quran-daily-ids.json"),
+            appleResources.resolve("quran-surahs.json"),
+        )
+        subdirectory = "quran"
+        lowercase = false
+        outputDir = layout.buildDirectory.dir("generated/shared/assets")
+    }
+
+// Alert sounds; resource names must be lowercase (`aliMulla.wav` → `R.raw.alimulla`).
+val alertSounds =
+    tasks.register<SharedContent>("alertSounds") {
+        files.from(fileTree(appleResources) { include("*.wav") })
+        subdirectory = "raw"
+        lowercase = true
+        outputDir = layout.buildDirectory.dir("generated/shared/res")
+    }
+
+androidComponents.onVariants { variant ->
+    variant.sources.assets?.addGeneratedSourceDirectory(quranAssets, SharedContent::outputDir)
+    variant.sources.res?.addGeneratedSourceDirectory(alertSounds, SharedContent::outputDir)
 }
 
 dependencies {
@@ -99,4 +130,28 @@ dependencies {
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.hilt.android.testing)
     kspAndroidTest(libs.hilt.compiler)
+}
+
+/** Copies files owned by the Apple app into a generated source directory, optionally lowercasing names. */
+abstract class SharedContent : DefaultTask() {
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
+    abstract val files: ConfigurableFileCollection
+
+    @get:Input
+    abstract val subdirectory: Property<String>
+
+    @get:Input
+    abstract val lowercase: Property<Boolean>
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @TaskAction
+    fun copy() {
+        val root = outputDir.get().asFile
+        root.deleteRecursively()
+        val target = root.resolve(subdirectory.get()).apply { mkdirs() }
+        files.forEach { it.copyTo(target.resolve(if (lowercase.get()) it.name.lowercase() else it.name)) }
+    }
 }
