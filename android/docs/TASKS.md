@@ -17,7 +17,7 @@ Verified 2026-11-16: `just android-build` and `just android-test` pass; screensh
 - [x] **P1.2** CorrectionsFeed parser/validator. *Done when:* `FeedClientTests` cases pass. `FeedClient` (ETag, last-good cache, shared in-flight refresh) is in `core` behind a `FeedTransport`; Ktor and the AppModel stale-response guard come with P2.7.
 - [x] **P1.3** PrayerCalculator on Adhan Kotlin (verify Jafari/Tehran). *Done when:* shared fixtures + `PrayerPreferencesTests`/`WidgetPrayerTests` logic pass. Deviation: Adhan Swift 1.5.0 ported into `core/prayer/adhan` instead of adhan2 (see README decisions); all three Adhan fixtures and the Mecca goldens match. `NotificationPlan` takes `NotificationOptions` until P2.1 adds Preferences.
 - [x] **P1.4** Solar/Moon position, SolarArc, QiblaAlignment. *Done when:* matching tests pass. `SolarArcLayout` uses plain `ArcRect`/`ArcPoint` so `core` stays free of Android types.
-- [ ] **P1.5** TasbihSession, RakaatDetector/Preparation, ReadingTime, ProgressActivity merge, `HighlightSnapshot.winners`.
+- [x] **P1.5** TasbihSession, RakaatDetector/Preparation, ReadingTime, ProgressActivity merge, `HighlightSnapshot.winners`. Highlight and bookmark snapshots share `RecordSnapshot` (+ `nextModifiedAt`). `ReadingTime` strips inline Markdown with regexes (links, images, emphasis, code).
 - [ ] **P1.6** HadithText, QuranPageText, SearchRelevance, HighlightRange validation.
 - [ ] **P1.7** Spike: selectable reader text with highlight ranges + custom toolbar. *Done when:* select → highlight → reopen restores the same UTF-16 ranges.
 - [ ] **P1.8** Spike: PAD on-demand + fast-follow with `bundletool --local-testing`; Android target in `assets.py`. *Done when:* hadith.db opens via BundledSQLiteDriver with FTS5 queries.
