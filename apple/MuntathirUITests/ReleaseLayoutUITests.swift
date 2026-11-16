@@ -27,6 +27,9 @@ final class ReleaseLayoutUITests: XCTestCase {
         capture(app, "Calendar")
         app.buttons[arabic ? "الأدوات" : "Tools"].firstMatch.tap()
         capture(app, "Tools")
+        for _ in 0 ..< 5 where !app.buttons["holy-quran"].isHittable {
+            app.swipeDown()
+        }
         app.buttons["holy-quran"].tap()
         XCTAssertTrue(app.buttons["quran-surah-1"].waitForExistence(timeout: 10))
         app.buttons["quran-surah-1"].tap()

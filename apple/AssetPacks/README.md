@@ -1,6 +1,6 @@
 # Asset packs
 
-Only Quran Arabic and English stay bundled in the app and daily-ayah widget. Hadith uses `hadith`, containing `Hadith/hadith.db`. Supplications use the independent `supplications` pack, containing `Supplications/supplications.db`. The on-demand `quran-translations` pack contains all twelve other translations.
+Only Quran Arabic and English stay bundled in the app and daily-ayah widget. Hadith uses `hadith`, containing `Hadith/hadith.db`. Supplications use the independent essential `supplications` pack, containing `Supplications/supplications.db` (downloaded with app install/update). The on-demand `quran-translations` pack contains all twelve other translations.
 
 Quran installs validated databases into the shared App Group, then removes the managed pack. Settings → Downloads deletes individual Quran languages, all downloaded translations, the Hadith library, or supplications independently. Restoring a deleted Quran language downloads the full pack, but restores only that language. Arabic and English cannot be removed. Missing translations leave Arabic readable and never trigger an automatic download.
 

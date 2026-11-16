@@ -67,7 +67,7 @@ final class SearchHistoryUITests: XCTestCase {
         if app.buttons["search-history-clear"].exists {
             app.buttons["search-history-clear"].tap()
         }
-        field.typeText("2:255")
+        field.typeText("2:255\n")
         let result = app.buttons["quran-result-2:255"]
         XCTAssertTrue(result.waitForExistence(timeout: 5))
         result.tap()
@@ -84,7 +84,7 @@ final class SearchHistoryUITests: XCTestCase {
     @MainActor func testArabicLargeTextMatchPreview() {
         let app = launch(arabic: true)
         openQuran(app, arabic: true)
-        focus(app).typeText("كرسي\n")
+        focus(app).typeText("كرسيه\n")
         XCTAssertTrue(app.buttons["quran-result-2:255"].waitForExistence(timeout: 5))
         let screenshot = XCTAttachment(screenshot: app.screenshot())
         screenshot.name = "Compact Arabic match at accessibility text size"

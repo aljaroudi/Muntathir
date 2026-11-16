@@ -67,7 +67,9 @@ locales.each do |locale|
     end
   end
 end
+creative = MuntathirRelease.render_brand_creative!(locales: locales)
 store = File.join(root, "store")
 puts "STYLE COMPLETE"
 puts "Styled screenshots: #{store}"
 locales.each { |locale| puts "  #{store}/#{locale}/" }
+puts "Creative: #{creative}"

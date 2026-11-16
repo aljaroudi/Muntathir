@@ -493,9 +493,9 @@ extension HadithUITests {
         let contents = app.searchFields.firstMatch
         contents.tap()
         contents.typeText("missing")
-        XCTAssertFalse(chapter.exists)
+        XCTAssertTrue(chapter.waitForNonExistence(timeout: 5))
         contents.buttons.firstMatch.tap()
-        contents.typeText("ch1")
+        contents.typeText("ch1\n")
         XCTAssertTrue(chapter.waitForExistence(timeout: 5))
         chapter.tap()
         XCTAssertTrue(app.buttons["hadith-result-1"].waitForExistence(timeout: 10))
@@ -518,6 +518,9 @@ extension HadithUITests {
         app.searchFields.firstMatch.buttons.firstMatch.tap()
         app.searchFields.firstMatch.typeText("missing\n")
         let searchAll = app.buttons["hadith-search-all"]
+        for _ in 0 ..< 4 where !searchAll.isHittable {
+            app.swipeUp()
+        }
         XCTAssertTrue(searchAll.waitForExistence(timeout: 10))
         searchAll.tap()
         XCTAssertTrue(app.descendants(matching: .any)["hadith-empty-results"].firstMatch.waitForExistence(timeout: 10))

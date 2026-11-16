@@ -101,7 +101,7 @@ Test on iPhone and submit a new build to TestFlight Public
 [bundle exec] fastlane ios app_store
 ```
 
-Test on iPhone and iPad, refresh the listing, and submit a new build for automatic App Store release
+Test on iPhone and iPad, refresh the listing, and submit the TestFlight build for automatic App Store release
 
 ----
 

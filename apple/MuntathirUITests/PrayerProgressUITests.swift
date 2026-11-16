@@ -121,7 +121,11 @@ final class PrayerProgressUITests: XCTestCase {
             app.swipeUp()
         }
         XCTAssertEqual(app.descendants(matching: .any)["progress-highlights"].firstMatch.value as? String, "2")
-        XCTAssertEqual(app.descendants(matching: .any)["progress-tasbih"].firstMatch.value as? String, "1,234")
+        let tasbih = app.descendants(matching: .any)["progress-tasbih"].firstMatch
+        for _ in 0 ..< 4 where !tasbih.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertEqual(tasbih.value as? String, "1,234")
     }
 
     @MainActor func testPartialTasbihPersistsAcrossVisits() {

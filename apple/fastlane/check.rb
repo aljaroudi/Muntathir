@@ -54,6 +54,33 @@ if check_media
   assert(!screenshot_config.fetch("brand").strip.empty?, "Screenshot brand is empty")
   colors = screenshot_config.fetch("background")
   assert(colors.size == 2 && colors.all? { |rgb| rgb.size == 3 && rgb.all? { |value| (0..1).cover?(value) } }, "Invalid screenshot gradient")
+  creative = screenshot_config.fetch("creative")
+  assert(creative.fetch("size") == [5244, 2950], "Creative canvas must be Apple's universal 5244×2950")
+  assert(MuntathirRelease::CREATIVE_SIZE == [5244, 2950], "Creative constants drifted")
+  assert(File.file?(MuntathirRelease::CREATIVE_ICON_SVG), "App icon SVG missing for brand creative")
+  group, spec_ids = MuntathirRelease.creative_placement_target(
+    "features" => [{ "featureId" => "APP_STORE_VERSIONS",
+                     "placementPolicies" => MuntathirRelease::CREATIVE_PLACEMENTS.map { |type|
+                       { "placementType" => type, "groupLimits" => [{ "groupIds" => %w[DEFAULT_PROFILE OTHER], "maxCount" => 1 }] }
+                     } }],
+    "imageSpecs" => [{ "specId" => "universal-spec", "universalAsset" => true,
+                       "dimensions" => { "minWidth" => 5244, "maxWidth" => 5244, "minHeight" => 2950, "maxHeight" => 2950 } }],
+    "placementTypes" => MuntathirRelease::CREATIVE_PLACEMENTS.map { |type|
+      { "placementTypeId" => type, "acceptsAssetCategories" => ["CREATIVE_ASSETS"],
+        "specMappings" => [{ "placementGroupId" => "DEFAULT_PROFILE", "specs" => ["universal-spec"] },
+                           { "placementGroupId" => "OTHER", "specs" => ["universal-spec"] }] }
+    }
+  )
+  assert(group == "DEFAULT_PROFILE" && spec_ids == ["universal-spec"], "Creative placement target resolution changed")
+  rejects("Invalid creative category accepted") do
+    MuntathirRelease.creative_placement_target(
+      "features" => [{ "featureId" => "APP_STORE_VERSIONS", "placementPolicies" => [] }],
+      "imageSpecs" => [{ "specId" => "universal-spec",
+                         "dimensions" => { "minWidth" => 5244, "maxWidth" => 5244, "minHeight" => 2950, "maxHeight" => 2950 } }],
+      "placementTypes" => [{ "placementTypeId" => "PRODUCT_PAGE_HEADER_ASSET", "acceptsAssetCategories" => ["APP_SCREENSHOTS_AND_PREVIEWS"],
+                            "specMappings" => [{ "placementGroupId" => "DEFAULT_PROFILE", "specs" => ["universal-spec"] }] }]
+    )
+  end
 
 end
 
@@ -118,6 +145,7 @@ if check_media
   end
   Dir.mktmpdir do |root|
     started = Time.now
+    size = MuntathirRelease::CREATIVE_SIZE.join("x")
     MuntathirRelease::LOCALES.each do |locale|
       directory = File.join(root, "build/marketing/store", locale)
       FileUtils.mkdir_p(directory)
@@ -125,6 +153,9 @@ if check_media
         File.write(File.join(directory, "#{device}-#{screen}.png"), "PNG")
       end
       File.write(File.join(directory, MuntathirRelease::WATCH_SCREENSHOT), "PNG")
+      creative = File.join(root, "build/marketing/creative", locale, "universal.png")
+      FileUtils.mkdir_p(File.dirname(creative))
+      MuntathirRelease.run!("magick", "-size", size, "xc:#10263f", "-alpha", "off", creative)
     end
     MuntathirRelease.validate_media!(root, since: started)
     foreign = File.join(root, "build/marketing/store/fa")
@@ -137,6 +168,12 @@ if check_media
     rejects("Stale screenshot accepted") { MuntathirRelease.validate_media!(root, since: started) }
     FileUtils.mv(quran, File.join(File.dirname(quran), "99-Extra.png"))
     rejects("Missing Quran screenshot accepted") { MuntathirRelease.validate_media!(root) }
+    FileUtils.mv(File.join(File.dirname(quran), "99-Extra.png"), quran)
+    creative = File.join(root, "build/marketing/creative/en-US/universal.png")
+    File.utime(stale, stale, creative)
+    rejects("Stale creative accepted") { MuntathirRelease.validate_media!(root, since: started) }
+    FileUtils.rm_f(creative)
+    rejects("Missing creative accepted") { MuntathirRelease.validate_media!(root) }
   end
 end
 
@@ -251,6 +288,23 @@ end
 app_id = "6824304362"
 assert(MuntathirRelease.build_uploads(app_id, version).map { |entry| entry.fetch("id") } == %w[old new], "Build upload filter missed an equivalent version or accepted a different platform/version")
 assert(MuntathirRelease.wait_for_uploaded_build(app_id, version, ["old"], timeout: 0) == build, "Wrong processed build selected")
+
+build_old = Struct.new(:id, :version, :app_version, :platform, :processing_state, :uploaded_date).new("build-old", "16", "1.1", "IOS", "VALID", "2026-11-15T10:00:00Z")
+build_new = Struct.new(:id, :version, :app_version, :platform, :processing_state, :uploaded_date).new("build-new", "17", "1.1", "IOS", "VALID", "2026-11-15T12:00:00Z")
+build_lookup = { "build-old" => build_old, "build-new" => build_new }
+Spaceship::ConnectAPI::Build.define_singleton_method(:get) { |build_id:| build_lookup.fetch(build_id) }
+rows.replace([existing, new_upload])
+assert(MuntathirRelease.existing_valid_build(app_id, version) == build_new, "App Store must select the latest valid build")
+assert(MuntathirRelease.existing_valid_build(app_id, version, build_number: "16") == build_old, "App Store must honor explicit build_number")
+rejects("Missing build number accepted") { MuntathirRelease.existing_valid_build(app_id, version, build_number: "99") }
+rows.replace([upload.call("failed", "17", "FAILED")])
+rejects("Failed upload accepted as existing build") { MuntathirRelease.existing_valid_build(app_id, version) }
+rows.replace([existing, new_upload])
+Spaceship::ConnectAPI::Build.define_singleton_method(:get) do |build_id:|
+  assert(build_id == build.id, "Selected a build unrelated to the new upload")
+  build
+end
+
 rows << upload.call("competing", "18")
 rejects("Competing uploads accepted") { MuntathirRelease.wait_for_uploaded_build(app_id, version, ["old"], timeout: 0) }
 rows.replace([existing, upload.call("failed", "17", "FAILED")])
@@ -274,10 +328,19 @@ app = Struct.new(:id, :bundle_id).new(app_id, "com.aljaroudi.Muntathir")
 app.define_singleton_method(:get_edit_app_store_version) { |**_| draft_version }
 context = { app: app, version: version, draft: draft_version, config: config, encryption: false,
             beta_notes: notes, feedback_email: "review@example.com" }
+synced_packs = 0
+synced_creatives = 0
+draft_localizations = [Struct.new(:locale, :id).new("en-US", "loc-en")]
 MuntathirRelease.define_singleton_method(:sync_asset_packs!) do
+  synced_packs += 1
   [{ name: "hadith", version: "2", version_id: "pack-v2", store_version_id: "pack-v1", external_version_id: "pack-v2" },
    { name: "rulings", version: "1", version_id: "rulings-v1", store_version_id: "rulings-v1", external_version_id: "rulings-v1" }]
 end
+MuntathirRelease.define_singleton_method(:sync_creative_assets!) do |localizations|
+  synced_creatives += 1
+  raise "Creative sync must use the draft localizations" unless localizations == draft_localizations
+end
+draft_version.define_singleton_method(:get_app_store_version_localizations) { draft_localizations }
 check.define_singleton_method(:check) { |**_| }
 check.define_singleton_method(:release_context) { |**options| calls << [:release_context, options]; context }
 
@@ -318,8 +381,10 @@ end
 MuntathirRelease.define_singleton_method(:with_release_lock) { |&block| block.call }
 check.define_singleton_method(:archive_and_upload) { |_| calls << [:archive_and_upload]; build }
 
+synced_packs = 0
 check.calls.clear
 check.testflight_public(force: "true")
+assert(synced_packs == 1, "TestFlight must sync Asset Packs")
 assert(check.calls.assoc(:release_context).last == { app_store: false, force: true }, "TestFlight force did not reach the freshness check")
 assert(check.calls.assoc(:run_tests).last[:destination] == [iphone], "TestFlight ran on multiple devices")
 capture = check.calls.select { |name, _| name == :sh }.map(&:last).flatten.grep(/\/(?:screenshots|watch_screenshots|style)\.rb$/)
@@ -330,19 +395,26 @@ assert(beta[:distribute_only] && beta[:app_version] == build.app_version && beta
 assert(!beta[:skip_waiting_for_build_processing] && beta[:wait_processing_timeout_duration].positive?, "Pilot must wait for beta details before distributing the processed build")
 assert(beta[:localized_build_info] == notes.transform_values { |text| { whats_new: text } }, "Beta localization missing")
 
+synced_packs = 0
+synced_creatives = 0
 check.calls.clear
 draft_version.release_type = "MANUAL"
 check.define_singleton_method(:upload_to_app_store) do |**options|
   calls << [:upload_to_app_store, options]
   draft_version.release_type = "AFTER_APPROVAL" if options[:automatic_release]
 end
+rows.replace([new_upload])
 check.app_store
+assert(synced_packs == 1, "App Store must sync Asset Packs")
+assert(synced_creatives == 1, "App Store must sync header and search creatives")
+assert(check.calls.none? { |name, _| name == :archive_and_upload }, "App Store must reuse the TestFlight build instead of uploading a new binary")
 assert(MuntathirRelease.review_pack_versions == ["pack-v2"], "App Store review must attach only pack versions that differ from the live packs")
 assert(check.calls.assoc(:run_tests).last[:destination] == [iphone, ipad], "App Store must test on both devices")
 listing, review = check.calls.filter_map { |name, options| options if name == :upload_to_app_store }
 assert(listing[:automatic_release] && listing[:overwrite_screenshots] && !listing[:submit_for_review] && !listing.key?(:app_previews_path), "App Store listing upload must replace screenshots and preserve videos")
 assert(review[:submit_for_review] && review[:build_number] == build.version && review[:app_version] == build.app_version, "App Store review must use the processed build")
 assert([listing, review].all? { |options| options[:skip_binary_upload] && options[:skip_app_version_update] }, "Deliver must leave binary upload and version numbering to Xcode and the operator")
+assert(check.calls.index { |name, _| name == :upload_to_app_store } < check.calls.rindex { |name, _| name == :upload_to_app_store }, "App Store listing must precede review submit")
 
 %i[tests refresh_screenshots].each do |step|
   original = check.method(step)
@@ -350,10 +422,38 @@ assert([listing, review].all? { |options| options[:skip_binary_upload] && option
   lanes = step == :tests ? %i[testflight_public app_store] : [:app_store]
   lanes.each do |lane|
     check.calls.clear
+    synced_creatives = 0
     rejects("#{lane} ignored failing #{step}") { check.public_send(lane) }
     assert(check.calls.none? { |name, _| %i[archive_and_upload upload_to_app_store upload_to_testflight].include?(name) }, "Uploaded after failing #{step}")
+    assert(synced_creatives.zero?, "Creative sync ran after failing #{step}")
   end
   check.define_singleton_method(step, &original)
+end
+
+check.calls.clear
+synced_packs = 0
+synced_creatives = 0
+draft_version.release_type = "MANUAL"
+validated_media = 0
+MuntathirRelease.define_singleton_method(:validate_media!) { |**_| validated_media += 1 }
+refresh = check.method(:refresh_screenshots)
+check.define_singleton_method(:refresh_screenshots) { |**_| raise "refresh_screenshots must be skipped" }
+check.app_store(force: "true", skip_tests: "true", skip_screenshots: "true")
+assert(validated_media == 1, "skip_screenshots must still validate existing store and creative assets")
+assert(synced_creatives == 1, "skip_screenshots must still sync creatives after listing upload")
+assert(check.calls.none? { |name, _| name == :run_tests }, "skip_tests must skip regressions")
+check.define_singleton_method(:refresh_screenshots, &refresh)
+
+synced_creatives = 0
+MuntathirRelease.define_singleton_method(:sync_creative_assets!) { |_| raise "creative sync failed" }
+check.calls.clear
+draft_version.release_type = "MANUAL"
+rejects("App Store ignored failing creative sync") { check.app_store }
+assert(check.calls.one? { |name, _| name == :upload_to_app_store }, "Creative failure must stop before review submit")
+assert(check.calls.assoc(:upload_to_app_store).last[:submit_for_review] != true, "Review submitted after creative failure")
+MuntathirRelease.define_singleton_method(:sync_creative_assets!) do |localizations|
+  synced_creatives += 1
+  raise "Creative sync must use the draft localizations" unless localizations == draft_localizations
 end
 
 assert(!File.exist?(File.expand_path("../../.github/workflows/apple-deploy.yml", __dir__)), "CI release workflow still exists")

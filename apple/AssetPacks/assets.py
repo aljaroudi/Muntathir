@@ -42,7 +42,13 @@ def validate_hadith(pack_id="hadith", root=ROOT, manifests=MANIFESTS):
     selector, = pack['fileSelectors']
     source = (path.parent / pack['sourceRoot'] / selector['fileSource']).resolve()
     assert pack['assetPackID'] == pack_id
-    assert pack['downloadPolicy'] == {'onDemand': {}} and 'language' not in pack
+    if pack_id == 'supplications':
+        assert pack['downloadPolicy'] == {
+            'essential': {'installationEventTypes': ['firstInstallation', 'subsequentUpdate']}
+        }, 'Supplications must install as an essential pack'
+    else:
+        assert pack['downloadPolicy'] == {'onDemand': {}}
+    assert 'language' not in pack
     assert pack['platforms'] == ['iOS']
     assert source == root / f'build/hadith/dist/{pack_id}.db'
     assert selector['fileDestination'] == f'{folder}/{pack_id}.db'
@@ -160,7 +166,7 @@ def main():
         assert args.path, 'Provide an .app or .ipa path'
         check_bundle(args.path)
     else:
-        print(f'Validated {len(manifests)} on-demand manifests and database contents')
+        print(f'Validated {len(manifests)} asset-pack manifests and database contents')
 
 
 if __name__ == '__main__':

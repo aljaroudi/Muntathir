@@ -174,15 +174,18 @@ final class QuranUITests: XCTestCase {
         for _ in 0 ..< 2 {
             for destination in Array(3 ... 7) + Array((2 ... 6).reversed()) {
                 if destination > number {
-                    app.swipeRight(velocity: .fast)
+                    app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5))
+                        .press(forDuration: 0.02, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5)))
                 } else {
-                    app.swipeLeft(velocity: .fast)
+                    app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5))
+                        .press(forDuration: 0.02, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5)))
                 }
                 guard settled(destination) else { return }
                 number = destination
             }
         }
-        app.swipeRight(velocity: .fast)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5))
+            .press(forDuration: 0.02, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5)))
         guard settled(3) else { return }
         let screenshot = XCTAttachment(screenshot: app.screenshot())
         screenshot.name = "Justified Mushaf after repeated paging"
@@ -198,9 +201,13 @@ final class QuranUITests: XCTestCase {
         let firstPage = app.descendants(matching: .any)["quran-page-1"].firstMatch
         XCTAssertTrue(firstPage.waitForExistence(timeout: 5))
         XCTAssertEqual(firstPage.frame.midX, app.frame.midX, accuracy: 4)
-        firstPage.swipeRight()
-        XCTAssertTrue(app.descendants(matching: .any)["quran-page-2"].firstMatch.waitForExistence(timeout: 5))
-        XCTAssertEqual(app.descendants(matching: .any)["quran-page-2"].firstMatch.frame.midX, app.frame.midX, accuracy: 4)
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5))
+        start.press(forDuration: 0.02, thenDragTo: end)
+        let secondPage = app.descendants(matching: .any)["quran-page-2"].firstMatch
+        XCTAssertTrue(secondPage.waitForExistence(timeout: 5))
+        let centered = NSPredicate { _, _ in abs(secondPage.frame.midX - app.frame.midX) < 4 }
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: centered, object: nil)], timeout: 5), .completed)
         search("255", in: app)
         XCTAssertTrue(app.buttons["quran-result-2:255"].exists)
         app.navigationBars.buttons.matching(NSPredicate(format: "label ==[c] %@ OR label ==[c] %@", "close", "cancel")).firstMatch.tap()
@@ -344,7 +351,8 @@ final class QuranUITests: XCTestCase {
         app.swipeRight(velocity: .fast)
         let next = app.descendants(matching: .any)["quran-page-3"].firstMatch
         XCTAssertTrue(next.waitForExistence(timeout: 5))
-        XCTAssertEqual(next.frame.midX, app.frame.midX, accuracy: 4)
+        let centered = NSPredicate { _, _ in abs(next.frame.midX - app.frame.midX) < 4 }
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: centered, object: nil)], timeout: 5), .completed)
         let justified = XCTAttachment(screenshot: app.screenshot())
         justified.name = "Native justified page"
         justified.lifetime = .keepAlways
@@ -416,7 +424,7 @@ final class QuranUITests: XCTestCase {
         let app = openQuran()
         let search = app.searchFields.firstMatch
         search.tap()
-        search.typeText("2:255")
+        search.typeText("2:255\n")
         let result = app.buttons["quran-result-2:255"]
         XCTAssertTrue(result.waitForExistence(timeout: 10))
         result.tap()
@@ -430,7 +438,7 @@ final class QuranUITests: XCTestCase {
         XCTAssertFalse(app.descendants(matching: .any)["quran-translation-1:1"].firstMatch.exists)
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.searchFields.firstMatch.tap()
-        app.searchFields.firstMatch.typeText("الله")
+        app.searchFields.firstMatch.typeText("الله\n")
         let result = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "quran-result-")).firstMatch
         XCTAssertTrue(result.waitForExistence(timeout: 10))
         let screenshot = XCTAttachment(screenshot: app.screenshot())

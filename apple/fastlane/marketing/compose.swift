@@ -60,9 +60,8 @@ let available = NSSize(width: width * 0.9, height: height * 0.735)
 let scale = min(available.width / device.size.width, available.height / device.size.height)
 let size = NSSize(width: device.size.width * scale, height: device.size.height * scale)
 let deviceRect = NSRect(x: (width - size.width) / 2, y: height * 0.765 - size.height, width: size.width, height: size.height)
-NSGraphicsContext.saveGraphicsState()
 device.draw(in: deviceRect)
-NSGraphicsContext.restoreGraphicsState()
+
 context.flushGraphics()
 NSGraphicsContext.restoreGraphicsState()
 guard let data = bitmap.representation(using: .png, properties: [:]) else { fatalError("PNG encoding failed") }

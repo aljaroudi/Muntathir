@@ -103,7 +103,16 @@ final class OnboardingUITests: XCTestCase {
         }
         defer { removeUIInterruptionMonitor(monitor) }
         app.buttons["Enable notifications"].tap()
-        app.navigationBars.firstMatch.tap()
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let alert = springboard.alerts.firstMatch
+        if alert.waitForExistence(timeout: 5) {
+            let deny = alert.buttons["Don’t Allow"]
+            if deny.exists {
+                deny.tap()
+            } else if alert.buttons["Don't Allow"].exists {
+                alert.buttons["Don't Allow"].tap()
+            }
+        }
         XCTAssertTrue(app.staticTexts["Notifications are disabled. Enable them in system Settings."].waitForExistence(timeout: 10))
         app.buttons["onboarding-finish"].tap()
         XCTAssertTrue(app.buttons["Today"].firstMatch.waitForExistence(timeout: 5))

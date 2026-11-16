@@ -190,7 +190,13 @@ platform :ios do
     context = release_context(app_store: options.fetch(:app_store), force: options[:force].to_s == "true")
     sh("python3", File.join(__dir__, "../../build/build.py"), "--assets-only")
     tests(include_ipad: options.fetch(:app_store)) unless options[:skip_tests].to_s == "true"
-    refresh_screenshots if options.fetch(:app_store)
+    if options.fetch(:app_store)
+      if options[:skip_screenshots].to_s == "true"
+        MuntathirRelease.validate_media!
+      else
+        refresh_screenshots
+      end
+    end
     context[:asset_packs] = MuntathirRelease.sync_asset_packs!
     context
   end
@@ -222,11 +228,12 @@ platform :ios do
     end
   end
 
-  desc "Test on iPhone and iPad, refresh the listing, and submit a new build for automatic App Store release"
+  desc "Test on iPhone and iPad, refresh the listing, and submit the TestFlight build for automatic App Store release"
   lane :app_store do |options|
     MuntathirRelease.with_release_lock do
-      context = prepare_release(app_store: true, force: options[:force])
-      build = archive_and_upload(context)
+      context = prepare_release(app_store: true, force: options[:force], skip_tests: options[:skip_tests],
+                                skip_screenshots: options[:skip_screenshots])
+      build = MuntathirRelease.existing_valid_build(context.fetch(:app).id, context.fetch(:version), build_number: options[:build_number])
       draft = assert_current_draft(context)
       app_identifier = context.fetch(:app).bundle_id
       store_options = { app_identifier: app_identifier, platform: "ios", app_version: build.app_version,
@@ -238,7 +245,10 @@ platform :ios do
                           screenshots_path: "./build/marketing/store", overwrite_screenshots: true,
                           automatic_release: draft.release_type == "AFTER_APPROVAL" ? nil : true, submit_for_review: false)
 
-      unless assert_current_draft(context).release_type == "AFTER_APPROVAL"
+      draft = assert_current_draft(context)
+      MuntathirRelease.sync_creative_assets!(draft.get_app_store_version_localizations)
+
+      unless draft.release_type == "AFTER_APPROVAL"
         UI.user_error!("Set automatic release after approval for this draft in App Store Connect.")
       end
       unless precheck(app_identifier: app_identifier, include_in_app_purchases: false, platform: "ios")

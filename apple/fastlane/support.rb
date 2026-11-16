@@ -3,6 +3,7 @@ require "addressable/uri"
 require "fileutils"
 require "open3"
 require_relative "asset_packs"
+require_relative "creative_assets"
 require_relative "cleanup"
 
 module MuntathirRelease
@@ -75,12 +76,18 @@ module MuntathirRelease
   LIMITS = { "name" => 30, "subtitle" => 30, "keywords" => 100, "description" => 4000,
              "promotional_text" => 170, "release_notes" => 4000 }.freeze
 
+  # App Store Connect rejects these in What’s New / metadata text fields.
+  ASC_FORBIDDEN = /[ʿʾˈˌː]/u.freeze
+
   def self.validate_metadata!(root = File.join(__dir__, "metadata"), locales: LOCALES)
     locales.each do |locale|
       LIMITS.each do |field, limit|
         path = File.join(root, locale, "#{field}.txt")
         text = File.read(path).strip
         raise "#{locale}/#{field}: expected 1–#{limit} characters, got #{text.length}" unless (1..limit).cover?(text.length)
+        if (bad = text.scan(ASC_FORBIDDEN).uniq).any?
+          raise "#{locale}/#{field}: App Store Connect rejects #{bad.map { |c| c.inspect }.join(', ')}"
+        end
       end
     end
   end
@@ -118,6 +125,54 @@ module MuntathirRelease
     raise "Blank capture: #{path}" unless brightness.between?(0.01, 0.99)
   end
 
+  CREATIVE_SIZE = SCREENSHOTS.fetch("creative").fetch("size").freeze
+  # App icon emerald + mark paths from AppIcon.icon/Assets/Muntathir-Icon.svg
+  CREATIVE_GRADIENT = %w[#174F45 #082F2B].freeze
+  CREATIVE_ICON_SVG = File.join(ROOT, "AppIcon.icon/Assets/Muntathir-Icon.svg").freeze
+
+  def self.render_brand_creative!(root: ROOT, locales: LOCALES)
+    width, height = CREATIVE_SIZE
+    dir = File.join(root, "build/marketing/creative")
+    FileUtils.mkdir_p(dir)
+    mark = File.join(dir, "mark.png")
+    shared = File.join(dir, "universal.png")
+    raise "Missing app icon SVG: #{CREATIVE_ICON_SVG}" unless File.file?(CREATIVE_ICON_SVG)
+
+    # ImageMagick's SVG renderer drops strokes/gradients, so draw the mark with -draw
+    # using the same path data as Muntathir-Icon.svg (1024 canvas, no background fill).
+    run!("magick", "-size", "1024x1024", "xc:none",
+         "-stroke", "#F5F0DF", "-strokewidth", "32", "-fill", "none",
+         "-draw", "path 'M 344,272 C 344,390 422,440 480,494 C 490,503 490,521 480,530 C 422,584 344,634 344,752'",
+         "-draw", "path 'M 680,272 C 680,390 602,440 544,494 C 534,503 534,521 544,530 C 602,584 680,634 680,752'",
+         "-fill", "#DCC18A", "-stroke", "none",
+         "-draw", "path 'M 391,330 L 633,330 C 615,386 561,425 512,470 C 463,425 409,386 391,330 Z'",
+         "-draw", "circle 512,553 520,553",
+         "-draw", "path 'M 394,744 C 394,675 463,648 512,600 C 561,648 630,675 630,744 Z'",
+         "-fill", "#F5F0DF",
+         "-draw", "roundrectangle 296,232 728,280 24,24",
+         "-draw", "roundrectangle 296,744 728,792 24,24",
+         mark)
+    tile = File.join(dir, "tile.png")
+    run!("magick", mark, "-resize", "340x340", "-alpha", "set", "-channel", "A",
+         "-evaluate", "multiply", "0.14", "+channel", tile)
+    # Safe-area center is (2622, 1141); gravity Center +0-334 places the hero mark there.
+    run!("magick", "-size", "#{width}x#{height}", "gradient:#{CREATIVE_GRADIENT.join('-')}",
+         "(", "-size", "#{width}x#{height}", "tile:#{tile}", ")",
+         "-compose", "over", "-composite",
+         "(", mark, "-resize", "900x900", ")",
+         "-gravity", "center", "-geometry", "+0-334", "-compose", "over", "-composite",
+         "-alpha", "remove", "-alpha", "off", shared)
+    actual = run!("magick", "identify", "-format", "%wx%h %[channels]", shared).strip
+    raise "Invalid creative export: #{actual}" unless actual.start_with?(CREATIVE_SIZE.join("x")) && !actual.include?("rgba")
+
+    locales.each do |locale|
+      destination = File.join(dir, locale, "universal.png")
+      FileUtils.mkdir_p(File.dirname(destination))
+      FileUtils.cp(shared, destination)
+    end
+    shared
+  end
+
   def self.validate_media!(root = ROOT, since: nil)
     expected = DEVICES.product(SCREENSHOTS.fetch("screens")).map { |device, screen| "#{device}-#{screen}.png" } << WATCH_SCREENSHOT
     directory = File.join(root, "build/marketing/store")
@@ -130,6 +185,12 @@ module MuntathirRelease
              images.all? { |image| File.size?(image) && (!since || File.mtime(image) >= since) }
         raise "Missing, unexpected or stale styled screenshots for #{locale}"
       end
+      creative = File.join(root, "build/marketing/creative", locale, "universal.png")
+      unless File.file?(creative) && File.size?(creative) && (!since || File.mtime(creative) >= since)
+        raise "Missing or stale creative asset for #{locale}"
+      end
+      actual = run!("magick", "identify", "-format", "%wx%h %[channels]", creative).strip
+      raise "Invalid creative asset for #{locale}: #{actual}" unless actual.start_with?(CREATIVE_SIZE.join("x")) && !actual.include?("rgba")
     end
   end
 
@@ -230,6 +291,34 @@ module MuntathirRelease
 
       sleep([15, remaining].min)
     end
+  end
+
+  def self.existing_valid_build(app_id, version, build_number: nil)
+    builds = build_uploads(app_id, version).filter_map do |upload|
+      next unless upload.dig("attributes", "state", "state") == "COMPLETE"
+
+      build_id = upload.dig("relationships", "build", "data", "id")
+      next unless build_id
+
+      build = Spaceship::ConnectAPI::Build.get(build_id: build_id)
+      next unless build&.processing_state == "VALID" &&
+                  build.platform == "IOS" &&
+                  Gem::Version.new(build.app_version) == Gem::Version.new(version)
+
+      build
+    end
+
+    if build_number && !build_number.to_s.strip.empty?
+      selected = builds.find { |build| build.version.to_s == build_number.to_s }
+      raise "No valid iOS build #{version} (#{build_number}) found in App Store Connect. Run testflight_public first." unless selected
+
+      return selected
+    end
+
+    selected = builds.max_by { |build| [build.respond_to?(:uploaded_date) ? build.uploaded_date.to_s : "", build.version.to_i] }
+    raise "No valid iOS build for version #{version} found in App Store Connect. Run testflight_public first." unless selected
+
+    selected
   end
 
   def self.project_version
