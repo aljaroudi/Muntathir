@@ -16,7 +16,14 @@ kotlin {
 
 dependencies {
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.adhan)
     testImplementation(libs.kotlin.test)
+    testImplementation(libs.sqlite.jdbc)
+}
+
+// Content shared with the Apple app ships as classpath resources.
+tasks.processResources {
+    from(rootProject.file("../shared")) { include("events.json", "ummalqura.json") }
 }
 
 tasks.test {
@@ -24,4 +31,9 @@ tasks.test {
     val fixtures = rootProject.file("../shared/fixtures")
     inputs.dir(fixtures)
     systemProperty("fixtures", fixtures.absolutePath)
+    // Read-only inputs owned by other parts of the repository (bundled Quran DB, production feed).
+    val repository = rootProject.file("..")
+    inputs.file(repository.resolve("apple/Muntathir/Resources/Quran/quran.db"))
+    inputs.file(repository.resolve("web/public/calendar/corrections-v1.json"))
+    systemProperty("repository", repository.absolutePath)
 }

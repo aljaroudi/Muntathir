@@ -13,7 +13,7 @@ Verified 2026-11-16: `just android-build` and `just android-test` pass; screensh
 - [x] **P0.6** JUnit (`core`, reads `shared/fixtures`), Compose UI test (`androidTest`), screenshot suite (`src/screenshotTest`, references in `src/screenshotTestDefaultDebug/`; tasks `updateDebugScreenshotTestDefaultTestSuite` / `testDebugScreenshotTestDefaultTestSuite`). Skill: testing-setup.
 
 ## P1 — Core ports + spikes (parallelizable)
-- [ ] **P1.1** CalendarEngine + Umm al-Qura fixture (export 1350–1500 AH month starts from iOS). *Done when:* `EventsTests`, month-offset and calendar tests pass.
+- [x] **P1.1** CalendarEngine + Umm al-Qura fixture (export 1350–1500 AH month starts from iOS). *Done when:* `EventsTests`, month-offset and calendar tests pass. Baseline is the Apple table itself (`shared/ummalqura.json`, from `shared/scripts/export-ummalqura.swift`), shipped as a `core` resource; JDK `HijrahChronology` matched all 1812 starts but only covers dates outside the table. Engine days are `LocalDate`s. The sunset case of `EventsTests` landed with P1.3.
 - [ ] **P1.2** CorrectionsFeed parser/validator. *Done when:* `FeedClientTests` cases pass.
 - [ ] **P1.3** PrayerCalculator on Adhan Kotlin (verify Jafari/Tehran). *Done when:* shared fixtures + `PrayerPreferencesTests`/`WidgetPrayerTests` logic pass.
 - [ ] **P1.4** Solar/Moon position, SolarArc, QiblaAlignment. *Done when:* matching tests pass.
