@@ -7,13 +7,13 @@ import androidx.sqlite.driver.bundled.SQLITE_OPEN_READONLY
 import com.aljaroudi.muntathir.core.quran.Ayah
 import com.aljaroudi.muntathir.core.quran.DailyAyah
 import com.aljaroudi.muntathir.core.quran.QuranSurah
-import kotlinx.serialization.json.Json
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -43,7 +43,14 @@ class QuranDatabase
                     val arabic = query(QURAN, ids) ?: return@withLock emptyMap()
                     val translated = translation?.let { query(it, ids) }.orEmpty()
                     arabic.mapValues { (index, ayah) ->
-                        translated[index]?.let { ayah.copy(translations = mapOf(translation!! to it.text)) } ?: ayah
+                        val text = translated[index]?.text
+                        if (translation != null &&
+                            text != null
+                        ) {
+                            ayah.copy(translations = mapOf(translation to text))
+                        } else {
+                            ayah
+                        }
                     }
                 }
             }
@@ -52,38 +59,45 @@ class QuranDatabase
         suspend fun surahNames(): Map<Int, String> =
             withContext(Dispatchers.IO) {
                 runCatching {
-                    val text = context.assets.open("quran/$SURAHS").use { it.readBytes().decodeToString() }
-                    json.decodeFromString<List<QuranSurah>>(text).associate { it.id to it.arabic }
+                    json.decodeFromString<List<QuranSurah>>(asset(SURAHS)).associate { it.id to it.arabic }
                 }.getOrDefault(emptyMap())
             }
 
         /** The 360-day schedule, or an empty one when the bundled data is incomplete. */
         suspend fun dailyAyah(translation: String?): DailyAyah {
-            val json =
-                withContext(Dispatchers.IO) {
-                    runCatching { context.assets.open("quran/$DAILY_IDS").use { it.readBytes().decodeToString() } }.getOrNull()
-                }
+            val json = withContext(Dispatchers.IO) { runCatching { asset(DAILY_IDS) }.getOrNull() }
             val ids = DailyAyah.ids(json)
             val records = if (ids.size == DailyAyah.COUNT) verses(ids.toSet(), translation) else emptyMap()
             return DailyAyah.load(ids, records)
         }
+
+        /** Row: index, surah, verse, text. */
+        private fun androidx.sqlite.SQLiteStatement.ayah(): Pair<Int, Ayah> =
+            getLong(0).toInt() to Ayah(getLong(1).toInt(), getLong(2).toInt(), getText(3))
+
+        private fun asset(name: String): String =
+            context.assets.open("quran/$name").use { it.readBytes().decodeToString() }
 
         private fun query(
             name: String,
             ids: Set<Int>,
         ): Map<Int, Ayah>? {
             val connection = connection(name) ?: return null
-            return ids.filter { it in 1..VERSE_COUNT }.chunked(500).flatMap { chunk ->
-                val marks = chunk.joinToString(",") { "?" }
-                connection.prepare("SELECT \"index\", sura, aya, text FROM quran WHERE \"index\" IN ($marks)").use { statement ->
-                    chunk.forEachIndexed { position, id -> statement.bindLong(position + 1, id.toLong()) }
-                    buildList {
-                        while (statement.step()) {
-                            add(statement.getLong(0).toInt() to Ayah(statement.getLong(1).toInt(), statement.getLong(2).toInt(), statement.getText(3)))
+            return ids
+                .filter { it in 1..VERSE_COUNT }
+                .chunked(500)
+                .flatMap { chunk ->
+                    val marks = chunk.joinToString(",") { "?" }
+                    val sql = "SELECT \"index\", sura, aya, text FROM quran WHERE \"index\" IN ($marks)"
+                    connection.prepare(sql).use { statement ->
+                        chunk.forEachIndexed { position, id -> statement.bindLong(position + 1, id.toLong()) }
+                        buildList {
+                            while (statement.step()) {
+                                add(statement.ayah())
+                            }
                         }
                     }
-                }
-            }.toMap()
+                }.toMap()
         }
 
         private fun connection(name: String): SQLiteConnection? =
