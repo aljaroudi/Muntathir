@@ -54,7 +54,8 @@ class DataStoreAppStorage(
 private object PreferencesSerializer : Serializer<Preferences?> {
     override val defaultValue: Preferences? = null
 
-    override suspend fun readFrom(input: InputStream): Preferences? = Preferences.decodeValid(input.readBytes().decodeToString())
+    override suspend fun readFrom(input: InputStream): Preferences? =
+        Preferences.decodeValid(input.readBytes().decodeToString())
 
     override suspend fun writeTo(
         t: Preferences?,
@@ -73,7 +74,11 @@ private object DeviceSerializer : Serializer<DeviceState> {
     override val defaultValue = DeviceState()
 
     override suspend fun readFrom(input: InputStream): DeviceState =
-        runCatching { json.decodeFromString<DeviceState>(input.readBytes().decodeToString()) }.getOrDefault(defaultValue)
+        runCatching {
+            json.decodeFromString<DeviceState>(
+                input.readBytes().decodeToString(),
+            )
+        }.getOrDefault(defaultValue)
 
     override suspend fun writeTo(
         t: DeviceState,

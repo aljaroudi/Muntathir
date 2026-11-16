@@ -1,51 +1,59 @@
 package com.aljaroudi.muntathir.ui
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aljaroudi.muntathir.R
-import com.aljaroudi.muntathir.ui.theme.MuntathirTheme
-import com.aljaroudi.muntathir.ui.theme.QuranFont
+import com.aljaroudi.muntathir.core.app.AppError
+import com.aljaroudi.muntathir.core.app.AppModel
+import com.aljaroudi.muntathir.core.app.AppState
+import com.aljaroudi.muntathir.ui.components.message
+import com.aljaroudi.muntathir.ui.shell.AppShell
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
-/** Placeholder root; replaced by the adaptive app shell in P2.2. */
-@Composable
-fun MuntathirApp(modifier: Modifier = Modifier) {
-    Scaffold(modifier = modifier.fillMaxSize()) { padding ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                text = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
-                fontFamily = QuranFont,
-                style = MaterialTheme.typography.headlineMedium,
-                textAlign = TextAlign.Center,
-            )
-            Text(
-                text = stringResource(R.string.app_name),
-                style = MaterialTheme.typography.displaySmall,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.testTag("app-title"),
-            )
-        }
+@HiltViewModel
+class MainViewModel
+    @Inject
+    constructor(
+        model: AppModel,
+    ) : ViewModel() {
+        val state: StateFlow<AppState> = model.state
+        val errors: SharedFlow<AppError> = model.errors
     }
+
+/** App root: the shell, plus Swift `ContentView`'s "Unable to update" alert for rejected changes. */
+@Composable
+fun MuntathirApp(
+    viewModel: MainViewModel,
+    modifier: Modifier = Modifier,
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    AppShell(state.preferences.tabShortcuts, modifier)
+    ErrorDialog(viewModel.errors)
 }
 
-@Preview(showBackground = true)
 @Composable
-private fun MuntathirAppPreview() {
-    MuntathirTheme(dynamicColor = false) { MuntathirApp() }
+private fun ErrorDialog(errors: SharedFlow<AppError>) {
+    var shown by rememberSaveable { mutableStateOf<Int?>(null) }
+    LaunchedEffect(errors) { errors.collect { shown = it.message() } }
+    val message = shown ?: return
+    AlertDialog(
+        onDismissRequest = { shown = null },
+        confirmButton = { TextButton(onClick = { shown = null }) { Text(stringResource(R.string.ok)) } },
+        title = { Text(stringResource(R.string.unable_to_update)) },
+        text = { Text(stringResource(message)) },
+    )
 }

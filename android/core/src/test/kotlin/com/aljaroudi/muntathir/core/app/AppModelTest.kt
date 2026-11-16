@@ -51,16 +51,36 @@ class AppModelTest {
         id: String,
         month: HijriMonth,
         start: CivilDate,
-    ) = Announcement(id, 1, SightingMethod.NakedEye, CalendarSource.MIDDLE_EAST, Coverage(listOf("SA"), emptyList()), month, start)
+    ) = Announcement(
+        id,
+        1,
+        SightingMethod.NakedEye,
+        CalendarSource.MIDDLE_EAST,
+        Coverage(listOf("SA"), emptyList()),
+        month,
+        start,
+    )
 
     @Test
     fun localChangesPersistAndNormalize() =
         runBlocking<Unit> {
             val storage = MemoryStorage()
             val model = AppModel.load(storage, systemZone = ZoneOffset.UTC)
-            assertTrue(model.update { it.copy(tabShortcuts = listOf(AppTool.Hadith, AppTool.Events, AppTool.Quran, AppTool.Qibla)) })
-            assertEquals(listOf(AppTool.Hadith, AppTool.Events, AppTool.Quran), model.state.value.preferences.tabShortcuts)
-            assertEquals(model.state.value.preferences, AppModel.load(storage).state.value.preferences)
+            assertTrue(
+                model.update {
+                    it.copy(tabShortcuts = listOf(AppTool.Hadith, AppTool.Events, AppTool.Quran, AppTool.Qibla))
+                },
+            )
+            assertEquals(
+                listOf(AppTool.Hadith, AppTool.Events, AppTool.Quran),
+                model.state.value.preferences.tabShortcuts,
+            )
+            assertEquals(
+                model.state.value.preferences,
+                AppModel
+                    .load(storage)
+                    .state.value.preferences,
+            )
             assertEquals(1, model.state.value.revision)
         }
 
@@ -92,7 +112,12 @@ class AppModelTest {
             assertEquals(DeviceState(onboardingCompleted = true, liveLocation = riyadh), storage.device)
             // An invalid stored fix is dropped on load.
             storage.device = storage.device.copy(liveLocation = riyadh.copy(latitude = 99.0))
-            assertEquals(null, AppModel.load(storage).state.value.location)
+            assertEquals(
+                null,
+                AppModel
+                    .load(storage)
+                    .state.value.location,
+            )
         }
 
     @Test
@@ -103,7 +128,10 @@ class AppModelTest {
             assertFalse(PrayerName.Isha in model.state.value.preferences.enabledPrayers)
             assertTrue(model.setPrayer(PrayerName.Isha, enabled = true))
             assertTrue(model.setPrayer(PrayerName.Fajr, enabled = false, notificationsAllowed = false))
-            assertEquals(setOf(PrayerName.Dhuhr, PrayerName.Maghrib, PrayerName.Isha), model.state.value.preferences.enabledPrayers)
+            assertEquals(
+                setOf(PrayerName.Dhuhr, PrayerName.Maghrib, PrayerName.Isha),
+                model.state.value.preferences.enabledPrayers,
+            )
         }
 
     @Test
@@ -121,10 +149,16 @@ class AppModelTest {
             model.applyLive(riyadh)
             assertFalse(model.refreshFeed())
             assertEquals(listOf(AppTool.Events), model.state.value.preferences.tabShortcuts)
-            assertTrue(model.state.value.confirmations.isEmpty())
+            assertTrue(
+                model.state.value.confirmations
+                    .isEmpty(),
+            )
             // Relaunch applies the cached feed, and an undisturbed refresh applies too.
             val restored = AppModel.load(MemoryStorage(device = DeviceState(liveLocation = riyadh)), client)
-            assertEquals(CorrectionsFeed.decode(body.decodeToString()).announcements, restored.state.value.confirmations)
+            assertEquals(
+                CorrectionsFeed.decode(body.decodeToString()).announcements,
+                restored.state.value.confirmations,
+            )
             folder.deleteRecursively()
         }
 
@@ -138,14 +172,23 @@ class AppModelTest {
             val original = row("first", month, CivilDate.of(baseline.start(month)))
             model.receive(CorrectionsFeed(1, listOf(original)))
             model.correct(month, -2)
-            val before = model.state.value.engine.start(month)
+            val before =
+                model.state.value.engine
+                    .start(month)
             val next = row("next", month.advanced(1), CivilDate.of(baseline.start(month.advanced(1))))
             assertFailsWith<CalendarException> { model.receive(CorrectionsFeed(1, listOf(original, next))) }
             assertEquals(listOf(original), model.state.value.confirmations)
-            assertEquals(before, model.state.value.engine.start(month))
+            assertEquals(
+                before,
+                model.state.value.engine
+                    .start(month),
+            )
             assertEquals(listOf(MonthOffset(month, -2)), model.state.value.preferences.monthOffsets)
             model.receive(CorrectionsFeed(1, emptyList()))
-            assertTrue(model.state.value.confirmations.isEmpty())
+            assertTrue(
+                model.state.value.confirmations
+                    .isEmpty(),
+            )
         }
 
     @Test
@@ -161,7 +204,11 @@ class AppModelTest {
             model.correct(next, -1)
             model.correct(month, -2)
             val saved = model.state.value.preferences
-            assertFalse(model.update { prefs -> prefs.copy(monthOffsets = prefs.monthOffsets.filter { it.month != next }) })
+            assertFalse(
+                model.update { prefs ->
+                    prefs.copy(monthOffsets = prefs.monthOffsets.filter { it.month != next })
+                },
+            )
             assertEquals(saved, model.state.value.preferences)
             assertEquals(listOf(confirmed), model.state.value.confirmations)
             assertTrue(model.errors.replayCache.isEmpty()) // errors are events, not state
@@ -171,10 +218,18 @@ class AppModelTest {
     fun announcementsAreDeliveredOncePerRevision() =
         runBlocking<Unit> {
             val posted = mutableListOf<String>()
-            val storage = MemoryStorage(Preferences(announcementNotifications = true), DeviceState(liveLocation = riyadh))
+            val storage =
+                MemoryStorage(Preferences(announcementNotifications = true), DeviceState(liveLocation = riyadh))
             val now = CalendarEngine(riyadh.zone).startOfDay(java.time.LocalDate.of(2026, 11, 17))
-            val model = AppModel.load(storage, announcer = { posted += it.id; true }, clock = { now })
-            val month = model.state.value.engine.resolve(now).month
+            val model =
+                AppModel.load(storage, announcer = {
+                    posted += it.id
+                    true
+                }, clock = { now })
+            val month =
+                model.state.value.engine
+                    .resolve(now)
+                    .month
             val base = CalendarEngine(riyadh.zone)
             val rows =
                 listOf(month, month.advanced(1), month.advanced(2)).map {

@@ -58,7 +58,8 @@ object DataModule {
     fun feedClient(
         @ApplicationContext context: Context,
         transport: FeedTransport,
-    ): FeedClient = FeedClient(FeedClient.PRODUCTION_URL, File(context.cacheDir, "calendar/corrections-v1.json"), transport)
+    ): FeedClient =
+        FeedClient(FeedClient.PRODUCTION_URL, File(context.cacheDir, "calendar/corrections-v1.json"), transport)
 
     /**
      * Loads both stores before first use. They are a few hundred bytes each, and every screen and receiver

@@ -35,7 +35,12 @@ class NotificationPlanTest {
             val imsak = times.first { it.name == PrayerName.Imsak }
             val fajr = times.first { it.name == PrayerName.Fajr }
             assertEquals(Duration.ofMinutes(minutes.toLong()), Duration.between(imsak.time, fajr.time))
-            val options = Preferences(prayerMethod = PrayerMethod.Tehran, imsakMinutes = minutes, enabledPrayers = setOf(PrayerName.Imsak))
+            val options =
+                Preferences(
+                    prayerMethod = PrayerMethod.Tehran,
+                    imsakMinutes = minutes,
+                    enabledPrayers = setOf(PrayerName.Imsak),
+                )
             val plan = NotificationPlan.make(midnight(day), options, mecca)
             assertEquals(PrayerName.Imsak, plan.first().name)
             assertEquals(imsak.time, plan.first().time)

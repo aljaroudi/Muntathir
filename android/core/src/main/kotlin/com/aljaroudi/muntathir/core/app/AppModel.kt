@@ -122,7 +122,12 @@ class AppModel private constructor(
             val updated = change(current.preferences).normalized()
             if (!updated.isValid) return fail(AppError.InvalidPreferences)
             try {
-                check(current.device.liveLocation ?: updated.savedLocation, updated.monthOffsets, current.confirmations, current.systemZone)
+                check(
+                    current.device.liveLocation ?: updated.savedLocation,
+                    updated.monthOffsets,
+                    current.confirmations,
+                    current.systemZone,
+                )
             } catch (error: CalendarException) {
                 return fail(AppError.Calendar(error.kind))
             }
@@ -173,7 +178,10 @@ class AppModel private constructor(
     suspend fun moveOnboarding(by: Int) =
         mutex.withLock {
             val current = mutableState.value
-            val device = current.device.copy(onboardingStep = (current.device.onboardingStep + by).coerceIn(DeviceState.STEPS))
+            val device =
+                current.device.copy(
+                    onboardingStep = (current.device.onboardingStep + by).coerceIn(DeviceState.STEPS),
+                )
             storage.saveDevice(device)
             mutableState.value = current.copy(device = device)
         }

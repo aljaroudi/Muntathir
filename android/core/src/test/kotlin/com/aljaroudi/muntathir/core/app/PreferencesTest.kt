@@ -32,7 +32,9 @@ class PreferencesTest {
     @Test
     fun oldSettingsKeepChoicesAndDefaultNewFields() {
         val preferences =
-            Preferences.decode("""{"prayerMethod":"tehran","asrRule":"hanafi","enabledPrayers":[],"hiddenPrayers":["asr"]}""")
+            Preferences.decode(
+                """{"prayerMethod":"tehran","asrRule":"hanafi","enabledPrayers":[],"hiddenPrayers":["asr"]}""",
+            )
         assertEquals(PrayerMethod.Tehran, preferences.prayerMethod)
         assertTrue(preferences.enabledPrayers.isEmpty())
         assertEquals(10, preferences.imsakMinutes)
@@ -60,7 +62,9 @@ class PreferencesTest {
     @Test
     fun unknownDuplicatesAndOverflowAreRemovedWithoutChangingOrder() {
         val preferences =
-            Preferences.decode("""{"tabShortcuts":["future","events","events","today","hadith","quran","qibla","tools"]}""")
+            Preferences.decode(
+                """{"tabShortcuts":["future","events","events","today","hadith","quran","qibla","tools"]}""",
+            )
         assertEquals(listOf(AppTool.Events, AppTool.Hadith, AppTool.Quran), preferences.tabShortcuts)
         assertEquals(preferences, Preferences.decode(preferences.encode()))
     }
@@ -79,7 +83,11 @@ class PreferencesTest {
 
     @Test
     fun legacyAdhanStaysOnPrayersOnly() {
-        val encoded = Json.parseToJsonElement(Preferences(notificationSound = PrayerAlertSound.Bell).encode()).jsonObject
+        val encoded =
+            Json
+                .parseToJsonElement(
+                    Preferences(notificationSound = PrayerAlertSound.Bell).encode(),
+                ).jsonObject
         val legacy = JsonObject(encoded - setOf("sunsetSound", "otherTimesSound", "calendarEventNotifications"))
         val migrated = Preferences.decode(legacy.toString())
         assertEquals(PrayerAlertSound.Bell, migrated.notificationSound)
@@ -87,7 +95,10 @@ class PreferencesTest {
         assertEquals(PrayerAlertSound.System, migrated.otherTimesSound)
         assertFalse(migrated.calendarEventNotifications)
         for (prayer in PrayerName.entries) {
-            assertEquals(if (prayer.isPrayer) PrayerAlertSound.Bell else PrayerAlertSound.System, migrated.sound(prayer))
+            assertEquals(
+                if (prayer.isPrayer) PrayerAlertSound.Bell else PrayerAlertSound.System,
+                migrated.sound(prayer),
+            )
         }
     }
 
@@ -96,9 +107,19 @@ class PreferencesTest {
         val keys = Json.parseToJsonElement(Preferences().encode()).jsonObject.keys
         assertEquals(
             setOf(
-                "prayerMethod", "imsakMinutes", "enabledPrayers", "showFeelsLikeTemperature", "announcementNotifications",
-                "timeSensitiveNotifications", "notificationSound", "sunsetSound", "otherTimesSound",
-                "calendarEventNotifications", "tabShortcuts", "monthOffsets", "hiddenPrayers",
+                "prayerMethod",
+                "imsakMinutes",
+                "enabledPrayers",
+                "showFeelsLikeTemperature",
+                "announcementNotifications",
+                "timeSensitiveNotifications",
+                "notificationSound",
+                "sunsetSound",
+                "otherTimesSound",
+                "calendarEventNotifications",
+                "tabShortcuts",
+                "monthOffsets",
+                "hiddenPrayers",
             ),
             keys,
         )
@@ -113,6 +134,10 @@ class PreferencesTest {
         assertNull(Preferences.decodeValid("""{"monthOffsets":[{"month":{"year":1448,"month":1},"days":3}]}"""))
         val duplicate = """{"month":{"year":1448,"month":1},"days":1}"""
         assertNull(Preferences.decodeValid("""{"monthOffsets":[$duplicate,$duplicate]}"""))
-        assertNull(Preferences.decodeValid("""{"savedLocation":{"latitude":91,"longitude":0,"name":"X","countryCode":"","timeZoneID":"UTC"}}"""))
+        assertNull(
+            Preferences.decodeValid(
+                """{"savedLocation":{"latitude":91,"longitude":0,"name":"X","countryCode":"","timeZoneID":"UTC"}}""",
+            ),
+        )
     }
 }

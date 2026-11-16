@@ -32,6 +32,7 @@ hiltWork = "1.4.0"
 ktor = "3.6.1"
 playServicesLocation = "21.4.0"
 timezonemap = "4.5"
+materialIcons = "1.7.8"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
@@ -48,6 +49,8 @@ compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeB
 compose-material3 = { module = "androidx.compose.material3:material3" }
 compose-material3-adaptive-navigation-suite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite" }
 compose-ui = { module = "androidx.compose.ui:ui" }
+# Frozen at 1.7.8 and no longer in the BOM; R8 keeps only the icons the app uses.
+compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIcons" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }

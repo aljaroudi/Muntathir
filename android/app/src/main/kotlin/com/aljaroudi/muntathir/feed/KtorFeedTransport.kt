@@ -34,7 +34,9 @@ class KtorFeedTransport(
                     status = response.status.value,
                     body = body,
                     etag = response.headers[HttpHeaders.ETag],
-                    finalUrl = response.call.request.url.toString(),
+                    finalUrl =
+                        response.call.request.url
+                            .toString(),
                 )
             }
 
