@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- P1.7 reader selection spike; debug builds only, exported so adb can launch it. -->
+        <activity
+            android:name=".ui.reader.ReaderSpikeActivity"
+            android:exported="true" />
+    </application>
+</manifest>
