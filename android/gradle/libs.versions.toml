@@ -19,6 +19,7 @@ screenshot = "0.0.1-alpha16"
 spotless = "8.11.0"
 ktlint = "1.8.0"
 adhan = "0.0.7"
+coroutines = "1.11.0"
 sqliteJdbc = "3.54.1.0"
 
 [libraries]
@@ -47,6 +48,7 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 junit = { module = "junit:junit", version.ref = "junit" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 adhan = { module = "com.batoulapps.adhan:adhan2", version.ref = "adhan" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqliteJdbc" }
 screenshot-validation-api = { module = "com.android.tools.screenshot:screenshot-validation-api", version.ref = "screenshot" }
 
