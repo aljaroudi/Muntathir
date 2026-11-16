@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- From apple/AppIcon.icon/Assets/Muntathir-Icon.svg, scaled to the adaptive-icon safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024">
+    <group
+        android:pivotX="512"
+        android:pivotY="512"
+        android:scaleX="0.9"
+        android:scaleY="0.9">
+        <path
+            android:pathData="M344,272C344,390 422,440 480,494C490,503 490,521 480,530C422,584 344,634 344,752M680,272C680,390 602,440 544,494C534,503 534,521 544,530C602,584 680,634 680,752"
+            android:strokeWidth="32"
+            android:strokeColor="#F5F0DF" />
+        <path
+            android:fillColor="#DCC18A"
+            android:pathData="M391,330H633C615,386 561,425 512,470C463,425 409,386 391,330Z" />
+        <path
+            android:fillColor="#DCC18A"
+            android:pathData="M504,553a8,8 0,1 0,16 0a8,8 0,1 0,-16 0Z" />
+        <path
+            android:fillColor="#DCC18A"
+            android:pathData="M394,744C394,675 463,648 512,600C561,648 630,675 630,744Z" />
+        <path
+            android:fillColor="#F5F0DF"
+            android:pathData="M320,232h384a24,24 0,0 1,0 48h-384a24,24 0,0 1,0 -48Z" />
+        <path
+            android:fillColor="#F5F0DF"
+            android:pathData="M320,744h384a24,24 0,0 1,0 48h-384a24,24 0,0 1,0 -48Z" />
+    </group>
+</vector>

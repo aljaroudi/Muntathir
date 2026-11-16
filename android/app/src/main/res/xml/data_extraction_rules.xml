@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+. Room (database/) and preferences back up by default. Device-local state and
+     copied content live in noBackupFilesDir, which is never backed up. Play re-delivers packs. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="assetpacks/" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="assetpacks/" />
+    </device-transfer>
+</data-extraction-rules>

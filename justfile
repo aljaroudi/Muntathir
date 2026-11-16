@@ -85,6 +85,30 @@ apple-style *args:
     [ -n "$languages" ] && set -- "$@" "languages:$languages"
     just apple-lane "$@"
 
+# Android Gradle; JAVA_HOME defaults to Android Studio's bundled JDK
+android_gradle := 'cd android && JAVA_HOME="${JAVA_HOME:-/Applications/Android Studio.app/Contents/jbr/Contents/Home}" ./gradlew'
+
+# Regenerate Android strings from the Apple catalogs
+android-strings:
+    python3 android/scripts/strings.py
+
+# Build the Android debug app
+android-build:
+    {{ android_gradle }} :app:assembleDebug
+
+[doc("Check Android strings and run core + app unit and screenshot tests")]
+android-test:
+    python3 android/scripts/strings.py --check
+    {{ android_gradle }} test testDebugScreenshotTestDefaultTestSuite
+
+# Record Android screenshot references after reviewing the diffs
+android-screenshots:
+    {{ android_gradle }} updateDebugScreenshotTestDefaultTestSuite
+
+# Format Android Kotlin sources (ktlint via Spotless)
+android-format:
+    {{ android_gradle }} spotlessApply
+
 [arg("args", help="astro/bun flags after dev, e.g. -- --background")]
 [doc("Run the Astro landing page (web/); uses bun run dev")]
 web-dev *args:
