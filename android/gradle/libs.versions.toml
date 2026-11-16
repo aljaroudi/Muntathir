@@ -27,6 +27,11 @@ sqliteJdbc = "3.54.1.0"
 sqlite = "2.7.1"
 assetDelivery = "2.3.0"
 bundletool = "1.18.3"
+work = "2.12.0"
+hiltWork = "1.4.0"
+ktor = "3.6.1"
+playServicesLocation = "21.4.0"
+timezonemap = "4.5"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
@@ -49,6 +54,13 @@ compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
+hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hilt" }
+androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
+androidx-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hiltWork" }
+androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltWork" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
+timezonemap = { module = "us.dustinj.timezonemap:timezonemap", version.ref = "timezonemap" }
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "testRunner" }
 # Compose's ui-test pulls Espresso 3.5, which crashes on API 36+ (InputManager.getInstance); pin current versions.
 androidx-test-core = { module = "androidx.test:core", version.ref = "testCore" }

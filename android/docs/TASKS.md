@@ -23,7 +23,7 @@ Verified 2026-11-16: `just android-build` and `just android-test` pass; screensh
 - [x] **P1.8** Spike: PAD on-demand + fast-follow with `bundletool --local-testing`; Android target in `assets.py`. *Done when:* hadith.db opens via BundledSQLiteDriver with FTS5 queries. `just android-packs` (`assets.py android`: same validators, checks each module's delivery type) and `just android-local-testing` (bundletool via `./gradlew bundletool`, no install). Verified on the API 37 emulator: the on-demand hadith pack fetched, opened v8 with 145,479 hadith, Arabic/English FTS in about 1–11 ms; `HadithDatabaseTest` covers FTS on a schema-built DB. Findings: fast-follow packs aren't auto-downloaded under local testing (the app must still request them); asset-delivery-ktx 2.3.0's `requestProgressFlow` crashes with coroutines 1.11, so `PlayAssetPackBackend` uses its own listener flow.
 
 ## P2 — Daily essentials
-- [ ] **P2.1** Preferences DataStore + device-local store + backup rules.
+- [x] **P2.1** Preferences DataStore + device-local store + backup rules. `Preferences`, `AppTool` and `AppModel` live in `core/app` (JVM-tested with in-memory `AppStorage`); `NotificationOptions` is gone. The app stores `files/datastore/preferences.v1.json` (backed up) and `no_backup/device.v1.json` (onboarding, GPS fix, delivered announcements). Hilt loads `AppModel` with one short blocking read per process.
 - [ ] **P2.2** App shell: NavigationSuiteScaffold, Nav3 stacks, Tools grid, tab shortcuts. Skills: navigation-3, adaptive.
 - [ ] **P2.3** Onboarding (language, location/city search, method, notifications).
 - [ ] **P2.4** Today (sky, prayer list, long-press actions, daily ayah + share).

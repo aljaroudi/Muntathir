@@ -1,17 +1,10 @@
 package com.aljaroudi.muntathir.core.prayer
 
+import com.aljaroudi.muntathir.core.app.Preferences
 import com.aljaroudi.muntathir.core.calendar.CalendarEngine
 import com.aljaroudi.muntathir.core.calendar.IslamicEvent
 import com.aljaroudi.muntathir.core.location.SavedLocation
 import java.time.Instant
-
-/** The preference fields notification planning reads (the full preferences model is P2.1). */
-data class NotificationOptions(
-    val method: PrayerMethod = PrayerMethod.Tehran,
-    val imsakMinutes: Int = 10,
-    val enabledPrayers: Set<PrayerName> = setOf(PrayerName.Fajr, PrayerName.Dhuhr, PrayerName.Maghrib),
-    val calendarEventNotifications: Boolean = false,
-)
 
 data class ScheduledPrayer(
     val id: String,
@@ -34,7 +27,7 @@ object NotificationPlan {
     /** Enabled prayer times over the next [DAYS] days, strictly after [now]. */
     fun make(
         now: Instant,
-        options: NotificationOptions,
+        options: Preferences,
         location: SavedLocation,
     ): List<ScheduledPrayer> {
         val today = location.localDate(now)
@@ -44,7 +37,7 @@ object NotificationPlan {
                     .times(
                         today.plusDays(offset.toLong()),
                         location,
-                        options.method,
+                        options.prayerMethod,
                         options.imsakMinutes,
                     ).mapNotNull {
                         if (it.name !in options.enabledPrayers || it.time <= now) return@mapNotNull null
@@ -57,16 +50,29 @@ object NotificationPlan {
     fun nearest(alerts: List<ScheduledAlert>): List<ScheduledAlert> =
         alerts.sortedWith(compareBy<ScheduledAlert> { it.time }.thenBy { it.id }).take(BUDGET)
 
+    /** Prayer and event alerts after [now], soonest first. Android chains one alarm at a time through this list. */
+    fun alerts(
+        now: Instant,
+        options: Preferences,
+        location: SavedLocation,
+        engine: CalendarEngine,
+        events: List<IslamicEvent>,
+    ): List<ScheduledAlert> =
+        nearest(
+            make(now, options, location).map { ScheduledAlert(it.id, it.time, it.name, emptyList()) } +
+                events(now, options, location, engine, events),
+        )
+
     /** One alert at each sunset preceding a (corrected) day with events; days without a sunset get none. */
     fun events(
         now: Instant,
-        options: NotificationOptions,
+        options: Preferences,
         location: SavedLocation,
         engine: CalendarEngine,
         events: List<IslamicEvent>,
     ): List<ScheduledAlert> {
         if (!options.calendarEventNotifications) return emptyList()
-        val settings = WidgetPrayerSettings(location, options.method, emptySet(), options.imsakMinutes)
+        val settings = WidgetPrayerSettings(location, options.prayerMethod, emptySet(), options.imsakMinutes)
         val today = engine.localDate(now)
         return (0 until DAYS).mapNotNull { offset ->
             val day = today.plusDays(offset.toLong())

@@ -1,5 +1,6 @@
 package com.aljaroudi.muntathir.core.prayer
 
+import com.aljaroudi.muntathir.core.app.Preferences
 import com.aljaroudi.muntathir.core.calendar.CalendarEngine
 import com.aljaroudi.muntathir.core.calendar.EventLibrary
 import com.aljaroudi.muntathir.core.calendar.EventTiming
@@ -15,8 +16,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
-// Ports the logic of `PrayerPreferencesTests` and the sunset case of `EventsTests`. Not ported: Preferences
-// JSON migration and imsak decode bounds (P2.1), Watch round trips (P8).
+// Ports the logic of `PrayerPreferencesTests` and the sunset case of `EventsTests`. Preferences JSON migration
+// lives in `PreferencesTest`; Watch round trips are P8.
 class NotificationPlanTest {
     private val mecca = SavedLocation(21.4225, 39.8262, "Mecca", "SA", "Asia/Riyadh")
 
@@ -34,7 +35,7 @@ class NotificationPlanTest {
             val imsak = times.first { it.name == PrayerName.Imsak }
             val fajr = times.first { it.name == PrayerName.Fajr }
             assertEquals(Duration.ofMinutes(minutes.toLong()), Duration.between(imsak.time, fajr.time))
-            val options = NotificationOptions(PrayerMethod.Tehran, minutes, setOf(PrayerName.Imsak))
+            val options = Preferences(prayerMethod = PrayerMethod.Tehran, imsakMinutes = minutes, enabledPrayers = setOf(PrayerName.Imsak))
             val plan = NotificationPlan.make(midnight(day), options, mecca)
             assertEquals(PrayerName.Imsak, plan.first().name)
             assertEquals(imsak.time, plan.first().time)
@@ -58,7 +59,7 @@ class NotificationPlanTest {
     fun calendarOffsetsNeverChangePrayers() {
         // Offsets live in the calendar engine; prayer math only sees the Umm al-Qura baseline.
         val now = midnight(LocalDate.of(2026, 10, 18))
-        val options = NotificationOptions(PrayerMethod.UmmAlQura)
+        val options = Preferences(prayerMethod = PrayerMethod.UmmAlQura)
         val before = NotificationPlan.make(now, options, mecca)
         for (days in -2..2) {
             CalendarEngine.withOffsets(mecca.zone, listOf(MonthOffset(HijriMonth(1448, 9), days)))
@@ -74,13 +75,13 @@ class NotificationPlanTest {
         val engine = CalendarEngine.withOffsets(mecca.zone, listOf(MonthOffset(month, 1)))
         val tomorrow = engine.resolve(LocalDate.of(2026, 10, 19))
         val events = listOf("b", "a").map { IslamicEvent(it, tomorrow.month.month, tomorrow.day, mapOf("en" to it)) }
-        val options = NotificationOptions()
+        val options = Preferences()
         assertTrue(NotificationPlan.events(now, options, mecca, engine, events).isEmpty())
         val enabled = options.copy(calendarEventNotifications = true)
         val plan = NotificationPlan.events(now, enabled, mecca, engine, events)
         assertEquals(1, plan.size)
         assertEquals(listOf("a", "b"), plan.first().events.map { it.id })
-        val sunset = WidgetPrayerSettings(mecca, enabled.method).sunset(LocalDate.of(2026, 10, 18))!!
+        val sunset = WidgetPrayerSettings(mecca, enabled.prayerMethod).sunset(LocalDate.of(2026, 10, 18))!!
         assertEquals(sunset, plan.first().time)
         assertTrue(NotificationPlan.events(sunset, enabled, mecca, engine, events).isEmpty())
         assertNotEquals(sunset, NotificationPlan.events(now, enabled, mecca, base, events).firstOrNull()?.time)
@@ -116,7 +117,7 @@ class NotificationPlanTest {
         val engine = CalendarEngine(polar.zone)
         val tomorrow = engine.resolve(today.plusDays(1))
         val events = listOf(IslamicEvent("test", tomorrow.month.month, tomorrow.day, mapOf("en" to "Test")))
-        val options = NotificationOptions(calendarEventNotifications = true)
+        val options = Preferences(calendarEventNotifications = true)
         assertTrue(NotificationPlan.events(midnight(today, polar), options, polar, engine, events).isEmpty())
     }
 
@@ -128,9 +129,9 @@ class NotificationPlanTest {
             val engine = CalendarEngine(place.zone)
             val day = engine.resolve(today.plusDays(1))
             val events = listOf(IslamicEvent("test", day.month.month, day.day, mapOf("en" to "Test")))
-            val options = NotificationOptions(calendarEventNotifications = true)
+            val options = Preferences(calendarEventNotifications = true)
             val alert = NotificationPlan.events(midnight(today, place), options, place, engine, events).first()
-            assertEquals(WidgetPrayerSettings(place, options.method).sunset(today), alert.time)
+            assertEquals(WidgetPrayerSettings(place, options.prayerMethod).sunset(today), alert.time)
         }
     }
 

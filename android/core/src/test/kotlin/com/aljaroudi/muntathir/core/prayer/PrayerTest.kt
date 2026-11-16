@@ -1,6 +1,7 @@
 package com.aljaroudi.muntathir.core.prayer
 
 import com.aljaroudi.muntathir.core.Fixtures
+import com.aljaroudi.muntathir.core.app.Preferences
 import com.aljaroudi.muntathir.core.location.SavedLocation
 import com.aljaroudi.muntathir.core.prayer.adhan.CalculationMethod
 import com.aljaroudi.muntathir.core.prayer.adhan.Coordinates
@@ -140,7 +141,7 @@ class PrayerTest {
     @Test
     fun schedulesFuturePrayersOnly() {
         val now = LocalDate.of(2026, 10, 17).atStartOfDay(riyadh.zone).toInstant()
-        val options = NotificationOptions(enabledPrayers = setOf(PrayerName.Fajr, PrayerName.Maghrib))
+        val options = Preferences(enabledPrayers = setOf(PrayerName.Fajr, PrayerName.Maghrib))
         val plan = NotificationPlan.make(now, options, riyadh)
         assertTrue(plan.isNotEmpty() && plan.size <= 20)
         assertTrue(plan.all { it.time > now && it.name in options.enabledPrayers })

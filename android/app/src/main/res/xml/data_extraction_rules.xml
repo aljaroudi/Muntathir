@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Android 12+. Room (database/) and preferences back up by default. Device-local state and
-     copied content live in noBackupFilesDir, which is never backed up. Play re-delivers packs. -->
+<!-- Android 12+. Room (database/) and the preferences DataStore (files/datastore/preferences.v1.json)
+     back up by default. Device-local state (no_backup/device.v1.json: onboarding, GPS fix) and copied
+     content live in noBackupFilesDir, and the feed cache in cacheDir; neither is ever backed up.
+     Play re-delivers packs. -->
 <data-extraction-rules>
     <cloud-backup>
         <exclude domain="file" path="assetpacks/" />
