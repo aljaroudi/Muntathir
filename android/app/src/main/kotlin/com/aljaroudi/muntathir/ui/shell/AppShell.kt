@@ -17,6 +17,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.aljaroudi.muntathir.core.app.AppTool
 import com.aljaroudi.muntathir.ui.components.isTwoPane
+import com.aljaroudi.muntathir.ui.location.LocationScreen
 import com.aljaroudi.muntathir.ui.navigation.AppNavigator
 import com.aljaroudi.muntathir.ui.navigation.CreditsRoute
 import com.aljaroudi.muntathir.ui.navigation.DownloadsRoute
@@ -99,8 +100,8 @@ fun AppShell(
                         entry<CreditsRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
                             ComingSoonScreen(stringResource(com.aljaroudi.muntathir.R.string.app_name), detailBack)
                         }
-                        entry<LocationRoute> {
-                            ComingSoonScreen(stringResource(com.aljaroudi.muntathir.R.string.location), navigator::back)
+                        entry<LocationRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
+                            LocationScreen(onBack = detailBack ?: navigator::back)
                         }
                     },
                 ),

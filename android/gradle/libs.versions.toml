@@ -67,6 +67,7 @@ timezonemap = { module = "us.dustinj.timezonemap:timezonemap", version.ref = "ti
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "testRunner" }
 # Compose's ui-test pulls Espresso 3.5, which crashes on API 36+ (InputManager.getInstance); pin current versions.
 androidx-test-core = { module = "androidx.test:core", version.ref = "testCore" }
+androidx-test-rules = { module = "androidx.test:rules", version.ref = "testRunner" }
 androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "testExtJunit" }
 androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }

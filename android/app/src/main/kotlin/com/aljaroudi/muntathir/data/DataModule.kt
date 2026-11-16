@@ -26,6 +26,18 @@ import javax.inject.Singleton
 @Retention(AnnotationRetention.BINARY)
 annotation class AppScope
 
+/** Separate so instrumented tests can swap in memory storage. */
+@Module
+@InstallIn(SingletonComponent::class)
+object StorageModule {
+    @Provides
+    @Singleton
+    fun storage(
+        @ApplicationContext context: Context,
+        @AppScope scope: CoroutineScope,
+    ): AppStorage = DataStoreAppStorage.create(context, CoroutineScope(scope.coroutineContext + Dispatchers.IO))
+}
+
 @Module
 @InstallIn(SingletonComponent::class)
 object DataModule {
@@ -37,13 +49,6 @@ object DataModule {
     @Provides
     @Singleton
     fun clock(): Clock = Clock.systemDefaultZone()
-
-    @Provides
-    @Singleton
-    fun storage(
-        @ApplicationContext context: Context,
-        @AppScope scope: CoroutineScope,
-    ): AppStorage = DataStoreAppStorage.create(context, CoroutineScope(scope.coroutineContext + Dispatchers.IO))
 
     // Replaced by the notification poster in P2.6.
     @Provides
