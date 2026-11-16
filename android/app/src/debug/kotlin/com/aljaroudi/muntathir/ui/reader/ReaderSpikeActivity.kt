@@ -25,7 +25,8 @@ import java.io.File
 
 /**
  * P1.7 spike, debug builds only: hadith text in [HighlightTextView]; highlights persist to a JSON file
- * (Room replaces this store in P3.4). Launch: `adb shell am start -n com.aljaroudi.muntathir/.ui.reader.ReaderSpikeActivity`.
+ * (Room replaces this store in P3.4). Launch with
+ * `adb shell am start -n com.aljaroudi.muntathir/.ui.reader.ReaderSpikeActivity`.
  */
 class ReaderSpikeActivity : ComponentActivity() {
     val store by lazy { HighlightSpikeStore(File(filesDir, "reader-spike-highlights.json")) }
@@ -44,7 +45,12 @@ class ReaderSpikeActivity : ComponentActivity() {
                         highlights = highlights,
                         block = BLOCK,
                         onHighlight = ::save,
-                        modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(24.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .padding(padding)
+                                .verticalScroll(rememberScrollState())
+                                .padding(24.dp),
                         configure = {
                             tag = VIEW_TAG
                             setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
@@ -75,7 +81,9 @@ class ReaderSpikeActivity : ComponentActivity() {
         const val BLOCK = "arabic"
         const val VIEW_TAG = "reader-text"
         const val SAMPLE =
-            "**حَدَّثَنَا** الْحُمَيْدِيُّ قَالَ: إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى\n\n" +
+            "**حَدَّثَنَا** الْحُمَيْدِيُّ قَالَ: " +
+                "إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، " +
+                "وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى\n\n" +
                 "- Actions are judged by intentions 😀.\n" +
                 "- Every person will have what they intended.\n\n" +
                 "> قَالَ رَسُولُ اللَّهِ ﷺ"
@@ -87,7 +95,8 @@ class HighlightSpikeStore(
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
-    fun load(): List<ReadingHighlight> = runCatching { json.decodeFromString<List<ReadingHighlight>>(file.readText()) }.getOrDefault(emptyList())
+    fun load(): List<ReadingHighlight> =
+        runCatching { json.decodeFromString<List<ReadingHighlight>>(file.readText()) }.getOrDefault(emptyList())
 
     fun save(highlights: List<ReadingHighlight>) = file.writeText(json.encodeToString(highlights))
 
