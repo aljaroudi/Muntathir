@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_tab_x">Tambahkan %s</string>
+    <string name="remove_tab_x">Hapus %s</string>
+    <string name="move_up">Pindah ke atas</string>
+    <string name="move_down">Pindah ke bawah</string>
+    <string name="coming_soon">Segera hadir</string>
+    <string name="update_location">Perbarui lokasi</string>
+    <string name="use_your_device_location_to_calculate_prayer_times">Gunakan lokasi perangkat untuk menghitung waktu salat dan kiblat.</string>
+    <string name="location_access_is_disabled_allow_it_in_settings">Akses lokasi dinonaktifkan. Izinkan di Setelan untuk menghitung waktu salat.</string>
+    <string name="could_not_find_your_location_try_again">Lokasi Anda tidak ditemukan. Coba lagi.</string>
+    <string name="system_default">Default sistem</string>
+    <string name="exact_alarms">Alarm tepat waktu</string>
+    <string name="exact_alarms_footer">Tanpa izin ini, pengingat dapat terlambat hingga 10 menit.</string>
+    <string name="settings_backup_footer">Setelan disertakan dalam cadangan Android Anda. Lokasi dan izin notifikasi tetap di perangkat ini.</string>
+    <string name="sources_and_licenses">Sumber dan lisensi</string>
+    <string name="calculations">Perhitungan</string>
+    <string name="supplication_translations">Terjemahan doa</string>
+    <string name="adhan_sounds">Suara azan</string>
+    <string name="duas_org_credit">Duas.org mengizinkan penggunaan ulang secara bebas; mohon cantumkan sumbernya.</string>
+</resources>

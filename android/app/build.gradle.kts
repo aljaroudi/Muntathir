@@ -80,8 +80,18 @@ val alertSounds =
         outputDir = layout.buildDirectory.dir("generated/shared/res")
     }
 
+// Third-party notices shown in Settings → Sources & licenses.
+val licenseAssets =
+    tasks.register<SharedContent>("licenseAssets") {
+        files.from(appleResources.resolve("Adhan-LICENSE.txt"), appleResources.resolve("AdhanSounds-CREDITS.txt"))
+        subdirectory = "licenses"
+        lowercase = false
+        outputDir = layout.buildDirectory.dir("generated/shared/licenses")
+    }
+
 androidComponents.onVariants { variant ->
     variant.sources.assets?.addGeneratedSourceDirectory(quranAssets, SharedContent::outputDir)
+    variant.sources.assets?.addGeneratedSourceDirectory(licenseAssets, SharedContent::outputDir)
     variant.sources.res?.addGeneratedSourceDirectory(alertSounds, SharedContent::outputDir)
 }
 

@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.core.content.FileProvider
@@ -47,6 +48,7 @@ fun ShareImage(
     artwork: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
+    val failure = stringResource(R.string.unable_to_create_image)
     val layer = rememberGraphicsLayer()
     val done by rememberUpdatedState(onDone)
     // Recorded but never drawn: the artwork is invisible and doesn't affect layout.
@@ -69,7 +71,7 @@ fun ShareImage(
         val image = runCatching { layer.toImageBitmap() }.getOrNull()
         val bitmap = image?.asAndroidBitmap()?.takeIf { it.height in 1..ShareImageSpec.MAX_HEIGHT_PX }
         if (bitmap == null) {
-            Toast.makeText(context, context.getString(R.string.unable_to_create_image), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, failure, Toast.LENGTH_SHORT).show()
             share(context, Intent().putExtra(Intent.EXTRA_TEXT, fallbackText).setType("text/plain"))
         } else {
             val file = withContext(Dispatchers.IO) { save(context, bitmap, name) }

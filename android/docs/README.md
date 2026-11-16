@@ -29,3 +29,11 @@ Native Kotlin + Jetpack Compose version of the iOS app in [`apple/`](../../apple
 - Simple, modern, minimal code. Three module types only.
 - **Umm al-Qura baseline (P1.1):** `shared/ummalqura.json`, exported from Apple's calendar by `shared/scripts/export-ummalqura.swift`, is the baseline on every platform; `HijrahChronology` only covers dates outside 1349/12–1501/1.
 - **Reader text (P1.7):** `AndroidView(TextView)` for selectable, highlightable reader text.
+
+## Decisions (2026-11-17, P2)
+
+- **Location is GPS only.** There is no city text search and no `locations` search history. The time zone comes from an offline boundary map (`us.dustinj.timezonemap`), falling back to the device zone. The fix stays in the device-local store.
+- **Notification channels are versioned by sound** and there's no Time Sensitive toggle; `timeSensitiveNotifications` stays in the JSON for parity. There's no full-adhan foreground service.
+- **One chained alarm** instead of a 10-day batch of 50 requests.
+- **`AppModel` lives in `core/app`**, so the iOS AppModel tests (stale feed responses, conflicts, persistence) run on the JVM.
+- **Android-only strings** go in `values*/strings_android.xml`, translated by hand for all 15 locales; `strings.py` owns only `strings.xml`.

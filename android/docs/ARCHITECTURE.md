@@ -29,8 +29,8 @@ android/
 | Quran Arabic + English, events, surahs, daily ids | `assets/`, copied once to `noBackupFilesDir` |
 | Hadith, Supplications, Rulings, Quran translations | PAD packs |
 | Content SQLite (read-only, FTS5 `unicode61 remove_diacritics 2`) | `androidx.sqlite` **BundledSQLiteDriver** (platform SQLite lacks FTS5) |
-| Preferences (`preferences.v1`, same JSON shape and validation as `Preferences.swift`) | DataStore |
-| Device-local: onboarding step, live location, installation ID, hadith session | DataStore file excluded from backup |
+| Preferences (`preferences.v1`, same JSON shape and validation as `Preferences.swift`) | DataStore (`files/datastore/preferences.v1.json`) behind `core/app/AppModel` |
+| Device-local: onboarding step, GPS location, delivered announcements (later: hadith session) | DataStore in `no_backup/device.v1.json` |
 | Highlights, bookmarks, prayer history, activity | Room (bundled driver) |
 
 Schema checks match iOS: Hadith `application_id` 1230262606, `user_version` 7–8; Rulings 1179809601 v1. Keep the iOS record design (stable IDs, `modifiedAt`, tombstones) so that restore and merge logic stays identical.
@@ -54,8 +54,10 @@ One `AssetPackBackend` interface over `AssetPackManager`, mirroring `AssetPackBa
 
 ## System
 
-- **Notifications:** exact alarms (inexact fallback if not granted) → receiver posts the notification. Reschedule on boot, time/zone/locale change, app start, and preference change. One channel per category; channel IDs are versioned by sound (channel sounds are immutable). Full adhan via a short `mediaPlayback` foreground service.
-- **Feed:** WorkManager periodic 12 h with a network constraint, same entry point as launch refresh. ETag + last-good cache. Store the host in punycode.
+- **State:** `core/app/AppModel` (Swift `AppModel` minus iCloud) holds `StateFlow<AppState>`, validates every change (including building a calendar) before saving, and has the feed's stale-response guard. Hilt provides one per process.
+- **Location:** GPS only, with no city search. A Fused coarse fix (or the last known one) is named by reverse `Geocoder` and zoned with the offline `timezonemap`. It's stored device-local and refreshed on start when the device moved more than 5 km.
+- **Notifications:** one chained alarm. `AlarmScheduler` sets an alarm for the next alert (exact when `SCHEDULE_EXACT_ALARM` is granted, otherwise a 10-minute window). `AlarmReceiver` posts what's due from current settings and sets the next one. `Rescheduler` follows settings, and `RescheduleReceiver` handles boot, time, zone, locale, update and permission changes. One channel per category; prayer channels are versioned by sound (`prayers.chime.v1`). The adhan clips play fully as channel sounds, so there's no foreground service.
+- **Feed:** WorkManager periodic 12 h with a network constraint, plus a refresh on every `ON_START`. Ktor (OkHttp) transport, ETag + last-good cache in `cacheDir`. The host is stored in punycode.
 - **Widgets:** Glance in `app`, reading DataStore/Room directly.
 
 ## Testing

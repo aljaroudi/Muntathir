@@ -11,4 +11,12 @@
     <string name="location_access_is_disabled_allow_it_in_settings">Location access is disabled. Allow it in Settings to calculate prayer times.</string>
     <string name="could_not_find_your_location_try_again">Could not find your location. Try again.</string>
     <string name="system_default">System default</string>
+    <string name="exact_alarms">Alarms on the minute</string>
+    <string name="exact_alarms_footer">Without this permission, alerts can arrive up to 10 minutes late.</string>
+    <string name="settings_backup_footer">Settings are included in your Android backup. Location and notification permissions stay on this device.</string>
+    <string name="sources_and_licenses">Sources and licenses</string>
+    <string name="calculations">Calculations</string>
+    <string name="supplication_translations">Supplication translations</string>
+    <string name="adhan_sounds">Adhan sounds</string>
+    <string name="duas_org_credit">Free reuse permitted by Duas.org; source credit requested.</string>
 </resources>

@@ -27,6 +27,7 @@ import com.aljaroudi.muntathir.ui.navigation.CreditsRoute
 import com.aljaroudi.muntathir.ui.navigation.DownloadsRoute
 import com.aljaroudi.muntathir.ui.navigation.LocationRoute
 import com.aljaroudi.muntathir.ui.navigation.MonthAdjustmentsRoute
+import com.aljaroudi.muntathir.ui.navigation.Route
 import com.aljaroudi.muntathir.ui.navigation.SettingsRoute
 import com.aljaroudi.muntathir.ui.navigation.TabsSettingsRoute
 import com.aljaroudi.muntathir.ui.navigation.TodayRoute
@@ -38,6 +39,9 @@ import com.aljaroudi.muntathir.ui.navigation.tabTitle
 import com.aljaroudi.muntathir.ui.navigation.tabs
 import com.aljaroudi.muntathir.ui.navigation.testTag
 import com.aljaroudi.muntathir.ui.navigation.title
+import com.aljaroudi.muntathir.ui.settings.CreditsScreen
+import com.aljaroudi.muntathir.ui.settings.SettingsLinks
+import com.aljaroudi.muntathir.ui.settings.SettingsScreen
 import com.aljaroudi.muntathir.ui.today.TodayScreen
 
 /** Today, up to three tool shortcuts and Tools; a bar on phones, a rail on larger windows. */
@@ -95,7 +99,26 @@ fun AppShell(
                             ToolScreen(route.tool, onBack = navigator::back.takeIf { route != navigator.tab })
                         }
                         entry<SettingsRoute>(metadata = ListDetailSceneStrategy.listPane()) {
-                            ComingSoonScreen(stringResource(com.aljaroudi.muntathir.R.string.settings), navigator::back)
+                            // A detail opened from Settings replaces the one beside it rather than stacking.
+                            val open: (Route) -> Unit = { route ->
+                                if (navigator.current.lastOrNull() in
+                                    SETTINGS_DETAILS
+                                ) {
+                                    navigator.current.removeAt(navigator.current.lastIndex)
+                                }
+                                navigator.push(route)
+                            }
+                            SettingsScreen(
+                                hiltViewModel(),
+                                SettingsLinks(
+                                    onTabs = { open(TabsSettingsRoute) },
+                                    onDownloads = { open(DownloadsRoute) },
+                                    onLocation = { open(LocationRoute) },
+                                    onMonthAdjustments = { open(MonthAdjustmentsRoute) },
+                                    onCredits = { open(CreditsRoute) },
+                                ),
+                                navigator::back,
+                            )
                         }
                         entry<TabsSettingsRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
                             TabsSettingsScreen(hiltViewModel(), detailBack)
@@ -107,7 +130,7 @@ fun AppShell(
                             ComingSoonScreen(stringResource(com.aljaroudi.muntathir.R.string.downloads), detailBack)
                         }
                         entry<CreditsRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
-                            ComingSoonScreen(stringResource(com.aljaroudi.muntathir.R.string.app_name), detailBack)
+                            CreditsScreen(detailBack)
                         }
                         entry<LocationRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
                             LocationScreen(onBack = detailBack ?: navigator::back)
@@ -119,6 +142,9 @@ fun AppShell(
         )
     }
 }
+
+private val SETTINGS_DETAILS =
+    setOf(TabsSettingsRoute, DownloadsRoute, LocationRoute, MonthAdjustmentsRoute, CreditsRoute)
 
 /** A tool as a tab root (no Up button) or pushed from Tools/Today. Swift `ToolDestination`. */
 @Composable

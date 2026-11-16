@@ -23,6 +23,8 @@ Verified 2026-11-16: `just android-build` and `just android-test` pass; screensh
 - [x] **P1.8** Spike: PAD on-demand + fast-follow with `bundletool --local-testing`; Android target in `assets.py`. *Done when:* hadith.db opens via BundledSQLiteDriver with FTS5 queries. `just android-packs` (`assets.py android`: same validators, checks each module's delivery type) and `just android-local-testing` (bundletool via `./gradlew bundletool`, no install). Verified on the API 37 emulator: the on-demand hadith pack fetched, opened v8 with 145,479 hadith, Arabic/English FTS in about 1–11 ms; `HadithDatabaseTest` covers FTS on a schema-built DB. Findings: fast-follow packs aren't auto-downloaded under local testing (the app must still request them); asset-delivery-ktx 2.3.0's `requestProgressFlow` crashes with coroutines 1.11, so `PlayAssetPackBackend` uses its own listener flow.
 
 ## P2 — Daily essentials
+Done 2026-11-17. `just android-test` passes. The instrumented tests (`MuntathirAppTest`, `OnboardingTest`, `CalendarTest`, `TodayTest`, `NotifierTest`) pass on the API 37 emulator.
+
 - [x] **P2.1** Preferences DataStore + device-local store + backup rules. `Preferences`, `AppTool` and `AppModel` live in `core/app` (JVM-tested with in-memory `AppStorage`); `NotificationOptions` is gone. The app stores `files/datastore/preferences.v1.json` (backed up) and `no_backup/device.v1.json` (onboarding, GPS fix, delivered announcements). Hilt loads `AppModel` with one short blocking read per process.
 - [x] **P2.2** App shell: NavigationSuiteScaffold, Nav3 stacks, Tools grid, tab shortcuts. Skills: navigation-3, adaptive. `AppNavigator` keeps one saved stack per possible tab root (Today, Tools, each tool) and scopes entry state per stack, since a route can sit in two shown stacks. Settings and its subpages use the Material list-detail scene. Shortcuts reorder with move buttons rather than drag. Tools not yet ported show a Coming soon screen.
 - [x] **P2.3** Onboarding (language, location, method, notifications). Deviation: location is **GPS only** (no city search or history). A Fused coarse fix (falling back to the last known fix) is named by reverse `Geocoder` and zoned with the offline `timezonemap` (falling back to the device zone), and stored only in the device store. The language step is an in-app AppCompat picker. On each start, a granted fix refreshes the place when it moved more than 5 km or changed zone. `OnboardingTest` swaps storage and locator with Hilt.
@@ -40,7 +42,11 @@ Verified 2026-11-16: `just android-build` and `just android-test` pass; screensh
   - `Rescheduler` follows the settings flow; `RescheduleReceiver` handles boot, time, zone, locale, package-replaced and exact-alarm permission changes.
   - `Notifier` is the `AppModel` announcer for month confirmations.
 - [x] **P2.7** Feed WorkManager + launch refresh. `KtorFeedTransport` (OkHttp, 20 s timeout, size cap) backs `FeedClient` in `cache/calendar`. `AppModel.refreshFeed` has the stale-response guard (`AppModelTest`). `FeedRefreshWorker` (`@HiltWorker`) runs every 12 h on a network, and every `ON_START` refreshes too. WorkManager's default initializer is removed in favour of the Hilt factory.
-- [ ] **P2.8** Settings (prayers, calendar, tabs, downloads entry, language, credits).
+- [x] **P2.8** Settings (prayers, calendar, tabs, downloads entry, language, credits).
+  - Sections follow iOS order, without weather and reading (P3), as a list-detail list pane.
+  - Android additions: system notification settings, an exact-alarm row when not granted, and an in-app "Sources and licenses" screen (from `Credits.plist`, the Adhan license and the adhan-sound credits, bundled as assets).
+  - Notification switches ask for permission when turned on rather than on open. The sound pickers preview the sound on selection.
+  - Android-only strings live in `strings_android.xml` in all 15 locales.
 
 ## P3 — Quran
 - [ ] **P3.1** Bundled DBs, surah list, reader modes, Mushaf.
