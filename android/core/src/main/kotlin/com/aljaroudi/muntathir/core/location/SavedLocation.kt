@@ -19,7 +19,9 @@ data class SavedLocation(
     val hasValidCoordinates: Boolean
         get() = latitude.isFinite() && longitude.isFinite() && latitude in -90.0..90.0 && longitude in -180.0..180.0
 
-    val isValid: Boolean get() = hasValidCoordinates && zoneOrNull() != null && name.isNotEmpty()
+    val hasValidZone: Boolean get() = zoneOrNull() != null
+
+    val isValid: Boolean get() = hasValidCoordinates && hasValidZone && name.isNotEmpty()
 
     private fun zoneOrNull(): ZoneId? =
         try {

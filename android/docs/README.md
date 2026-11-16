@@ -25,5 +25,7 @@ Native Kotlin + Jetpack Compose version of the iOS app in [`apple/`](../../apple
 - No weather. Google Play only (Play Asset Delivery, no fallback). Wear OS later.
 - minSdk 26. Avoid version-gated features.
 - Smart search uses the existing `/v1/search` API. No new backend.
-- Adhan: the Kotlin port of the same library.
+- ~~Adhan: the Kotlin port of the same library.~~ **Superseded (P1.3):** `core/prayer/adhan` is a direct port of Adhan Swift 1.5.0 (MIT notice kept). adhan2 0.0.7 lacks Maghrib angles, the Tehran preset and failable results, which the Jafari/Tehran methods and honest high-latitude failures need.
 - Simple, modern, minimal code. Three module types only.
+- **Umm al-Qura baseline (P1.1):** `shared/ummalqura.json`, exported from Apple's calendar by `shared/scripts/export-ummalqura.swift`, is the baseline on every platform; `HijrahChronology` only covers dates outside 1349/12–1501/1.
+- **Reader text (P1.7):** `AndroidView(TextView)` for selectable, highlightable reader text.

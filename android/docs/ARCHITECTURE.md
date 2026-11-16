@@ -2,7 +2,7 @@
 
 ## Stack
 
-Kotlin 2.x · AGP 9 · Compose BOM + Material 3 Expressive (dynamic color, emerald fallback) · Navigation 3 · Hilt · Coroutines/Flow · kotlinx.serialization · Room · DataStore · WorkManager · Glance · CameraX · Play Asset Delivery (`asset-delivery-ktx`) · Ktor client · Adhan Kotlin.
+Kotlin 2.x · AGP 9 · Compose BOM + Material 3 Expressive (dynamic color, emerald fallback) · Navigation 3 · Hilt · Coroutines/Flow · kotlinx.serialization · Room · DataStore · WorkManager · Glance · CameraX · Play Asset Delivery (`asset-delivery-ktx`) · Ktor client · Adhan Swift 1.5.0 ported into `core/prayer/adhan`.
 
 minSdk 26, compile/target latest. Edge-to-edge, predictive back, per-app language (AppCompat `setApplicationLocales` + `locales_config.xml`). No AGSL; the Today sky uses an animated gradient `Brush`.
 

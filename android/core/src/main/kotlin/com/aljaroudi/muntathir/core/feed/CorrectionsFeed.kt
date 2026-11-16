@@ -9,13 +9,12 @@ import com.aljaroudi.muntathir.core.calendar.HijriMonth
 import com.aljaroudi.muntathir.core.calendar.MonthCorrection
 import com.aljaroudi.muntathir.core.calendar.MonthOffset
 import com.aljaroudi.muntathir.core.location.SavedLocation
+import com.aljaroudi.muntathir.core.roundedAwayFromZero
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.time.ZoneOffset
 import kotlin.math.abs
-import kotlin.math.floor
-import kotlin.math.sign
 
 @Serializable
 enum class SightingMethod {
@@ -96,7 +95,7 @@ data class Coverage(
             longitudes += longitude
         }
         val center = (longitudes.min() + longitudes.max()) / 2
-        val query = location.longitude + roundHalfAwayFromZero((center - location.longitude) / 360) * 360
+        val query = location.longitude + ((center - location.longitude) / 360).roundedAwayFromZero() * 360
         var inside = false
         for (index in polygon.indices) {
             val next = (index + 1) % polygon.size
@@ -113,9 +112,6 @@ data class Coverage(
         }
         return inside
     }
-
-    /** Swift's `rounded()`: halves round away from zero. */
-    private fun roundHalfAwayFromZero(value: Double) = value.sign * floor(abs(value) + 0.5)
 }
 
 @Serializable
