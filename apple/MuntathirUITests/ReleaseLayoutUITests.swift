@@ -16,17 +16,20 @@ final class ReleaseLayoutUITests: XCTestCase {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         }
         app.launch()
-        XCTAssertTrue(app.buttons["settings"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons[arabic ? "اليوم" : "Today"].firstMatch.waitForExistence(timeout: 10))
         capture(app, "Today")
-        app.buttons["settings"].tap()
+        app.openSettingsFromTools()
         XCTAssertTrue(app.buttons["reading-size-increase"].waitForExistence(timeout: 5))
         capture(app, "Settings")
-        app.buttons[arabic ? "تم" : "Done"].tap()
+        app.leaveSettings()
         app.buttons[arabic ? "التقويم" : "Calendar"].firstMatch.tap()
         XCTAssertTrue(app.buttons["calendar-year"].waitForExistence(timeout: 5))
         capture(app, "Calendar")
         app.buttons[arabic ? "الأدوات" : "Tools"].firstMatch.tap()
         capture(app, "Tools")
+        for _ in 0 ..< 5 where !app.buttons["holy-quran"].isHittable {
+            app.swipeDown()
+        }
         app.buttons["holy-quran"].tap()
         XCTAssertTrue(app.buttons["quran-surah-1"].waitForExistence(timeout: 10))
         app.buttons["quran-surah-1"].tap()

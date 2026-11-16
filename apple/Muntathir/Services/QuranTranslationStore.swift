@@ -13,6 +13,11 @@ import WidgetKit
     enum DownloadState { case idle, downloading, installing, failed }
     private(set) var downloadState: DownloadState = .idle
     private(set) var downloadProgress: Progress?
+    private var downloadStarted = false
+    var preparingDownload: Bool {
+        downloadState == .downloading && !downloadStarted
+    }
+
     private(set) var installedSizes: [String: Int64] = [:]
     private(set) var busy = false
     var storageError = false
@@ -49,6 +54,7 @@ import WidgetKit
     }
 
     func select(_ value: String) {
+        guard value != selection else { return }
         guard value == "auto" || value.isEmpty || QuranTranslation.catalog.contains(where: { $0.id == value }) else { return }
         selection = value
         activeID = QuranTranslationPreferences.resolve(value, languages: languages)?.id ?? ""
@@ -93,6 +99,9 @@ import WidgetKit
                     finishRequest()
                     changed()
                 } else if await backend.isDownloading() || requesting {
+                    if !requesting {
+                        downloadStarted = true
+                    }
                     downloadState = .downloading
                 } else {
                     downloadState = .failed
@@ -120,12 +129,17 @@ import WidgetKit
 
     func download(requested: String? = nil) async {
         guard !busy, !requesting, !isDownloading else { return }
+        let retry = downloadState == .failed
         busy = true
         storageError = false
+        downloadState = .downloading
+        downloadStarted = false
+        downloadProgress = nil
+        completedTransferAt = nil
         do {
             guard let files else { throw QuranDatabaseError.unavailable }
             // A failed installation may contain corrupt files; retry with a fresh managed pack.
-            if downloadState == .failed, try files.read().pending != nil, try await backend.localURL() != nil {
+            if retry, try files.read().pending != nil, try await backend.localURL() != nil {
                 try await backend.remove()
             }
             try files.prepare(requested: requested)
@@ -137,9 +151,6 @@ import WidgetKit
         requesting = true
         requestGeneration += 1
         let generation = requestGeneration
-        downloadState = .downloading
-        downloadProgress = nil
-        completedTransferAt = nil
         busy = false
         let task = Task { [backend] in try await backend.download() }
         requestTask = task
@@ -204,10 +215,13 @@ import WidgetKit
     func receive(_ event: AssetPackEvent) async {
         switch event {
         case .began:
-            if (try? files?.read().pending) != nil {
+            if downloadState != .installing, (try? files?.read().pending) != nil {
+                downloadStarted = true
                 downloadState = .downloading
             }
         case let .progress(progress):
+            guard downloadState == .downloading else { return }
+            downloadStarted = true
             downloadProgress = progress
         case .finished:
             await refresh()

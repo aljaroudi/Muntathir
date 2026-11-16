@@ -64,7 +64,7 @@ struct FigureLibraryTests {
         let library = try await FigureStore().load().get()
         #expect(!library.people.isEmpty)
         #expect(library.people.allSatisfy { $0.verified == true })
-        #expect(library.byID["abbas-ibn-ali"]?.deathDates.first?.citations.isEmpty == true)
+        #expect(library.byID["abbas-ibn-ali"]?.deathPlace?["en"] == "Karbala")
     }
 
     @Test func unverifiedPeopleAndTheirRelationshipsAreExcluded() throws {

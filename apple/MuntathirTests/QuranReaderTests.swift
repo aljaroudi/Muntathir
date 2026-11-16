@@ -61,16 +61,15 @@ struct QuranReaderTests {
         #expect(QuranSearchText.normalize("فى رحمة") == "في رحمه")
     }
 
-    @Test func literalArabicMatchesPrecedeSubstringsBeforePagination() async throws {
+    @Test func basicArabicSearchExcludesInfixesBeforePagination() async throws {
         let reader = QuranReader(database: database)
         let matches = try await reader.search("يستحي", translationID: nil, limit: 6236)
         #expect(Array(matches.prefix(2)).map(\.id) == ["2:26", "33:53"])
-        let partial = ["2:49", "7:141", "14:6", "28:4"]
-        #expect(Array(matches.dropFirst(2).prefix(4)).map(\.id) == partial)
+        #expect(matches.count == 2)
         let ranks = matches.map { QuranSearchText.literalRank($0.text, terms: ["يستحي"]) }
         #expect(ranks == ranks.sorted())
         #expect(try await reader.search("يَسْتَحِي", translationID: nil, limit: 3).map(\.id) == Array(matches.prefix(3)).map(\.id))
-        #expect(try await reader.search("يستحي", translationID: nil, limit: 1, surah: 28).map(\.id) == ["28:4"])
+        #expect(try await reader.search("يستحي", translationID: nil, limit: 1, surah: 28).isEmpty)
     }
 
     @Test func literalTranslationMatchesExcludeBroaderArabicMatches() async throws {
@@ -98,9 +97,15 @@ struct QuranReaderTests {
             }
         }
         let reader = QuranReader(database: QuranDatabase(url: arabicURL, translationURLs: { ["en.qarai": englishURL] }))
-        #expect(try await reader.search("merciful", translationID: "en.qarai").map(\.id) == ["1:3", "1:2"])
+        #expect(try await reader.search("merciful", translationID: "en.qarai").map(\.id) == ["1:3"])
         #expect(try await reader.search("merciful", translationID: "en.qarai", limit: 1).map(\.id) == ["1:3"])
         #expect(try await reader.search("merciful", translationID: nil).isEmpty)
+        let write = try QuranConnection(path: englishURL.path, flags: SQLITE_OPEN_READWRITE)
+        try write.execute("UPDATE quran SET text='kindness'")
+        try write.execute("DELETE FROM quran_words")
+        try write.execute("INSERT INTO quran_words(rowid,text) SELECT \"index\",text FROM quran")
+        #expect(try await reader.search("merciful", translationID: "en.qarai").map(\.id) == ["1:3"])
+        #expect(try await reader.search("merciful", translationID: "en.qarai", revision: 1).isEmpty)
     }
 
     @Test func literalRanksRequireEveryTermAndRespectWordBoundaries() {
@@ -132,8 +137,8 @@ struct QuranReaderTests {
 
     @Test func arabicSearchFindsLiteralWordsAndExcludesRootsAndTypos() async throws {
         let reader = QuranReader(database: database)
-        #expect(try await reader.search("صوم", translationID: nil, limit: 6236).map(\.id).contains("19:26"))
-        #expect(try await reader.search("كتب", translationID: nil, limit: 6236).map(\.id).contains("2:79"))
+        #expect(try await reader.search("صوما", translationID: nil, limit: 6236).map(\.id).contains("19:26"))
+        #expect(try await reader.search("يكتبون", translationID: nil, limit: 6236).map(\.id).contains("2:79"))
         #expect(try await reader.search("يكتبون", translationID: nil, limit: 6236).map(\.id).contains("2:2") == false)
         #expect(try await reader.search("الرحمم", translationID: nil, limit: 6236).map(\.id).contains("1:1") == false)
         #expect(try await reader.search("الصلوة", translationID: nil).isEmpty == false)
@@ -192,7 +197,7 @@ struct QuranReaderTests {
             #expect(scoped.map(\.id) == Array(expected.prefix(2)).map(\.id))
         }
         #expect(try await reader.search("merciful", translationID: nil, surah: 1).isEmpty)
-        #expect(try await reader.search("صوم", translationID: nil, surah: 19).contains { $0.id == "19:26" })
+        #expect(try await reader.search("صوما", translationID: nil, surah: 19).contains { $0.id == "19:26" })
     }
 
     @Test func chapterSearchNumbersAndReferencesStayInScope() async throws {

@@ -5,6 +5,30 @@ import Testing
 import UIKit
 
 @MainActor struct HighlightTextTests {
+    @Test func pearlSheenFollowsVisibleHighlightColor() {
+        let pearl = ReadingHighlight(source: "1:1", isHadith: false, excerpt: "mercy", reference: "1:1", color: .cyan)
+        var newer = pearl
+        newer.id = "newer"
+        newer.color = .yellow
+        newer.modifiedAt = pearl.modifiedAt.addingTimeInterval(1)
+        let text = NSAttributedString(string: "mercy")
+        let shining = HighlightTextContent.applying([pearl], to: text, block: "arabic")
+        #expect(shining.attribute(HighlightTextContent.pearlAttribute, at: 0, effectiveRange: nil) as? Bool == true)
+        let covered = HighlightTextContent.applying([newer, pearl], to: text, block: "arabic")
+        #expect(covered.attribute(HighlightTextContent.pearlAttribute, at: 0, effectiveRange: nil) as? Bool == false)
+        #expect(covered.string == text.string)
+    }
+
+    @Test func pearlPreservesSavedCyanIdentityAndPaletteOrder() throws {
+        let decoded = try JSONDecoder().decode(HighlightColor.self, from: Data("\"cyan\"".utf8))
+        #expect(decoded == .cyan)
+        #expect(try JSONEncoder().encode(decoded) == Data("\"cyan\"".utf8))
+        let order = "cyan,yellow,green,blue,pink,purple,orange,red,mint,teal,indigo,brown"
+        #expect(HighlightPalette.validOrder(order))
+        #expect(HighlightPalette.colors(order: order, count: 2) == [.cyan, .yellow])
+        #expect(HighlightColor.allCases.count == 12)
+    }
+
     @Test func searchUnderlinesCoexistWithSavedColorsAndKeepSourceText() {
         let raw = "رَحْمَةٌ ورحمة — mercy mercy"
         let query = "رحمة mercy"
@@ -13,15 +37,72 @@ import UIKit
         #expect((raw as NSString).substring(with: ranges[0]) == "رَحْمَةٌ")
         let highlighted = SearchMatch.applying(to: NSMutableAttributedString(string: raw), query: query)
         let saved = ReadingHighlight(source: "1:1", isHadith: false, excerpt: raw, reference: "1:1", color: .yellow)
-        let rendered = HighlightTextContent.applying([saved], to: highlighted, block: "arabic")
+        let rendered = HighlightTextContent.applying([saved], to: highlighted, block: "arabic", differentiate: true)
         #expect(rendered.string == raw)
         for range in ranges {
-            #expect(rendered.attribute(.underlineStyle, at: range.location, effectiveRange: nil) != nil)
+            #expect(rendered.attribute(.underlineStyle, at: range.location, effectiveRange: nil) as? Int == NSUnderlineStyle.thick.rawValue)
             #expect(rendered.attribute(.backgroundColor, at: range.location, effectiveRange: nil) != nil)
         }
         #expect(SearchMatch.ranges(in: raw, terms: ["unrelated"]).isEmpty)
         let plain = SearchMatch.applying(to: NSMutableAttributedString(string: raw), query: "")
         #expect(plain.attribute(.underlineStyle, at: 0, effectiveRange: nil) == nil)
+    }
+
+    @Test func paletteTextContrastAcrossAppearances() {
+        func luminance(_ color: UIColor, traits: UITraitCollection) -> CGFloat {
+            var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+            color.resolvedColor(with: traits).getRed(&r, green: &g, blue: &b, alpha: &a)
+            func linear(_ value: CGFloat) -> CGFloat {
+                value <= 0.04045 ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4)
+            }
+            #expect(a == 1)
+            return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b)
+        }
+        for appearance in [UIUserInterfaceStyle.light, .dark] {
+            for contrast in [UIAccessibilityContrast.normal, .high] {
+                let traits = UITraitCollection {
+                    $0.userInterfaceStyle = appearance
+                    $0.accessibilityContrast = contrast
+                }
+                let foreground = luminance(.label, traits: traits)
+                for color in HighlightColor.allCases {
+                    let background = luminance(color.textBackground, traits: traits)
+                    let ratio = (max(foreground, background) + 0.05) / (min(foreground, background) + 0.05)
+                    #expect(ratio >= 4.5, "\(color.rawValue): \(ratio)")
+                }
+            }
+        }
+    }
+
+    @Test(.timeLimit(.minutes(1))) func scrollSamplesCoalesceSavesUntilTopRowSettles() async {
+        let tracking = HadithScrollTracking()
+        var saved: [String?] = []
+        await withCheckedContinuation { continuation in
+            tracking.update("hidden", position: 0) { saved.append("unexpected hidden save") }
+            tracking.stop()
+            tracking.update("hidden", position: nil) { saved.append("unexpected hidden save") }
+            tracking.isActive = true
+            tracking.update("first", position: 0) { saved.append(tracking.firstVisibleRow) }
+            tracking.update("first", position: nil) { saved.append(tracking.firstVisibleRow) }
+            tracking.update("second", position: 0) {
+                saved.append(tracking.firstVisibleRow)
+                continuation.resume()
+            }
+            tracking.update("second", position: -5) { saved.append("unexpected per-frame save") }
+        }
+        #expect(saved == ["second"])
+    }
+
+    @Test func scrollSamplesKeepStableTopRow() {
+        let tracking = HadithScrollTracking()
+        tracking.visibleRows = ["first": -20, "second": 80]
+        #expect(tracking.firstVisibleRow == "first")
+        tracking.visibleRows["first"] = nil
+        tracking.offset = 240
+        #expect(tracking.firstVisibleRow == "second")
+        #expect(tracking.offset == 240)
+        tracking.visibleRows = [:]
+        #expect(tracking.firstVisibleRow == nil)
     }
 
     @Test func nativeSelectionSurvivesRenderingAndHighlightUpdates() throws {
@@ -78,8 +159,8 @@ import UIKit
         second.modifiedAt = Date(timeIntervalSince1970: 2)
         let rendered = HighlightTextContent.applying([second, first], to: NSAttributedString(string: text), block: "arabic", differentiate: true)
         #expect(rendered.string == text)
-        #expect(rendered.attribute(.backgroundColor, at: 0, effectiveRange: nil) as? UIColor == UIColor(Color.yellow).withAlphaComponent(0.3))
-        #expect(rendered.attribute(.backgroundColor, at: 4, effectiveRange: nil) as? UIColor == UIColor(Color.blue).withAlphaComponent(0.3))
+        #expect((rendered.attribute(.backgroundColor, at: 0, effectiveRange: nil) as? UIColor)?.resolvedColor(with: .current) == HighlightColor.yellow.textBackground.resolvedColor(with: .current))
+        #expect((rendered.attribute(.backgroundColor, at: 4, effectiveRange: nil) as? UIColor)?.resolvedColor(with: .current) == HighlightColor.blue.textBackground.resolvedColor(with: .current))
         #expect(rendered.attribute(.underlineStyle, at: 4, effectiveRange: nil) as? Int == NSUnderlineStyle.single.rawValue)
         #expect(first.note == "First" && second.note == "Second")
         let translation = HighlightTextContent.applying([second], to: NSAttributedString(string: text), block: "en.qarai")

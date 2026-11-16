@@ -8,7 +8,11 @@ struct RakaatSessionView: View {
     @Environment(\.openURL) private var openURL
     @State private var camera = RakaatCamera()
     @State private var qibla = QiblaLocationSession(optional: true)
+    @Environment(AppModel.self) private var model
+    @Environment(\.progressStore) private var history
     let target: Int
+    var prayer: PrayerName?
+    @State private var recording = PrayerSessionRecording()
     @State private var update: RakaatCamera.Update?
     @State private var ended = false
     @State private var denied = false
@@ -67,6 +71,15 @@ struct RakaatSessionView: View {
                     ended = true
                 }
             }
+            .safeAreaInset(edge: .bottom) {
+                if update?.complete == true, history?.unavailable == true {
+                    VStack {
+                        Text("Unable to save or load prayer history.")
+                        Button("Try again") { history?.retry() }
+                    }
+                    .padding().background(.regularMaterial)
+                }
+            }
             .onDisappear {
                 ended = true
                 qibla.stop()
@@ -108,15 +121,23 @@ struct RakaatSessionView: View {
                 }
             }
             .background(.black)
-            .overlay(.ultraThinMaterial)
+            .overlay(.thinMaterial)
             .environment(\.colorScheme, .dark)
-            .overlay(.black.opacity(0.25))
+            .overlay(.black.opacity(0.3))
             .overlay {
                 GeometryReader { geometry in
                     VStack(spacing: 0) {
                         Spacer(minLength: 0)
-                        Color.black.opacity(0.45)
-                            .frame(height: showsSujoodProgress ? geometry.size.height / 2 : 0)
+                        LinearGradient(
+                            stops: [
+                                .init(color: .clear, location: 0),
+                                .init(color: .black.opacity(0.45), location: 0.25),
+                                .init(color: .black.opacity(0.45), location: 1),
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .frame(height: showsSujoodProgress ? geometry.size.height / 2 : 0)
                     }
                     .animation(reduceMotion ? nil : .easeInOut(duration: 0.7), value: showsSujoodProgress)
                 }
@@ -160,10 +181,14 @@ struct RakaatSessionView: View {
                     count
                         .shadow(color: .black.opacity(0.6), radius: 8)
                     if update?.complete == true {
-                        Label("Count complete", systemImage: "checkmark.circle")
-                            .font(.headline)
-                            .labelStyle(.iconOnly)
-                            .accessibilityIdentifier("rakaat-complete")
+                        NavigationLink {
+                            TasbihView()
+                        } label: {
+                            Text("Start Tasbih")
+                                .font(.headline)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .accessibilityIdentifier("rakaat-complete")
                     }
                 }
             }
@@ -184,6 +209,7 @@ struct RakaatSessionView: View {
     }
 
     private func run(target: Int) async {
+        guard !ended else { return }
         let authorized: Bool
         #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("--ui-testing"), ProcessInfo.processInfo.arguments.contains("--rakaat-denied") {
@@ -198,10 +224,10 @@ struct RakaatSessionView: View {
                 update = .init(preview: nil, count: 0, calibrated: false, complete: false)
                 do { try await Task.sleep(for: .seconds(2)) } catch { return }
                 guard !ended else { return }
-                update = .init(preview: nil, count: 2, calibrated: true, complete: false)
+                accept(.init(preview: nil, count: 2, calibrated: true, complete: false))
                 do { try await Task.sleep(for: .seconds(3)) } catch { return }
                 guard !ended else { return }
-                update = .init(preview: nil, count: target * 2, calibrated: true, complete: true)
+                accept(.init(preview: nil, count: target * 2, calibrated: true, complete: true))
                 ended = true
                 return
             }
@@ -219,7 +245,7 @@ struct RakaatSessionView: View {
             let stream = try await camera.start(target: target)
             for await value in stream {
                 guard !Task.isCancelled, !ended else { break }
-                update = value
+                accept(value)
                 if value.complete || value.failure != nil {
                     ended = true
                 }
@@ -230,6 +256,20 @@ struct RakaatSessionView: View {
         } catch { failed = true; ended = true }
         await camera.stop()
         restoreIdle()
+    }
+
+    private func accept(_ value: RakaatCamera.Update) {
+        update = value
+        let now = Date.now
+        if let completed = recording.update(calibrated: value.calibrated, complete: value.complete,
+                                            failed: value.failure != nil, at: now, makeSnapshot: {
+                                                guard let prayer else { return nil }
+                                                return PrayerProgress.snapshot(prayer: prayer, at: now, location: model.location,
+                                                                               method: model.preferences.prayerMethod)
+                                            })
+        {
+            history?.save(completed)
+        }
     }
 
     private func restoreIdle() {

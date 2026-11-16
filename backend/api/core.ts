@@ -38,7 +38,7 @@ export function parseRequest(value: unknown): SearchRequest {
     return [...new Set(a as string[])].sort()
   }
   const kinds = arrays('kinds')
-  if (kinds?.some((x) => !['quran', 'hadith', 'dua'].includes(x))) {
+  if (kinds?.some((x) => !['quran', 'hadith', 'dua', 'rulings'].includes(x))) {
     throw new Error('Invalid kinds')
   }
   const sources = arrays('sources')

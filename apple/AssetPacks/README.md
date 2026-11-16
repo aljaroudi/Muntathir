@@ -1,6 +1,6 @@
 # Asset packs
 
-Only Quran Arabic and English stay bundled in the app and daily-ayah widget. Hadith uses `hadith`, containing `Hadith/hadith.db`. Supplications use the independent `supplications` pack, containing `Supplications/supplications.db`. The on-demand `quran-translations` pack contains all twelve other translations.
+Only Quran Arabic and English stay bundled in the app and daily-ayah widget. Hadith uses `hadith`, containing `Hadith/hadith.db`. Supplications use the independent essential `supplications` pack, containing `Supplications/supplications.db` (downloaded with app install/update). The on-demand `quran-translations` pack contains all twelve other translations.
 
 Quran installs validated databases into the shared App Group, then removes the managed pack. Settings → Downloads deletes individual Quran languages, all downloaded translations, the Hadith library, or supplications independently. Restoring a deleted Quran language downloads the full pack, but restores only that language. Arabic and English cannot be removed. Missing translations leave Arabic readable and never trigger an automatic download.
 
@@ -11,13 +11,12 @@ An atomic index records pending installation and pack cleanup. Interrupted insta
 From the repository root:
 
 ```sh
-uv run build/hadith/build.py --sittah --four
-python3 apple/AssetPacks/assets.py package --content all
+python3 build/build.py --assets-only
 ```
 
 The shared **Muntathir** scheme already sets **Run → Options → Background Asset Packs** to `build/AssetPacks/archives`. Run from Xcode, open Hadith, and tap **Download Hadith**. Keep the debug session connected until installation finishes.
 
-The packaging command defaults to the same `apple/build/AssetPacks/archives` folder used by the Run scheme and release upload lane. An explicit output path overrides that default.
+The unified build writes to the same `apple/build/AssetPacks/archives` folder used by the Run scheme and release upload lane. An explicit output path overrides that default.
 
 The folder contains packaged `.aar` files and is ignored by Git. Repackage and restart the debug session after database changes. No separate server, certificates, or manual URL override are needed for this workflow. See [Apple’s Xcode 27 release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-27-release-notes).
 
@@ -38,7 +37,7 @@ Check that progress survives leaving and reopening Hadith. After installation, t
 
 The selected Hadith library contains 145,479 reading entries and 9 separate introductions. Unnumbered chapters, commentary, and appendices remain reading entries; only explicitly titled prefaces are separated as introductions. The separate supplications asset contains 54 Sahifa prayers and three additional supplications. Installed and archive sizes are generated locally; Apple’s processed download sizes remain unverified.
 
-Schema v7 and application ID `1230262606` identify compatible reader databases. `--experimental-morphology` is off by default; production packaging rejects experimental databases. Packaging regenerates `AssetDownloadSizes.json` from actual archive byte counts. All downloads use native, rounded size formatting; installed sizes come from local files.
+New builds use schema v8 (basic word indexes only); the updated reader accepts v7 and v8. The application ID remains `1230262606`. `--experimental-morphology` is off by default; production packaging rejects experimental databases. Packaging regenerates `AssetDownloadSizes.json` from actual archive byte counts. All downloads use native, rounded size formatting; installed sizes come from local files.
 
 ## Before release
 
@@ -53,3 +52,54 @@ Register the downloader extension and shared app group for signing. Validate hos
 For an existing pack, upload the rebuilt archive, then choose **Replace** in App Store Connect → **Asset Packs** and submit the processed version for review. After the app’s first approval, compatible updates can be submitted independently. Verify the replacement in TestFlight with the previous pack installed. iOS updates installed Hadith and Supplications packs in the background. Quran translations copied into the App Group remain at their installed version until redownloaded. See [Apple’s submission instructions](https://developer.apple.com/help/app-store-connect/manage-submissions-to-app-review/submit-apple-hosted-asset-packs).
 
 Local packaging and the Run scheme do not upload, publish, or bundle Hadith. Production delivery must be verified in TestFlight for both packs before release.
+
+## Compact search rollout
+
+Offline passage search now uses normalized word and phrase indexes. Trigram,
+prefix-accelerator, and Quran morphology indexes are omitted; broader matching
+uses explicit API search. Reader text, references, layout, and annotations stay intact.
+
+Rebuild with the commands above, or rebuild indexes without reimporting Hadith:
+
+```sh
+python3 build/hadith/compact.py build/hadith/dist/hadith.db build/hadith/dist/compact/hadith.db
+bash build/quran/build.sh
+```
+
+The compact script requires a new destination and preserves its source. On the
+current corpus, Hadith shrank from 968,339,456 to 354,398,208 installed bytes;
+the locally packaged Apple archive is 111,519,543 bytes. All 14 Quran databases
+together occupy 26,943,488 bytes. These are local measurements, not Apple's
+processed download-size estimates.
+
+Do not replace externally served packs with these outputs before coordinating a
+compatible app build. Existing v7-only builds reject v8 Hadith; older Quran
+readers expect the removed trigram index. Use new pack IDs for the compact
+release if older builds must remain supported. Keep the current published packs
+available through that transition. No compact packs have been uploaded.
+
+## Rulings
+
+The independent on-demand `rulings` pack contains `Rulings/rulings.db`, built from
+`build/rulings/dist/rulings.db`. Rebuild with `python3 build/rulings/build.py`.
+The crawl mirror remains `build/rulings/data/fatwa.sqlite` so existing database
+connections retain their file identity. Package with `--content rulings`; upload only that pack
+with `bundle exec ruby fastlane/asset_pack_delivery.rb --upload rulings` from
+`apple/` using the Ruby environment in `fastlane/SETUP.md`.
+
+The reader validates application ID `1179809601`, schema version 1, SQLite
+integrity, relationships, and FTS availability. Authority, language, and source
+question ID form its durable references. Sistani is the default authority. Content
+language follows the app locale when available; otherwise the user selects from
+published languages. Authority and per-authority language choices persist locally.
+
+Version 1 was submitted for external TestFlight review on November 14, 2026.
+Apple reported **Waiting for Review** at submission. No new app build was uploaded;
+hosted device delivery remains to be verified with a compatible TestFlight build.
+The earlier `fatwa` upload was superseded during naming and remains unsubmitted.
+
+Version 2 rebuilt the three authority display names and was submitted for external
+TestFlight review on November 14, 2026. Apple reported **Waiting for Review**.
+Upload completed without warnings or errors; archive size is 4,586,711 bytes.
+All 12,960 questions, source links, topics, placements, and stable references match
+version 1, so this update requires no new search embeddings.

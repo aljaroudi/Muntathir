@@ -26,7 +26,7 @@ final class VerseActionsUITests: XCTestCase {
         return text.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.25))
     }
 
-    @MainActor private func addHighlight(_ app: XCUIApplication, note: String = "My private note") {
+    @MainActor private func openHighlightPicker(_ app: XCUIApplication) {
         if !app.textViews["quran-translation-1:1"].exists {
             app.buttons["quran-reading-options"].tap()
             app.buttons["quran-translation-picker"].tap()
@@ -35,13 +35,28 @@ final class VerseActionsUITests: XCTestCase {
         firstTranslationWord(app).press(forDuration: 1.2)
         XCTAssertTrue(app.menuItems["Highlight"].waitForExistence(timeout: 5))
         app.menuItems["Highlight"].tap()
-        app.buttons["highlight-add-note"].tap()
+    }
+
+    @MainActor private func addHighlight(_ app: XCUIApplication, note: String = "My private note") {
+        openHighlightPicker(app)
+        let green = app.buttons["highlight-color-green"]
+        XCTAssertTrue(green.waitForExistence(timeout: 5))
+        green.tap()
+        XCTAssertTrue(green.waitForNonExistence(timeout: 5))
+        editHighlight(app)
         let editor = app.textViews["highlight-note-editor"]
         XCTAssertTrue(editor.waitForExistence(timeout: 5))
-        app.buttons["highlight-color-green"].tap()
         editor.tap()
         editor.typeText(note)
-        app.buttons["save-highlight"].tap()
+        green.tap()
+        XCTAssertTrue(green.waitForNonExistence(timeout: 5))
+    }
+
+    @MainActor private func dismissHighlightSheet(_ app: XCUIApplication) {
+        let swatch = app.buttons["highlight-color-green"]
+        let top = swatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0))
+            .withOffset(CGVector(dx: 0, dy: -6))
+        top.press(forDuration: 0.1, thenDragTo: top.withOffset(CGVector(dx: 0, dy: 280)))
     }
 
     @MainActor private func editHighlight(_ app: XCUIApplication) {
@@ -78,10 +93,10 @@ final class VerseActionsUITests: XCTestCase {
         add(screenshot)
         app.buttons["saved-verse-1:1"].swipeLeft()
         app.buttons["Edit highlight"].tap()
-        XCTAssertEqual(app.staticTexts["highlight-note-preview"].label, "My private note")
+        XCTAssertEqual(app.textViews["highlight-note-editor"].value as? String, "My private note")
         XCTAssertFalse(app.staticTexts["Edit note"].exists)
-        app.buttons["Done"].tap()
-        XCTAssertTrue(app.staticTexts["highlight-note-preview"].waitForNonExistence(timeout: 5))
+        app.buttons["highlight-color-blue"].tap()
+        XCTAssertTrue(app.textViews["highlight-note-editor"].waitForNonExistence(timeout: 5))
         app.buttons["saved-verse-1:1"].tap()
         XCTAssertTrue(app.buttons["verse-actions-1:1"].waitForExistence(timeout: 5))
         app.terminate()
@@ -92,26 +107,36 @@ final class VerseActionsUITests: XCTestCase {
         XCTAssertTrue(app.buttons["saved-verse-1:1"].waitForExistence(timeout: 5))
         app.buttons["saved-verse-1:1"].tap()
         editHighlight(app)
-        XCTAssertEqual(app.staticTexts["highlight-note-preview"].label, "My private note")
+        XCTAssertEqual(app.textViews["highlight-note-editor"].value as? String, "My private note")
+        XCTAssertTrue(app.buttons["highlight-color-blue"].isSelected)
     }
 
-    @MainActor func testUnsavedEditsCanBeDiscardedAndHighlightsDeleted() {
+    @MainActor func testNotesEditDirectlyAndHighlightsCanBeDeleted() {
         let app = launch()
         openFirstVerse(app)
         addHighlight(app, note: "Keep this")
         editHighlight(app)
-        app.buttons["highlight-add-note"].tap()
         let editor = app.textViews["highlight-note-editor"]
         editor.tap()
-        editor.typeText(" discarded")
-        app.buttons["Cancel"].tap()
-        app.buttons["Discard changes"].tap()
+        editor.typeText(" updated")
+        let editedNote = editor.value as? String
+        XCTAssertTrue(editedNote?.contains("updated") == true)
+        XCTAssertTrue(editedNote?.contains("Keep this") == true)
+        dismissHighlightSheet(app)
         XCTAssertTrue(editor.waitForNonExistence(timeout: 5))
         editHighlight(app)
-        XCTAssertEqual(app.staticTexts["highlight-note-preview"].label, "Keep this")
+        XCTAssertEqual(app.textViews["highlight-note-editor"].value as? String, editedNote)
+        if let editedNote {
+            let deletion = String(repeating: XCUIKeyboardKey.delete.rawValue, count: editedNote.count)
+            editor.tap()
+            editor.typeText(String(repeating: XCUIKeyboardKey.rightArrow.rawValue, count: editedNote.count) + deletion)
+            dismissHighlightSheet(app)
+            editHighlight(app)
+            XCTAssertFalse((editor.value as? String ?? "").contains("Keep this"))
+        }
         app.buttons["Delete highlight"].tap()
         app.sheets.buttons["Delete highlight"].tap()
-        XCTAssertTrue(app.buttons["Done"].waitForNonExistence(timeout: 5))
+        XCTAssertTrue(editor.waitForNonExistence(timeout: 5))
         firstTranslationWord(app).press(forDuration: 1.2)
         XCTAssertTrue(app.menuItems["Highlight"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.menuItems.matching(NSPredicate(format: "label BEGINSWITH %@", "Edit highlight")).firstMatch.exists)
@@ -120,10 +145,18 @@ final class VerseActionsUITests: XCTestCase {
     @MainActor func testFailedSaveKeepsTheDraft() {
         let app = launch(extra: ["--ui-testing-quran-save-failure"])
         openFirstVerse(app)
-        addHighlight(app, note: "Do not lose this draft")
+        openHighlightPicker(app)
+        let green = app.buttons["highlight-color-green"]
+        XCTAssertTrue(green.waitForExistence(timeout: 5))
+        green.tap()
         XCTAssertTrue(app.alerts["Unable to save"].waitForExistence(timeout: 5))
-        app.alerts.buttons["OK"].tap()
-        XCTAssertEqual(app.textViews["highlight-note-editor"].value as? String, "Do not lose this draft")
+        app.alerts.buttons["Retry"].tap()
+        XCTAssertTrue(app.alerts["Unable to save"].waitForExistence(timeout: 5))
+        app.alerts.buttons["Discard changes"].tap()
+        XCTAssertTrue(green.waitForNonExistence(timeout: 5))
+        openHighlightPicker(app)
+        XCTAssertTrue(green.waitForExistence(timeout: 5))
+        XCTAssertFalse(green.isSelected)
     }
 
     @MainActor func testPartialHighlightUsesNativeSelectionAndCanBeEdited() {
@@ -137,20 +170,77 @@ final class VerseActionsUITests: XCTestCase {
         XCTAssertTrue(highlight.waitForExistence(timeout: 5))
         highlight.tap()
         XCTAssertTrue(app.buttons["highlight-color-blue"].waitForExistence(timeout: 5))
+        for color in ["yellow", "green", "blue", "pink", "purple", "orange"] {
+            let swatch = app.buttons["highlight-color-\(color)"]
+            XCTAssertTrue(swatch.isHittable)
+            XCTAssertFalse(swatch.isSelected)
+        }
         XCTAssertFalse(app.textViews["highlight-note-editor"].exists)
         XCTAssertFalse(app.buttons["save-highlight"].exists)
+        dismissHighlightSheet(app)
+        XCTAssertTrue(app.buttons["highlight-color-blue"].waitForNonExistence(timeout: 5))
+        openHighlightPicker(app)
         XCTAssertFalse(app.staticTexts["Blue"].exists)
-        app.buttons["highlight-color-blue"].tap()
+        app.buttons["highlight-color-orange"].tap()
+        XCTAssertTrue(app.buttons["highlight-color-orange"].waitForNonExistence(timeout: 5))
         let reader = XCTAttachment(screenshot: app.screenshot())
         reader.name = "Persistent partial highlight"
         reader.lifetime = .keepAlways
         add(reader)
         editHighlight(app)
-        XCTAssertTrue(app.buttons["highlight-color-blue"].isSelected)
+        XCTAssertTrue(app.buttons["highlight-color-orange"].isSelected)
+        XCTAssertTrue(app.menuItems["Highlight"].waitForNonExistence(timeout: 3))
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = "Partial highlight editor"
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+
+    @MainActor func testPaletteCountAndOrderPersistIntoPicker() {
+        let app = launch()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.openSettingsFromTools()
+        app.buttons["settings-highlight-colors"].tap()
+        let count = app.steppers["highlight-color-count"]
+        XCTAssertTrue(count.waitForExistence(timeout: 5))
+        XCTAssertEqual(count.value as? String, "6")
+        let paletteScreenshot = XCTAttachment(screenshot: app.screenshot())
+        paletteScreenshot.name = "Reorderable highlight swatches"
+        paletteScreenshot.lifetime = .keepAlways
+        add(paletteScreenshot)
+        count.buttons.element(boundBy: 1).tap()
+        let orange = app.cells.containing(.any, identifier: "palette-color-orange").firstMatch
+        let yellow = app.cells.containing(.any, identifier: "palette-color-yellow").firstMatch
+        XCTAssertTrue(orange.isHittable)
+        orange.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5))
+            .press(forDuration: 1, thenDragTo: yellow.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.1)))
+        app.terminate()
+        app.launchArguments.append("--ui-testing-preserve-state")
+        app.launch()
+        openQuran(app)
+        openFirstVerse(app)
+        app.buttons["quran-reading-options"].tap()
+        app.buttons["quran-translation-picker"].tap()
+        app.buttons["English"].tap()
+        firstTranslationWord(app).press(forDuration: 1.2)
+        app.menuItems["Highlight"].tap()
+        let first = app.buttons["highlight-color-orange"]
+        XCTAssertTrue(first.waitForExistence(timeout: 5))
+        XCTAssertFalse(first.isSelected)
+        XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "highlight-color-")).count, 7)
+        XCTAssertLessThan(first.frame.minX, app.buttons["highlight-color-yellow"].frame.minX)
+        XCTAssertFalse(app.buttons["Cancel"].exists)
+        XCTAssertFalse(app.buttons["highlight-add-note"].exists)
+    }
+
+    @MainActor func testAllColorsFitWithLargeText() {
+        let app = launch(extra: ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL", "-highlightColorCount", "12"])
+        openFirstVerse(app)
+        openHighlightPicker(app)
+        XCTAssertTrue(app.buttons["highlight-color-yellow"].waitForExistence(timeout: 5))
+        for color in ["yellow", "green", "blue", "pink", "purple", "orange", "red", "mint", "teal", "cyan", "indigo", "brown"] {
+            XCTAssertTrue(app.buttons["highlight-color-\(color)"].isHittable)
+        }
     }
 
     @MainActor func testTappingHighlightShowsNoteWithoutLeavingReader() {
@@ -163,15 +253,16 @@ final class VerseActionsUITests: XCTestCase {
         let text = app.textViews["quran-translation-1:1"]
         XCTAssertTrue(text.waitForExistence(timeout: 5))
         text.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.25)).tap()
-        let note = app.staticTexts["highlight-note-preview"]
+        let note = app.textViews["highlight-note-editor"]
         XCTAssertTrue(note.waitForExistence(timeout: 5))
-        XCTAssertEqual(note.label, "Read this here")
-        XCTAssertFalse(app.textViews["highlight-note-editor"].exists)
+        XCTAssertEqual(note.value as? String, "Read this here")
+        XCTAssertTrue(app.textViews["highlight-note-editor"].exists)
         let screenshot = XCTAttachment(screenshot: app.screenshot())
         screenshot.name = "Quick note preview"
         screenshot.lifetime = .keepAlways
         add(screenshot)
-        app.buttons["Done"].tap()
+        app.buttons["highlight-color-green"].tap()
+        XCTAssertTrue(note.waitForNonExistence(timeout: 5))
         XCTAssertTrue(app.buttons["verse-actions-1:1"].isHittable)
     }
 
@@ -185,8 +276,8 @@ final class VerseActionsUITests: XCTestCase {
         XCTAssertTrue(app.buttons["First note"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["Second note"].exists)
         app.buttons["First note"].tap()
-        XCTAssertTrue(app.staticTexts["highlight-note-preview"].waitForExistence(timeout: 5))
-        XCTAssertEqual(app.staticTexts["highlight-note-preview"].label, "First note")
+        XCTAssertTrue(app.textViews["highlight-note-editor"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.textViews["highlight-note-editor"].value as? String, "First note")
     }
 
     @MainActor func testArabicCopyAndImageActionsAreAccessible() {

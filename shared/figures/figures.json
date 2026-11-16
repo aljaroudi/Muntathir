@@ -91,9 +91,12 @@
             "رسول الله"
           ],
           "laqab": [
+            "أحمد",
             "المصطفى",
             "سيد المرسلين",
             "خاتم الأنبياء",
+            "حبيب الله",
+            "عبد الله",
             "الصادق",
             "الأمين",
             "رحمة العالمين",
@@ -104,11 +107,26 @@
             "البشير",
             "صاحب المقام المحمود",
             "طه",
-            "ياسين",
+            "يـٰس",
             "النذير",
             "المختار",
             "المظلل بالغمامة",
-            "صاحب السكينة"
+            "صاحب السكينة",
+            "ابن الذبيحَين",
+            "المُدَّثٍّل",
+            "البشير",
+            "الغوث",
+            "الغيث",
+            "المُنذِر",
+            "نجِيّ الله",
+            "خير البشر",
+            "خليفة الله",
+            "الصراط المستقيم",
+            "صفِيّ الله",
+            "المختار",
+            "المنصور",
+            "نبي الرحمة",
+            "الهادي"
           ],
           "kunya": [
             "أبو الزهراء",
@@ -169,12 +187,20 @@
           ]
         }
       ],
+      "birth_place": {
+        "en": "Mecca",
+        "ar": "مكة"
+      },
+      "death_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
       "verified": true
     },
     {
       "id": "fatima-al-zahra",
       "display_names": {
-        "ar": "فاطمة الزهراء",
+        "ar": "فاطمة بنت محمد ﷺ",
         "en": "Fatima al-Zahra"
       },
       "names": {
@@ -190,12 +216,14 @@
             "المباركة",
             "الزكية",
             "الراضية",
-            "المرضية"
+            "المرضية",
+            "الكوثر"
           ],
           "kunya": [
             "أم أبيها",
             "أم الحسن",
-            "أم الحسين"
+            "أم الحسين",
+            "أم المحسن"
           ],
           "title": [
             "سيدة نساء العالمين"
@@ -267,7 +295,7 @@
             {
               "source_id": "wikishia-fatima",
               "locator": "Martyrdom",
-              "quote": "Based on another view, she passed away on Jumada I 13"
+              "quote": "Other views on her passing are the Rabi' II 8/July 3, Rabi' II 13/July 8, and the Ramadan 3/November 22"
             }
           ]
         },
@@ -305,14 +333,18 @@
             {
               "source_id": "wikishia-fatima",
               "locator": "Martyrdom",
-              "quote": "Other views on her passing are the Rabi' II 8, Rabi' II 13, and the Ramadan 3"
+              "quote": "Other views on her passing are the Rabi' II 8/July 3, Rabi' II 13/July 8, and the Ramadan 3/November 22"
             }
           ]
         }
       ],
-      "notes": {
-        "en": "Popular birth is 20 Jumada II, five years after Bi'tha. The observed death days are 3 Jumada II, 13 Jumada I, and 8 Rabi II; 13 Rabi II is also reported. Lesser reports (72 days, three or six months, 3 Ramadan) are not kept.",
-        "ar": "المولد المشهور ٢٠ جمادى الآخرة، في السنة الخامسة للبعثة. أيام الوفاة المرعية: ٣ جمادى الآخرة، و١٣ جمادى الأولى، و٨ ربيع الآخر، ويُروى أيضاً ١٣ ربيع الآخر."
+      "birth_place": {
+        "en": "Mecca",
+        "ar": "مكة"
+      },
+      "death_place": {
+        "en": "Medina",
+        "ar": "المدينة"
       },
       "verified": true
     },
@@ -329,6 +361,19 @@
             "أبو تراب",
             "أسد الله",
             "حيدر",
+            "الكرار",
+            "أخ رسول الله",
+            "باب مدينة العلم",
+            "سيف الله",
+            "صاحب اللواء",
+            "قسيم الجنة والنار",
+            "النبأ العظيم",
+            "الوصي",
+            "الهادي",
+            "الوفي",
+            "ولي الله",
+            "ساقي الكوثر",
+            "باب حِطّة",
             "الأنزع البطين",
             "صاحب اللواء",
             "زوج البتول",
@@ -337,8 +382,11 @@
           ],
           "kunya": [
             "أبو الحسن",
+            "أبو الحسين",
+            "أبو الحسنين",
+            "أبو السبطين",
             "أبو الأئمة",
-            "أبو السبطين"
+            "أبو شُبّر"
           ],
           "title": [
             "أمير المؤمنين"
@@ -371,7 +419,7 @@
             {
               "source_id": "wikishia-ali",
               "locator": "Infobox / Birth",
-              "quote": "Born Rajab 13, 23 BH"
+              "quote": "born inside the Ka'ba in Mecca on Friday, Rajab 13, in the thirtieth year after the year of the elephant (23 BH/September 28, 600 CE)"
             }
           ]
         }
@@ -392,14 +440,22 @@
             {
               "source_id": "wikishia-ali",
               "locator": "Infobox / Martyrdom",
-              "quote": "Martyrdom Ramadan 21, 40"
+              "quote": "Ramadan 21, 40/January 28, 661"
             }
           ]
         }
       ],
+      "birth_place": {
+        "en": "Ka'ba, Mecca",
+        "ar": "الكعبة، مكة"
+      },
+      "death_place": {
+        "en": "Mosque of Kufa",
+        "ar": "مسجد الكوفة"
+      },
       "notes": {
-        "en": "Struck on Ramadan 19, 40 AH; martyred two days later per WikiShia.",
-        "ar": "ضُرب في ١٩ رمضان سنة ٤٠ هـ، واستُشهد بعد يومين بحسب ويكي شيعة."
+        "en": "Struck on Ramadan 19, 40 AH; martyred two days later.",
+        "ar": "ضُرب في ١٩ رمضان سنة ٤٠ هـ، واستُشهد بعد يومين"
       },
       "verified": true
     },
@@ -440,7 +496,7 @@
             {
               "source_id": "wikishia-hasan",
               "locator": "Infobox",
-              "quote": "Born Ramadan 15, 3"
+              "quote": "Ramadan 15, 3/March 1, 625"
             }
           ]
         }
@@ -461,7 +517,7 @@
             {
               "source_id": "wikishia-hasan",
               "locator": "Date of Martyrdom",
-              "quote": "many Shiite scholars such as al-Shaykh al-Mufid have mentioned Safar 28th"
+              "quote": "many Shiite scholars such as al-Shaykh al-Mufid, al-Shaykh al-Tusi, al-Tabrisi, Ibn Shahrashub have mentioned Safar 28th"
             }
           ]
         },
@@ -485,6 +541,14 @@
           ]
         }
       ],
+      "birth_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
+      "death_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
       "verified": true
     },
     {
@@ -525,7 +589,7 @@
             {
               "source_id": "wikishia-husayn",
               "locator": "Infobox / Birth",
-              "quote": "Born Sha'ban 3, 4"
+              "quote": "Sha'ban 3, 4/January 8, 626"
             }
           ]
         }
@@ -546,11 +610,19 @@
             {
               "source_id": "wikishia-husayn",
               "locator": "Infobox / Martyrdom",
-              "quote": "Martyrdom Muharram 10, 61"
+              "quote": "Muharram 10, 61/October 10, 680"
             }
           ]
         }
       ],
+      "birth_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
+      "death_place": {
+        "en": "Karbala",
+        "ar": "كربلاء"
+      },
       "verified": true
     },
     {
@@ -563,10 +635,14 @@
         "ar": {
           "laqab": [
             "السجاد",
-            "زين العابدين"
+            "زين العابدين",
+            "سيد العابدين",
+            "سيد الساجدين",
+            "ذو الثّفنات"
           ],
           "kunya": [
-            "أبو الحسن"
+            "أبو الحسن",
+            "أبو محمد"
           ],
           "name": "علي",
           "full_name": "علي بن الحسين"
@@ -588,7 +664,7 @@
             {
               "source_id": "wikishia-sajjad",
               "locator": "Infobox",
-              "quote": "Born Sha'ban 5, 38"
+              "quote": "Sha'ban 5, 38/January 6, 659"
             }
           ]
         }
@@ -609,11 +685,19 @@
             {
               "source_id": "wikishia-sajjad",
               "locator": "Infobox / Martyrdom",
-              "quote": "Martyrdom Muharram 25, 95"
+              "quote": "Muharram 25, 95/October 20, 713"
             }
           ]
         }
       ],
+      "birth_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
+      "death_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
       "verified": true
     },
     {
@@ -651,7 +735,7 @@
             {
               "source_id": "wikishia-baqir",
               "locator": "Infobox / Birth",
-              "quote": "Born Rajab 1, 57"
+              "quote": "Imam al-Baqir (a) was born on Friday Rajab 1, 57/May 10, 677 in Medina"
             }
           ]
         }
@@ -672,11 +756,19 @@
             {
               "source_id": "wikishia-baqir",
               "locator": "Infobox / Martyrdom",
-              "quote": "Martyrdom Dhu l-Hijja 7, 114"
+              "quote": "Imam al-Baqir (a) passed away on Dhu l-Hijjah 7, 114/January 28, 733"
             }
           ]
         }
       ],
+      "birth_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
+      "death_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
       "verified": true
     },
     {
@@ -734,11 +826,19 @@
             {
               "source_id": "wikishia-sadiq",
               "locator": "Martyrdom",
-              "quote": "later sources considered Shawwal 25 as the day of his martyrdom"
+              "quote": "Shawwal 25, 148/December 14, 765"
             }
           ]
         }
       ],
+      "birth_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
+      "death_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
       "verified": true
     },
     {
@@ -774,9 +874,9 @@
           "status": "accepted",
           "citations": [
             {
-              "source_id": "wikishia-imams",
+              "source_id": "wikishia-kadhim",
               "locator": "Table",
-              "quote": "Birth 7 Safar 128"
+              "quote": "born on Sunday, Safar 7, 128/November 8, 745 or Safar 7, 129/October 28, 746 in the village of Abwa'"
             }
           ]
         }
@@ -795,13 +895,21 @@
           "status": "accepted",
           "citations": [
             {
-              "source_id": "wikishia-imams",
+              "source_id": "wikishia-kadhim",
               "locator": "Table",
-              "quote": "Martyrdom 25 Rajab 183"
+              "quote": "His martyrdom occurred on Rajab 25, 183"
             }
           ]
         }
       ],
+      "birth_place": {
+        "en": "Abwa'",
+        "ar": "الأبواء"
+      },
+      "death_place": {
+        "en": "Baghdad",
+        "ar": "بغداد"
+      },
       "verified": true
     },
     {
@@ -837,9 +945,9 @@
           "status": "accepted",
           "citations": [
             {
-              "source_id": "wikishia-imams",
+              "source_id": "wikishia-ridha",
               "locator": "Table",
-              "quote": "Birth 11 Dhu l-Qa'da 148"
+              "quote": "Dhu l-Qa'da 11, 148/December 29, 765"
             }
           ]
         }
@@ -851,10 +959,9 @@
           "precision": "approximate",
           "start": {
             "year": 203,
-            "month": 2,
-            "day": 29
+            "month": 2
           },
-          "original": "Last day of Safar, 203 AH (Safar 29 or 30)",
+          "original": "Last day of Safar, 203 AH",
           "status": "accepted",
           "citations": [
             {
@@ -868,7 +975,15 @@
             "ar": "آخر يوم من شهر صفر."
           }
         }
-      ]
+      ],
+      "birth_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
+      "death_place": {
+        "en": "Tus",
+        "ar": "طوس"
+      }
     },
     {
       "id": "muhammad-al-jawad",
@@ -926,11 +1041,19 @@
             {
               "source_id": "wikishia-jawad",
               "locator": "Infobox",
-              "quote": "Dhu l-Qa'da 30, 220 / November 25, 835 in Kadhimiya"
+              "quote": "Dhu l-Qa'da 30, 220/November 25, 835"
             }
           ]
         }
       ],
+      "birth_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
+      "death_place": {
+        "en": "Kadhimiya",
+        "ar": "الكاظمية"
+      },
       "verified": true
     },
     {
@@ -968,7 +1091,7 @@
             {
               "source_id": "wikishia-hadi",
               "locator": "Infobox / Birth",
-              "quote": "Born Dhu l-Hijja 15, 212"
+              "quote": "Dhu l-Hijja 15, 212/March 6, 828"
             }
           ]
         }
@@ -989,11 +1112,19 @@
             {
               "source_id": "wikishia-hadi",
               "locator": "Infobox / Martyrdom",
-              "quote": "Martyrdom Rajab 3, 254"
+              "quote": "Rajab 3/June 28"
             }
           ]
         }
       ],
+      "birth_place": {
+        "en": "Sarya, near Medina",
+        "ar": "صريا"
+      },
+      "death_place": {
+        "en": "Samarra",
+        "ar": "سامراء"
+      },
       "verified": true
     },
     {
@@ -1028,9 +1159,9 @@
           "status": "accepted",
           "citations": [
             {
-              "source_id": "wikishia-imams",
+              "source_id": "wikishia-askari",
               "locator": "Table",
-              "quote": "Birth 8 Rabi' II 232"
+              "quote": "Rabi' II 8, 232/December 2, 846"
             }
           ]
         }
@@ -1056,12 +1187,20 @@
           ]
         }
       ],
+      "birth_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
+      "death_place": {
+        "en": "Samarra",
+        "ar": "سامراء"
+      },
       "verified": true
     },
     {
       "id": "muhammad-al-mahdi",
       "display_names": {
-        "ar": "الإمام المهدي",
+        "ar": "الحجة ابن الحسن",
         "en": "Imam al-Mahdi"
       },
       "names": {
@@ -1071,13 +1210,27 @@
             "القائم",
             "الحجة",
             "صاحب الزمان",
-            "الناحية المقدسة"
+            "الناحية المقدسة",
+            "المُنتَظَر",
+            "المأمول",
+            "المُؤمَّل",
+            "الخلف الصالح",
+            "المنصور",
+            "بقية الله",
+            "الطالب",
+            "مُحيي المؤمنين",
+            "مُعز المؤمنين",
+            "مُبيد الكافرين",
+            "مُذِلّ الأعداء",
+            "الموعود",
+            "العدل المُنتَظَر"
           ],
           "kunya": [
-            "أبو القاسم"
+            "أبو القاسم",
+            "أبو صالح"
           ],
           "name": "محمد",
-          "full_name": "محمد بن الحسن"
+          "full_name": "الحجة ابن الحسن"
         }
       },
       "birth_dates": [
@@ -1091,10 +1244,21 @@
             "day": 15
           },
           "original": "Sha'ban 15, 255 AH",
-          "status": "accepted"
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-mahdi",
+              "locator": "Birth",
+              "quote": "Sha'ban 15th (July 29, 869)"
+            }
+          ]
         }
       ],
       "death_dates": [],
+      "birth_place": {
+        "en": "Samarra",
+        "ar": "سامراء"
+      },
       "verified": true
     },
     {
@@ -1112,7 +1276,25 @@
           "name": "Abd al-Muttalib"
         }
       },
-      "birth_dates": [],
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "BH",
+          "precision": "approximate",
+          "start": {
+            "year": 127
+          },
+          "original": "127 before Hijra",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-abd-muttalib",
+              "locator": "Infobox",
+              "quote": "127 before Hijra/498-9"
+            }
+          ]
+        }
+      ],
       "death_dates": [
         {
           "calendar": "hijri",
@@ -1125,13 +1307,21 @@
           "status": "accepted",
           "citations": [
             {
-              "source_id": "wikishia-prophet",
-              "locator": "Timeline / Boycott article",
-              "quote": "578 Demise of Abd al-Muttalib"
+              "source_id": "wikishia-abd-muttalib",
+              "locator": "Demise",
+              "quote": "It is mainly believed that the Prophet (s) was eight years old when Abd al-Muttalib passed away (45 BH/578 CE)"
             }
           ]
         }
       ],
+      "birth_place": {
+        "en": "Yathrib",
+        "ar": "يثرب"
+      },
+      "death_place": {
+        "en": "Mecca",
+        "ar": "مكة"
+      },
       "verified": true
     },
     {
@@ -1164,11 +1354,19 @@
             {
               "source_id": "wikishia-abdullah",
               "locator": "Death",
-              "quote": "Most historians believe that he demised before the birth of the Prophet; Ya'qubi/Kulayni: two months after"
+              "quote": "Most of the historians believe that he demised before the birth of the Prophet (s)"
             }
           ]
         }
       ],
+      "birth_place": {
+        "en": "Mecca",
+        "ar": "مكة"
+      },
+      "death_place": {
+        "en": "Yathrib",
+        "ar": "يثرب"
+      },
       "verified": true
     },
     {
@@ -1198,11 +1396,19 @@
             {
               "source_id": "wikishia-amina",
               "locator": "Infobox",
-              "quote": "Death/Martyrdom 46 years before Hijra/575-6"
+              "quote": "46 years before Hijra/575-6"
             }
           ]
         }
       ],
+      "birth_place": {
+        "en": "Mecca",
+        "ar": "مكة"
+      },
+      "death_place": {
+        "en": "al-Abwa'",
+        "ar": "الأبواء"
+      },
       "verified": true
     },
     {
@@ -1223,25 +1429,7 @@
           "full_name": "عبد مناف بن عبد المطلب"
         }
       },
-      "birth_dates": [
-        {
-          "calendar": "hijri",
-          "era": "BH",
-          "precision": "approximate",
-          "start": {
-            "year": 85
-          },
-          "original": "About 35 years before Am al-Fil / c. 535 CE",
-          "status": "accepted",
-          "citations": [
-            {
-              "source_id": "wikishia-abu-talib",
-              "locator": "Infobox",
-              "quote": "Birth 35 years before Am al-Fil/c. 535"
-            }
-          ]
-        }
-      ],
+      "birth_dates": [],
       "death_dates": [
         {
           "calendar": "hijri",
@@ -1258,30 +1446,19 @@
             {
               "source_id": "wikishia-abu-talib",
               "locator": "Infobox",
-              "quote": "Death Rajab 26, 4 BH"
-            }
-          ]
-        },
-        {
-          "calendar": "hijri",
-          "era": "BH",
-          "precision": "exact",
-          "start": {
-            "year": 3,
-            "month": 9,
-            "day": 7
-          },
-          "original": "Shawwal 7 (alternate report / some calendars)",
-          "status": "disputed",
-          "citations": [
-            {
-              "source_id": "wikishia-abu-talib",
-              "locator": "Death",
-              "quote": "Some have mentioned his demise on Shawwal"
+              "quote": "He passed away on Rajab 26, 4 BH/March 19, 619 and was buried in Mecca"
             }
           ]
         }
       ],
+      "birth_place": {
+        "en": "Mecca",
+        "ar": "مكة"
+      },
+      "death_place": {
+        "en": "Mecca",
+        "ar": "مكة"
+      },
       "verified": true
     },
     {
@@ -1322,11 +1499,19 @@
             {
               "source_id": "wikishia-khadija",
               "locator": "Infobox",
-              "quote": "Death/Martyrdom Ramadan 10, 4 BH/ May 1, 619"
+              "quote": "passed away in the year ten after Bi'that (4 BH) in Mecca"
             }
           ]
         }
       ],
+      "birth_place": {
+        "en": "Mecca",
+        "ar": "مكة"
+      },
+      "death_place": {
+        "en": "Mecca",
+        "ar": "مكة"
+      },
       "verified": true
     },
     {
@@ -1368,11 +1553,19 @@
             {
               "source_id": "wikishia-hamza",
               "locator": "Martyrdom",
-              "quote": "Martyrdom of Hamza in the battle of Uhud (Shawwal 7, 3 AH)"
+              "quote": "The Battle of Uhud happened on Saturday, Shawwal 7, 3/March 23, 625"
             }
           ]
         }
       ],
+      "birth_place": {
+        "en": "Mecca",
+        "ar": "مكة"
+      },
+      "death_place": {
+        "en": "Uhud",
+        "ar": "جبل أحد"
+      },
       "verified": true
     },
     {
@@ -1407,7 +1600,7 @@
             {
               "source_id": "wikishia-zaynab",
               "locator": "Infobox / Birth",
-              "quote": "Birth Jumada I 5, 5 (or 6)"
+              "quote": "She was born on Jumada I 5, 5 (or 6) /October 2, 626 (or September 22, 627) in Medina"
             }
           ]
         },
@@ -1426,7 +1619,7 @@
             {
               "source_id": "wikishia-zaynab",
               "locator": "Birth",
-              "quote": "She was born on Jumada I 5, 5 (or 6)"
+              "quote": "She was born on Jumada I 5, 5 (or 6) /October 2, 626 (or September 22, 627) in Medina"
             }
           ]
         }
@@ -1452,6 +1645,14 @@
           ]
         }
       ],
+      "birth_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
+      "death_place": {
+        "en": "Damascus",
+        "ar": "دمشق"
+      },
       "verified": true
     },
     {
@@ -1488,7 +1689,7 @@
             {
               "source_id": "wikishia-umm-kulthum",
               "locator": "Birth",
-              "quote": "It is recorded that she was born in 6/627-8"
+              "quote": "she was born in 6/627-8"
             }
           ]
         }
@@ -1512,9 +1713,9 @@
           ]
         }
       ],
-      "notes": {
-        "en": "Daughter of Ali and Fatima; distinct from Umm Kulthum daughter of the Prophet (d. 9 AH). No agreed death day.",
-        "ar": "ابنة علي وفاطمة، وهي غير أم كلثوم ابنة النبي التي توفيت سنة ٩ هـ. لا يتفق المصادر على يوم وفاتها."
+      "birth_place": {
+        "en": "Medina",
+        "ar": "المدينة"
       },
       "verified": true
     },
@@ -1555,6 +1756,14 @@
           ]
         }
       ],
+      "birth_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
+      "death_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
       "verified": true
     },
     {
@@ -1594,7 +1803,7 @@
             {
               "source_id": "wikishia-abbas",
               "locator": "Birth",
-              "quote": "Birth of al-Abbas"
+              "quote": "Al-Abbas was born on Sha'ban 4, 26/May 15, 647 in Medina"
             }
           ]
         }
@@ -1610,9 +1819,24 @@
             "day": 10
           },
           "original": "Muharram 10, 61 AH (Karbala)",
-          "status": "accepted"
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-abbas",
+              "locator": "Infobox",
+              "quote": "Muharram 10, 61/October 10, 680"
+            }
+          ]
         }
       ],
+      "birth_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
+      "death_place": {
+        "en": "Karbala",
+        "ar": "كربلاء"
+      },
       "verified": true
     },
     {
@@ -1649,7 +1873,7 @@
             {
               "source_id": "wikishia-ali-akbar",
               "locator": "Birth",
-              "quote": "born in 33/654"
+              "quote": "born in Medina on Sha'ban 11, 33/March 7, 654"
             }
           ]
         }
@@ -1670,11 +1894,19 @@
             {
               "source_id": "wikishia-ali-akbar",
               "locator": "Martyrdom",
-              "quote": "Martyred in Karbala"
+              "quote": "martyred in the Battle of Karbala on Muharram 10, 61/October 10, 680"
             }
           ]
         }
       ],
+      "birth_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
+      "death_place": {
+        "en": "Karbala",
+        "ar": "كربلاء"
+      },
       "verified": true
     },
     {
@@ -1706,11 +1938,19 @@
             {
               "source_id": "wikishia-ruqayya-ar",
               "locator": "Infobox",
-              "quote": "تاريخ الوفاة 5 صفر سنة 61 هـ"
+              "quote": "5 صفر سنة 61 هـ"
             }
           ]
         }
       ],
+      "birth_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
+      "death_place": {
+        "en": "Syria",
+        "ar": "الشام"
+      },
       "verified": true
     },
     {
@@ -1745,14 +1985,14 @@
             {
               "source_id": "wikishia-sukayna",
               "locator": "Death",
-              "quote": "Death of Sukayna bint al-Husayn"
+              "quote": "passed away on Rabi' I 5, 117/April 4, 735, in Medina"
             }
           ]
         }
       ],
-      "notes": {
-        "en": "No exact birthday is recorded. Her name is given as Amina; she is known as Sukayna. Majority death report: Rabi' I 5, 117 AH.",
-        "ar": "لا يُروى تاريخ مولد محدد. اسمها آمنة، وتُعرف بسكينة. وفاتها في المشهور ٥ ربيع الأول ١١٧ هـ."
+      "death_place": {
+        "en": "Medina",
+        "ar": "المدينة"
       },
       "verified": true
     },
@@ -1785,14 +2025,18 @@
             {
               "source_id": "wikishia-qasim-hasan",
               "locator": "Martyrdom",
-              "quote": "Martyred on Ashura in Karbala"
+              "quote": "61/680 The Day of 'Ashura"
             }
           ]
         }
       ],
-      "notes": {
-        "en": "WikiShia: no record of his birthday. Martyred on Ashura; some reports say he had not reached puberty, others that he was 16.",
-        "ar": "ويكي شيعة: لا يُذكر تاريخ مولده. استُشهد يوم عاشوراء، وقيل لم يبلغ الحلم، وقيل كان في السادسة عشرة."
+      "birth_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
+      "death_place": {
+        "en": "Karbala",
+        "ar": "كربلاء"
       },
       "verified": true
     },
@@ -1849,11 +2093,19 @@
             {
               "source_id": "wikishia-masuma",
               "locator": "Death",
-              "quote": "d. 201/816 in Qom"
+              "quote": "later historical accounts state that she passed away on Rabi' II 10, 201/November 5, 816"
             }
           ]
         }
       ],
+      "birth_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
+      "death_place": {
+        "en": "Qom",
+        "ar": "قم"
+      },
       "verified": true
     },
     {
@@ -1888,9 +2140,13 @@
         }
       ],
       "death_dates": [],
-      "notes": {
-        "en": "Arabic WikiShia: sources do not record his birth or death year. One report says he was born about 150 AH. The old Jumada I 22, 189 date is not in WikiShia.",
-        "ar": "ويكي شيعة: لم تُذكر سنة ولادته ووفاته، وقيل وُلد سنة ١٥٠ هـ."
+      "birth_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
+      "death_place": {
+        "en": "Iraq",
+        "ar": "العراق"
       },
       "verified": true
     },
@@ -1923,11 +2179,19 @@
             {
               "source_id": "wikishia-muslim",
               "locator": "Martyrdom",
-              "quote": "martyred on the Day of Arafa (Dhu l-Hijja 9), 60"
+              "quote": "martyred on the day of 'Arafa (Dhu l-Hijja 9), 60"
             }
           ]
         }
       ],
+      "birth_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      },
+      "death_place": {
+        "en": "Kufa",
+        "ar": "الكوفة"
+      },
       "verified": true
     },
     {
@@ -1959,11 +2223,15 @@
             {
               "source_id": "wikishia-hani",
               "locator": "Infobox / Martyrdom",
-              "quote": "On the Dhu l-Hijja 9, 60, after the martyrdom of Muslim b. Aqil, Hani was taken handcuffed to the butchers' bazaar and was decapitated"
+              "quote": "Dhu l-Hijja 9, 60/September 10, 680"
             }
           ]
         }
       ],
+      "death_place": {
+        "en": "Kufa",
+        "ar": "الكوفة"
+      },
       "verified": true
     },
     {
@@ -1996,14 +2264,14 @@
             {
               "source_id": "wikishia-jabir",
               "locator": "Death",
-              "quote": "Demise commonly placed in the 70s AH"
+              "quote": "Jabir passed away in 78/697-8"
             }
           ]
         }
       ],
-      "notes": {
-        "en": "Companion who performed the first Arbaeen ziyarah of Imam al-Husayn.",
-        "ar": "صحابي قام بأول زيارة أربعين للإمام الحسين."
+      "death_place": {
+        "en": "Medina",
+        "ar": "المدينة"
       },
       "verified": true
     },
@@ -2030,6 +2298,14 @@
       },
       "birth_dates": [],
       "death_dates": [],
+      "birth_place": {
+        "en": "Babylon or Kutha",
+        "ar": "بابل أو كوثا"
+      },
+      "death_place": {
+        "en": "Hebron",
+        "ar": "حبرون"
+      },
       "verified": true
     },
     {
@@ -2054,10 +2330,6 @@
       },
       "birth_dates": [],
       "death_dates": [],
-      "notes": {
-        "en": "Earlier prophet; birth observed on Shia calendars (often Dhu l-Qa'da 25) without a fixed AH year.",
-        "ar": "نبي سابق، تُحيي بعض التقاويم الشيعية مولده في ٢٥ ذي القعدة، دون سنة هجرية محددة."
-      },
       "verified": true
     },
     {
@@ -2082,6 +2354,10 @@
       },
       "birth_dates": [],
       "death_dates": [],
+      "birth_place": {
+        "en": "Egypt",
+        "ar": "مصر"
+      },
       "verified": true
     },
     {
@@ -2099,7 +2375,25 @@
           "full_name": "أبو بكر بن أبي قحافة"
         }
       },
-      "birth_dates": [],
+      "birth_dates": [
+        {
+          "calendar": "hijri",
+          "era": "BH",
+          "precision": "approximate",
+          "start": {
+            "year": 50
+          },
+          "original": "About 50 years before the Hijra",
+          "status": "accepted",
+          "citations": [
+            {
+              "source_id": "wikishia-abu-bakr",
+              "locator": "Birth",
+              "quote": "probably 50 BH/574 CE"
+            }
+          ]
+        }
+      ],
       "death_dates": [
         {
           "calendar": "hijri",
@@ -2120,7 +2414,15 @@
             }
           ]
         }
-      ]
+      ],
+      "birth_place": {
+        "en": "Mecca",
+        "ar": "مكة"
+      },
+      "death_place": {
+        "en": "Medina",
+        "ar": "المدينة"
+      }
     },
     {
       "id": "salman-al-muhammadi",
@@ -2158,7 +2460,7 @@
             {
               "source_id": "wikishia-salman",
               "locator": "Infobox / Demise",
-              "quote": "Death/Martyrdom 33/653-4"
+              "quote": "Muhajirani considers the year 33/653-4 as the year of his death"
             }
           ]
         },
@@ -2180,6 +2482,13 @@
           ]
         }
       ],
+      "birth_place": {
+        "en": "Ray or Ramhurmuz"
+      },
+      "death_place": {
+        "en": "al-Mada'in",
+        "ar": "المدائن"
+      },
       "verified": true
     },
     {
@@ -2215,7 +2524,7 @@
             {
               "source_id": "wikishia-abu-dharr",
               "locator": "Infobox",
-              "quote": "Birth 33 BH/590-1"
+              "quote": "33 BH/590-1"
             }
           ]
         }
@@ -2224,7 +2533,7 @@
         {
           "calendar": "hijri",
           "era": "AH",
-          "precision": "approximate",
+          "precision": "exact",
           "start": {
             "year": 32,
             "month": 12
@@ -2240,6 +2549,10 @@
           ]
         }
       ],
+      "death_place": {
+        "en": "al-Rabatha",
+        "ar": "الربذة"
+      },
       "verified": true
     },
     {
@@ -2274,7 +2587,7 @@
             {
               "source_id": "wikishia-miqdad",
               "locator": "Lineage, Birth, and Demise",
-              "quote": "birth time uncertain; died 33 AH at about seventy"
+              "quote": "37 years before Hijra/586-7"
             }
           ]
         }
@@ -2298,6 +2611,10 @@
           ]
         }
       ],
+      "death_place": {
+        "en": "al-Jurf",
+        "ar": "الجرف"
+      },
       "verified": true
     },
     {
@@ -2330,11 +2647,15 @@
             {
               "source_id": "wikishia-ammar",
               "locator": "Infobox",
-              "quote": "Death/Martyrdom 37/657"
+              "quote": "37/657"
             }
           ]
         }
       ],
+      "death_place": {
+        "en": "Siffin",
+        "ar": "صفين"
+      },
       "verified": true
     }
   ],
@@ -3055,6 +3376,11 @@
       "id": "wikishia-ruqayya-ar",
       "title": "رقية بنت الحسين",
       "url": "https://ar.wikishia.net/view/%D8%B1%D9%82%D9%8A%D8%A9_%D8%A8%D9%86%D8%AA_%D8%A7%D9%84%D8%AD%D8%B3%D9%8A%D9%86"
+    },
+    {
+      "id": "wikishia-kadhim",
+      "title": "Imam Musa b. Ja'far al-Kazim (a)",
+      "url": "https://en.wikishia.net/view/Imam_Musa_b._Ja%27far_al-Kazim_(a)"
     }
   ]
 }

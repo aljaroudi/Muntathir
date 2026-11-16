@@ -1,21 +1,11 @@
 Gebet und tägliches Gedenken, vereint in Muntathir.
 
-Sehen Sie die Gebetszeiten für Ihren Standort, wählen Sie die Berechnungsmethode und stellen Sie Erinnerungen ein. Verfolgen Sie den Lauf der Sonne auf der Heute-Seite.
+Sehen Sie lokale Gebetszeiten, wählen Sie die Berechnungsmethode und richten Sie Erinnerungen ein. Verfolgen Sie den Himmel anhand des tatsächlichen Sonnenstands, entdecken Sie bevorstehende islamische Ereignisse mit sonnenuntergangsgenauer Zeitplanung, teilen Sie den täglichen Vers und finden Sie die Qibla. Nutzen Sie interaktive 3D-Tasbih-Perlen, Frontkamera-Hilfe beim Zählen der Rak‘a sowie ein vollständiges Aktivitätsprotokoll für Gebet, Lektüre und Gedenken.
 
-Lesen Sie jeden Tag einen Koranvers und teilen Sie ihn als Bild. Lesen Sie den Koran und suchen Sie nach Suren.
+Lesen Sie den Koran Vers für Vers oder in Mushaf-Seiten, wählen Sie Übersetzungen und kehren Sie zu Ihrer Leseposition zurück. Verwalten Sie einzelne Hadith-Bücher für das Lesen und Suchen offline. Entdecken Sie Bittgebete, Rechtsregeln sowie Persönlichkeiten samt ausführlichen Titeln. Setzen Sie Lesezeichen, markieren Sie Text, fügen Sie Notizen hinzu und teilen Sie Text- oder Bildkarten. Persönliche Markierungen und Notizen werden bei Verfügbarkeit über Ihr privates iCloud-Konto synchronisiert.
 
-Entdecken Sie den islamischen Kalender und Gedenktage. Wählen Sie den Systemkalender, die örtliche Sichtung mit bloßem Auge im Nahen Osten oder staatliche Bekanntmachungen. Passen Sie einzelne Monate um −2 bis +2 Tage an. Ohne passende Bekanntmachung gelten berechnete Umm-al-Qura-Daten.
+Durchsuchen Sie heruntergeladene Koran- und Hadith-Texte offline. Wenn nichts gefunden wird, nutzen Sie die semantische Online-Suche mit Ergebnisvorschau im gewählten Buch und Kapitel.
 
-Finden Sie die Qibla-Richtung. Für iPhone und iPad, mit Apple-Watch-App und Widgets. Die Oberfläche ist in 15 Sprachen verfügbar.
+Entdecken Sie islamische Anlässe und wählen Sie Systemkalender, direkte Mondsichtung für den Nahen Osten oder saudische Bekanntgaben, anpassbar um bis zu zwei Tage je Monat; bis zur Bestätigung gelten berechnete Umm-al-Qura-Werte.
 
-Gebetszeiten und Kalenderdaten hängen von Ihren Einstellungen ab. Beachten Sie bei Bedarf Ihre örtliche Autorität.
-
-KORAN
-Lesen Sie den Koran mit enthaltenen Übersetzungen, suchen Sie Verse und speichern Sie Ihre Leseposition.
-
-HADITHE
-Laden Sie die Hadith-Bibliothek herunter. Durchstöbern Sie Sammlungen und Kapitel, suchen Sie auf Arabisch und Englisch und lesen Sie offline. Speichern Sie Favoriten, ergänzen Sie Notizen und teilen Sie Überlieferungen als Text oder Bild.
-
-Markiere Passagen im Koran und in Hadithen und finde sie unter Markierungen wieder.
-
-Finde Koranverse und Hadithe nach ihrer Bedeutung. Wenn die lokale Suche nichts findet, probiere die Onlinesuche in derselben Suchleiste. Das gewählte Buch und Kapitel bleiben berücksichtigt. Die lokale Textsuche bleibt offline verfügbar.
+Für iPhone und iPad, mit Apple Watch-Begleiter und Widgets in 15 Sprachen. Arabischer Koran und englische Übersetzung sind enthalten; weitere Inhalte erfordern Downloads. Die Bedeutungssuche erfordert Internet. Zeiten und Daten hängen von Ihren Einstellungen ab.

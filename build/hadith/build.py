@@ -907,6 +907,22 @@ def add_introduction(db: sqlite3.Connection, book: str, chapter: int | None,
                    (book, chapter, title, arabic, english, url, order))
 
 
+def preface_source(item: dict, folder: Path) -> Path:
+    return folder / item["author"] / f"{item['author']}.{item['book']}" / item["file"]
+
+
+def load_printed_introductions(db: sqlite3.Connection, folder: Path = OPENITI_PATH) -> None:
+    """Attach author prefaces the Thaqalayn exports omit. The stored text is reviewed."""
+    for item in json.loads((DATA / "introductions.json").read_text())["introductions"]:
+        path = preface_source(item, folder)
+        if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != item["sha256"]:
+            raise ValueError(f"OpenITI preface edition changed; review it before importing: {path}")
+        book_id = item["book_id"]
+        if not db.execute("SELECT 1 FROM book WHERE id = ?", (book_id,)).fetchone():
+            raise ValueError(f"Missing volume for printed introduction: {book_id}")
+        add_introduction(db, book_id, None, item["title"], item["arabic"], url=item["url"])
+
+
 def reading_words(arabic: str, english: str = "") -> int:
     text = arabic if arabic.strip() else english
     text = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", text)
@@ -1564,7 +1580,6 @@ def build_fts(db: sqlite3.Connection, *, experimental_morphology: bool = False) 
         roots_by_hadith[hid].add(root)
 
     word_rows = []
-    fts_rows = []
     en_rows = []
     for hid, arabic, en_narr, en_text in db.execute(
         "SELECT id, arabic, english_narrator, english_text FROM hadith"
@@ -1580,7 +1595,6 @@ def build_fts(db: sqlite3.Connection, *, experimental_morphology: bool = False) 
             if lemma:
                 lemmas.add(norm(lemma))
         word_rows.append((hid, ntext, " ".join(sorted(roots)), " ".join(sorted(lemmas))) if experimental_morphology else (hid, ntext))
-        fts_rows.append((hid, ntext))
         en = " ".join(x for x in (en_narr, en_text) if x).strip()
         if en:
             en_rows.append((hid, en))
@@ -1589,10 +1603,8 @@ def build_fts(db: sqlite3.Connection, *, experimental_morphology: bool = False) 
                 ("INSERT INTO hadith_words (rowid, text, root, lemma) VALUES (?, ?, ?, ?)" if experimental_morphology else "INSERT INTO hadith_words (rowid, text) VALUES (?, ?)"),
                 word_rows,
             )
-            db.executemany("INSERT INTO hadith_fts (rowid, text) VALUES (?, ?)", fts_rows)
             db.executemany("INSERT INTO hadith_en (rowid, text) VALUES (?, ?)", en_rows)
             word_rows.clear()
-            fts_rows.clear()
             en_rows.clear()
 
     if word_rows:
@@ -1600,10 +1612,9 @@ def build_fts(db: sqlite3.Connection, *, experimental_morphology: bool = False) 
             ("INSERT INTO hadith_words (rowid, text, root, lemma) VALUES (?, ?, ?, ?)" if experimental_morphology else "INSERT INTO hadith_words (rowid, text) VALUES (?, ?)"),
             word_rows,
         )
-        db.executemany("INSERT INTO hadith_fts (rowid, text) VALUES (?, ?)", fts_rows)
         db.executemany("INSERT INTO hadith_en (rowid, text) VALUES (?, ?)", en_rows)
 
-    for table in ("hadith_words", "hadith_fts", "hadith_en"):
+    for table in ("hadith_words", "hadith_en"):
         db.execute(f"INSERT INTO {table} ({table}) VALUES ('optimize')")
     print("  FTS indexes built")
 
@@ -1711,12 +1722,6 @@ def verify_hadith(
     if prefix_hits < 1:
         raise SystemExit("Prefix FTS صل* returned 0")
 
-    tri = db.execute(
-        "SELECT count(*) FROM hadith_fts WHERE hadith_fts MATCH ?",
-        ('"صوم"',),
-    ).fetchone()[0]
-    if tri < 1:
-        raise SystemExit("Trigram FTS صوم returned 0")
     print("  search sanity ok")
 
 
@@ -1787,6 +1792,11 @@ def main(argv: list[str] | None = None) -> int:
         if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != pinned[kind]["sha256"]:
             print(f"Missing or changed pinned OpenITI source: {path}", file=sys.stderr)
             return 1
+    for item in json.loads((DATA / "introductions.json").read_text())["introductions"]:
+        path = preface_source(item, OPENITI_PATH)
+        if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != item["sha256"]:
+            print(f"Missing or changed pinned OpenITI preface: {path}", file=sys.stderr)
+            return 1
     print(f"Python {sys.version.split()[0]} SQLite {sqlite3.sqlite_version}")
     print(f"Reading {DATA_PATH} and {ADDITIONAL_PATH}")
     if args.sittah:
@@ -1829,6 +1839,7 @@ def main(argv: list[str] | None = None) -> int:
         load_concordances(z, hdb, resolver)
         load_relations_freq_chord(z, hdb, resolver)
     shia_count += load_additional_books(ADDITIONAL_PATH, hdb, four=args.four)
+    load_printed_introductions(hdb)
     localize_books(hdb)
     localize_kafi_chapters(hdb)
     localize_chapters(hdb)

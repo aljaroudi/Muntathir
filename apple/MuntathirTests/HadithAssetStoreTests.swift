@@ -32,15 +32,18 @@ import Testing
     @Test func explicitDownloadOfflineRelaunchAndRemoval() async throws {
         let fixture = try HadithFixture(count: 1)
         defer { fixture.remove() }
+        let suite = "HadithRemoval.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
         let backend = TestHadithAssets(url: fixture.url)
-        let store = HadithAssetStore(backend: backend)
+        let store = HadithAssetStore(backend: backend, defaults: defaults)
         await store.refresh()
         #expect(store.state == .missing)
         #expect(await backend.downloads == 0)
         await store.download()
         #expect(store.state == .ready)
         #expect(try await store.reader.catalog().count == 2)
-        let relaunched = HadithAssetStore(backend: backend)
+        let relaunched = HadithAssetStore(backend: backend, defaults: defaults)
         await relaunched.refresh()
         #expect(relaunched.state == .ready)
         #expect(await backend.downloads == 1)
@@ -106,12 +109,21 @@ import Testing
     @Test func finishedEventOpensReaderWhileRequestStillWaits() async throws {
         let fixture = try HadithFixture(count: 1)
         defer { fixture.remove() }
+        let suite = "HadithTransfer.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
         let backend = TestHadithAssets(url: fixture.url)
         await backend.suspendDownload()
-        let store = HadithAssetStore(backend: backend)
+        let store = HadithAssetStore(backend: backend, defaults: defaults)
         let request = Task { await store.download() }
         await backend.waitForDownload()
         #expect(!store.busy)
+        #expect(store.preparingDownload)
+        let progress = Progress(totalUnitCount: 100)
+        progress.completedUnitCount = 40
+        await store.receive(.progress(progress))
+        #expect(!store.preparingDownload)
+        #expect(store.progress == 0.4)
         await backend.setInstalled(true)
         await store.receive(.finished)
         #expect(store.state == .ready)
@@ -464,9 +476,14 @@ extension HadithAssetStoreTests {
         await store.remove(title: "merged")
         #expect(!store.storageError)
         #expect(store.books.filter(\.installed).map(\.id) == ["other"])
+        #expect(try await store.reader.page(HadithRequest(collectionID: "other")).rows.count == 1)
+        #expect(await backend.downloads == 0)
+        await store.remove(title: "other")
+        #expect(store.books.filter(\.installed).isEmpty)
+        #expect(await backend.downloads == 0)
         await store.download(title: "merged")
         #expect(store.state == .ready)
-        #expect(store.books.filter(\.installed).count == 2)
+        #expect(store.books.filter(\.installed).map(\.id) == ["merged"])
         #expect(await backend.downloads == 1)
         #expect(await backend.localURL() == nil)
         await store.receive(.progress(Progress(totalUnitCount: 100)))
@@ -474,5 +491,26 @@ extension HadithAssetStoreTests {
         await store.remove()
         #expect(store.state == .missing)
         #expect(await library.localURL() == nil)
+
+        await backend.setInstalled(true)
+        await store.receive(.began)
+        #expect(store.state == .missing)
+        await store.receive(.finished)
+        await store.refresh()
+        #expect(store.state == .missing)
+        #expect(await library.localURL() == nil)
+        await #expect(throws: HadithDatabaseError.self) { _ = try await store.reader.catalog() }
+
+        let relaunched = HadithAssetStore(backend: backend, defaults: defaults, library: library)
+        await relaunched.refresh()
+        #expect(relaunched.state == .missing)
+        #expect(!relaunched.hasLocalAsset)
+        await #expect(throws: HadithDatabaseError.self) { _ = try await relaunched.reader.catalog() }
+        #expect(await backend.downloads == 1)
+
+        await relaunched.download()
+        #expect(relaunched.state == .ready)
+        #expect(relaunched.books.filter(\.installed).count == 2)
+        #expect(await backend.downloads == 2)
     }
 }

@@ -36,3 +36,19 @@ enum QuranTestResources {
         })
     }
 }
+
+extension QuranTranslationStoreTests {
+    @Test func unchangedSelectionDoesNotReloadReadersOrWidgets() {
+        var reloads = 0
+        let store = QuranTranslationStore(defaults: nil, languages: ["en"], reloadWidgets: { reloads += 1 })
+        let revision = store.revision
+        let initialReloads = reloads
+        store.select("auto")
+        store.activate(languages: ["en"])
+        #expect(store.revision == revision)
+        #expect(reloads == initialReloads)
+        store.select("")
+        #expect(store.revision == revision + 1)
+        #expect(reloads == initialReloads + 1)
+    }
+}

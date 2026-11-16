@@ -4,6 +4,7 @@ export type Reference =
   | { kind: 'quran'; chapter: number; verse: number }
   | { kind: 'hadith'; book: string; chapter: string; number: number }
   | { kind: 'dua'; id: string; passage?: number }
+  | { kind: 'rulings'; authority: string; language: string; id: string }
 export type Hit = Reference & { score: number | null }
 export type Point = {
   id: string
@@ -12,9 +13,14 @@ export type Point = {
   vector?: number[]
 }
 export class Qdrant {
+  private cachedActive: { name: string; expiresAt: number } | null = null
+  private pendingActive: Promise<string> | null = null
+
   constructor(
     readonly url: string,
     readonly key = '',
+    private readonly ttlMs = 30_000,
+    private readonly now = Date.now,
   ) {}
   async call(
     path: string,
@@ -30,14 +36,37 @@ export class Qdrant {
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: AbortSignal.timeout(4000),
     })
-    if (!response.ok) throw new Error(`Qdrant HTTP ${response.status}`)
+    if (!response.ok) {
+      if (response.status === 404 && path.startsWith('/collections/')) this.invalidateActive()
+      throw new Error(`Qdrant HTTP ${response.status}`)
+    }
     return ((await response.json()) as any).result
   }
-  async active(): Promise<string> {
-    const result = await this.call('/aliases')
-    const name = result.aliases.find((a: any) => a.alias_name === 'search')?.collection_name
-    if (!name) throw new Error('No active corpus')
-    return name
+  invalidateActive() {
+    this.cachedActive = null
+  }
+  async active(force = false): Promise<string> {
+    if (!force && this.cachedActive && this.now() < this.cachedActive.expiresAt) {
+      return this.cachedActive.name
+    }
+    if (!this.pendingActive) {
+      this.pendingActive = (async () => {
+        const result = await this.call('/aliases')
+        const name = result.aliases.find((a: any) => a.alias_name === 'search')?.collection_name
+        if (!name) {
+          this.cachedActive = null
+          throw new Error('No active corpus')
+        }
+        this.cachedActive = { name, expiresAt: this.now() + this.ttlMs }
+        return name
+      })()
+      void this.pendingActive
+        .finally(() => {
+          this.pendingActive = null
+        })
+        .catch(() => {})
+    }
+    return await this.pendingActive
   }
   async query(collection: string, body: unknown): Promise<Point[]> {
     return (await this.call(`/collections/${encodeURIComponent(collection)}/points/query`, body))
@@ -88,16 +117,32 @@ export function fuse(
       found.rank += 1 / (61 + index)
       passages.set(point.id, found)
     })
-  const items = new Map<string, { id: string; ref: Reference; rank: number; score: number }>()
+  const items = new Map<
+    string,
+    { id: string; pointId: string; ref: Reference; rank: number; score: number; text: string }
+  >()
   for (const { point, rank } of passages.values()) {
     const score = scores.get(point.id)
     if (score === undefined || !Number.isFinite(score)) throw new Error('Missing cosine')
     const id = point.payload.item_id,
       previous = items.get(id)
     if (previous) {
+      if (rank > previous.rank) {
+        previous.pointId = point.id
+        previous.text = point.payload.text ?? ''
+      }
       previous.rank = Math.max(previous.rank, rank)
       previous.score = Math.max(previous.score, score)
-    } else items.set(id, { id, ref: point.payload.ref, rank, score })
+    } else {
+      items.set(id, {
+        id,
+        pointId: point.id,
+        ref: point.payload.ref,
+        rank,
+        score,
+        text: point.payload.text ?? '',
+      })
+    }
   }
   return [...items.values()]
     .sort((a, b) => b.rank - a.rank || a.id.localeCompare(b.id))
@@ -150,20 +195,19 @@ export async function retrieve(
   if (!vector) throw new Error('Missing query embedding')
   selected.must.push({
     should: [
-      { key: 'kind', match: { any: ['hadith', 'dua'] } },
+      { key: 'kind', match: { any: ['hadith', 'dua', 'rulings'] } },
       { key: 'search_eligible', match: { value: true } },
     ],
   })
   const common = {
     filter: selected,
     limit: 100,
-    with_payload: includePassages ? ['item_id', 'ref', 'text'] : ['item_id', 'ref'],
+    with_payload: ['item_id', 'ref'],
     with_vector: false,
   }
   const [rawSemantic, lexical] = await Promise.all([
     db.query(collection, {
       ...common,
-      limit: 200,
       query: vector,
       params: { exact: true },
     }),
@@ -190,16 +234,27 @@ export async function retrieve(
     for (const p of points) scores.set(p.id, cosine(vector, p.vector))
   }
   const ranked = fuse(semantic, lexical, scores, input.limit)
+  let texts = new Map<string, string>()
+  if (includePassages && ranked.length) {
+    const points = await db.call(`/collections/${collection}/points`, {
+      ids: ranked.slice(0, 20).map((p) => p.pointId),
+      with_payload: ['text'],
+      with_vector: false,
+    })
+    if (Array.isArray(points)) {
+      texts = new Map(points.map((p: any) => [String(p.id), p.payload?.text ?? '']))
+    }
+  }
   return {
     results: ranked.map((p) => ({ ...p.ref, score: p.score })),
     candidates: ranked.map((p) => ({
       id: p.id,
       hit: { ...p.ref, score: p.score },
-      text:
-        [...semantic, ...lexical].find((point) => point.payload.item_id === p.id)?.payload.text ??
-        '',
+      text: texts.get(p.pointId) ?? p.text,
     })),
     itemIDs: ranked.map((p) => p.id),
     semanticIDs: semantic.map((p) => p.id),
+    semanticItemIDs: [...new Set(semantic.map((p) => p.payload.item_id))],
+    lexicalItemIDs: [...new Set(lexical.map((p) => p.payload.item_id))],
   }
 }

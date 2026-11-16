@@ -22,6 +22,9 @@ def arguments(text):
 
 def main():
     catalog = json.loads((APPLE / "Muntathir/Localizable.xcstrings").read_text())["strings"]
+    manual_keys = sorted(key for key, entry in catalog.items() if entry.get("extractionState") == "manual")
+    if manual_keys:
+        raise SystemExit("Manual localization entries:\n" + "\n".join(repr(key) for key in manual_keys))
     for key, entry in catalog.items():
         localized = entry.get("localizations", {})
         locales = localized.keys()

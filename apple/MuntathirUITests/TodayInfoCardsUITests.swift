@@ -1,6 +1,34 @@
 import XCTest
 
 final class TodayInfoCardsUITests: XCTestCase {
+    @MainActor func testUpcomingEventCardInEnglishAndArabic() {
+        let app = XCUIApplication()
+        for (language, timing, first, second) in [
+            ("en", "Tonight", "Birth of Imam Husayn", "Imam Husayn enters Mecca"),
+            ("ar", "الليلة", "ولادة الإمام الحسين", "دخول الإمام الحسين مكة"),
+        ] {
+            app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "--ui-testing-weather",
+                                   "--sky-date", "2027-01-10T16:00:00Z", "-AppleLanguages", "(\(language))"]
+            if language == "ar" {
+                app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+            }
+            app.launch()
+            let card = app.buttons["upcoming-event-card"]
+            for _ in 0 ..< 18 where !card.isHittable {
+                app.swipeUp()
+            }
+            XCTAssertTrue(card.isHittable)
+            XCTAssertTrue(card.label.contains(timing))
+            XCTAssertTrue(card.label.contains(first))
+            XCTAssertTrue(card.label.contains(second))
+            XCTAssertGreaterThanOrEqual(card.frame.minX, app.frame.minX)
+            XCTAssertLessThanOrEqual(card.frame.maxX, app.frame.maxX)
+            card.tap()
+            XCTAssertTrue(app.navigationBars[language == "ar" ? "التقويم" : "Calendar"].waitForExistence(timeout: 5))
+            app.terminate()
+        }
+    }
+
     @MainActor func testWideHomeColumnsAndSettings() throws {
         let app = XCUIApplication()
         defer { XCUIDevice.shared.orientation = .portrait }
@@ -21,10 +49,10 @@ final class TodayInfoCardsUITests: XCTestCase {
                 XCTAssertLessThan(prayers.frame.maxX, ayah.frame.minX)
             }
             if language == "en" {
-                app.buttons["Settings"].tap()
+                app.openSettingsFromTools()
                 XCUIDevice.shared.orientation = .landscapeLeft
-                XCTAssertTrue(app.buttons["Done"].waitForExistence(timeout: 5))
-                app.buttons["Done"].tap()
+                XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
+                app.leaveSettings()
                 XCTAssertTrue(app.buttons["share-daily-ayah"].isHittable)
             }
             app.terminate()
@@ -37,29 +65,34 @@ final class TodayInfoCardsUITests: XCTestCase {
         app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "--ui-testing-weather", "--sky-date", "2026-10-21T21:30:00Z",
                                "-AppleLanguages", "(en)", "-AppleLocale", "en_GB"]
         app.launch()
-        let card = app.descendants(matching: .any)["gregorian-date-card"]
-        for _ in 0 ..< 8 where !card.isHittable {
+        let date = app.staticTexts["gregorian-date"]
+        let fajr = app.descendants(matching: .any)["prayer-fajr"].firstMatch
+        XCTAssertTrue(date.waitForExistence(timeout: 10))
+        XCTAssertTrue(fajr.exists)
+        XCTAssertEqual(date.label, "Thu 22 Oct")
+        XCTAssertLessThan(date.frame.maxY, fajr.frame.minY)
+
+        let weather = app.otherElements["weather-card"]
+        for _ in 0 ..< 8 where !weather.isHittable {
             app.swipeUp()
         }
-        XCTAssertTrue(card.isHittable)
-        XCTAssertTrue(app.staticTexts["22"].exists)
-        XCTAssertTrue(app.otherElements["weather-card"].exists)
+        XCTAssertTrue(weather.isHittable)
         XCTAssertTrue(app.descendants(matching: .any)["weather-attribution"].firstMatch.exists)
         let capture = XCTAttachment(screenshot: app.screenshot())
-        capture.name = "Today date and weather squares"
+        capture.name = "Today weather card"
         capture.lifetime = .keepAlways
         add(capture)
         let temperature = app.staticTexts["weather-temperature"]
         let originalTemperature = temperature.label
-        app.buttons["Settings"].tap()
+        app.openSettingsFromTools()
         let toggle = app.switches["Show feels-like temperature"]
         for _ in 0 ..< 6 where !toggle.isHittable || toggle.frame.maxY > app.frame.maxY - 100 {
             app.swipeUp()
         }
         XCTAssertTrue(toggle.isHittable)
-        toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        toggle.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5)).withOffset(CGVector(dx: -25, dy: 0)).tap()
         XCTAssertEqual(toggle.value as? String, "1")
-        app.buttons["Done"].tap()
+        app.leaveSettings()
         for _ in 0 ..< 8 where !temperature.isHittable {
             app.swipeUp()
         }
@@ -135,15 +168,16 @@ final class TodayInfoCardsUITests: XCTestCase {
         app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "--ui-testing-weather",
                                "-AppleLanguages", "(ar)", "-AppleLocale", "ar_SA"]
         app.launch()
-        let card = app.descendants(matching: .any)["gregorian-date-card"]
-        for _ in 0 ..< 8 where !card.isHittable {
+        let date = app.staticTexts["gregorian-date"]
+        XCTAssertTrue(date.waitForExistence(timeout: 10))
+        let weather = app.otherElements["weather-card"]
+        for _ in 0 ..< 8 where !weather.isHittable {
             app.swipeUp()
         }
-        XCTAssertTrue(card.isHittable)
-        XCTAssertTrue(app.otherElements["weather-card"].exists)
+        XCTAssertTrue(weather.isHittable)
         XCTAssertTrue(app.descendants(matching: .any)["weather-attribution"].firstMatch.exists)
         let capture = XCTAttachment(screenshot: app.screenshot())
-        capture.name = "Arabic date and weather squares"
+        capture.name = "Arabic weather card"
         capture.lifetime = .keepAlways
         add(capture)
     }

@@ -1,1 +1,8 @@
-Count with interactive 3D tasbih beads and track your rakaat with the front camera. Read the Quran verse by verse or in Mushaf pages, download Hadith books individually for offline reading, and explore a dedicated collection of supplications.
+New:
+• Advanced smart search across Quran and Hadith
+• Dedicated sections for Supplications, Islamic Rulings, and Islamic Events
+• Interactive 3D Tasbih and front-camera Rakaat counter
+• Daily prayer, reading, and remembrance activity tracking
+
+Updated:
+• Qibla direction on the map

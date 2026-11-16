@@ -1,21 +1,11 @@
-Preghiera e ricordo quotidiano, insieme in Muntathir.
+Preghiera e ricordo quotidiano insieme in Muntathir.
 
-Consulta gli orari di preghiera della tua posizione, scegli il metodo di calcolo e imposta i promemoria. Segui il Sole nella schermata Oggi.
+Consulta gli orari di preghiera locali, scegli il metodo di calcolo e imposta i promemoria. Segui il cielo reso in base all'elevazione solare reale su Oggi, visualizza le prossime ricorrenze islamiche con orari legati al tramonto, condividi il versetto del giorno e trova la Qibla. Conta con le perle del tasbih in 3D, usa l'assistenza della fotocamera anteriore per le rak‘a e registra le attività quotidiane di preghiera, lettura e ricordo.
 
-Leggi ogni giorno un versetto del Corano e condividilo come immagine. Leggi il Corano e cerca le sure.
+Leggi il Corano versetto per versetto o in pagine del Mushaf, scegli le traduzioni e riprendi dal punto di lettura. Gestisci i libri di hadith da scaricare o rimuovere per la consultazione e la ricerca offline. Esplora suppliche, norme e figure storiche con i relativi titoli. Aggiungi segnalibri, evidenzia passaggi, aggiungi note e condividi testi o schede illustrate. Evidenziazioni e note si sincronizzano tramite il tuo account iCloud privato quando disponibile.
 
-Esplora le date e le ricorrenze islamiche. Scegli il calendario di sistema, l’avvistamento locale a occhio nudo in Medio Oriente o gli annunci governativi. Regola ogni mese da −2 a +2 giorni. In assenza di annunci corrispondenti, le date seguono il calcolo Umm al-Qura.
+Cerca offline nei testi scaricati di Corano e Hadith. Prova la ricerca semantica online con anteprima dei risultati quando la ricerca locale non trova corrispondenze, mantenendo l'ambito di libro e capitolo selezionati.
 
-Trova la direzione della qibla. Per iPhone e iPad, con app Apple Watch e widget. Interfaccia disponibile in 15 lingue.
+Esplora le ricorrenze islamiche scegliendo il calendario di sistema, l'osservazione a occhio nudo per il Medio Oriente o gli annunci sauditi, regolabili fino a due giorni per mese; fino a conferma valgono i valori calcolati Umm al-Qura.
 
-Gli orari e le date dipendono dalle impostazioni scelte. Segui le autorità locali quando opportuno.
-
-CORANO
-Leggi il Corano con le traduzioni incluse, cerca i versetti e salva la posizione di lettura.
-
-HADITH
-Scarica la biblioteca di hadith, esplora raccolte e capitoli, cerca in arabo e inglese e leggi offline. Salva i preferiti, aggiungi note e condividi le narrazioni come testo o immagini.
-
-Evidenzia brani del Corano e degli hadith e ritrovali nella sezione Evidenziazioni.
-
-Trova versetti del Corano e hadith per significato. Se la ricerca locale non trova nulla, prova la ricerca online dalla stessa barra. Il libro e il capitolo selezionati restano invariati. La ricerca testuale locale rimane disponibile offline.
+Per iPhone e iPad, con app Apple Watch e widget in 15 lingue. Il Corano in arabo e la traduzione inglese sono inclusi; gli altri contenuti richiedono il download. La ricerca per significato richiede Internet. Orari e date dipendono dalle tue impostazioni.

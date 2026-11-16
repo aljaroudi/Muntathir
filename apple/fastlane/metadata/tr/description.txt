@@ -1,21 +1,11 @@
-Namaz ve günlük zikir, Muntathir’de bir arada.
+Namaz ve günlük zikir Muntathir'de bir arada.
 
-Konumunuzun namaz vakitlerini görün, hesaplama yöntemini seçin ve hatırlatıcılar ayarlayın. Bugün ekranında Güneş’in hareketini izleyin.
+Yerel namaz vakitlerini görün, hesaplama yöntemini seçin ve hatırlatıcılar kurun. Bugün ekranında gerçek güneş yüksekliğine göre çizilen gökyüzünü izleyin, gün batımına duyarlı yakındaki İslami günleri görün, günlük ayeti paylaşın ve kıbleyi bulun. Etkileşimli 3B tesbih taneleriyle sayın, rekât sayımı için ön kamera desteğini kullanın ve günlük namaz, okuma ve zikir etkinliğinizi kaydedip inceleyin.
 
-Her gün bir Kuran ayeti okuyun ve görsel olarak paylaşın. Kuran okuyun ve sureleri arayın.
+Kur'an'ı ayet ayet veya Mushaf sayfaları halinde okuyun, mealleri seçin ve kaldığınız yerden devam edin. Çevrimdışı gezinme ve arama için hangi hadis kitaplarının indirileceğini veya kaldırılacağını yönetin. Duaları, hükümleri ve İslam büyüklerini genişletilebilir unvanlarıyla keşfedin. Yer imi ekleyin, metin vurgulayın, not alın ve metin ya da görsel kart olarak paylaşın. Kişisel vurgular ve notlar kullanılabilir olduğunda özel iCloud hesabınızla eşzamanlanır.
 
-Hicri tarihleri ve özel günleri inceleyin. Sistem takvimi, Orta Doğu’da yerel çıplak gözle gözlem veya resmî duyurular arasında seçim yapın. Her ayı −2 ile +2 gün arasında ayarlayın. Eşleşen duyuru yoksa hesaplanmış Ümmü’l-Kura tarihleri kullanılır.
+İndirilen Kur'an ve hadis metinlerinde çevrimdışı arama yapın. Yerel arama sonuç bulamadığında seçili kitap ve bölüm kapsamında sonuç önizlemeli çevrimiçi anlamsal aramayı deneyin.
 
-Kıble yönünü bulun. iPhone ve iPad için; Apple Watch uygulaması ve araç takımlarıyla birlikte. Arayüz 15 dilde kullanılabilir.
+İslami takvim ve özel günleri takip edin. Sistem takvimi, Orta Doğu çıplak gözle hilal gözlemi veya Suudi Arabistan resmi duyuruları arasından seçim yapın, her ayı iki güne kadar ayarlayın; onay gelene kadar hesaplanan Ümmü'l-Kura değerleri uygulanır.
 
-Namaz hesaplamaları ve takvim tarihleri ayarlarınıza bağlıdır. Gerektiğinde yerel yetkililerin açıklamalarını izleyin.
-
-KURAN
-Dahil edilen çevirilerle Kuran okuyun, ayet arayın ve okuma konumunuzu kaydedin.
-
-HADİSLER
-Hadis kütüphanesini indirin; koleksiyonlara ve bölümlere göz atın, Arapça ve İngilizce arayın ve çevrimdışı okuyun. Favorilere kaydedin, not ekleyin ve rivayetleri metin veya görsel olarak paylaşın.
-
-Kur’an ve hadislerden bölümleri vurgulayın ve Vurgular’da yeniden okuyun.
-
-Kuran ayetlerini ve hadisleri anlamına göre bulun. Yerel aramada sonuç yoksa aynı arama çubuğundan çevrimiçi aramayı deneyin. Seçtiğiniz kitap ve bölüm korunur. Yerel metin araması çevrimdışı kullanılmaya devam eder.
+iPhone ve iPad için, Apple Watch eşlikçisi ve ana ekran araç takımlarıyla 15 dilde. Arapça Kur'an ve İngilizce meal dahildir; diğer içerikler indirme gerektirir. Anlamsal arama internet bağlantısı gerektirir. Vakitler ve tarihler ayarlarınıza bağlıdır.

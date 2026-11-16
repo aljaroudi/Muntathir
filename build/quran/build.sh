@@ -4,8 +4,8 @@ set -euo pipefail
 
 here=$(cd "$(dirname "$0")" && pwd)
 data="$here/data"
-out="$here/dist"
-ship="$here/../../apple/Muntathir/Resources/Quran"
+out="${1:-$here/dist}"
+ship="${2:-$here/../../apple/Muntathir/Resources/Quran}"
 mkdir -p "$out" "$ship"
 
 # Search key, identical to QuranSearchText.normalize: strip tashkeel and tatweel, unify alef, ya, and ta marbuta.
@@ -32,19 +32,16 @@ load() { # <id>
   } | sqlite3 -bail "$db"
 }
 
-# quran_words: ranked whole-word/prefix index. quran_fts: trigram index for text inside words.
+# A single word index supports basic offline search; broader retrieval lives on the API.
 index() { # <id> <word tokenizer> [root column]
   sqlite3 -bail "$out/$1.db" "
     CREATE VIRTUAL TABLE quran_words USING fts5 (text${3:+, root}, content = '', tokenize = '$2');
-    CREATE VIRTUAL TABLE quran_words_vocab USING fts5vocab (quran_words, col);
-    CREATE VIRTUAL TABLE quran_fts USING fts5 (text, content = '', tokenize = 'trigram remove_diacritics 1');
-    INSERT INTO quran_fts (rowid, text) SELECT \"index\", $(norm text) FROM quran;"
+    CREATE VIRTUAL TABLE quran_words_vocab USING fts5vocab (quran_words, col);"
 }
 
 finish() { # <id>
   sqlite3 -bail "$out/$1.db" "
     INSERT INTO quran_words (quran_words) VALUES ('optimize');
-    INSERT INTO quran_fts (quran_fts) VALUES ('optimize');
     PRAGMA optimize;
     VACUUM;"
 }
@@ -60,18 +57,10 @@ expect quran rows 'SELECT count(*) FROM quran' 6236
 # Shipped text omits the basmala that Tanzil prefixes to each opening verse; saved highlight ranges depend on it.
 sqlite3 -bail "$out/quran.db" "UPDATE quran SET text = substr(text, 36) WHERE aya = 1 AND sura NOT IN (1, 9) AND substr(text, 1, 35) = (SELECT text FROM quran WHERE \"index\" = 1);"
 expect quran 'basmala stripped from openings' "SELECT count(*) FROM quran WHERE aya = 1 AND sura NOT IN (1, 9) AND text LIKE (SELECT text FROM quran WHERE \"index\" = 1) || '%'" 0
-index quran 'unicode61 remove_diacritics 2' root
+index quran 'unicode61 remove_diacritics 2'
 sqlite3 -bail "$out/quran.db" "
   CREATE UNIQUE INDEX quran_sura_aya ON quran (sura, aya);
-  CREATE TABLE quran_search AS SELECT \"index\", sura, aya, $(norm text) AS text, '' AS root FROM quran;
-  CREATE TABLE quran_roots_raw (word TEXT, root TEXT);"
-python3 "$here/roots.py" "$data/morphology.txt" "$out/quran.db"
-sqlite3 -bail "$out/quran.db" "
-  CREATE TABLE quran_roots (word TEXT, root TEXT, PRIMARY KEY (word, root)) WITHOUT ROWID;
-  INSERT OR IGNORE INTO quran_roots SELECT word, $(norm root) FROM quran_roots_raw;
-  INSERT INTO quran_words (rowid, text, root) SELECT \"index\", text, $(norm root) FROM quran_search;
-  DROP TABLE quran_search;
-  DROP TABLE quran_roots_raw;"
+  INSERT INTO quran_words (rowid, text) SELECT \"index\", $(norm text) FROM quran;"
 python3 "$here/layout.py" "$data/quran-data.xml" "$data/qpc-v1-15-lines.db" "$data/qpc-hafs-word-by-word.db" "$out/quran.db"
 finish quran
 for d in 'page 604' 'juz 30' 'hizb 240' 'manzil 7' 'ruku 556'; do
@@ -87,9 +76,6 @@ expect quran 'Tanzil pages match layout' "SELECT count(*) FROM quran_divisions d
 echo "quran $(du -h "$out/quran.db" | cut -f1)"
 expect quran 'word بسم' "SELECT count(*) FROM quran_words WHERE quran_words MATCH 'text : \"بسم\"'" +
 expect quran 'word في matches فى' "SELECT count(*) FROM quran_words WHERE quran_words MATCH 'text : \"في\"'" +
-expect quran 'root كتب has 2:79' "SELECT count(*) FROM quran_words WHERE quran_words MATCH 'root : \"كتب\"' AND rowid = (SELECT \"index\" FROM quran WHERE sura = 2 AND aya = 79)" 1
-expect quran 'يكتبون has root كتب' "SELECT count(*) FROM quran_roots WHERE word = 'يكتبون' AND root = 'كتب'" 1
-expect quran 'substring صوم in 19:26' "SELECT count(*) FROM quran_fts WHERE quran_fts MATCH '\"صوم\"' AND rowid = 2276" 1
 
 for sql in "$data"/*.sql; do
   id=$(basename "$sql" .sql)
@@ -99,7 +85,7 @@ for sql in "$data"/*.sql; do
   expect "$id" 'no \x27 escapes left' "SELECT count(*) FROM quran WHERE text LIKE '%\\''%'" 0
   case $id in
     zh.*) sqlite3 -bail "$out/$id.db" 'VACUUM;' ;; # No word boundaries to index; searched with LIKE.
-    en.*) index "$id" 'porter unicode61 remove_diacritics 2' ;;
+    en.*) index "$id" 'unicode61 remove_diacritics 2' ;;
     *) index "$id" 'unicode61 remove_diacritics 2' ;;
   esac
   [[ $id == zh.* ]] || {
@@ -108,7 +94,7 @@ for sql in "$data"/*.sql; do
   }
   echo "$id $(du -h "$out/$id.db" | cut -f1)"
 done
-expect en.qarai 'believing matches believers' "SELECT count(*) FROM quran_words WHERE quran_words MATCH '\"believing\"' AND rowid IN (SELECT \"index\" FROM quran WHERE text LIKE '%believers%')" +
+expect en.qarai 'exact believing excludes believers-only rows' "SELECT count(*) FROM quran_words WHERE quran_words MATCH '\"believing\"' AND rowid IN (SELECT \"index\" FROM quran WHERE text LIKE '%believers%' AND text NOT LIKE '%believing%')" 0
 expect fr.hamidullah 'misericordieux matches Miséricordieux' "SELECT count(*) FROM quran_words WHERE quran_words MATCH '\"misericordieux\"' AND rowid = 1" 1
 expect zh.jian '真主' "SELECT count(*) FROM quran WHERE text LIKE '%真主%'" +
 cp "$out"/*.db "$ship/"

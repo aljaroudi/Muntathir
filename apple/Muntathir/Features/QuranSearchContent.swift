@@ -2,6 +2,7 @@ import SwiftUI
 
 struct QuranSearchContent: View {
     @Binding var query: String
+    var submittedQuery: String
     @Environment(\.locale) private var locale
     @State private var translationStore = QuranTranslationStore.shared
     let reader: QuranReader
@@ -29,12 +30,12 @@ struct QuranSearchContent: View {
     }
 
     private var request: Request {
-        Request(query: query.trimmingCharacters(in: .whitespacesAndNewlines), surah: surah?.id, translationID: translationStore.activeID, limit: limit, retry: retry, translationRevision: translationStore.revision)
+        Request(query: submittedQuery.trimmingCharacters(in: .whitespacesAndNewlines), surah: surah?.id, translationID: translationStore.activeID, limit: limit, retry: retry, translationRevision: translationStore.revision)
     }
 
     private var matchingSurahs: [QuranSurah] {
         guard surah == nil else { return [] }
-        return request.query.isEmpty ? surahs : surahs.filter { $0.matches(request.query) }
+        return query.isEmpty ? surahs : surahs.filter { $0.matches(query) }
     }
 
     var body: some View {
@@ -52,6 +53,7 @@ struct QuranSearchContent: View {
                     ForEach(matchingSurahs) { surah in
                         NavigationLink {
                             QuranReadingView(surah: surah, reader: reader)
+                                .recordSearchOnOpen(query, area: .quran)
                         } label: {
                             VStack(alignment: .leading, spacing: 6) {
                                 HStack(alignment: .firstTextBaseline, spacing: 0) {
@@ -76,7 +78,7 @@ struct QuranSearchContent: View {
                     }
                 }
             }
-            if !results.isEmpty {
+            if !results.isEmpty, query.trimmingCharacters(in: .whitespacesAndNewlines) == request.query {
                 verseResults(results)
             }
             if loading {
@@ -99,7 +101,7 @@ struct QuranSearchContent: View {
                         Text("Enter a valid verse number in this chapter.")
                     }
                 }
-            } else if !request.query.isEmpty, resultQuery == request.query, QuranSearchText.number(request.query) == nil, (try? QuranSearchText.reference(request.query)) == nil {
+            } else if query.trimmingCharacters(in: .whitespacesAndNewlines) == request.query, !request.query.isEmpty, resultQuery == request.query, QuranSearchText.number(request.query) == nil, (try? QuranSearchText.reference(request.query)) == nil {
                 MeaningSearchResults(query: request.query, hasLocalResults: !results.isEmpty || !matchingSurahs.isEmpty) {
                     guard let client = SemanticSearchClient.configured else { throw URLError(.unsupportedURL) }
                     let matches = try await client.search(request.query, kind: "quran", chapter: request.surah.map(String.init))
@@ -116,24 +118,25 @@ struct QuranSearchContent: View {
                     verseResults(verses.filter { verse in !results.contains { $0.id == verse.id } }, online: true)
                 }
                 .id("\(request.surah ?? 0):\(request.query):\(request.translationID):\(request.translationRevision)")
-            } else if !request.query.isEmpty, resultQuery == request.query, results.isEmpty, matchingSurahs.isEmpty {
+            } else if query.trimmingCharacters(in: .whitespacesAndNewlines) == request.query, !request.query.isEmpty, resultQuery == request.query, results.isEmpty, matchingSurahs.isEmpty {
                 ContentUnavailableView.search(text: request.query)
                     .accessibilityIdentifier("local-search-empty")
             }
         }
         .readingBackground()
-        .onChange(of: query) { limit = 50 }
+        .onChange(of: submittedQuery) { limit = 50 }
         .onChange(of: translationStore.activeID) { limit = 50 }
         .task(id: request) { await load() }
     }
 
-    private func verseResults(_ verses: [Ayah], online: Bool = false) -> some View {
-        Section(online ? LocalizedStringKey("Search by meaning") : LocalizedStringKey("Verses")) {
+    private func verseResults(_ verses: [Ayah], online: Bool = false, related: Bool = false) -> some View {
+        Section(online ? LocalizedStringKey("Smart search") : LocalizedStringKey(related ? "Related matches" : "Verses")) {
             ForEach(verses) { ayah in
                 if let surah = surahs.first(where: { $0.id == ayah.surah }) {
                     let translation = QuranTranslation.catalog.first { $0.id == translationStore.activeID }
                     NavigationLink {
                         QuranReadingView(surah: surah, initialVerse: ayah.number, reader: reader, searchQuery: request.query)
+                            .recordSearchOnOpen(query, area: .quran)
                     } label: {
                         QuranVerseRow(ayah: ayah, translation: translation, searchQuery: request.query, preview: true, showsActions: false)
                             .contentShape(.rect)
@@ -174,11 +177,10 @@ struct QuranSearchContent: View {
             }
             let current = request
             if !current.query.isEmpty {
-                try await Task.sleep(for: .milliseconds(250))
                 if current.surah == nil, let number = QuranSearchText.number(current.query) {
                     invalidReference = counts[number] == nil
                 } else {
-                    let found = try await reader.search(current.query, translationID: current.translationID, limit: current.limit + 1, surah: current.surah)
+                    let found = try await reader.search(current.query, translationID: current.translationID, limit: current.limit + 1, surah: current.surah, revision: current.translationRevision)
                     try Task.checkCancellation()
                     guard current == request else { return }
                     resultQuery = current.query

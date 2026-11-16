@@ -338,7 +338,7 @@ extension CalendarTests {
         defaults.set(Data(#"{"prayerMethod":"tehran","showFeelsLikeTemperature":true,"selectedSourceID":"legacy","overrides":[{"month":{"year":1448,"month":1},"start":{"year":2026,"month":6,"day":16},"provenance":"manual"}]}"#.utf8), forKey: "preferences.v1")
         let model = AppModel(defaults: defaults, cloud: nil)
         #expect(model.preferences.monthOffsets.isEmpty)
-        #expect(model.preferences.selectedSourceID == nil)
+        #expect(model.preferences.tabShortcuts == [.calendar])
         #expect(model.preferences.prayerMethod == .tehran)
         #expect(model.preferences.showFeelsLikeTemperature)
         let month = HijriMonth(year: 1448, month: 12)

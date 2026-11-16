@@ -85,7 +85,7 @@ export function createHandler(
         offset += c.length
       }
       input = parseRequest(JSON.parse(new TextDecoder().decode(body)))
-      direct = reference(input.query)
+      direct = input.kinds?.length === 1 && input.kinds[0] === 'rulings' ? null : reference(input.query)
     } catch {
       return reply(400, { error: 'invalid_request' })
     }
@@ -103,7 +103,7 @@ export function createHandler(
         return reply(429, { error: 'rate_limited' })
       stage = 'revision'
       const collection = await db.active()
-      const key = `result:${await hash(JSON.stringify({ input, collection, profile: PROFILE, pipeline: 'literal-eligible-rerank-v2', reranker: direct ? null : reranker.config }))}`
+      const key = `result:${await hash(JSON.stringify({ input, collection, profile: PROFILE, pipeline: 'literal-eligible-rerank-v3', reranker: direct ? null : reranker.config }))}`
       const cached = disabled ? undefined : store.get(key)
       if (cached) {
         console.log(

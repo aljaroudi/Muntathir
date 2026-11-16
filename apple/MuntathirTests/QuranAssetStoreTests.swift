@@ -87,13 +87,36 @@ import Testing
         let (root, source) = try fixture()
         defer { try? FileManager.default.removeItem(at: root) }
         let backend = QuranTestBackend(source: source)
-        await backend.failDownload(true)
+        await backend.suspendDownload()
         let store = QuranTranslationStore(defaults: nil, backend: backend, directory: root, reloadWidgets: {})
-        await store.download()
+        let request = Task { await store.download() }
+        await backend.waitForRequest()
+        #expect(store.isDownloading)
+        #expect(store.preparingDownload)
+        #expect(store.downloadProgress == nil)
+
+        await store.receive(.began)
+        #expect(!store.preparingDownload)
+        let progress = Progress(totalUnitCount: 100)
+        progress.completedUnitCount = 40
+        await store.receive(.progress(progress))
+        #expect(store.downloadProgress?.fractionCompleted == 0.4)
+
+        await backend.failDownload(true)
+        await backend.resumeDownload()
+        await request.value
         #expect(store.downloadState == .failed)
+        #expect(!store.preparingDownload)
         #expect(store.installedSizes.isEmpty)
+
         await backend.failDownload(false)
-        await store.download()
+        await backend.suspendDownload()
+        let retry = Task { await store.download() }
+        await backend.waitForRequest()
+        #expect(store.preparingDownload)
+        #expect(store.downloadProgress == nil)
+        await backend.resumeDownload()
+        await retry.value
         #expect(store.installedSizes.count == 12)
     }
 
@@ -201,9 +224,6 @@ private actor QuranTestBackend: AssetPackBackend {
 
     func download() async throws {
         downloads += 1
-        if downloadFails {
-            throw URLError(.notConnectedToInternet)
-        }
         if suspend {
             await withCheckedContinuation { continuation in
                 gate = continuation
@@ -212,6 +232,9 @@ private actor QuranTestBackend: AssetPackBackend {
             }
         }
         try Task.checkCancellation()
+        if downloadFails {
+            throw URLError(.notConnectedToInternet)
+        }
         installed = true
     }
 

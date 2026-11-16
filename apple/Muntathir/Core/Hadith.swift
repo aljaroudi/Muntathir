@@ -17,7 +17,7 @@ struct HadithCollection: Identifiable, Hashable, Sendable {
     func matches(_ query: String) -> Bool {
         let terms = QuranSearchText.terms(query)
         let text = QuranSearchText.normalize(arabic + " " + english).lowercased()
-        return !terms.isEmpty && terms.allSatisfy { text.contains($0) }
+        return SearchRelevance.score(text, terms: terms) != nil
     }
 }
 
@@ -37,7 +37,7 @@ struct HadithChapter: Identifiable, Hashable, Sendable {
     func matches(_ query: String) -> Bool {
         let terms = QuranSearchText.terms(query)
         let text = QuranSearchText.normalize(arabic + " " + english + " " + bookArabic + " " + bookEnglish).lowercased()
-        return query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || (!terms.isEmpty && terms.allSatisfy { text.contains($0) })
+        return query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || SearchRelevance.score(text, terms: terms) != nil
     }
 
     func title(locale: Locale) -> String {
@@ -93,6 +93,7 @@ struct HadithPage: Sendable {
     let hasMore: Bool
     var usedOrderedFallback = false
     var nextCursor: HadithCursor?
+    var relatedIDs: Set<Int> = []
 }
 
 struct HadithDetail: Sendable {

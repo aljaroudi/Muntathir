@@ -127,7 +127,10 @@ actor HadithLocalLibrary {
         try db.execute("DELETE FROM hadith WHERE id IN (SELECT id FROM removed_hadith)")
         try db.execute("UPDATE chapter SET hadith_count=(SELECT count(*) FROM hadith WHERE chapter_id=chapter.id)")
         // Contentless indexes cannot use ordinary DELETE. Rebuild from retained text.
-        for table in ["hadith_words", "hadith_fts"] {
+        try db.execute("DROP TABLE IF EXISTS hadith_partial")
+        try db.execute("DROP TABLE IF EXISTS hadith_fts")
+        try db.execute("PRAGMA user_version=8")
+        for table in ["hadith_words"] {
             try db.execute("INSERT INTO \(table)(\(table)) VALUES('delete-all')")
         }
         // Bound memory while rebuilding even the largest libraries.
@@ -140,7 +143,7 @@ actor HadithLocalLibrary {
             try db.execute("BEGIN")
             for (id, arabic) in rows {
                 let parameters = [String(id), QuranSearchText.normalize(arabic)]
-                for table in ["hadith_words", "hadith_fts"] {
+                for table in ["hadith_words"] {
                     try db.execute("INSERT INTO \(table)(rowid,text) VALUES(CAST(? AS INTEGER),?)", parameters: parameters)
                 }
                 cursor = id
@@ -148,7 +151,7 @@ actor HadithLocalLibrary {
             try db.execute("COMMIT")
         }
         try db.execute("INSERT INTO hadith_en(hadith_en) VALUES('rebuild')")
-        for table in ["hadith_words", "hadith_fts", "hadith_en"] {
+        for table in ["hadith_words", "hadith_en"] {
             try db.execute("INSERT INTO \(table)(\(table)) VALUES('optimize')")
         }
         try db.execute("VACUUM")

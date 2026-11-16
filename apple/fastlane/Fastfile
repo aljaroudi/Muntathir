@@ -1,23 +1,26 @@
 require "dotenv"
 require "plist"
+require "spaceship"
 Dotenv.load(ENV.fetch("MUNTATHIR_FASTLANE_ENV_FILE", File.expand_path("~/.config/muntathir/fastlane.env")))
 require_relative "support"
 
 default_platform(:ios)
 
 platform :ios do
-  desc "Validate local metadata and automation checks without Apple access"
-  lane :check do
+  desc "Validate local metadata and release lanes without Apple access"
+  lane :check do |options|
     sh("python3", File.join(__dir__, "../scripts/check_localizations.py"))
-    sh("bundle", "exec", "ruby", File.join(__dir__, "check.rb"))
+    flags = options[:skip_media] ? ["--skip-media"] : []
+    sh("bundle", "exec", "ruby", File.join(__dir__, "check.rb"), *flags)
   end
 
   desc "Run unit and UI regression tests, excluding marketing captures"
-  lane :tests do
+  lane :tests do |options|
     sh("python3", File.join(__dir__, "../scripts/check_localizations.py"))
     run_tests(project: "./Muntathir.xcodeproj", scheme: "Muntathir",
-              destination: "platform=iOS Simulator,name=iPhone 17 Pro Max,OS=#{ENV.fetch('SCREENSHOT_IOS_VERSION', '27.0')}",
-              skip_testing: ["MuntathirUITests/MarketingScreenshotTests", "MuntathirUITests/QuranScreenshotRefreshTests"], parallel_testing: false,
+              destination: MuntathirRelease.test_destinations(include_ipad: options[:include_ipad] == true),
+              skip_testing: ["MuntathirUITests/MarketingScreenshotTests", "MuntathirUITests/QuranScreenshotRefreshTests"],
+              parallel_testing: false, disable_concurrent_testing: true, skip_detect_devices: true, skip_slack: true, fail_build: true,
               output_directory: "./build/tests", buildlog_path: "./build/logs/tests",
               derived_data_path: "./build/DerivedData")
     MuntathirRelease.cleanup_build_artifacts!(paths: ["build/DerivedData"])
@@ -30,12 +33,13 @@ platform :ios do
 
   desc "Capture localized iPhone, iPad and Duo screenshots"
   lane :screenshots do |options|
-    sh("bundle", "exec", "ruby", File.join(__dir__, "screenshots.rb"), options[:devices].to_s, options[:languages].to_s)
+    sh("bundle", "exec", "ruby", File.join(__dir__, "screenshots.rb"), options[:devices].to_s, options[:languages].to_s,
+       options.fetch(:workers) { MuntathirRelease.default_screenshot_workers }.to_s)
   end
 
   desc "Style raw screenshots with frames, backgrounds and localized headlines"
-  lane :style do
-    sh("bundle", "exec", "ruby", File.join(__dir__, "style.rb"))
+  lane :style do |options|
+    sh("bundle", "exec", "ruby", File.join(__dir__, "style.rb"), options[:languages].to_s)
   end
 
   desc "Record continuous sunrise-to-sunset simulator previews in every store locale"
@@ -48,12 +52,16 @@ platform :ios do
     sh("bundle", "exec", "ruby", File.join(__dir__, "watch_screenshots.rb"))
   end
 
-  desc "Generate all screenshots and App Preview videos locally"
+  desc "Export Arabic/English website screenshots as WebP and previews as WebM"
+  lane :web_media do
+    sh("bundle", "exec", "ruby", File.join(__dir__, "web_media.rb"))
+  end
+
+  desc "Generate all screenshots, App Preview videos and website media locally"
   lane :marketing do
-    screenshots
-    watch_screenshots
-    style
+    refresh_screenshots
     previews
+    web_media
   end
 
   private_lane :credentials do
@@ -66,216 +74,192 @@ platform :ios do
     app_store_connect_api_key(key_id: ENV.fetch("ASC_KEY_ID"), issuer_id: ENV.fetch("ASC_ISSUER_ID"), key_filepath: path, in_house: false)
   end
 
-  private_lane :store do |options|
+  private_lane :refresh_screenshots do
+    started = Time.now
+    sh("bundle", "exec", "ruby", File.join(__dir__, "refresh_screenshots.rb"))
+    style
+    MuntathirRelease.validate_media!(since: started)
+  end
+
+  private_lane :release_context do |options|
     credentials
     app = Spaceship::ConnectAPI::App.find("com.aljaroudi.Muntathir")
-    UI.user_error!("Muntathir not found in App Store Connect") unless app
-    UI.user_error!("Unexpected App Store app ID") unless app.id == "6824304362"
-    live = app.get_live_app_store_version(platform: "IOS")
-    edit = app.get_edit_app_store_version(platform: "IOS")
+    UI.user_error!("Muntathir not found in App Store Connect") unless app&.id == "6824304362"
+    version = MuntathirRelease.project_version
+    draft = app.get_edit_app_store_version(platform: "IOS") if options.fetch(:app_store)
+    MuntathirRelease.validate_draft!(draft, version) if options.fetch(:app_store)
     config = MuntathirRelease.review_config
-    MuntathirRelease.validate_asset_packs!(review: true) unless options[:build_only]
-    # Resolve store requirements against existing fields and explicitly managed local values.
-    if options[:release]
-      localizations = (edit || live)&.get_app_store_version_localizations || []
+    encryption = MuntathirRelease.compliance!(config)
+    context = { app: app, version: version, draft: draft, config: config, encryption: encryption }
+    if options.fetch(:app_store)
+      if app.get_in_progress_review_submission(platform: "IOS") || app.get_ready_review_submission(platform: "IOS", includes: "items")&.items&.any?
+        UI.user_error!("Resolve the existing App Review submission in App Store Connect before uploading a new build.")
+      end
+      live = app.get_live_app_store_version(platform: "IOS")
+      draft_localizations = draft.get_app_store_version_localizations
+      live_localizations = live&.get_app_store_version_localizations || []
+      notes = MuntathirRelease::LOCALES.to_h { |locale| [locale, MuntathirRelease.metadata(locale, "release_notes")] }
+      MuntathirRelease.validate_notes_changed!(notes, live_localizations, "What's New", force: options[:force])
+
       app_info = app.fetch_edit_app_info || app.fetch_live_app_info
       info_localizations = app_info&.get_app_info_localizations || []
       MuntathirRelease::LOCALES.each do |locale|
-        support = config.dig("support_url", locale) || MuntathirRelease.metadata(locale, "support_url") || localizations.find { |l| l.locale == locale }&.support_url
-        privacy = config.dig("privacy_url", locale) || MuntathirRelease.metadata(locale, "privacy_url") || info_localizations.find { |l| l.locale == locale }&.privacy_policy_url
+        support = config.dig("support_url", locale) || MuntathirRelease.metadata(locale, "support_url") ||
+                  draft_localizations.find { |entry| entry.locale == locale }&.support_url ||
+                  live_localizations.find { |entry| entry.locale == locale }&.support_url
+        privacy = config.dig("privacy_url", locale) || MuntathirRelease.metadata(locale, "privacy_url") ||
+                  info_localizations.find { |entry| entry.locale == locale }&.privacy_policy_url
         MuntathirRelease.validate_url!(support, "#{locale} support_url")
         MuntathirRelease.validate_url!(privacy, "#{locale} privacy_url")
       end
-      review = (edit || live) && MuntathirRelease.optional_model(Spaceship::ConnectAPI.get_app_store_review_detail(app_store_version_id: (edit || live).id))
+      review = MuntathirRelease.optional_model(Spaceship::ConnectAPI.get_app_store_review_detail(app_store_version_id: draft.id))
       values = review ? { "first_name" => review.contact_first_name, "last_name" => review.contact_last_name,
                           "phone_number" => review.contact_phone, "email_address" => review.contact_email } : {}
       MuntathirRelease.required!(values.merge(config.fetch("app_review_information", {})), %w[first_name last_name phone_number email_address], "App Review contact")
-      MuntathirRelease.compliance!(config)
-      MuntathirRelease.required!({ "copyright" => config["copyright"] || MuntathirRelease.metadata("", "copyright") || (edit || live)&.copyright }, ["copyright"], "App Store copyright")
+      MuntathirRelease.required!({ "copyright" => config["copyright"] || MuntathirRelease.metadata("", "copyright") || draft.copyright },
+                                ["copyright"], "App Store copyright")
     else
-      group = app.get_beta_groups.find { |g| g.name == "Public" }
-      UI.user_error!("Create an external TestFlight group named Public in App Store Connect") unless group && !group.is_internal_group
+      group = app.get_beta_groups.find { |candidate| candidate.name == "Public" && !candidate.is_internal_group }
+      UI.user_error!("Create an external TestFlight group named Public in App Store Connect") unless group
       review = MuntathirRelease.optional_model(Spaceship::ConnectAPI.get_beta_app_review_detail(filter: { app: app.id }))
       values = review ? { "contact_first_name" => review.contact_first_name, "contact_last_name" => review.contact_last_name,
                           "contact_phone" => review.contact_phone, "contact_email" => review.contact_email } : {}
       MuntathirRelease.required!(values.merge(config.fetch("beta_app_review_info", {})), %w[contact_first_name contact_last_name contact_phone contact_email], "Beta App Review contact")
+      localizations = app.get_beta_app_localizations
+      feedback = config["beta_app_feedback_email"] || localizations.find { |entry| !entry.feedback_email.to_s.strip.empty? }&.feedback_email
+      MuntathirRelease.required!({ "feedback_email" => feedback }, ["feedback_email"], "TestFlight")
+
+      notes = MuntathirRelease.beta_notes
+      latest = group.fetch_builds.max_by { |build| build.uploaded_date.to_s }
+      previous = latest&.get_beta_build_localizations || []
+      MuntathirRelease.validate_notes_changed!(notes, previous, "What to Test", force: options[:force])
+      context[:beta_notes] = notes
+      context[:feedback_email] = feedback
     end
-    version = MuntathirRelease.next_version(MuntathirRelease.project_version, live&.version_string, edit&.version_string)
-    { app: app, version: version, config: config }
+    context
   end
 
-  desc "Read App Store readiness without changing remote settings"
-  lane :readiness do |options|
-    store(release: options[:release] == true || options[:release] == "true")
-    UI.success("Store requirements verified")
+  private_lane :assert_current_draft do |context|
+    draft = context.fetch(:app).get_edit_app_store_version(platform: "IOS")
+    MuntathirRelease.validate_draft!(draft, context.fetch(:version), expected_id: context.fetch(:draft).id)
+    draft
   end
 
-  private_lane :archive do |options|
-    number = latest_testflight_build_number(initial_build_number: 0) + 1
+  private_lane :archive_and_upload do |context|
+    version = context.fetch(:version)
+    app_id = context.fetch(:app).id
     provisioning = ["-allowProvisioningUpdates", "-authenticationKeyPath", File.expand_path(ENV.fetch("ASC_KEY_PATH")),
                     "-authenticationKeyID", ENV.fetch("ASC_KEY_ID"), "-authenticationKeyIssuerID", ENV.fetch("ASC_ISSUER_ID")]
     output = File.join(MuntathirRelease::ROOT, "build")
-    archive = File.join(output, "Muntathir.xcarchive")
+    archive = File.join(output, "Muntathir-#{version}-#{Time.now.utc.strftime('%Y%m%dT%H%M%S')}.xcarchive")
     export = File.join(output, "ReleaseExportOptions.plist")
-    FileUtils.mkdir_p(output)
-    File.write(export, { "method" => "app-store-connect", "teamID" => "5VGKP2QV6H", "signingStyle" => "automatic",
-                         "manageAppVersionAndBuildNumber" => false }.to_plist)
-    # Gym's project parser cannot open Xcode 27 JSON projects; let Xcode archive and export directly.
+    # Xcode's native archiver supports the Xcode 27 JSON project format.
     sh("xcodebuild", "-quiet", "-project", File.join(MuntathirRelease::ROOT, "Muntathir.xcodeproj"), "-scheme", "Muntathir",
        "-configuration", "Release", "-destination", "generic/platform=iOS", "-archivePath", archive,
        "-derivedDataPath", File.join(output, "ArchiveDerivedData"),
-       "MARKETING_VERSION=#{options.fetch(:version)}", "CURRENT_PROJECT_VERSION=#{number}", *provisioning, "archive")
-    sh("xcodebuild", "-quiet", "-exportArchive", "-archivePath", archive, "-exportPath", output,
-       "-exportOptionsPlist", export, *provisioning)
-    ipa = File.join(output, "Muntathir.ipa")
-    sh("python3", File.join(__dir__, "../AssetPacks/assets.py"), "check-bundle", ipa)
-    MuntathirRelease.retire_archive!(archive, symbols: File.join(output, "symbols", "#{options.fetch(:version)}-#{number}"))
+       "SEMANTIC_SEARCH_URL=https://search.xn--pgbou4cf.com/v1/search", *provisioning, "archive")
+    archived_app = File.join(archive, "Products", "Applications", "Muntathir.app")
+    sh("python3", File.join(__dir__, "../AssetPacks/assets.py"), "check-bundle", archived_app)
+    bundle = Plist.parse_xml(MuntathirRelease.run!("plutil", "-convert", "xml1", "-o", "-", File.join(archived_app, "Info.plist")))
+    unless bundle.fetch("CFBundleShortVersionString") == version && bundle.fetch("CFBundleVersion").to_s == "1"
+      UI.user_error!("Archive must contain Muntathir version #{version} with the project build number 1")
+    end
+
+    File.write(export, { "method" => "app-store-connect", "destination" => "upload", "teamID" => "5VGKP2QV6H",
+                         "signingStyle" => "automatic", "manageAppVersionAndBuildNumber" => true,
+                         "testFlightInternalTestingOnly" => false, "uploadSymbols" => true }.to_plist)
+    assert_current_draft(context) if context[:draft]
+    existing_ids = MuntathirRelease.build_uploads(app_id, version).map { |upload| upload.fetch("id") }
+    UI.header("Uploading #{version} with Xcode-managed build numbering")
+    begin
+      sh("xcodebuild", "-quiet", "-exportArchive", "-archivePath", archive, "-exportPath", output,
+         "-exportOptionsPlist", export, *provisioning)
+      build = MuntathirRelease.wait_for_uploaded_build(app_id, version, existing_ids)
+    rescue StandardError
+      UI.error("Check Build Uploads in App Store Connect before retrying. Archive retained at #{archive}")
+      raise
+    end
+    MuntathirRelease.retire_archive!(archive, symbols: File.join(output, "symbols", "#{build.app_version}-#{build.version}"))
     MuntathirRelease.cleanup_build_artifacts!(paths: ["build/ArchiveDerivedData"])
-    { ipa: ipa, build: number }
-  end
-
-  desc "Validate signing and export an IPA without uploading"
-  lane :build do
-    context = store(build_only: true)
-    archive(version: context.fetch(:version))
-  end
-
-  desc "Test, archive, upload and submit Public external Beta App Review"
-  lane :beta do
-    check
-    context = store
-    MuntathirRelease.compliance!(context.fetch(:config))
-    tests
-    artifact = archive(version: context.fetch(:version))
-    distribute_beta(ipa: artifact.fetch(:ipa), context: context)
-  end
-
-  desc "Retry TestFlight upload of an already tested and signed IPA"
-  lane :upload_beta do |options|
-    check
-    context = store
-    ipa = File.expand_path(options.fetch(:ipa))
-    UI.user_error!("Missing signed IPA: #{ipa}") unless File.file?(ipa)
-    distribute_beta(ipa: ipa, context: context)
-  end
-
-  desc "Distribute an already uploaded build to Public without uploading the binary again"
-  lane :public_beta do |options|
-    check
-    context = store
-    UI.user_error!("Specify public_beta build:NUMBER") if options[:build].to_s.empty?
-    build = processed_build(context: context, number: options[:build])
-    distribute_beta(build: build.version, app_version: build.app_version, context: context)
-  end
-
-  private_lane :distribute_beta do |options|
-    context = options.fetch(:context)
-    UI.header(options[:build] ? "Distributing processed build #{options[:build]}" : "Uploading binary; waiting for Apple build processing")
-    config = context.fetch(:config)
-    beta_localizations = context.fetch(:app).get_beta_app_localizations
-    feedback = config["beta_app_feedback_email"] || beta_localizations.find { |l| !l.feedback_email.to_s.empty? }&.feedback_email
-    MuntathirRelease.required!({ "feedback_email" => feedback }, ["feedback_email"], "TestFlight")
-    upload_to_testflight(ipa: options[:ipa], build_number: options[:build], distribute_only: !options[:build].nil?, app_version: options[:app_version] || context.fetch(:version),
-                         app_platform: "ios",
-                         changelog: File.read(File.join(__dir__, "beta_notes/en-US.txt")).strip,
-                         localized_build_info: MuntathirRelease::LOCALES.to_h { |l| [l, { whats_new: File.read(File.join(__dir__, "beta_notes/#{l}.txt")).strip }] },
-                         beta_app_review_info: config["beta_app_review_info"],
-                         localized_app_info: MuntathirRelease::LOCALES.to_h { |l| [l, { description: config.dig("beta_app_description", l) || MuntathirRelease.metadata(l, "description"), feedback_email: feedback }] },
-                         uses_non_exempt_encryption: MuntathirRelease.compliance!(config),
-                         distribute_external: true, groups: ["Public"], submit_beta_review: true,
-                         notify_external_testers: true, skip_waiting_for_build_processing: false,
-                         wait_processing_timeout_duration: 1800)
-    UI.success("Public Beta App Review requested. Tester availability depends on Apple approval.")
-  end
-
-  desc "Upload current metadata and media without submitting App Review"
-  lane :assets do |options|
-    check
-    context = store(release: true)
-    upload_to_app_store(**store_options(app: context.fetch(:app), automatic_release: options[:automatic_release]), app_version: context.fetch(:version), skip_binary_upload: true, submit_for_review: false)
-  end
-
-  desc "Upload metadata/media and select a processed TestFlight build without submitting review"
-  lane :prepare do |options|
-    check
-    context = store(release: true)
-    number = options[:build]
-    UI.user_error!("Specify the uploaded TestFlight build: prepare build:NUMBER") if number.to_s.empty?
-    build = processed_build(context: context, number: number)
-    upload_options = store_options(app: context.fetch(:app), automatic_release: options[:automatic_release])
-    upload_options.delete(:app_review_information) # Preserve the live review contact and instructions.
-    if options[:replace_screenshots] == true || options[:replace_screenshots] == "true"
-      upload_options[:overwrite_screenshots] = true
-      upload_options.delete(:app_previews_path) # Preserve existing previews, including Duo uploads.
-    end
-    upload_to_app_store(**upload_options, app_version: context.fetch(:version), skip_binary_upload: true, submit_for_review: false)
-    version = context.fetch(:app).get_edit_app_store_version(platform: "IOS")
-    UI.user_error!("No editable App Store version") unless version
-    version.select_build(build_id: build.id)
-    UI.success("Selected #{context.fetch(:version)} (#{number}); prepared for review.")
-  end
-
-  private_lane :processed_build do |options|
-    context = options.fetch(:context)
-    number = options.fetch(:number).to_s
-    build = Spaceship::ConnectAPI::Build.all(app_id: context.fetch(:app).id, build_number: number, platform: "IOS").find do |candidate|
-      Gem::Version.new(candidate.app_version) == Gem::Version.new(context.fetch(:version))
-    end
-    UI.user_error!("Build #{number} is missing or has not finished processing") unless build&.processing_state == "VALID"
+    UI.success("Processed #{build.app_version} (#{build.version})")
     build
   end
 
-  private_lane :store_options do |context|
-    config = MuntathirRelease.review_config
-    MuntathirRelease.validate_media!(screenshots_only: context[:screenshots_only] == true)
-    automatic = context[:automatic_release] == true || context[:automatic_release] == "true"
-    options = { metadata_path: "./fastlane/metadata", screenshots_path: "./build/marketing/store",
-                app_previews_path: "./build/marketing/previews", preview_frame_time_code: "00:00:05:00",
-                overwrite_screenshots: true, overwrite_preview_videos: context[:replace_media] == true,
-                automatic_release: automatic, force: true, precheck_include_in_app_purchases: false }
-    if context[:screenshots_only]
-      options.delete(:app_previews_path)
-      options[:overwrite_screenshots] = true
+  private_lane :prepare_release do |options|
+    check(skip_media: !options.fetch(:app_store))
+    context = release_context(app_store: options.fetch(:app_store), force: options[:force].to_s == "true")
+    sh("python3", File.join(__dir__, "../../build/build.py"), "--assets-only")
+    tests(include_ipad: options.fetch(:app_store)) unless options[:skip_tests].to_s == "true"
+    if options.fetch(:app_store)
+      if options[:skip_screenshots].to_s == "true"
+        MuntathirRelease.validate_media!
+      else
+        refresh_screenshots
+      end
     end
-    # Apple rejects a redundant releaseType write on some initial-version listings.
-    existing = context[:app]&.get_edit_app_store_version(platform: "IOS")
-    options[:automatic_release] = nil if existing&.release_type == (automatic ? "AFTER_APPROVAL" : "MANUAL")
-    %w[app_review_information submission_information support_url privacy_url copyright].each do |key|
-      options[key.to_sym] = config[key] if config[key] && !config[key].empty?
-    end
-    options
+    context[:asset_packs] = MuntathirRelease.sync_asset_packs!
+    context
   end
 
-  desc "Upload an approved local archive and replace media without changing the existing review draft"
-  lane :upload_prepared do |options|
-    check
-    context = store(release: true)
-    ipa = File.expand_path(options.fetch(:ipa))
-    UI.user_error!("Missing approved IPA: #{ipa}") unless File.file?(ipa)
-    upload_to_app_store(**store_options(app: context.fetch(:app), replace_media: true, automatic_release: options[:automatic_release]),
-                        ipa: ipa, app_version: context.fetch(:version), submit_for_review: false,
-                        reject_if_possible: false)
-    UI.success("Approved archive and media uploaded; select the processed build and submit the existing review draft in App Store Connect.")
+  desc "Test on iPhone and submit a new build to TestFlight Public"
+  lane :testflight_public do |options|
+    MuntathirRelease.with_release_lock do
+      context = prepare_release(app_store: false, force: options[:force], skip_tests: options[:skip_tests])
+      build = archive_and_upload(context)
+      config = context.fetch(:config)
+      notes = context.fetch(:beta_notes)
+      beta_app_info = MuntathirRelease::LOCALES.to_h do |locale|
+        [locale, { description: config.dig("beta_app_description", locale) || MuntathirRelease.metadata(locale, "description"),
+                   feedback_email: context.fetch(:feedback_email) }]
+      end
+      upload_to_testflight(apple_id: context.fetch(:app).id, app_version: build.app_version, build_number: build.version,
+                           app_platform: "ios", distribute_only: true, skip_waiting_for_build_processing: false,
+                           wait_processing_timeout_duration: 60,
+                           changelog: notes.fetch("en-US"), localized_build_info: notes.transform_values { |text| { whats_new: text } },
+                           beta_app_review_info: config["beta_app_review_info"], localized_app_info: beta_app_info,
+                           uses_non_exempt_encryption: context.fetch(:encryption), distribute_external: true,
+                           groups: ["Public"], submit_beta_review: true, notify_external_testers: true)
+      context.fetch(:asset_packs).each do |pack|
+        next if pack[:version_id] == pack[:external_version_id]
+
+        UI.important("In TestFlight → Asset Packs, submit #{pack[:name]} version #{pack[:version]} for external testing if it is not already in review.")
+      end
+      UI.success("Public Beta App Review requested for #{build.app_version} (#{build.version}). Tester availability depends on Apple approval.")
+    end
   end
 
-  desc "Generate media and submit App Review using a processed build or a new archive"
-  lane :release do |options|
-    check
-    context = store(release: true)
-    if options[:build]
-      build = processed_build(context: context, number: options[:build])
-      binary = { build_number: build.version, skip_binary_upload: true }
-    else
-      tests
+  desc "Test on iPhone and iPad, refresh the listing, and submit the TestFlight build for automatic App Store release"
+  lane :app_store do |options|
+    MuntathirRelease.with_release_lock do
+      context = prepare_release(app_store: true, force: options[:force], skip_tests: options[:skip_tests],
+                                skip_screenshots: options[:skip_screenshots])
+      build = MuntathirRelease.existing_valid_build(context.fetch(:app).id, context.fetch(:version), build_number: options[:build_number])
+      draft = assert_current_draft(context)
+      app_identifier = context.fetch(:app).bundle_id
+      store_options = { app_identifier: app_identifier, platform: "ios", app_version: build.app_version,
+                        skip_app_version_update: true, skip_binary_upload: true, force: true,
+                        reject_if_possible: false, run_precheck_before_submit: false }
+      config = context.fetch(:config)
+      metadata = config.slice("app_review_information", "support_url", "privacy_url", "copyright").reject { |_, value| value.nil? || value.empty? }.transform_keys(&:to_sym)
+      upload_to_app_store(**store_options, **metadata, metadata_path: "./fastlane/metadata",
+                          screenshots_path: "./build/marketing/store", overwrite_screenshots: true,
+                          automatic_release: draft.release_type == "AFTER_APPROVAL" ? nil : true, submit_for_review: false)
+
+      draft = assert_current_draft(context)
+      MuntathirRelease.sync_creative_assets!(draft.get_app_store_version_localizations)
+
+      unless draft.release_type == "AFTER_APPROVAL"
+        UI.user_error!("Set automatic release after approval for this draft in App Store Connect.")
+      end
+      unless precheck(app_identifier: app_identifier, include_in_app_purchases: false, platform: "ios")
+        UI.user_error!("App Store metadata precheck failed. Check the draft before retrying.")
+      end
+      assert_current_draft(context)
+      MuntathirRelease.review_pack_versions = context.fetch(:asset_packs).reject { |pack| pack[:version_id] == pack[:store_version_id] }.map { |pack| pack.fetch(:version_id) }
+      Spaceship::ConnectAPI::ReviewSubmission.prepend(MuntathirRelease::ReviewAssetPacks)
+      upload_to_app_store(**store_options, build_number: build.version, skip_metadata: true, skip_screenshots: true,
+                          submission_information: config.fetch("submission_information"), submit_for_review: true)
+      UI.success("App Review submitted for #{build.app_version} (#{build.version}).")
     end
-    screenshots_only = options[:use_generated_screenshots] == true || options[:use_generated_screenshots] == "true"
-    marketing unless screenshots_only
-    binary ||= { ipa: archive(version: context.fetch(:version)).fetch(:ipa) }
-    require "spaceship"
-    Spaceship::ConnectAPI::ReviewSubmission.prepend(MuntathirRelease::ReviewAssetPacks)
-    UI.header("Uploading metadata and media; then submitting App Review")
-    upload_to_app_store(**store_options(app: context.fetch(:app), automatic_release: options.fetch(:automatic_release, true), screenshots_only: screenshots_only),
-                        **binary, app_version: context.fetch(:version), submit_for_review: true)
-    UI.success("App Review submitted.")
   end
 end

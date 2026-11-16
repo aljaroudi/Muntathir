@@ -6,6 +6,7 @@ module MuntathirRelease
     build/DerivedData build/ArchiveDerivedData build/WatchCapture
     build/marketing/TranslationDerivedData build/marketing/PreviewDerivedData
     build/marketing/ReleaseCapture-phone build/marketing/ReleaseCapture-duo
+    build/marketing/workers
   ].freeze
 
   def self.cleanup_build_artifacts!(root: ROOT, paths: BUILD_ARTIFACTS)
@@ -30,7 +31,7 @@ module MuntathirRelease
       FileUtils.mkdir_p(symbols)
       FileUtils.cp_r(File.join(source, "."), symbols)
     end
-    # The caller has successfully exported and validated its IPA. Keep symbols for crash reports.
+    # The caller has validated the archive and confirmed upload processing. Keep symbols for crash reports.
     FileUtils.rm_rf(archive)
   end
 end

@@ -14,18 +14,29 @@ See [Apple setup and release checks](apple/README.md).
 
 ## Commands
 
-Run from repository root. `make` lists available commands.
+Install [just](https://github.com/casey/just) (`brew install just`), then run from repository root. `just` lists available commands.
 
 ```sh
-make apple-format
-make apple-build
-make apple-test
-TEST_DESTINATION='platform=iOS Simulator,id=YOUR-SIMULATOR-UUID' make apple-test
+just apple-format
+just apple-build
+just apple-test
+TEST_DESTINATION='platform=iOS Simulator,id=YOUR-SIMULATOR-UUID' just apple-test
+just apple-lane marketing
+just apple-lane web_media
+just apple-screenshots languages=ar,en
+just apple-screenshots languages=ar,en workers=2
+just web-dev
+just web-validate
+just backend-start
+just data-build --dry-run
 ```
+
+Fastlane lanes still live under `apple/`. Prefer `just apple-screenshots` / `just apple-style` with `key=value` options; use `just apple-lane` for other lanes with Fastlane’s `key:value` syntax. See [Apple Fastlane setup](apple/fastlane/SETUP.md).
+
 
 ## Git hooks
 
-Install SwiftFormat (`brew install swiftformat`), then enable tracked hooks in each clone:
+Install SwiftFormat (`brew install swiftformat`) and just (`brew install just`), then enable tracked hooks in each clone:
 
 ```sh
 git config core.hooksPath .githooks
@@ -33,6 +44,6 @@ git config core.hooksPath .githooks
 
 Pre-commit formats only `apple/` using Swift 6. It blocks if tracked Apple Swift files differ from the index afterward. Review and stage changes before retrying; the hook never stages automatically.
 
-Pre-push runs [Apple unit/integration tests](apple/MuntathirTests/) through `make apple-test`. It blocks on failed tests, missing Xcode, or an unavailable compatible simulator. Install an iOS simulator runtime through Xcode. Set `TEST_DESTINATION` to override simulator selection, including with `git push`. [UI tests](apple/MuntathirUITests/) remain manual.
+Pre-push runs [Apple unit/integration tests](apple/MuntathirTests/) through `just apple-test`. It blocks on failed tests, missing Xcode, or an unavailable compatible simulator. Install an iOS simulator runtime through Xcode. Set `TEST_DESTINATION` to override simulator selection, including with `git push`. [UI tests](apple/MuntathirUITests/) remain manual.
 
 Web hooks also require Bun and installed dependencies (`cd web && bun install --frozen-lockfile`). Pre-commit checks web formatting and lint. Pre-push runs web type checks, a production build, and build-output tests after Apple tests. See [web setup and Vercel deployment](web/README.md).

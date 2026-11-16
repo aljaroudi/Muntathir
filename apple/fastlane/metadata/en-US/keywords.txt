@@ -1,1 +1,1 @@
-prayer,salah,namaz,quran,ayah,hijri,islamic,calendar,qibla,muslim,reminders,hadith
+prayer,quran,hadith,tasbih,qibla,hijri,dua,rakaat,highlights,islamic,calendar,remembrance

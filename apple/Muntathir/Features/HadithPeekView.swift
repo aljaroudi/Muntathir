@@ -4,7 +4,7 @@ import SwiftUI
 struct HadithPeekView: View {
     let id: Int
     let reader: HadithReader
-    @AppStorage("hadithEnglishEnabled") private var showEnglish = true
+    @AppStorage("hadithEnglishEnabled.v2") private var showEnglish = SupplicationTranslation.prefersEnglish()
     @State private var narration: Hadith?
     @State private var failed = false
 

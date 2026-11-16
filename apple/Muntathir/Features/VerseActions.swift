@@ -48,7 +48,7 @@ struct HadithShareContent {
         if narration.isSupplication {
             return narration.chapter.title(locale: locale)
         }
-        return narration.chapter.bookTitle(locale: locale) + (narration.displayNumber.map { " • " + String($0) } ?? "")
+        return narration.chapter.bookTitle(locale: locale) + (narration.displayNumber.map { " · " + String($0) } ?? "")
     }
 
     private var translatedTexts: [String] {
@@ -114,7 +114,7 @@ struct HadithActions: View {
     var translationLanguages: [String] = []
     @Environment(\.locale) private var locale
     @Environment(\.quranUserStore) private var store
-    @AppStorage("hadithEnglishEnabled") private var showEnglish = true
+    @AppStorage("hadithEnglishEnabled.v2") private var showEnglish = SupplicationTranslation.prefersEnglish()
     private struct ShareItem: Identifiable {
         let id = UUID()
         let items: [Any]
@@ -157,10 +157,21 @@ struct HadithActions: View {
             ReadingSizeMenu(isPresented: $textSizePresented)
             BookmarkButton(source: narration.source?.key ?? "", isHadith: true, excerpt: content.body, reference: content.reference, failed: $bookmarkFailed)
         } label: {
-            Label(LocalizedStringKey(narration.isSupplication ? "Supplication actions" : "Hadith actions"), systemImage: "ellipsis.circle").labelStyle(.iconOnly)
-                .frame(minWidth: 44, minHeight: 44)
+            Label {
+                if narration.isSupplication {
+                    Text("Supplication actions")
+                } else {
+                    Text("Hadith actions")
+                }
+            } icon: {
+                Image(systemName: "ellipsis.circle")
+            }
+            .labelStyle(.iconOnly)
+            .frame(minWidth: 44, minHeight: 44)
         }
         .accessibilityIdentifier("hadith-actions")
+        .appTip(.translations)
+        .appTip(.reading)
         .sheet(item: $shared) { AyahShareSheet(items: $0.items) }
         .alert("Text copied", isPresented: $copied) { Button("OK", role: .cancel) {} }
         .alert("Unable to save bookmark", isPresented: $bookmarkFailed) {

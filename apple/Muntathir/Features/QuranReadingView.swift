@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct QuranReadingView: View {
+    @State private var submittedQuery = ""
     let surah: QuranSurah
     var initialVerse = 1
     let reader: QuranReader
@@ -31,13 +32,20 @@ struct QuranReadingView: View {
                 .allowsHitTesting(!showingResults)
                 .accessibilityHidden(showingResults)
             if showingResults {
-                QuranSearchContent(query: $query, reader: reader, surah: searchSurah ?? currentSurah)
+                QuranSearchContent(query: $query, submittedQuery: submittedQuery, reader: reader, surah: searchSurah ?? currentSurah)
             }
         }
         .environment(\.searchMatchQuery, searchQuery)
         .readingBackground()
         .searchable(text: $query, isPresented: $searchPresented,
                     placement: .navigationBarDrawer(displayMode: .always), prompt: "Verse number or Quran text")
+        .searchHistory(query, area: .quran)
+        .onSubmit(of: .search) { submittedQuery = query; searchFocused = false }
+        .onChange(of: query) {
+            _, value in if value.isEmpty {
+                submittedQuery = ""
+            }
+        }
         .searchFocused($searchFocused)
         .autocorrectionDisabled()
         .task {

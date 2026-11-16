@@ -5,6 +5,7 @@ struct SemanticSearchResult: Decodable, Identifiable, Sendable {
         case quran(chapter: Int, verse: Int)
         case hadith(book: String, chapter: String, number: Int)
         case dua(id: String, passage: Int?)
+        case rulings(authority: String, language: String, id: String)
     }
 
     let reference: Reference
@@ -14,6 +15,7 @@ struct SemanticSearchResult: Decodable, Identifiable, Sendable {
         switch reference {
         case let .quran(chapter, verse): "quran:\(chapter):\(verse)"
         case let .hadith(book, chapter, number): "hadith:\(book):\(chapter):\(number)"
+        case let .rulings(authority, language, id): "rulings:\(authority):\(language):\(id)"
         case let .dua(id, passage): "dua:\(id):\(passage.map(String.init) ?? "")"
         }
     }
@@ -23,6 +25,7 @@ struct SemanticSearchResult: Decodable, Identifiable, Sendable {
         case let .quran(chapter, verse): "\(chapter):\(verse)"
         case let .hadith(book, _, number): "\(book) · \(number)"
         case let .dua(id, _): id
+        case let .rulings(authority, _, id): "\(authority) · \(id)"
         }
     }
 
@@ -31,7 +34,7 @@ struct SemanticSearchResult: Decodable, Identifiable, Sendable {
         return HadithSource(book: book, chapterFile: chapter, number: number, sourceID: nil)
     }
 
-    private enum CodingKeys: String, CodingKey { case kind, chapter, verse, book, number, id, passage, score }
+    private enum CodingKeys: String, CodingKey { case kind, chapter, verse, book, number, id, passage, score, authority, language }
 
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
@@ -55,6 +58,14 @@ struct SemanticSearchResult: Decodable, Identifiable, Sendable {
                 throw DecodingError.dataCorruptedError(forKey: .book, in: values, debugDescription: "Invalid Hadith reference")
             }
             reference = .hadith(book: book, chapter: chapter, number: number)
+        case "rulings":
+            let authority = try values.decode(String.self, forKey: .authority)
+            let language = try values.decode(String.self, forKey: .language)
+            let id = try values.decode(String.self, forKey: .id)
+            guard !authority.isEmpty, !language.isEmpty, !id.isEmpty else {
+                throw DecodingError.dataCorruptedError(forKey: .id, in: values, debugDescription: "Invalid rulings reference")
+            }
+            reference = .rulings(authority: authority, language: language, id: id)
         case "dua":
             reference = try .dua(id: values.decode(String.self, forKey: .id), passage: values.decodeIfPresent(Int.self, forKey: .passage))
         default:
@@ -89,7 +100,7 @@ struct SemanticSearchClient: Sendable {
         }
     #endif
 
-    func search(_ query: String, kind: String? = nil, sources: [String]? = nil, chapter: String? = nil, session: URLSession = .shared) async throws -> [SemanticSearchResult] {
+    func search(_ query: String, kind: String? = nil, sources: [String]? = nil, chapter: String? = nil, languages: [String]? = nil, session: URLSession = .shared) async throws -> [SemanticSearchResult] {
         #if DEBUG
             if Self.usesTestFixture {
                 if query == "unavailable" {
@@ -104,13 +115,13 @@ struct SemanticSearchClient: Sendable {
                     switch result.reference {
                     case let .quran(number, _): return String(number) == chapter
                     case let .hadith(_, file, _): return file == chapter
-                    case .dua: return false
+                    case .dua, .rulings: return false
                     }
                 }
             }
         #endif
         struct Payload: Decodable { let results: [SemanticSearchResult] }
-        let request = try request(query, kind: kind, sources: sources, chapter: chapter)
+        let request = try request(query, kind: kind, sources: sources, chapter: chapter, languages: languages)
         let (data, response) = try await session.data(for: request)
         try Task.checkCancellation()
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
@@ -119,12 +130,13 @@ struct SemanticSearchClient: Sendable {
         return try JSONDecoder().decode(Payload.self, from: data).results
     }
 
-    func request(_ query: String, kind: String?, sources: [String]?, chapter: String?) throws -> URLRequest {
+    func request(_ query: String, kind: String?, sources: [String]?, chapter: String?, languages: [String]? = nil) throws -> URLRequest {
         struct Body: Encodable {
             let query: String
             let kinds: [String]?
             let sources: [String]?
             let chapter: String?
+            let languages: [String]?
             let limit = 20
         }
         var request = URLRequest(url: endpoint)
@@ -132,7 +144,7 @@ struct SemanticSearchClient: Sendable {
         request.timeoutInterval = 15
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Muntathir/1.0", forHTTPHeaderField: "User-Agent")
-        request.httpBody = try JSONEncoder().encode(Body(query: query, kinds: kind.map { [$0] }, sources: sources, chapter: chapter))
+        request.httpBody = try JSONEncoder().encode(Body(query: query, kinds: kind.map { [$0] }, sources: sources, chapter: chapter, languages: languages))
         return request
     }
 }

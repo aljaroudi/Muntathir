@@ -75,8 +75,7 @@ extension FeedClientTests {
         }
         let client = try FeedClient(url: #require(URL(string: "https://example.invalid/feed.json")),
                                     cacheURL: folder.appendingPathComponent("cache.json"), session: session)
-        var preferences = Preferences()
-        preferences.selectedSourceID = row.sourceID
+        let preferences = Preferences()
         try defaults.set(JSONEncoder().encode(preferences), forKey: "preferences.v1")
         let model = AppModel(defaults: defaults, cloud: nil, feedClient: client)
         model.select(.init(latitude: 24, longitude: 46, name: "Fixture coverage", countryCode: "SA", timeZoneID: "Asia/Riyadh"))
@@ -112,7 +111,6 @@ extension FeedClientTests {
         let model = AppModel(defaults: defaults, cloud: nil)
         let location = SavedLocation(latitude: 51.5, longitude: -0.1, name: "London", countryCode: "GB", timeZoneID: "Europe/London")
         model.select(location)
-        model.update { $0.selectedSourceID = CalendarSource.middleEast }
         let month = HijriMonth(year: 1448, month: 1)
         let baseline = try CalendarEngine(timeZone: location.timeZone)
         let original = Announcement(id: "first", revision: 1, method: .nakedEye, sourceID: CalendarSource.middleEast,
@@ -129,8 +127,6 @@ extension FeedClientTests {
         }
         #expect(model.confirmations == [original])
         #expect(model.engine.start(of: month) == before)
-        model.update { $0.selectedSourceID = "government-SA" }
-        #expect(model.confirmations.isEmpty)
         #expect(model.preferences.monthOffsets == [.init(month: month, days: -2)])
         try await model.receive(.init(schemaVersion: 1, announcements: []))
         #expect(model.confirmations.isEmpty)
@@ -138,7 +134,7 @@ extension FeedClientTests {
 }
 
 extension FeedClientTests {
-    @MainActor @Test func staleResponseCannotRestoreAnOldSource() async throws {
+    @MainActor @Test func staleResponseCannotOverwriteChangedPreferences() async throws {
         let suite = "FeedStale.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
@@ -152,8 +148,7 @@ extension FeedClientTests {
         }
         let fixture = try #require(Bundle(for: FixtureBundle.self).url(forResource: "corrections-v1", withExtension: "json"))
         let body = try Data(contentsOf: fixture)
-        var preferences = Preferences()
-        preferences.selectedSourceID = CalendarSource.middleEast
+        let preferences = Preferences()
         try defaults.set(JSONEncoder().encode(preferences), forKey: "preferences.v1")
         let client = try FeedClient(url: #require(URL(string: "https://example.invalid/feed.json")),
                                     cacheURL: folder.appendingPathComponent("cache.json"), session: session)
@@ -161,23 +156,22 @@ extension FeedClientTests {
         model.select(.init(latitude: 24, longitude: 46, name: "Riyadh", countryCode: "SA", timeZoneID: "Asia/Riyadh"))
         FeedURLProtocol.state.withLock {
             $0 = .init(statuses: [200], bodies: [body], beforeDelivery: {
-                await MainActor.run { model.update { $0.selectedSourceID = nil } }
+                await MainActor.run { model.update { $0.tabShortcuts = [.events] } }
             })
         }
         #expect(await model.refreshInBackground() == false)
-        #expect(model.preferences.selectedSourceID == nil)
+        #expect(model.preferences.tabShortcuts == [.events])
         #expect(model.confirmations.isEmpty)
     }
 }
 
 extension FeedClientTests {
-    @MainActor @Test func incompatibleSourceChangeKeepsSavedCalendar() async throws {
+    @MainActor @Test func incompatibleAdjustmentKeepsSavedCalendar() async throws {
         let suite = "SourceConflict.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
         let model = AppModel(defaults: defaults, cloud: nil)
         model.select(.init(latitude: 24, longitude: 46, name: "Riyadh", countryCode: "SA", timeZoneID: "Asia/Riyadh"))
-        model.update { $0.selectedSourceID = CalendarSource.middleEast }
         let base = try CalendarEngine(timeZone: model.zone)
         let month = try #require((1 ... 12).map { HijriMonth(year: 1448, month: $0) }.first { base.baselineLength($0) == 29 })
         let next = month.advanced(1)
@@ -188,7 +182,7 @@ extension FeedClientTests {
         try model.correct(month: next, offset: -1)
         try model.correct(month: month, offset: -2)
         let saved = model.preferences
-        #expect(model.update { $0.selectedSourceID = "government-SA" } == false)
+        #expect(model.update { $0.monthOffsets.removeAll { $0.month == next } } == false)
         #expect(model.preferences == saved)
         #expect(model.confirmations == [row])
         #expect(model.error != nil)

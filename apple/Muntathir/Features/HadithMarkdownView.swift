@@ -19,7 +19,7 @@ struct HadithMarkdownView: View {
                     }
                     Group {
                         if highlights.isEmpty {
-                            Text(paragraph.text)
+                            SearchMatchText(paragraph.text)
                         } else {
                             ShareHighlightText(text: paragraph.text, highlights: highlights, block: block,
                                                sourceText: HighlightTextContent.canonical(text), offset: offset(for: paragraph))

@@ -3,60 +3,36 @@ import SwiftUI
 
 struct TasbihView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.scenePhase) private var scenePhase
-    @AppStorage("tasbihSwipeHintSeen") private var swipeHintSeen = false
+    @Environment(\.locale) private var locale
+    @Environment(\.progressStore) private var progress
+    @ScaledMetric(relativeTo: .largeTitle) private var countHeight = 48
+    @State private var activityID = UUID()
+    @State private var startedAt = Date.now
     @State private var session = TasbihSession()
     @State private var beads = TasbihBeadScene()
     @State private var pull: Float = 0
     @State private var settling = false
-    @State private var confirmingReset = false
     @State private var showingSwipeHint = false
     @GestureState private var dragging = false
 
     var body: some View {
         GeometryReader { geometry in
-            ScrollView {
-                VStack(spacing: 16) {
-                    beadView
-                        .frame(height: max(320, min(640, geometry.size.height - (dynamicTypeSize.isAccessibilitySize ? 200 : 120))))
-                    if session.complete {
-                        Label("Count complete", systemImage: "checkmark.circle.fill")
-                            .foregroundStyle(.tint)
-                            .accessibilityIdentifier("tasbih-complete")
-                        Button("Restart", action: reset)
-                            .buttonStyle(.borderedProminent)
-                            .accessibilityIdentifier("tasbih-restart")
-                    }
-                    Text("\(session.total) / \(100)")
-                        .font(.footnote.monospacedDigit())
-                        .foregroundStyle(.secondary)
-                        .accessibilityIdentifier("tasbih-total")
-                }
-                .padding(24)
-                .frame(maxWidth: 560)
-                .frame(maxWidth: .infinity)
-            }
+            beadView
+                .frame(height: max(320, geometry.size.height))
         }
+        .padding(24)
+        .frame(maxWidth: 560)
+        .frame(maxWidth: .infinity)
         .background(Color(.systemGroupedBackground))
-        .navigationTitle(Text("\(session.count) / \(session.target)"))
+        .navigationTitle("Tasbih")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Reset", systemImage: "arrow.counterclockwise") { confirmingReset = true }
-                    .disabled(session.total == 0 || session.complete || settling)
-                    .accessibilityIdentifier("tasbih-reset")
-            }
+        .sensoryFeedback(trigger: session) { old, new in
+            guard new.total > old.total else { return nil }
+            return old.phrase == new.phrase ? .impact(weight: .light) : .success
         }
-        .alert("Reset Tasbih?", isPresented: $confirmingReset) {
-            Button("Reset", role: .destructive, action: reset)
-            Button("Cancel", role: .cancel) {}
-        }
-        .sensoryFeedback(.impact(weight: .light), trigger: session.total) { old, new in new > old }
         .task {
-            guard !swipeHintSeen else { return }
             showingSwipeHint = true
-            swipeHintSeen = true
             do { try await Task.sleep(for: .seconds(4)) } catch { return }
             showingSwipeHint = false
         }
@@ -85,14 +61,33 @@ struct TasbihView: View {
         ZStack {
             beadLayer(beads.rearRoot)
                 .blur(radius: 3)
-            Text(verbatim: session.phrase)
-                .font(.largeTitle)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 16)
-                .accessibilityIdentifier("tasbih-phrase")
+            VStack(spacing: 12) {
+                ZStack {
+                    Text(session.count.formatted(.number.locale(locale)))
+                        .font(.largeTitle.monospacedDigit())
+                        .id(session.total)
+                        .transition(reduceMotion ? .identity : .asymmetric(insertion: .move(edge: .top).combined(with: .opacity), removal: .move(edge: .bottom).combined(with: .opacity)))
+                        .accessibilityIdentifier("tasbih-count")
+                }
+                .frame(height: countHeight)
+                .clipped()
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: session.total)
+                if session.complete {
+                    Image(systemName: "checkmark")
+                        .font(.largeTitle)
+                        .foregroundStyle(.tint)
+                        .accessibilityLabel("Count complete")
+                        .accessibilityIdentifier("tasbih-complete")
+                } else {
+                    Text(verbatim: session.phrase)
+                        .font(.largeTitle)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 16)
+                        .accessibilityIdentifier("tasbih-phrase")
+                }
+            }
             beadLayer(beads.frontRoot)
         }
-        .clipped()
         .overlay {
             Color.clear
                 .contentShape(.rect)
@@ -106,7 +101,7 @@ struct TasbihView: View {
                         .onEnded { value in
                             guard !settling, !session.complete else { return }
                             if TasbihSession.acceptsPull(value.translation) {
-                                session.advance()
+                                advance()
                                 showingSwipeHint = false
                             }
                             settle()
@@ -118,11 +113,12 @@ struct TasbihView: View {
                 .accessibilityAddTraits(.isButton)
                 .accessibilityAction {
                     guard !settling, !session.complete else { return }
-                    session.advance()
+                    advance()
                     showingSwipeHint = false
                     settle()
                 }
                 .accessibilityIdentifier("tasbih-beads")
+                .accessibilityHidden(session.complete)
         }
         .overlay {
             if showingSwipeHint {
@@ -161,6 +157,14 @@ struct TasbihView: View {
         .accessibilityHidden(true)
     }
 
+    private func advance() {
+        let previous = session.total
+        session.advance()
+        if session.total > previous {
+            progress?.saveActivity(ProgressActivity(id: activityID, kind: .tasbih, amount: Double(session.total), date: startedAt))
+        }
+    }
+
     private func settle() {
         settling = !reduceMotion
         pull = 0
@@ -170,5 +174,7 @@ struct TasbihView: View {
         settling = false
         pull = 0
         session.reset()
+        activityID = UUID()
+        startedAt = .now
     }
 }

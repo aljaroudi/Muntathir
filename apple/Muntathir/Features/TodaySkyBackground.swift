@@ -16,7 +16,7 @@ struct TodaySkyBackground: View {
                 ))
                 .ignoresSafeArea()
 
-                SolarArc(progress: sun.daylightProgress, warm: sun.elevation < 10, markers: markers, moon: moon)
+                SolarArc(sun: sun, markers: markers, moon: moon)
                     .frame(maxWidth: 760)
                     .frame(height: bandHeight)
                     .frame(maxWidth: .infinity)
@@ -31,19 +31,21 @@ struct TodaySkyBackground: View {
 
 /// A deliberately enlarged sun on a schematic daily arc, not a compass or angular sky projection.
 private struct SolarArc: View {
-    let progress: Double?
-    let warm: Bool
+    let sun: SolarPosition
     let markers: [SolarArcMarker]
     let moon: MoonPosition?
 
     var body: some View {
         GeometryReader { geometry in
-            let bounds = CGRect(origin: .zero, size: geometry.size).insetBy(dx: 36, dy: 24)
+            // Leave room for the prayer symbols below the horizon (22-point offset plus half their height).
+            let bounds = CGRect(x: 36, y: 24, width: max(0, geometry.size.width - 72),
+                                height: max(0, geometry.size.height - 60))
+            let progress = sun.daylightProgress
             ZStack {
-                if progress != nil {
+                if let arc = sun.arc, progress != nil {
                     Path { path in
                         for step in 0 ... 60 {
-                            let point = SolarArcLayout.point(progress: Double(step) / 60, in: bounds)
+                            let point = SolarArcLayout.point(progress: Double(step) / 60, elevation: arc.elevation(at: Double(step) / 60), in: bounds)
                             if step == 0 {
                                 path.move(to: point)
                             } else {
@@ -57,18 +59,18 @@ private struct SolarArc: View {
                     MoonDisc(fraction: moon.illuminatedFraction, waxing: moon.isWaxing)
                         .frame(width: 20, height: 20)
                         .opacity(progress == nil ? 0.9 : 0.65)
-                        .position(SolarArcLayout.point(progress: moonProgress, in: bounds))
+                        .position(SolarArcLayout.point(progress: moonProgress, elevation: moon.elevation, in: bounds))
                 }
                 if let progress {
-                    let center = SolarArcLayout.point(progress: progress, in: bounds)
-                    SunDisc(warm: warm)
+                    let center = SolarArcLayout.point(progress: progress, elevation: sun.elevation, in: bounds)
+                    SunDisc(warm: sun.elevation < 10)
                         .frame(width: 30, height: 30)
                         .position(center)
 
                     ForEach(markers) { marker in
                         SolarPrayerIndicator(marker: marker)
                             .offset(y: 22)
-                            .position(SolarArcLayout.point(progress: marker.progress, in: bounds))
+                            .position(SolarArcLayout.point(progress: marker.progress, elevation: marker.elevation, in: bounds))
                     }
                 }
             }
@@ -98,8 +100,9 @@ struct SkyCardSurface: View {
 
 #Preview("Sunrise to sunset") {
     VStack(spacing: 0) {
-        ForEach([0.0, 0.25, 0.5, 0.75, 1], id: \.self) { progress in
-            TodaySkyBackground(sun: SolarPosition(elevation: 15, apparentElevation: 15, azimuth: 0, isRising: progress < 0.5, daylightProgress: progress))
+        ForEach([6, 9, 12, 15, 18], id: \.self) { hour in
+            let date = Date(timeIntervalSince1970: 1_773_964_800 + Double(hour) * 3600)
+            TodaySkyBackground(sun: SolarPosition.calculate(at: date, latitude: 0, longitude: 0)!)
                 .frame(height: 148).clipped()
         }
     }

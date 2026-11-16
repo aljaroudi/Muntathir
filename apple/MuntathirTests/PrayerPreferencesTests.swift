@@ -5,13 +5,14 @@ import Testing
 struct PrayerPreferencesTests {
     private let location = SavedLocation(latitude: 21.4225, longitude: 39.8262, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh")
 
-    @Test func freshCalendarDefaultPreservesSavedSystemChoice() throws {
-        #expect(Preferences().selectedSourceID == CalendarSource.middleEast)
-        let saved = try JSONDecoder().decode(Preferences.self, from: Data("{}".utf8))
-        #expect(saved.selectedSourceID == nil)
-        var government = Preferences()
-        government.selectedSourceID = "government-SA"
-        #expect(try JSONDecoder().decode(Preferences.self, from: JSONEncoder().encode(government)).selectedSourceID == "government-SA")
+    @Test(arguments: ["null", "\"government-SA\"", "\"legacy\"", "\"naked-eye-middle-east\""])
+    func legacyCalendarChoicesAreIgnoredWithoutLosingAdjustments(source: String) throws {
+        let data = Data("{\"selectedSourceID\":\(source),\"monthOffsets\":[{\"month\":{\"year\":1448,\"month\":1},\"days\":1}],\"showFeelsLikeTemperature\":true}".utf8)
+        let saved = try JSONDecoder().decode(Preferences.self, from: data)
+        #expect(saved.monthOffsets == [.init(month: .init(year: 1448, month: 1), days: 1)])
+        #expect(saved.showFeelsLikeTemperature)
+        let encoded = try JSONEncoder().encode(saved)
+        #expect(String(decoding: encoded, as: UTF8.self).contains("selectedSourceID") == false)
     }
 
     @Test func oldSettingsKeepChoicesAndDefaultNewFields() throws {

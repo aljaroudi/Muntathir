@@ -4,9 +4,15 @@ Native iPhone/iPad app and Apple Watch companion using Swift 6 and SwiftUI. Requ
 
 Open `Muntathir.xcodeproj`. Use `Muntathir` for iPhone/iPad, `MuntathirWatch` for Watch, and `MuntathirWidgets` for widget development. Select your signing team for device builds. Enable iCloud Key-Value Store for the iPhone app and `group.com.aljaroudi.Muntathir` for app/widget targets on both platforms.
 
+## Navigation
+
+Today always opens first. Settings → Tabs lets users add, remove, and reorder up to three shortcuts, synced through iCloud preferences. Tools holds the remaining destinations and Settings; Today and Tools stay fixed. The default layout is Today, Calendar, Tools.
+
+Events is a timeless Hijri reference list, grouped by month and sorted by day. It includes all observances and existing figure links without filtering by today's date or converting dates to a selected Gregorian year.
+
 ## Commands
 
-From repository root: `make apple-format`, `make apple-build`, and `make apple-test`. Build uses an unsigned iOS Simulator destination and includes embedded extensions. Tests select a compatible iPhone simulator; set `TEST_DESTINATION` to override it.
+From repository root: `just apple-format`, `just apple-build`, and `just apple-test`. Build uses an unsigned iOS Simulator destination and includes embedded extensions. Tests select a compatible iPhone simulator; set `TEST_DESTINATION` to override it.
 
 ## Components
 
@@ -26,17 +32,17 @@ Apple Weather marks in `Muntathir/Resources/WeatherAttribution.xcassets` are ori
 
 Validate real-device compass/calibration, notifications/background delivery, paired Watch synchronization and complications, CarPlay layouts, signed App Group provisioning, two-device iCloud sync, VoiceOver, and accessibility sizes. Review event dates and Arabic titles editorially.
 
-The app refreshes the version-one calendar feed from https://منتظر.com/calendar/corrections-v1.json on launch/foreground, source changes, and scheduled background refresh. The website publishes confirmed starts for 1448-05 on 2026-10-13 for Middle East naked-eye sightings and Saudi government announcements. Push delivery remains unconfigured. Simulator tests cannot prove hardware behavior or deployed feed delivery.
+The app refreshes the version-one calendar feed from https://منتظر.com/calendar/corrections-v1.json on launch/foreground and scheduled background refresh. The app always follows Middle East naked-eye announcements; Settings → Calendar → Month adjustments retains manual offsets. The website publishes confirmed starts for 1448-05 on 2026-10-13 for Middle East naked-eye sightings and Saudi government announcements. Push delivery remains unconfigured. Simulator tests cannot prove hardware behavior or deployed feed delivery.
 
 ## Fastlane
 
-See [release automation](fastlane/SETUP.md) for local commands, bilingual store metadata, styled screenshots, sunrise-to-sunset previews, and the dedicated GitHub Actions runner.
+See [manual releases](fastlane/SETUP.md) for the local TestFlight Public and App Store commands, localized metadata, and screenshot configuration.
 
 ## Local Hadith development
 
 Tools → Hadith searches Arabic and English across the library. Opening a collection shows searchable contents grouped by source book or volume; opening a chapter shows paginated narrations. Collection contents also provide narration search and number lookup. Number lookup uses source numbering; repeated numbers show chapter/volume references. Al-Kafi and Uyun Akhbar al-Rida volumes share catalog entries without changing source IDs or text.
 
-Tools → Supplications lists the 54 prayers of al-Sahifa al-Sajjadiyya under one section heading. Search matches prayer titles and full text, ignoring Arabic diacritics, with title matches first. Each result opens directly into continuous reading with highlights, copying, sharing, and text sizing; there is no narration metadata or previous/next navigation. The introduction is excluded from prayer search. Supplications use their own on-demand `supplications` asset pack and Downloads entry, independently of Hadith. Source identities remain unchanged so saved highlights continue to resolve after downloading the new pack.
+Tools → Supplications lists the 54 prayers of al-Sahifa al-Sajjadiyya under one section heading. Search matches prayer titles and full text, ignoring Arabic diacritics, with title matches first. Each result opens directly into continuous reading with highlights, copying, sharing, and text sizing; there is no narration metadata or previous/next navigation. The introduction is excluded from prayer search. Supplications use their own essential `supplications` asset pack and Downloads entry, independently of Hadith. Source identities remain unchanged so saved highlights continue to resolve after downloading the new pack.
 
 Place the extracted hadith `app/data` contents in `temp/hadith-data/`, then run `uv run build/hadith/build.py --sittah --four`. The generated database is delivered through one on-demand Apple-hosted pack; see [asset delivery](AssetPacks/). The app and widget do not bundle Hadith. Unit tests include the generated database as a fixture. Generated databases and source corpora are ignored by Git.
 
@@ -54,3 +60,7 @@ Al-Kafi lists the 35 printed kitābs. The author introduction is not imported, s
 Hadith search ranks contiguous whole-word phrases first and all-term literal substrings second, with phase-aware pagination. Stem-only matches are excluded. Saved searches from the earlier ranking restart at page one while preserving the query and scope. Root/lemma mappings are excluded unless the builder receives `--experimental-morphology`; enabling the flag does not change app search. Rijal is not built or delivered.
 
 Introductions use a separate `introduction` table and reader. `hadith_reading` stores primary-text word counts and display numbers; existing narration source keys and text remain unchanged. Reading estimates use 200 words per minute, rounded up to one minutes/hours unit. Adjustable reading text targets 175% line height, with natural font height as its minimum; fixed Mushaf pages retain their layout.
+
+### Progress release checks
+
+Before releasing Progress, deploy the additive `PrayerHistoryRecord` and `ProgressActivityRecord` schemas to production in `iCloud.com.aljaroudi.Muntathir`. Keep the existing reading-history record types unchanged. Verify with two devices signed into the same iCloud account: complete a named prayer, read, and count a partial tasbih session offline; reconnect and confirm the totals appear on the second device without duplicates, and confirm that changing location or calculation method does not alter saved timing. Check empty and populated prayer bars, VoiceOver values, Arabic RTL, and accessibility text sizes. Verify Quran, Hadith, and Supplications reading timers pause when backgrounded or after five idle minutes, and partial tasbih counts survive leaving the counter. Activity records hold cumulative per-session amounts; duplicate synced snapshots use the largest amount, not their sum. Reading and tasbih totals begin with new activity; bookmark and highlight counts use existing saved data. Simulator tests do not prove CloudKit delivery.

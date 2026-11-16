@@ -22,6 +22,9 @@ struct SolarArcMarkerTests {
         #expect(later.first?.state == .past)
         #expect(later.last?.state == .upcoming)
         #expect(markers[0].progress < markers[1].progress)
+        let noon = SolarPosition.calculate(at: time(12), latitude: 0, longitude: 0)
+        #expect(markers[0].elevation == noon?.elevation)
+        #expect(markers[0].elevation > markers[1].elevation)
     }
 
     @Test func hiddenTimesAreAbsentAndNextOffPathDoesNotPromoteAnotherMarker() {
@@ -37,6 +40,7 @@ struct SolarArcMarkerTests {
         let prayers: [PrayerMoment] = [.init(name: .sunrise, date: time(6)), .init(name: .sunset, date: time(18))]
         let markers = SolarArcMarker.make(prayers: prayers, now: time(12), location: location)
         #expect(markers.map(\.progress) == [0, 1])
+        #expect(markers.map(\.elevation) == [0, 0])
         #expect(markers.map(\.state) == [.past, .upcoming])
         #expect(SolarArcMarker.make(prayers: [], now: time(12), location: location).isEmpty)
     }

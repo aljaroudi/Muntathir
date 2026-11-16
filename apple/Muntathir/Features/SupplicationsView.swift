@@ -4,7 +4,7 @@ struct SupplicationsView: View {
     let reader: HadithReader
     @Environment(\.locale) private var locale
     @Environment(\.hadithAssets) private var assets
-    @AppStorage("supplicationTranslation") private var translation = "auto"
+    @AppStorage("supplicationTranslation.v2") private var translation = "auto"
     @State private var languages: [String] = []
     @State private var query = ""
     @State private var prayers: [Hadith] = []
@@ -60,6 +60,7 @@ struct SupplicationsView: View {
                                     HadithDetailView(initialID: prayer.id, reader: reader, query: query,
                                                      orderedFallback: false, supplication: true)
                                         .environment(\.hadithSession, nil)
+                                        .recordSearchOnOpen(query, area: .supplications)
                                 } label: {
                                     VStack(alignment: .leading, spacing: 8) {
                                         Text(prayer.chapter.chapterTitle(locale: locale))
@@ -68,18 +69,15 @@ struct SupplicationsView: View {
                                             ReadingTimeHint(words: prayer.readingWords)
                                         }
                                         if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                            if let translation = prayer.translation {
-                                                Text(HadithText.highlighted(translation.text, terms: QuranSearchText.terms(query)))
+                                            let translated = prayer.translation.map { HadithText.highlighted($0.text, terms: QuranSearchText.terms(query)) } ?? AttributedString()
+                                            let blocks = [prayer.arabicDisplay, translated]
+                                            let visible = SearchMatch.visibleBlocks(blocks, preferred: locale.language.languageCode?.identifier == "ar" ? 0 : 1)
+                                            ForEach(visible, id: \.self) { index in
+                                                SearchMatchText(SearchMatch.preview(blocks[index], compact: true))
                                                     .font(.body)
                                                     .foregroundStyle(.secondary)
-                                                    .lineLimit(3)
-                                                    .environment(\.layoutDirection, translation.isRightToLeft ? .rightToLeft : .leftToRight)
-                                            } else {
-                                                Text(prayer.arabicDisplay)
-                                                    .font(.body)
-                                                    .foregroundStyle(.secondary)
-                                                    .lineLimit(3)
-                                                    .environment(\.layoutDirection, .rightToLeft)
+                                                    .lineLimit(2)
+                                                    .environment(\.layoutDirection, index == 0 || prayer.translation?.isRightToLeft == true ? .rightToLeft : .leftToRight)
                                             }
                                         }
                                     }
@@ -95,6 +93,7 @@ struct SupplicationsView: View {
         .readingBackground()
         .navigationTitle("Supplications")
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search supplications")
+        .searchHistory(query, area: .supplications)
         .autocorrectionDisabled()
         .scrollDismissesKeyboard(.interactively)
         .toolbar {

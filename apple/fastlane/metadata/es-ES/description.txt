@@ -1,21 +1,11 @@
-La oración y el recuerdo diario, juntos en Muntathir.
+Oración y recuerdo diario juntos en Muntathir.
 
-Consulta los horarios de oración de tu ubicación, elige el método de cálculo y configura recordatorios. Sigue el recorrido del Sol en la pantalla Hoy.
+Consulta los horarios locales de oración, elige el método de cálculo y configura recordatorios. Sigue el cielo renderizado según la elevación solar real en Hoy, consulta los próximos eventos islámicos teniendo en cuenta la puesta del sol, comparte la aleya diaria y encuentra la Alquibla. Cuenta con cuentas de tasbih en 3D, usa la cámara frontal para asistir el conteo de rakas y registra y revisa tu actividad diaria.
 
-Lee una aleya del Corán cada día y compártela como imagen. Lee el Corán y busca suras.
+Lee el Corán aleya por aleya o por páginas del Mushaf, elige traducciones y retoma tu lectura. Gestiona qué libros de hadices descargar o eliminar para consultarlos y buscarlos sin conexión. Explora súplicas, normas y figuras históricas con sus títulos ampliables. Guarda marcadores, resalta texto, añade notas y comparte citas o tarjetas ilustradas. Tus resaltados y notas se sincronizan mediante tu cuenta privada de iCloud cuando está disponible.
 
-Explora las fechas y celebraciones islámicas. Elige el calendario del sistema, la observación local a simple vista en Oriente Medio o los anuncios gubernamentales. Ajusta cada mes de −2 a +2 días. Si no hay un anuncio correspondiente, se usan fechas calculadas de Umm al-Qura.
+Busca sin conexión en los textos descargados del Corán y los hadices. Prueba la búsqueda semántica en línea con vista previa de resultados cuando la búsqueda local no encuentre coincidencias, manteniendo el ámbito del libro y capítulo elegidos.
 
-Encuentra la dirección de la alquibla. Para iPhone y iPad, con app para Apple Watch y widgets. Interfaz disponible en 15 idiomas.
+Consulta las fechas islámicas eligiendo el calendario del sistema, la observación a simple vista en Oriente Medio o los anuncios oficiales de Arabia Saudí, con ajuste de hasta dos días por mes; hasta su confirmación se aplican los valores calculados de Umm al-Qura.
 
-Los horarios y las fechas dependen de tus ajustes. Sigue a tu autoridad local cuando corresponda.
-
-CORÁN
-Lee el Corán con las traducciones incluidas, busca aleyas y guarda tu posición de lectura.
-
-HADICES
-Descarga la biblioteca de hadices, explora colecciones y capítulos, busca en árabe e inglés y lee sin conexión. Guarda favoritos, añade notas y comparte narraciones como texto o imágenes.
-
-Resalta pasajes del Corán y de los hadices y vuelve a ellos en Resaltados.
-
-Encuentra aleyas del Corán y hadices por su significado. Si la búsqueda local no encuentra nada, prueba la búsqueda en línea desde la misma barra. Se mantienen el libro y el capítulo seleccionados. La búsqueda de texto local sigue disponible sin conexión.
+Para iPhone y iPad, con app para Apple Watch y widgets en 15 idiomas. El texto árabe del Corán y la traducción inglesa están incluidos; otros contenidos requieren descarga. La búsqueda por significado requiere internet. Los horarios y fechas dependen de tu configuración.

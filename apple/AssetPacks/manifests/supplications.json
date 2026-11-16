@@ -1,7 +1,12 @@
 {
   "assetPackID": "supplications",
   "downloadPolicy": {
-    "onDemand": {}
+    "essential": {
+      "installationEventTypes": [
+        "firstInstallation",
+        "subsequentUpdate"
+      ]
+    }
   },
   "fileSelectors": [
     {

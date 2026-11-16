@@ -1,6 +1,7 @@
 import SwiftUI
 
 enum FigureRoute: Hashable {
+    case tool(AppTool)
     case browser
     case profile(String)
     case tree(String)
@@ -23,7 +24,10 @@ struct FigureBrowser: View {
                     ForEach(sections) { section in
                         Section {
                             ForEach(section.figures) { person in
-                                NavigationLink(value: FigureRoute.profile(person.id)) {
+                                NavigationLink {
+                                    FigureProfile(figure: person, library: library)
+                                        .recordSearchOnOpen(query, area: .figures)
+                                } label: {
                                     Text(verbatim: person.title(locale))
                                 }
                                 .accessibilityIdentifier("figure-\(person.id)")
@@ -32,6 +36,7 @@ struct FigureBrowser: View {
                     }
                 }
                 .searchable(text: $query)
+                .searchHistory(query, area: .figures)
                 .overlay {
                     if sections.isEmpty {
                         ContentUnavailableView("No figures found", systemImage: "person.crop.circle.badge.questionmark")
@@ -64,6 +69,7 @@ struct FigureDestination: View {
                         FigureFamilyTree(originalID: id, library: library)
                     } else {
                         FigureProfile(figure: figure, library: library)
+                            .id(figure.id)
                     }
                 } else {
                     ContentUnavailableView("Figures unavailable", systemImage: "exclamationmark.triangle")
@@ -84,6 +90,7 @@ extension View {
     func figureDestinations(hadithAssets: HadithAssetStore? = nil, supplicationAssets: HadithAssetStore? = nil) -> some View {
         navigationDestination(for: FigureRoute.self) { route in
             switch route {
+            case let .tool(tool): ToolDestination(tool: tool)
             case .browser: FigureBrowser()
             case let .profile(id): FigureDestination(id: id)
             case let .tree(id): FigureDestination(id: id, showsTree: true)

@@ -12,6 +12,7 @@ struct LockScreenPrayerView: View {
             if let next = entry.next {
                 if family == .accessoryInline {
                     Text("\(Text(next.name.title)) \(value(for: next))")
+                        .accessibilityLabel(accessibilityText(for: next))
                 } else {
                     ViewThatFits {
                         VStack(alignment: family == .accessoryCircular ? .center : .leading, spacing: 2) {
@@ -29,7 +30,7 @@ struct LockScreenPrayerView: View {
                     .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: family == .accessoryCircular ? .center : .leading)
                     .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(Text("\(Text(next.name.title)) \(value(for: next))"))
+                    .accessibilityLabel(accessibilityText(for: next))
                 }
             } else if entry.settings?.location == nil {
                 Text("Set location in app")
@@ -43,11 +44,15 @@ struct LockScreenPrayerView: View {
         .containerBackground(.background, for: .widget)
     }
 
+    private func accessibilityText(for prayer: PrayerMoment) -> Text {
+        Text("\(Text(prayer.name.title)) \(Text(prayer.date, format: .dateTime.hour().minute().locale(locale).inZone(entry.zone))) \(showsCountdown ? String(PrayerCountdownFormat(target: prayer.date, locale: locale).format(entry.date).characters) : "")")
+    }
+
     private func value(for prayer: PrayerMoment) -> Text {
         if showsCountdown {
             Text(PrayerCountdownFormat(target: prayer.date, locale: locale).format(entry.date))
         } else {
-            Text(prayer.date, format: .dateTime.hour().minute().locale(locale).inZone(entry.zone))
+            Text(prayer.date, format: .dateTime.hour(.defaultDigits(amPM: .omitted)).minute().locale(locale).inZone(entry.zone))
         }
     }
 }

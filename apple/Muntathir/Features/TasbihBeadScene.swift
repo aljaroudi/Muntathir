@@ -14,8 +14,8 @@ final class TasbihBeadScene {
 
     init() {
         let camera = PerspectiveCamera()
-        camera.camera.fieldOfViewInDegrees = 38
-        camera.position = [0, 0.5, 3.2]
+        camera.camera.fieldOfViewInDegrees = 51.5
+        camera.position = [0, 0.025, 3.2]
         rearRoot.addChild(camera)
         frontRoot.addChild(camera.clone(recursive: true))
 

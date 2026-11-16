@@ -31,7 +31,7 @@ final class SemanticSearchUITests: XCTestCase {
 
     @MainActor func testLocalMatchesStillOfferMeaningSearchAndDeduplicate() {
         let app = openReader("holy-quran")
-        query("كرسي", in: app)
+        query("كرسيه", in: app)
         let local = app.buttons["quran-result-2:255"]
         XCTAssertTrue(local.waitForExistence(timeout: 5))
         let optIn = app.buttons["search-by-meaning"]
@@ -46,7 +46,7 @@ final class SemanticSearchUITests: XCTestCase {
 
     @MainActor func testLiteralUnderlinesInBothQuranReadingModes() {
         let app = openReader("holy-quran", dark: true)
-        query("كرسي", in: app)
+        query("كرسيه", in: app)
         let result = app.buttons["quran-result-2:255"]
         XCTAssertTrue(result.waitForExistence(timeout: 5))
         let preview = XCTAttachment(screenshot: app.screenshot())

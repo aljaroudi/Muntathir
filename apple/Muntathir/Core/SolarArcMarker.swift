@@ -7,6 +7,7 @@ struct SolarArcMarker: Identifiable, Sendable {
 
     let name: PrayerName
     let progress: Double
+    let elevation: Double
     let state: State
     var id: PrayerName {
         name
@@ -25,6 +26,7 @@ struct SolarArcMarker: Identifiable, Sendable {
             }
             guard let progress else { return nil }
             return Self(name: prayer.name, progress: progress,
+                        elevation: [.sunrise, .sunset].contains(prayer.name) ? 0 : solar.elevation,
                         state: prayer.date <= now ? .past : prayer.name == next ? .upcoming : .future)
         }
     }

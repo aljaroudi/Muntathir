@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SavedList<Destination: View>: View {
+    var bookmarksOnly = false
     let highlights: [ReadingHighlight]
     let bookmarks: [ReadingBookmark]
     let canOpen: (SavedEntry) -> Bool
@@ -17,7 +18,7 @@ struct SavedList<Destination: View>: View {
     @State private var failed = false
 
     private var entries: [SavedEntry] {
-        showingBookmarks ? bookmarks.map(SavedEntry.init) : highlights.map(SavedEntry.init)
+        (bookmarksOnly || showingBookmarks) ? bookmarks.map(SavedEntry.init) : highlights.map(SavedEntry.init)
     }
 
     private var localCalendar: Calendar {
@@ -27,19 +28,21 @@ struct SavedList<Destination: View>: View {
     }
 
     var body: some View {
+        let savedEntries = entries
         List {
-            Picker("Saved", selection: $showingBookmarks) {
-                Text("Highlights").tag(false)
-                Text("Bookmarks").tag(true)
+            if !bookmarksOnly {
+                Picker("Saved", selection: $showingBookmarks) {
+                    Text("Highlights").tag(false)
+                    Text("Bookmarks").tag(true)
+                }
+                .pickerStyle(.segmented)
+                .listRowBackground(Color.clear)
+                .accessibilityIdentifier("saved-kind")
             }
-            .pickerStyle(.segmented)
-            .listRowBackground(Color.clear)
-            .accessibilityIdentifier("saved-kind")
-
-            let sections = SavedEntry.sections(entries, byDate: byDate, query: query, calendar: localCalendar, locale: locale)
-            if entries.isEmpty {
-                if showingBookmarks {
-                    ContentUnavailableView("No bookmarks yet", systemImage: "bookmark", description: Text("Use Bookmark in a verse or narration’s actions to save it."))
+            let sections = SavedEntry.sections(savedEntries, byDate: byDate, query: query, calendar: localCalendar, locale: locale)
+            if savedEntries.isEmpty {
+                if bookmarksOnly || showingBookmarks {
+                    ContentUnavailableView("No bookmarks yet", systemImage: "bookmark", description: Text("Use Bookmark to save a passage."))
                 } else {
                     ContentUnavailableView("No highlights yet", systemImage: "highlighter", description: Text("Select text to highlight it."))
                 }
@@ -54,7 +57,9 @@ struct SavedList<Destination: View>: View {
                                 .contextMenu { actions(entry) }
                         }
                     } header: {
-                        if let date = section.date {
+                        if !query.isEmpty {
+                            Text(section.id == "related" ? "Related matches" : "Matches")
+                        } else if let date = section.date {
                             if localCalendar.isDateInToday(date) {
                                 Text("Today")
                             } else if localCalendar.isDateInYesterday(date) {
@@ -71,7 +76,8 @@ struct SavedList<Destination: View>: View {
         }
         .listStyle(.insetGrouped)
         .navigationTitle("Saved")
-        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: showingBookmarks ? "Search bookmarks" : "Search highlights")
+        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: (bookmarksOnly || showingBookmarks) ? "Search bookmarks" : "Search highlights")
+        .searchHistory(query, area: .saved)
         .autocorrectionDisabled()
         .scrollDismissesKeyboard(.interactively)
         .toolbar {
@@ -91,10 +97,10 @@ struct SavedList<Destination: View>: View {
 
     @ViewBuilder private func row(_ entry: SavedEntry) -> some View {
         if canOpen(entry) {
-            NavigationLink { destination(entry) } label: { summary(entry) }
-                .accessibilityIdentifier((entry.isHadith ? "saved-hadith-" : "saved-verse-") + entry.source)
+            NavigationLink { destination(entry).recordSearchOnOpen(query, area: .saved) } label: { summary(entry) }
+                .accessibilityIdentifier((entry.bookmark?.kind == .ruling ? "saved-ruling-" : entry.isHadith ? "saved-hadith-" : "saved-verse-") + entry.source)
         } else if let highlight = entry.highlight {
-            Button { editing = highlight } label: { summary(entry) }
+            Button { SearchHistory.shared.record(query, in: .saved); editing = highlight } label: { summary(entry) }
                 .tint(.primary)
         } else {
             summary(entry)
@@ -103,13 +109,18 @@ struct SavedList<Destination: View>: View {
 
     @ViewBuilder private func summary(_ entry: SavedEntry) -> some View {
         if let highlight = entry.highlight {
-            HighlightSummary(highlight: highlight, available: available(highlight), showReference: byDate)
+            HighlightSummary(highlight: highlight, available: available(highlight), showReference: byDate, searchQuery: query)
         } else {
             VStack(alignment: .leading, spacing: 8) {
                 if byDate {
                     Text(entry.title(locale: locale)).font(.subheadline).foregroundStyle(.secondary)
                 }
-                Text(entry.excerpt).font(.body).lineLimit(4)
+                if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    Text(entry.excerpt).font(.body).lineLimit(4)
+                } else {
+                    SearchMatchText(SearchMatch.preview(SearchMatch.text(entry.excerpt, query: query), compact: true))
+                        .font(.body).lineLimit(2)
+                }
                 if !canOpen(entry) {
                     Label("Saved passage unavailable", systemImage: "exclamationmark.triangle")
                         .font(.subheadline).foregroundStyle(.secondary)

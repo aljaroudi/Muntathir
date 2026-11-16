@@ -32,7 +32,7 @@ Deploy Quran chapter-filter support before releasing chapter-scoped search in th
 Hadith results use `kind`, `book`, `chapter` (stable chapter file), `number`, and
 `score`. Dua results reserve `kind`, `id`, optional `passage`, and `score`.
 Scores are cosine similarities, not confidence. Explicit references return null.
-Array order is hybrid RRF rank, optionally reranked by LM Studio, so scores need not decrease monotonically.
+Array order is hybrid RRF rank, optionally reranked by Jev, so scores need not decrease monotonically.
 Keyword candidates must contain every normalized query term, matching the previous
 search semantics; native BM25 ranks those candidates.
 Duplicate translations/passages collapse to a content item; the reported score is
@@ -62,8 +62,9 @@ python3 backend/serve.py
 Import batches are idempotent and checkpointed only after acknowledged writes.
 A changed manifest cannot resume into an existing checkpoint. Validation checks
 all IDs, input hashes, profile, and corpus fingerprint before alias activation.
-The API resolves the alias to a concrete collection for each request, so cache
-entries and in-flight searches remain isolated across revision changes.
+The API caches the resolved `search` alias target in memory for 30 seconds (invalidating
+immediately if a collection request returns HTTP 404), so cache entries and in-flight
+searches remain isolated across revision changes.
 
 `python3 backend/install_service.py` installs a per-user launch agent. It starts
 **after login**, supervises the API and tunnel, and restarts the Apple container
@@ -138,33 +139,25 @@ This updates payloads only; it never regenerates embeddings. New imports populat
 Regenerate exhaustive reference files with `exact_reference.py` before the ordinary
 quality check; old references include short verses and are explicitly rejected.
 
-Reranking is disabled unless both environment variables are configured:
+## Jev meaning-search reranking
 
-```dotenv
-SEARCH_RERANK_URL=http://192.168.7.55:1234/v1
-SEARCH_RERANK_MODEL=google/gemma-4-26b-a4b-qat
-SEARCH_RERANK_TIMEOUT_MS=2000
-```
+Set `SEARCH_RERANK_PROVIDER=jev`, `JEV_API_KEY`, and
+`SEARCH_RERANK_MODEL=jev-1.14.0` in `backend/.env`, then restart the supervisor.
+`TYPESAFE_API_KEY` is also accepted. Keys stay server-side and out of cache keys.
+Only explicit meaning-search requests are eligible; direct references bypass
+reranking. Bulk semantic (limit 100) and lexical retrieval omit passage `text`;
+when reranking is enabled, only the fused top 20 passages have their `text`
+fetched from Qdrant, and client responses remain compact references without `text`.
+The shared evaluation instruction is sent once in Jev `state` while per-passage
+`questions` specify only the passage ID. Responses are validated; failures,
+timeout, cooldown, and busy requests keep baseline ranking. The concurrency guard
+permits up to 4 in-flight reranks per API process; timeouts fall back without
+triggering the 30-second cooldown, while provider HTTP or validation failures
+activate the 30-second cooldown. Repeated successful searches use the existing
+five-minute result cache.
 
-Do not enable until evaluation passes. The server sends the original query and up
-to 20 retrieved excerpts (1,000 characters each) to the configured LAN service.
-It accepts only a complete permutation of candidate IDs. References and cosine
-scores do not change. Direct references bypass the model. One request runs at a
-time; busy, invalid, unavailable, or timed-out requests return baseline ranking.
-Failures trigger a 30-second cooldown. Timeout is bounded to 1–2,000 ms,
-and inference is shortened or skipped when the app request budget is nearly spent.
-Transient fallbacks are not stored as successful reranked cache entries.
-
-Compare both rankings using saved embeddings and existing Arabic/English fixtures,
-including question queries:
-
-```sh
-bun backend/api/verify.ts rerank backend/work/rerank-evaluation.json
-```
-
-Set the variables in the benchmark environment, not production, until the gate
-passes. The gate requires a completed evaluation and improved mean NDCG@10.
-Gemma 4 26B A4B QAT timed out at two seconds on its first evaluation request.
-The other 149 requests used baseline ranking during cooldown, so the run could
-not establish a relevance gain. Reranking remains disabled. Inspect outcome
-counts as well as aggregate latency.
+The measured reranker-only cost was approximately $0.00022 per uncached query
+at $0.042 per million input tokens. Query embedding costs are additional;
+passage lengths change usage. Set `SEARCH_RERANK_PROVIDER=off` and restart to
+roll back without changing the collection alias. Collection activation still
+requires the corpus release gates.

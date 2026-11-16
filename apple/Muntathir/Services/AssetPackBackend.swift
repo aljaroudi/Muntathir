@@ -23,8 +23,20 @@ struct AppleAssetPackBackend: AssetPackBackend {
     var identifier = Self.packID
     var resourcePath = "Hadith/hadith.db"
 
+    #if DEBUG
+        private static let rulingsFixture = Result { try RulingsFixture().url }
+    #endif
+
     @concurrent func localURL() async throws -> URL? {
         #if DEBUG
+            if identifier == "rulings", ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+                guard ProcessInfo.processInfo.arguments.contains("--ui-testing-rulings-fixture") else { return nil }
+                return try Self.rulingsFixture.get()
+            }
+            if identifier == Self.packID, let fixture = HadithUITestFixture.downloadsDirectory {
+                let marker = fixture.appending(path: "Removed")
+                return FileManager.default.fileExists(atPath: marker.path) ? nil : try HadithUITestFixture.url()
+            }
             if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
                ProcessInfo.processInfo.arguments.contains("--marketing-capture"),
                let url = Bundle.main.url(forResource: identifier, withExtension: "db", subdirectory: identifier == "supplications" ? "Supplications" : "Hadith")
@@ -52,6 +64,9 @@ struct AppleAssetPackBackend: AssetPackBackend {
     func isDownloading() async -> Bool {
         #if DEBUG
             let arguments = ProcessInfo.processInfo.arguments
+            if identifier == "rulings", arguments.contains("--ui-testing") {
+                return false
+            }
             if arguments.contains("--ui-testing"),
                arguments.contains("--marketing-capture") ||
                (identifier == Self.packID && arguments.contains("--ui-testing-hadith-fixture")) ||
@@ -91,6 +106,12 @@ struct AppleAssetPackBackend: AssetPackBackend {
     }
 
     func remove() async throws {
+        #if DEBUG
+            if identifier == Self.packID, let fixture = HadithUITestFixture.downloadsDirectory {
+                try Data().write(to: fixture.appending(path: "Removed"))
+                return
+            }
+        #endif
         try await AssetPackManager.shared.remove(assetPackWithID: identifier)
     }
 
@@ -98,6 +119,9 @@ struct AppleAssetPackBackend: AssetPackBackend {
         #if DEBUG
             // Capture/test databases have no hosted download events or hosting entitlements.
             let arguments = ProcessInfo.processInfo.arguments
+            if identifier == "rulings", arguments.contains("--ui-testing") {
+                return AsyncStream { $0.finish() }
+            }
             if arguments.contains("--ui-testing"),
                arguments.contains("--marketing-capture") ||
                (identifier == Self.packID && arguments.contains("--ui-testing-hadith-fixture")) ||
@@ -108,21 +132,24 @@ struct AppleAssetPackBackend: AssetPackBackend {
         #endif
         return AsyncStream { continuation in
             let task = Task {
-                for await update in AssetPackManager.shared.statusUpdates(forAssetPackWithID: identifier) {
+                // The per-pack sequence ends after the first success or failure.
+                let updates = await AssetPackManager.shared.statusUpdates
+                for await update in updates {
                     guard !Task.isCancelled else { break }
                     switch update {
-                    case .began: continuation.yield(.began)
-                    case let .downloading(_, progress): continuation.yield(.progress(progress))
-                    case .finished:
+                    case let .began(pack) where pack.id == identifier:
+                        continuation.yield(.began)
+                    case let .downloading(pack, progress) where pack.id == identifier:
+                        continuation.yield(.progress(progress))
+                    case let .finished(pack) where pack.id == identifier:
                         Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
                             .notice("Asset installation finished.")
                         continuation.yield(.finished)
-                    case let .failed(_, error):
+                    case let .failed(pack, error) where pack.id == identifier:
                         Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
                             .error("Asset download failed: \(String(describing: error), privacy: .public)")
                         continuation.yield(.failed)
-                    case .paused: break
-                    @unknown default: break
+                    default: break
                     }
                 }
                 continuation.finish()
@@ -137,6 +164,14 @@ struct AppleAssetPackBackend: AssetPackBackend {
 
     /// Isolated, deterministic data for UI tests; never substitutes for hosted assets in normal launches.
     enum HadithUITestFixture {
+        static var downloadsDirectory: URL? {
+            let process = ProcessInfo.processInfo
+            guard process.arguments.contains("--ui-testing"),
+                  let value = process.environment["HADITH_DOWNLOADS_FIXTURE"],
+                  let id = UUID(uuidString: value) else { return nil }
+            return URL.temporaryDirectory.appending(path: id.uuidString, directoryHint: .isDirectory)
+        }
+
         static func url() throws -> URL {
             let url = URL.applicationSupportDirectory.appending(path: "hadith-ui-fixture-v5.db")
             if FileManager.default.fileExists(atPath: url.path) {

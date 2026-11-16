@@ -5,8 +5,10 @@ struct MuntathirApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.locale) private var locale
     @State private var model: AppModel
+    @State private var progressStore = ProgressStore.application()
     @State private var quranStore: QuranUserStore
     init() {
+        AppTip.configure()
         let model: AppModel
         #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
@@ -38,11 +40,13 @@ struct MuntathirApp: App {
 
     var body: some Scene {
         WindowGroup {
-            QuranUserDataView(store: quranStore) {
-                if model.onboardingCompleted {
-                    ContentView()
-                } else {
-                    OnboardingView()
+            ProgressDataView(store: progressStore) {
+                QuranUserDataView(store: quranStore) {
+                    if model.onboardingCompleted {
+                        ContentView()
+                    } else {
+                        OnboardingView()
+                    }
                 }
             }
             .defaultAppStorage(ProcessInfo.processInfo.arguments.contains("--ui-testing") ? UserDefaults(suiteName: "Muntathir.UITests")! : .standard)

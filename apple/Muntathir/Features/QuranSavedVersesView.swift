@@ -21,7 +21,7 @@ struct QuranSavedVersesView: View {
     }
 
     private var bookmarks: [ReadingBookmark] {
-        store?.bookmarks.filter { !$0.isHadith } ?? []
+        store?.bookmarks.filter { $0.kind == .quran } ?? []
     }
 
     private var savedIDs: [String] {

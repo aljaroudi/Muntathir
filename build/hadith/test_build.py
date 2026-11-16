@@ -260,7 +260,7 @@ class AdditionalBooksTests(unittest.TestCase):
             self.assertEqual(db.execute('SELECT count(*) FROM grader').fetchone()[0], 0)
             self.assertEqual(db.execute('SELECT hadith_count FROM chapter').fetchall(), [(1,), (1,)])
             db.executemany('INSERT INTO hadith_en(rowid,text) VALUES (?,?)', db.execute('SELECT id,text FROM hadith_english_content').fetchall())
-            highlighted = db.execute("SELECT highlight(hadith_en,0,'[',']') FROM hadith_en WHERE hadith_en MATCH 'passages'").fetchone()[0]
+            highlighted = db.execute("SELECT highlight(hadith_en,0,'[',']') FROM hadith_en WHERE hadith_en MATCH 'passage'").fetchone()[0]
             self.assertIn('[passage]', highlighted)
 
     def test_four_filters_base_books_and_combines_with_sittah(self):
@@ -440,7 +440,7 @@ class GradingTests(unittest.TestCase):
         row, = self.records()
         self.assertIsNone(row['grader_id'])
         self.assertEqual(row['grade_ar'], 'مجهول')
-        self.assertEqual(self.db.execute('PRAGMA user_version').fetchone()[0], 7)
+        self.assertEqual(self.db.execute('PRAGMA user_version').fetchone()[0], 8)
         self.assertEqual(self.db.execute('PRAGMA foreign_key_check').fetchall(), [])
 
 
@@ -455,7 +455,7 @@ class ShippingSchemaTests(unittest.TestCase):
         with sqlite3.connect(':memory:') as db:
             builder.apply_schema(db, HERE / 'schema.sql')
             names = {r[0] for r in db.execute('SELECT name FROM sqlite_master')}
-            self.assertTrue({'hadith', 'hadith_grading', 'hadith_fts', 'hadith_en'} <= names)
+            self.assertTrue({'hadith', 'hadith_grading', 'hadith_words', 'hadith_en'} <= names)
             self.assertFalse({'word_form', 'root', 'narrator', 'concordance', 'hadith_relation'} & names)
             self.assertEqual([r[1] for r in db.execute('PRAGMA table_info(hadith_words)')], ['text'])
             builder.build_fts(db)
@@ -544,3 +544,44 @@ class IntroductionTests(unittest.TestCase):
             self.assertEqual(db.execute('SELECT arabic,english FROM introduction').fetchall(), [('نص المقدمة', 'Introduction text')])
             self.assertEqual(db.execute('SELECT id_in_book,source_id,arabic FROM hadith').fetchall(), [(1, 2, 'نص الرواية')])
             self.assertEqual(db.execute('SELECT chapter_idx,file_name FROM chapter').fetchall(), [(1, '2.json')])
+
+    def test_printed_prefaces_attach_without_renumbering(self):
+        with tempfile.TemporaryDirectory() as folder, sqlite3.connect(':memory:') as db:
+            builder.apply_schema(db, HERE / 'schema.sql')
+            root = Path(folder)
+            source = root / '0381Author' / '0381Author.Book' / 'edition'
+            source.parent.mkdir(parents=True)
+            source.write_bytes(b'edition')
+            book = 'additional-Man-La-Yahduruh-al-Faqih-Volume-1-Saduq'
+            (root / 'introductions.json').write_text(json.dumps({'introductions': [{
+                'book_id': book, 'title': 'مقدمة المؤلف', 'author': '0381Author', 'book': 'Book',
+                'file': 'edition', 'sha256': hashlib.sha256(source.read_bytes()).hexdigest(),
+                'url': 'https://example.test/edition#PageV01P001', 'arabic': 'بسم الله نص المقدمة',
+            }]}))
+            db.execute("INSERT INTO collection VALUES ('additional-Man-La-Yahduruh-al-Faqih-Saduq','كتاب','Book',0)")
+            db.execute("INSERT INTO book(id,collection_id,sect,book_group,name_ar,name_en) VALUES (?,?,'shia','shia','كتاب','Book')",
+                       (book, 'additional-Man-La-Yahduruh-al-Faqih-Saduq'))
+            db.execute("INSERT INTO chapter(id,book_id,chapter_idx,file_name) VALUES (1,?,0,'1.json')", (book,))
+            db.execute("INSERT INTO hadith(id,book_id,chapter_id,chapter_idx,id_in_book,arabic) VALUES (1,?,1,0,1,'رواية')", (book,))
+            before = db.execute('SELECT id_in_book,arabic FROM hadith').fetchall()
+            with patch.object(builder, 'DATA', root):
+                builder.load_printed_introductions(db, root)
+            self.assertEqual(db.execute('SELECT id_in_book,arabic FROM hadith').fetchall(), before)
+            self.assertEqual(db.execute('SELECT book_id,title,arabic,url FROM introduction').fetchall(),
+                             [(book, 'مقدمة المؤلف', 'بسم الله نص المقدمة', 'https://example.test/edition#PageV01P001')])
+            source.write_bytes(b'changed')
+            with patch.object(builder, 'DATA', root), self.assertRaises(ValueError):
+                builder.load_printed_introductions(db, root)
+
+    def test_reviewed_prefaces_are_the_author_openings(self):
+        by_book = {item['book_id']: item for item in json.loads((HERE / 'data' / 'introductions.json').read_text())['introductions']}
+        faqih = by_book['additional-Man-La-Yahduruh-al-Faqih-Volume-1-Saduq']
+        tahdhib = by_book['additional-Tahdhib-al-Ahkam-Volume-1-Tusi']
+        self.assertTrue(faqih['arabic'].startswith('بسم الله الرحمن الرحيم'))
+        self.assertTrue(faqih['arabic'].endswith('حسبي ونعم الوكيل.'))
+        self.assertIn('من لا يحضره الفقيه', faqih['arabic'])
+        self.assertTrue(tahdhib['arabic'].startswith('بسم الله الرحمن الرحيم'))
+        self.assertTrue(tahdhib['arabic'].endswith('إنه المبتدئ بالنعم المفتتح بالكرم.'))
+        self.assertIn('المقنعة', tahdhib['arabic'])
+        self.assertTrue(faqih['url'].endswith('#PageV01P001'))
+        self.assertTrue(tahdhib['url'].endswith('#PageV01P001'))

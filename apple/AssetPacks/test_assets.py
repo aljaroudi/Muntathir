@@ -35,3 +35,20 @@ class PackagingTests(unittest.TestCase):
                 assets.main()
             self.assertTrue(archive.exists())
             self.assertEqual(json.loads((resources / 'AssetDownloadSizes.json').read_text()), {'hadith': 12})
+
+    def test_rulings_pack_preserves_other_download_sizes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            resources = root / 'apple/Muntathir/Resources'
+            resources.mkdir(parents=True)
+            sizes = resources / 'AssetDownloadSizes.json'
+            sizes.write_text(json.dumps({'hadith': 123, 'supplications': 45}))
+            manifest = root / 'rulings.json'
+            def package(arguments, check):
+                self.assertTrue(check)
+                Path(arguments[-1]).write_bytes(b'rulings archive')
+            with patch.object(assets, 'ROOT', root), patch.object(assets, 'validate_rulings', return_value=[manifest]), \
+                 patch.object(assets.subprocess, 'run', side_effect=package), \
+                 patch('sys.argv', ['assets.py', 'package', '--content', 'rulings']):
+                assets.main()
+            self.assertEqual(json.loads(sizes.read_text()), {'hadith': 123, 'supplications': 45, 'rulings': 15})

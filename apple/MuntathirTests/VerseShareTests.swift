@@ -98,9 +98,9 @@ struct VerseShareTests {
         var narration = Hadith(id: 1, collectionID: "book", number: 4, chapter: chapter, arabic: "نص", englishNarrator: "", english: "")
         narration.readingNumber = 123
         let english = HadithShareContent(narration: narration, showEnglish: false, locale: Locale(identifier: "en"))
-        #expect(english.reference == "Book • 123")
-        #expect(english.text.hasSuffix("Book • 123"))
-        #expect(HadithShareContent(narration: narration, showEnglish: false, locale: Locale(identifier: "ar")).reference == "كتاب • 123")
+        #expect(english.reference == "Book · 123")
+        #expect(english.text.hasSuffix("Book · 123"))
+        #expect(HadithShareContent(narration: narration, showEnglish: false, locale: Locale(identifier: "ar")).reference == "كتاب · 123")
         narration = Hadith(id: 1, collectionID: Hadith.supplicationCollectionID, number: 4, chapter: chapter, arabic: "نص", englishNarrator: "", english: "")
         #expect(HadithShareContent(narration: narration, showEnglish: false, locale: Locale(identifier: "en")).reference == "Book · Chapter")
     }
@@ -115,8 +115,8 @@ struct VerseShareTests {
         selected.modifiedAt = Date(timeIntervalSince1970: 2)
         let segments = ShareHighlightText(text: AttributedString(raw), highlights: [selected, whole], block: "arabic").segments
         #expect(segments.map { String($0.text.characters) }.joined() == raw)
-        #expect(segments.first?.color == UIColor(Color.yellow).withAlphaComponent(0.3))
-        #expect(segments.last?.color == UIColor(Color.blue).withAlphaComponent(0.3))
+        #expect(segments.first?.color?.resolvedColor(with: .current) == HighlightColor.yellow.textBackground.resolvedColor(with: .current))
+        #expect(segments.last?.color?.resolvedColor(with: .current) == HighlightColor.blue.textBackground.resolvedColor(with: .current))
         let translation = ShareHighlightText(text: AttributedString(raw), highlights: [selected], block: "en.qarai")
         #expect(translation.segments.allSatisfy { $0.color == nil })
         let stale = ShareHighlightText(text: AttributedString("changed source"), highlights: [selected], block: "arabic")
@@ -141,7 +141,7 @@ struct VerseShareTests {
         let end = (canonical as NSString).range(of: "Second").location + 6
         let saved = try ReadingHighlight(source: "book:1", isHadith: true, block: "english",
                                          ranges: [#require(HighlightRange(NSRange(location: start, length: end - start), in: canonical))],
-                                         excerpt: "", reference: "Book • 123", color: .pink)
+                                         excerpt: "", reference: "Book · 123", color: .pink)
         let first = try #require(HadithText.paragraphs(parsed).first)
         let segments = ShareHighlightText(text: first.text, highlights: [saved], block: "english", sourceText: canonical).segments
         #expect(segments.contains { $0.color != nil && $0.text.runs.contains { $0.inlinePresentationIntent?.contains(.stronglyEmphasized) == true } })

@@ -198,3 +198,35 @@ test("every supported year has crawlable bilingual HTML, headings, anchors, and 
   expect(await Bun.file("dist/calendar/1349/index.html").exists()).toBe(false)
   expect(await Bun.file("dist/en/calendar/1501/index.html").exists()).toBe(false)
 })
+
+for (const locale of ["ar", "en"] as const) {
+  test(`${locale} phone tour ships WebP screenshots and a deferred WebM preview`, async () => {
+    const manifest = await Bun.file("public/marketing/manifest.json").json()
+    const media = manifest[locale]
+    const html = await Bun.file(`dist${paths[locale]}index.html`).text()
+    expect(media.images).toHaveLength(10)
+    expect(new Set(media.images.map((image: { id: string }) => image.id)).size).toBe(10)
+    for (const image of media.images) {
+      expect(image.caption.length).toBeGreaterThan(0)
+      expect(image.height).toBeGreaterThan(image.width)
+      expect(html).toContain(image.src)
+      for (const source of image.srcset.split(", ")) {
+        const [path, width] = source.split(" ")
+        expect(path.endsWith(".webp")).toBe(true)
+        expect(["286w", "572w", "858w"]).toContain(width)
+        const bytes = new Uint8Array(await Bun.file(`dist${path}`).arrayBuffer())
+        expect(new TextDecoder().decode(bytes.slice(0, 4))).toBe("RIFF")
+        expect(new TextDecoder().decode(bytes.slice(8, 12))).toBe("WEBP")
+      }
+    }
+    expect(media.video.src.endsWith(".webm")).toBe(true)
+    expect(await Bun.file(`dist${media.video.src}`).exists()).toBe(true)
+    expect(html).toContain(`data-src="${media.video.src}"`)
+    expect(html).not.toContain(` src="${media.video.src}"`)
+    expect(html).toContain('preload="none"')
+    expect(html).toContain('data-preview-step="-1"')
+    expect(html).toContain('data-preview-step="1"')
+    expect(html).toContain("data-preview-controls hidden")
+    expect(html.match(/data-active="true"/g)).toHaveLength(1)
+  })
+}

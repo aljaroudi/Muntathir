@@ -2,6 +2,7 @@ import SwiftUI
 
 struct QuranChapterView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.isSearching) private var isSearching
     @State private var textSizePresented = false
     let surah: QuranSurah
     var initialVerse = 1
@@ -67,6 +68,7 @@ struct QuranChapterView: View {
         }
         .environment(\.focusedHighlight, focusReady ? highlight : nil)
         .readingBackground()
+        .trackReading(.quranReading, enabled: !loading && !failed && !verses.isEmpty && !isSearching && !textSizePresented)
         .navigationTitle(surah.title(locale: locale))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -78,6 +80,8 @@ struct QuranChapterView: View {
                 } label: {
                     Label("Reading options", systemImage: "textformat")
                 }.accessibilityIdentifier("quran-reading-options")
+                    .appTip(.translations)
+                    .appTip(.reading)
                     .readingSizePresentation(isPresented: $textSizePresented, compact: sizeClass != .regular)
             }
         }

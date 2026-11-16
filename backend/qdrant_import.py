@@ -10,13 +10,15 @@ import uuid
 from ingest import PROFILE, digest, atomic_json, validate_vector, normalize
 
 SERVING_PROFILE = 'gemini-embedding-2:1536:search-v1'
+POINT_BATCH_BYTES = 32 * 1024 * 1024
 
 class Client:
-    def __init__(self, url=None):
+    def __init__(self, url=None, api_key=None):
+        self.api_key = api_key if api_key is not None else os.environ.get('QDRANT_API_KEY')
         self.url = (url or os.environ.get('QDRANT_URL', 'http://127.0.0.1:56333')).rstrip('/')
     def call(self, method, path, body=None):
         headers = {'Content-Type':'application/json'}
-        if os.environ.get('QDRANT_API_KEY'): headers['api-key'] = os.environ['QDRANT_API_KEY']
+        if self.api_key: headers['api-key'] = self.api_key
         request = urllib.request.Request(self.url + path, data=None if body is None else json.dumps(body).encode(), headers=headers, method=method)
         with urllib.request.urlopen(request, timeout=120) as response:
             return json.load(response)['result']
@@ -32,6 +34,7 @@ def compact(item):
     if kind=='quran': return {'kind':kind,'chapter':nav['chapter'],'verse':nav['verse']}
     if kind=='hadith': return {'kind':kind,'book':nav['book'],'chapter':nav['chapterFile'],'number':nav['number']}
     if kind=='dua': return {'kind':kind,'id':nav['dua_id']}
+    if kind=='rulings': return {'kind':kind, 'authority':nav['authority'], 'language':nav['language'], 'id':nav['id']}
     raise ValueError('Unknown content kind')
 
 def load_manifest(work):
@@ -72,6 +75,23 @@ def backfill_eligibility(work, client, collection=None):
             client.call('POST', f'/collections/{collection}/points/payload?wait=true', {'points': ids[start:start + 256], 'payload': {'search_eligible': eligible}})
     return collection
 
+def point_batches(points):
+    batch = []
+    size = len(json.dumps({'points': []}))
+    for point in points:
+        # Client.call uses the same ASCII JSON encoding.
+        point_size = len(json.dumps(point)) + 2
+        if batch and size + point_size > POINT_BATCH_BYTES:
+            yield batch
+            batch = []
+            size = len(json.dumps({'points': []}))
+        if size + point_size > POINT_BATCH_BYTES:
+            raise ValueError(f"Point {point['id']} exceeds the Qdrant request limit")
+        batch.append(point)
+        size += point_size
+    if batch:
+        yield batch
+
 def import_corpus(work, client):
     manifest=load_manifest(work)
     eligibility=search_eligibility(manifest)
@@ -97,7 +117,8 @@ def import_corpus(work, client):
                 'ref':compact(item),'revision':manifest['revision'],'profile':SERVING_PROFILE,'manifest_hash':fingerprint,
                 'text_revision':text,'source':sources[item['source_id']],'title':item['title'],'reference':item['reference']}
             points.append({'id':p['id'],'vector':vector,'payload':payload})
-        client.call('PUT',f'/collections/{collection}/points?wait=true',{'points':points})
+        for batch in point_batches(points):
+            client.call('PUT',f'/collections/{collection}/points?wait=true',{'points':batch})
         progress={'hash':fingerprint,'url':client.url,'collection':collection,'offset':start+len(points),'validated':False}
         atomic_json(path,progress)
         if start%4096==0:print(f"Imported {progress['offset']}/{len(manifest['passages'])}",flush=True)

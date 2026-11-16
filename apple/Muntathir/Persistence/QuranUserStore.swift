@@ -105,12 +105,17 @@ import SwiftData
         }.sorted { $0.modifiedAt == $1.modifiedAt ? $0.id > $1.id : $0.modifiedAt > $1.modifiedAt }
     }
 
-    func bookmark(for source: String, isHadith: Bool = false) -> ReadingBookmark? {
-        bookmarks.first { $0.source == source && $0.isHadith == isHadith }
+    func bookmark(for source: String, isHadith: Bool = false, ruling: Rulings.ID? = nil) -> ReadingBookmark? {
+        bookmarks.first { $0.source == source && $0.isHadith == isHadith && $0.ruling == ruling }
     }
 
     func save(_ bookmark: ReadingBookmark, now: Date = .now) throws {
         guard !bookmark.source.isEmpty else { throw QuranUserStoreError.invalidBookmark }
+        if let ruling = bookmark.ruling {
+            guard !ruling.authority.isEmpty, !ruling.language.isEmpty, ruling.siteID == bookmark.source else {
+                throw QuranUserStoreError.invalidBookmark
+            }
+        }
         try update(bookmark, deleted: false, now: now)
     }
 

@@ -41,7 +41,7 @@ struct IslamicEvent: Codable, Identifiable, Hashable, Sendable {
     /// Localized AH year for separate SwiftUI presentation; `nil` when the source has no year.
     func yearText(locale: Locale) -> String? {
         guard let year else { return nil }
-        let format = bundle(for: locale).localizedString(forKey: "%lld AH", value: nil, table: nil)
+        let format = String(localized: "%lld AH", bundle: bundle(for: locale), locale: locale)
         return String(format: format, locale: locale, year)
     }
 }
@@ -82,6 +82,7 @@ struct ContentLibrary: Sendable {
     }
 
     func nextEventDate(onOrAfter date: Date, engine: CalendarEngine) -> Date? {
+        guard !events.isEmpty else { return nil }
         let today = engine.gregorian.startOfDay(for: date)
         let month = engine.resolve(today).month
         return (0 ... 12).lazy.compactMap { offset -> Date? in
@@ -90,6 +91,31 @@ struct ContentLibrary: Sendable {
                 $0 >= today && !events(on: engine.resolve($0)).isEmpty
             }
         }.first
+    }
+
+    enum EventTiming: Equatable {
+        case today, tonight, tomorrow, countdown(Duration)
+    }
+
+    func upcomingEvent(on date: Date, engine: CalendarEngine, sunset: (Date) -> Date?)
+        -> (events: [IslamicEvent], timing: EventTiming)?
+    {
+        let today = engine.gregorian.startOfDay(for: date)
+        let tomorrow = engine.addingDays(1, to: today)
+        let todaySunset = sunset(today)
+        let firstDay = date >= (todaySunset ?? tomorrow) ? tomorrow : today
+        guard let eventDate = nextEventDate(onOrAfter: firstDay, engine: engine) else { return nil }
+
+        let timing: EventTiming
+        if eventDate == today {
+            timing = .today
+        } else if eventDate == tomorrow {
+            timing = todaySunset == nil ? .tomorrow : .tonight
+        } else {
+            let openingSunset = sunset(engine.addingDays(-1, to: eventDate))
+            timing = .countdown(.seconds((openingSunset ?? eventDate).timeIntervalSince(date)))
+        }
+        return (events(on: engine.resolve(eventDate)), timing)
     }
 
     static func verseDay(on date: Date, engine: CalendarEngine, prayerSettings: WidgetPrayerSettings? = nil) -> ResolvedDay {

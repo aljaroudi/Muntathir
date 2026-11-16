@@ -2,7 +2,7 @@ import XCTest
 
 final class CalendarUITests: XCTestCase {
     @MainActor private func openAdjustments(_ app: XCUIApplication) {
-        app.buttons["settings"].firstMatch.tap()
+        app.openSettingsFromTools()
         let link = app.buttons["month-adjustments"]
         for _ in 0 ..< 8 {
             if link.isHittable {
@@ -173,7 +173,7 @@ final class CalendarUITests: XCTestCase {
             XCTAssertTrue(stepper.waitForExistence(timeout: 5))
             stepper.buttons["month-offset-Increment"].tap()
             app.buttons[language == "ar" ? "حفظ" : "Save"].tap()
-            app.buttons[language == "ar" ? "تم" : "Done"].tap()
+            app.leaveSettings(for: "calendar")
             XCTAssertTrue(jump.waitForExistence(timeout: 5))
             jump.tap()
             app.buttons["calendar-day-1448-9-1"].tap()
@@ -252,25 +252,18 @@ extension CalendarUITests {
         }
     }
 
-    @MainActor func testCalendarMethodAndLocalizedSaudiCountry() {
+    @MainActor func testCalendarSettingsOnlyExposeManualAdjustments() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.buttons["Settings"].firstMatch.tap()
-        let method = app.buttons["calendar-method"]
-        XCTAssertTrue(method.waitForExistence(timeout: 5))
-        method.tap()
-        app.buttons["Local naked eye"].tap()
-        XCTAssertTrue(app.staticTexts["Middle East"].exists)
-        XCTAssertFalse(app.buttons["calendar-country"].exists)
-        method.tap()
-        app.buttons["Government announcement"].tap()
-        let country = app.descendants(matching: .any).matching(identifier: "calendar-country").firstMatch
-        XCTAssertTrue(country.waitForExistence(timeout: 5))
-        XCTAssertTrue(country.label.contains("Saudi Arabia"))
-        XCTAssertFalse(app.buttons["calendar-country"].exists)
-        method.tap()
-        app.buttons["System calendar"].tap()
+        app.openSettingsFromTools()
+        let adjustments = app.buttons["month-adjustments"]
+        for _ in 0 ..< 5 where !adjustments.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(adjustments.isHittable)
+        XCTAssertFalse(app.buttons["calendar-method"].exists)
+        XCTAssertFalse(app.staticTexts["Middle East"].exists)
         XCTAssertFalse(app.buttons["calendar-country"].exists)
     }
 }

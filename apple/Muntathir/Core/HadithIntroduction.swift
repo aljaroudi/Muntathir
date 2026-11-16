@@ -10,10 +10,6 @@ struct HadithIntroduction: Identifiable, Hashable, Sendable {
 
     var readingWords = 0
 
-    var hasSpecificTitle: Bool {
-        !["", "introduction", "مقدمة", "المقدمة"].contains(title.lowercased())
-    }
-
     func bookTitle(locale: Locale) -> String {
         locale.language.languageCode?.identifier == "ar" || bookEnglish.isEmpty ? bookArabic : bookEnglish
     }

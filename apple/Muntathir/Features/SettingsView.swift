@@ -3,7 +3,6 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale
     private var settingsDate: Date {
         #if DEBUG
@@ -14,166 +13,172 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section { AppLanguageLink() }
-                Section { ReadingSizeControls() }
-                Section {
-                    NavigationLink("Downloads") { DownloadsSettingsView() }
-                        .accessibilityIdentifier("settings-downloads")
+        Form {
+            Section { AppLanguageLink() }
+            Section {
+                NavigationLink {
+                    TabsSettingsView()
+                } label: {
+                    Label("Tabs", systemImage: "square.grid.2x2")
                 }
-                Section {
-                    NavigationLink {
-                        LocationPicker()
-                    } label: {
-                        LabeledContent(
-                            "Location",
-                            value: model.location?.name
+                .accessibilityIdentifier("settings-tabs")
+            }
+            Section {
+                ReadingSizeControls()
+                NavigationLink {
+                    HighlightPaletteSettings()
+                } label: {
+                    Label("Highlight colors", systemImage: "paintpalette")
+                }
+                .accessibilityIdentifier("settings-highlight-colors")
+            }
+            Section {
+                NavigationLink {
+                    DownloadsSettingsView()
+                } label: {
+                    Label("Downloads", systemImage: "arrow.down.circle")
+                }
+                .accessibilityIdentifier("settings-downloads")
+            }
+            Section {
+                NavigationLink {
+                    LocationPicker()
+                } label: {
+                    LabeledContent {
+                        Text(
+                            model.location?.name
                                 ?? String(localized: "Not selected")
                         )
-                    }
-                } header: {
-                    Text("Location")
-                } footer: {
-                    if model.liveLocation != nil {
-                        Text("Device location stays on this device.")
+                    } label: {
+                        Label("Location", systemImage: "location")
                     }
                 }
-                Section {
-                    Picker(
-                        "Method",
-                        selection: Binding(
-                            get: { model.preferences.prayerMethod },
-                            set: { value in
-                                model.update { $0.prayerMethod = value }
-                            }
-                        )
-                    ) {
-                        ForEach(PrayerMethod.allCases) {
-                            Text($0.title).tag($0)
-                        }
-                    }
-                    Stepper(value: Binding(get: { model.preferences.imsakMinutes }, set: { value in
-                        model.update { $0.imsakMinutes = value }
-                    }), in: 0 ... 120) {
-                        LabeledContent(
-                            "Imsak before Fajr",
-                            value: Duration.seconds(model.preferences.imsakMinutes * 60),
-                            format: .units(allowed: [.minutes], width: .wide)
-                        )
-                    }
-                } header: {
-                    Text("Prayer calculations")
-                } footer: {
-                    Text("Imsak is a precaution before calculated Fajr.")
-                }
-                Section {
-                    Picker("Method", selection: Binding(
-                        get: { CalendarSource.method(for: model.preferences.selectedSourceID) },
-                        set: { method in
-                            model.update {
-                                switch method {
-                                case .system: $0.selectedSourceID = nil
-                                case .nakedEye: $0.selectedSourceID = CalendarSource.middleEast
-                                case .government: $0.selectedSourceID = "government-SA"
-                                }
-                            }
-                        }
-                    )) {
-                        ForEach(CalendarMethod.allCases) { method in
-                            Text(method.title).tag(method)
-                        }
-                    }
-                    .accessibilityIdentifier("calendar-method")
-                    switch CalendarSource.method(for: model.preferences.selectedSourceID) {
-                    case .system:
-                        LabeledContent("Baseline", value: String(localized: "Umm al-Qura"))
-                    case .nakedEye:
-                        LabeledContent { Text("Middle East") } label: { Text("Region") }
-                    case .government:
-                        LabeledContent("Country", value: locale.localizedString(forRegionCode: "SA") ?? "SA")
-                            .accessibilityIdentifier("calendar-country")
-                    }
-                    NavigationLink("Month adjustments") {
-                        let month = model.engine.resolve(settingsDate).month
-                        MonthAdjustmentsView(month: month, offset: model.preferences.monthOffsets.first { $0.month == month }?.days ?? 0)
-                    }
-                    .accessibilityIdentifier("month-adjustments")
-                } header: {
-                    Text("Calendar corrections")
-                } footer: {
-                    Text("Without a published announcement, dates use the system calendar. Adjust individual months in Month adjustments.")
-                    if let error = model.error {
-                        Text(error).foregroundStyle(.red)
-                    }
-                }
-                Section("Weather") {
-                    Toggle("Show feels-like temperature", isOn: Binding(
-                        get: { model.preferences.showFeelsLikeTemperature },
-                        set: { value in model.update { $0.showFeelsLikeTemperature = value } }
-                    ))
-                }
-                Section("Prayers") {
-                    NavigationLink("Visibility") { PrayerVisibilitySettings() }
-                    NavigationLink("Notifications") { PrayerNotificationSettings() }
-                }
-                Section {
-                    Toggle(
-                        "Month confirmations",
-                        isOn: Binding(
-                            get: {
-                                model.preferences.announcementNotifications
-                            },
-                            set: { value in
-                                Task {
-                                    let allowed =
-                                        value
-                                            ? await model.notifications.authorize()
-                                            : true
-                                    if allowed {
-                                        model.update {
-                                            $0.announcementNotifications = value
-                                        }
-                                    } else {
-                                        model.error = String(
-                                            localized:
-                                            "Notifications are disabled. Enable them in system Settings."
-                                        )
-                                    }
-                                }
-                            }
-                        )
-                    )
-                } header: {
-                    Text("Announcement notifications")
-                } footer: {
-                    Text(
-                        "Alerts follow published month announcements after a successful refresh; delivery is not immediate."
-                    )
-                }
-                Section {
-                    Toggle("Calendar events", isOn: Binding(get: { model.preferences.calendarEventNotifications }, set: { enabled in
-                        Task {
-                            let allowed = enabled ? await model.notifications.authorize() : true
-                            if allowed {
-                                model.update { $0.calendarEventNotifications = enabled }
-                            } else {
-                                model.error = String(localized: "Notifications are disabled. Enable them in system Settings.")
-                            }
-                        }
-                    }))
-                } footer: {
-                    Text("Silent reminders at sunset for observances beginning this evening.")
-                }
-                Section {} footer: {
-                    Text("Settings sync through iCloud when available. Live GPS and notification permissions stay on this device.")
-                }
-            }.navigationTitle("Settings").toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
+            } header: {
+                Text("Location")
+            } footer: {
+                if model.liveLocation != nil {
+                    Text("Device location stays on this device.")
                 }
             }
+            Section {
+                Picker(
+                    "Prayer calculations",
+                    selection: Binding(
+                        get: { model.preferences.prayerMethod },
+                        set: { value in
+                            model.update { $0.prayerMethod = value }
+                        }
+                    )
+                ) {
+                    ForEach(PrayerMethod.allCases) {
+                        Text($0.title).tag($0)
+                    }
+                }
+                Stepper(value: Binding(get: { model.preferences.imsakMinutes }, set: { value in
+                    model.update { $0.imsakMinutes = value }
+                }), in: 0 ... 30) {
+                    LabeledContent(
+                        "Imsak before Fajr",
+                        value: Duration.seconds(model.preferences.imsakMinutes * 60),
+                        format: .units(allowed: [.minutes], width: .wide)
+                    )
+                }
+            } header: {
+                Text("Prayer calculations")
+            } footer: {
+                Text("Imsak is a precaution before calculated Fajr.")
+            }
+            Section {
+                NavigationLink {
+                    let month = model.engine.resolve(settingsDate).month
+                    MonthAdjustmentsView(month: month, offset: model.preferences.monthOffsets.first { $0.month == month }?.days ?? 0)
+                } label: {
+                    Label("Month adjustments", systemImage: "calendar")
+                }
+                .accessibilityIdentifier("month-adjustments")
+            } header: {
+                Text("Calendar")
+            } footer: {
+                if let error = model.error {
+                    Text(error).foregroundStyle(.red)
+                }
+            }
+            Section("Weather") {
+                Toggle(isOn: Binding(
+                    get: { model.preferences.showFeelsLikeTemperature },
+                    set: { value in model.update { $0.showFeelsLikeTemperature = value } }
+                )) {
+                    Label("Show feels-like temperature", systemImage: "thermometer.medium")
+                }
+            }
+            Section("Prayers") {
+                NavigationLink {
+                    PrayerVisibilitySettings()
+                } label: {
+                    Label("Visibility", systemImage: "eye")
+                }
+                NavigationLink {
+                    PrayerNotificationSettings()
+                } label: {
+                    Label("Notifications", systemImage: "bell")
+                }
+            }
+            Section {
+                Toggle(
+                    isOn: Binding(
+                        get: {
+                            model.preferences.announcementNotifications
+                        },
+                        set: { value in
+                            Task {
+                                let allowed =
+                                    value
+                                        ? await model.notifications.authorize()
+                                        : true
+                                if allowed {
+                                    model.update {
+                                        $0.announcementNotifications = value
+                                    }
+                                } else {
+                                    model.error = String(
+                                        localized:
+                                        "Notifications are disabled. Enable them in system Settings."
+                                    )
+                                }
+                            }
+                        }
+                    )
+                ) {
+                    Label("Month confirmations", systemImage: "megaphone")
+                }
+            } header: {
+                Text("Announcement notifications")
+            } footer: {
+                Text(
+                    "Alerts follow published month announcements after a successful refresh; delivery is not immediate."
+                )
+            }
+            Section {
+                Toggle(isOn: Binding(get: { model.preferences.calendarEventNotifications }, set: { enabled in
+                    Task {
+                        let allowed = enabled ? await model.notifications.authorize() : true
+                        if allowed {
+                            model.update { $0.calendarEventNotifications = enabled }
+                        } else {
+                            model.error = String(localized: "Notifications are disabled. Enable them in system Settings.")
+                        }
+                    }
+                })) {
+                    Label("Calendar events", systemImage: "calendar.badge.clock")
+                }
+            } footer: {
+                Text("Silent reminders at sunset for observances beginning this evening.")
+            }
+            Section {} footer: {
+                Text("Settings sync through iCloud when available. Live GPS and notification permissions stay on this device.")
+            }
         }
+        .navigationTitle("Settings")
     }
 }
 
@@ -205,6 +210,7 @@ struct LocationPicker: View {
             ForEach(model.locationService.results, id: \.self) { item in
                 Button {
                     if let location = model.locationService.saved(item) {
+                        SearchHistory.shared.record(query, in: .locations)
                         usingDeviceLocation = false
                         model.select(location)
                         dismiss()
@@ -234,6 +240,7 @@ struct LocationPicker: View {
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: "Search for a city"
         )
+        .searchHistory(query, area: .locations)
         .task(id: query) {
             do {
                 try await Task.sleep(for: .milliseconds(350))
@@ -272,10 +279,12 @@ struct PrayerNotificationSettings: View {
     var body: some View {
         Form {
             Section {
-                Toggle("Time Sensitive", isOn: Binding(get: { model.preferences.timeSensitiveNotifications }, set: { value in
+                Toggle(isOn: Binding(get: { model.preferences.timeSensitiveNotifications }, set: { value in
                     model.update { $0.timeSensitiveNotifications = value }
-                }))
-                Button("System notification settings") {
+                })) {
+                    Label("Time Sensitive", systemImage: "bell.badge")
+                }
+                Button("System notification settings", systemImage: "gear") {
                     if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
                         openURL(url)
                     }

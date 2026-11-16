@@ -44,13 +44,11 @@ struct DailyAyahWidgetView: View {
         Group {
             if let ayah = entry.ayah {
                 ViewThatFits(in: .vertical) {
-                    ayahContent(ayah, heading: !isAccessory, translation: !isAccessory, lines: 2)
+                    ayahContent(ayah, translation: !isAccessory, lines: 2)
                         .fixedSize(horizontal: false, vertical: true)
-                    ayahContent(ayah, heading: false, translation: !isAccessory, lines: 2)
+                    ayahContent(ayah, translation: false, lines: 2)
                         .fixedSize(horizontal: false, vertical: true)
-                    ayahContent(ayah, heading: false, translation: false, lines: 2)
-                        .fixedSize(horizontal: false, vertical: true)
-                    ayahContent(ayah, heading: false, translation: false, lines: 1)
+                    ayahContent(ayah, translation: false, lines: 1)
                 }
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text([ayah.text, isAccessory ? nil : entry.translation.flatMap { ayah.translations[$0.id] }, QuranReference.display(ayah.id, locale: locale)].compactMap(\.self).joined(separator: " ")))
@@ -58,6 +56,7 @@ struct DailyAyahWidgetView: View {
                 Text("Verse unavailable").font(.caption)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .containerBackground(for: .widget) {
             if isAccessory {
                 Color.clear
@@ -71,16 +70,12 @@ struct DailyAyahWidgetView: View {
         }
     }
 
-    private func ayahContent(_ ayah: Ayah, heading: Bool, translation: Bool, lines: Int) -> some View {
-        VStack(alignment: .leading, spacing: isAccessory ? 2 : 6) {
-            if heading {
-                Label("Daily ayah", systemImage: "book.closed")
-                    .font(.subheadline.weight(.medium)).lineLimit(1)
-            }
+    private func ayahContent(_ ayah: Ayah, translation: Bool, lines: Int) -> some View {
+        VStack(spacing: isAccessory ? 2 : 6) {
             Text(ayah.text)
                 .font(.custom("KFGQPCHAFSUthmanicScript-Regula", size: isAccessory ? 17 : 28, relativeTo: isAccessory ? .body : .title2))
                 .lineSpacing(isAccessory ? 0 : 2)
-                .multilineTextAlignment(.center)
+                .multilineTextAlignment(.leading)
                 .environment(\.layoutDirection, .rightToLeft)
                 .lineLimit(lines)
                 .truncationMode(.tail)
@@ -89,6 +84,8 @@ struct DailyAyahWidgetView: View {
                 Text(text)
                     .font(.caption)
                     .environment(\.layoutDirection, Locale(identifier: selected.language).language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity)
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
             }

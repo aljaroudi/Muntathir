@@ -3,18 +3,12 @@ import SwiftUI
 struct HadithIntroductionRow: View {
     let introduction: HadithIntroduction
     let reader: HadithReader
-    @Environment(\.locale) private var locale
 
     var body: some View {
         NavigationLink {
             HadithIntroductionView(introduction: introduction, reader: reader)
         } label: {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Introduction").font(.headline)
-                if introduction.hasSpecificTitle {
-                    Text(introduction.title).font(.subheadline)
-                }
-            }
+            Text("Introduction").font(.headline)
         }
         .accessibilityIdentifier("hadith-introduction-\(introduction.id)")
     }
@@ -23,8 +17,7 @@ struct HadithIntroductionRow: View {
 struct HadithIntroductionView: View {
     let introduction: HadithIntroduction
     let reader: HadithReader
-    @AppStorage("hadithEnglishEnabled") private var showEnglish = true
-    @Environment(\.locale) private var locale
+    @AppStorage("hadithEnglishEnabled.v2") private var showEnglish = SupplicationTranslation.prefersEnglish()
     @State private var textSizePresented = false
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var loading = true
@@ -40,9 +33,6 @@ struct HadithIntroductionView: View {
                     ProgressView()
                 } else if failed {
                     HadithLoadError { retry += 1 }
-                }
-                if introduction.hasSpecificTitle {
-                    Text(introduction.title).font(.subheadline)
                 }
                 if !arabic.characters.isEmpty {
                     HadithMarkdownView(text: arabic, arabic: true)

@@ -3,7 +3,7 @@ import XCTest
 final class QuranUITests: XCTestCase {
     @MainActor private func openQuran(arabic: Bool = false, largeText: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-testing", "-quranTranslationSelection", "auto", "-AppleLanguages", arabic ? "(ar)" : "(en)", "-AppleLocale", arabic ? "ar_SA" : "en_US"]
+        app.launchArguments = ["--ui-testing", "-quranTranslationSelection.v2", "auto", "-AppleLanguages", arabic ? "(ar)" : "(en)", "-AppleLocale", arabic ? "ar_SA" : "en_US"]
         if largeText {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         }
@@ -30,6 +30,20 @@ final class QuranUITests: XCTestCase {
         if text == "255" {
             XCTAssertTrue(app.buttons["quran-result-2:255"].waitForExistence(timeout: 5))
         }
+    }
+
+    @MainActor func testPassageSearchWaitsForSubmit() {
+        let app = openQuran()
+        let field = app.searchFields.firstMatch
+        if !field.exists {
+            app.swipeDown()
+        }
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.tap()
+        field.typeText("2:255")
+        XCTAssertFalse(app.buttons["quran-result-2:255"].waitForExistence(timeout: 1))
+        field.typeText("\n")
+        XCTAssertTrue(app.buttons["quran-result-2:255"].waitForExistence(timeout: 5))
     }
 
     @MainActor func testQuranListShowsDistinctReadingTime() {
@@ -160,15 +174,18 @@ final class QuranUITests: XCTestCase {
         for _ in 0 ..< 2 {
             for destination in Array(3 ... 7) + Array((2 ... 6).reversed()) {
                 if destination > number {
-                    app.swipeRight(velocity: .fast)
+                    app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5))
+                        .press(forDuration: 0.02, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5)))
                 } else {
-                    app.swipeLeft(velocity: .fast)
+                    app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5))
+                        .press(forDuration: 0.02, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5)))
                 }
                 guard settled(destination) else { return }
                 number = destination
             }
         }
-        app.swipeRight(velocity: .fast)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5))
+            .press(forDuration: 0.02, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5)))
         guard settled(3) else { return }
         let screenshot = XCTAttachment(screenshot: app.screenshot())
         screenshot.name = "Justified Mushaf after repeated paging"
@@ -184,9 +201,13 @@ final class QuranUITests: XCTestCase {
         let firstPage = app.descendants(matching: .any)["quran-page-1"].firstMatch
         XCTAssertTrue(firstPage.waitForExistence(timeout: 5))
         XCTAssertEqual(firstPage.frame.midX, app.frame.midX, accuracy: 4)
-        firstPage.swipeRight()
-        XCTAssertTrue(app.descendants(matching: .any)["quran-page-2"].firstMatch.waitForExistence(timeout: 5))
-        XCTAssertEqual(app.descendants(matching: .any)["quran-page-2"].firstMatch.frame.midX, app.frame.midX, accuracy: 4)
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5))
+        start.press(forDuration: 0.02, thenDragTo: end)
+        let secondPage = app.descendants(matching: .any)["quran-page-2"].firstMatch
+        XCTAssertTrue(secondPage.waitForExistence(timeout: 5))
+        let centered = NSPredicate { _, _ in abs(secondPage.frame.midX - app.frame.midX) < 4 }
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: centered, object: nil)], timeout: 5), .completed)
         search("255", in: app)
         XCTAssertTrue(app.buttons["quran-result-2:255"].exists)
         app.navigationBars.buttons.matching(NSPredicate(format: "label ==[c] %@ OR label ==[c] %@", "close", "cancel")).firstMatch.tap()
@@ -330,7 +351,8 @@ final class QuranUITests: XCTestCase {
         app.swipeRight(velocity: .fast)
         let next = app.descendants(matching: .any)["quran-page-3"].firstMatch
         XCTAssertTrue(next.waitForExistence(timeout: 5))
-        XCTAssertEqual(next.frame.midX, app.frame.midX, accuracy: 4)
+        let centered = NSPredicate { _, _ in abs(next.frame.midX - app.frame.midX) < 4 }
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: centered, object: nil)], timeout: 5), .completed)
         let justified = XCTAttachment(screenshot: app.screenshot())
         justified.name = "Native justified page"
         justified.lifetime = .keepAlways
@@ -353,26 +375,56 @@ final class QuranUITests: XCTestCase {
 
     @MainActor func testSettingsOffersDownloadManagement() {
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launchEnvironment["HADITH_DOWNLOADS_FIXTURE"] = UUID().uuidString
         app.launch()
-        app.buttons["settings"].firstMatch.tap()
+        app.openSettingsFromTools()
         app.buttons["settings-downloads"].tap()
-        XCTAssertTrue(app.buttons["downloads-actions"].waitForExistence(timeout: 10))
-        XCTAssertFalse(app.buttons["downloads-remove-hadith"].exists)
-        XCTAssertFalse(app.descendants(matching: .any)["downloads-bundled-ar"].firstMatch.exists)
+
+        let size = app.descendants(matching: .any)["downloads-size-hadith"].firstMatch
+        let books = app.buttons["Books"].firstMatch
+        let book = app.staticTexts["Test book"]
+        XCTAssertTrue(size.waitForExistence(timeout: 10))
+        XCTAssertTrue(books.exists)
+        XCTAssertFalse(book.exists)
         XCTAssertTrue(app.descendants(matching: .any)["downloads-bundled-en"].firstMatch.exists)
         XCTAssertTrue(app.buttons["downloads-get-de.bubenheim"].exists)
-        let screenshot = XCTAttachment(screenshot: app.screenshot())
-        screenshot.name = "Downloads settings"
-        screenshot.lifetime = .keepAlways
-        add(screenshot)
+
+        books.tap()
+        XCTAssertTrue(book.waitForExistence(timeout: 5))
+        book.swipeLeft()
+        let removeBook = app.buttons["downloads-remove-book-bukhari"]
+        XCTAssertTrue(removeBook.waitForExistence(timeout: 5))
+        removeBook.tap()
+        XCTAssertTrue(app.buttons["downloads-get-book-bukhari"].waitForExistence(timeout: 5))
+
+        books.tap()
+        app.swipeDown()
+        XCTAssertTrue(size.isHittable)
+        let trailing = size.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5))
+        let leading = size.coordinate(withNormalizedOffset: CGVector(dx: 0.1, dy: 0.5))
+        trailing.press(forDuration: 0.05, thenDragTo: leading)
+        let removeHadith = app.buttons["downloads-remove-hadith"]
+        XCTAssertTrue(removeHadith.waitForExistence(timeout: 5))
+        removeHadith.tap()
+        XCTAssertTrue(app.buttons["downloads-get-hadith"].waitForExistence(timeout: 5))
+        XCTAssertFalse(size.exists)
+
+        app.terminate()
+        app.launchArguments.append("--ui-testing-preserve-state")
+        app.launchEnvironment["HADITH_DOWNLOADS_FIXTURE"] = UUID().uuidString
+        app.launch()
+        app.openSettingsFromTools()
+        app.buttons["settings-downloads"].tap()
+        XCTAssertTrue(app.buttons["downloads-get-hadith"].waitForExistence(timeout: 5))
+        XCTAssertFalse(size.exists)
     }
 
     @MainActor func testSearchReferenceAndNavigateToVerse() {
         let app = openQuran()
         let search = app.searchFields.firstMatch
         search.tap()
-        search.typeText("2:255")
+        search.typeText("2:255\n")
         let result = app.buttons["quran-result-2:255"]
         XCTAssertTrue(result.waitForExistence(timeout: 10))
         result.tap()
@@ -386,7 +438,7 @@ final class QuranUITests: XCTestCase {
         XCTAssertFalse(app.descendants(matching: .any)["quran-translation-1:1"].firstMatch.exists)
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.searchFields.firstMatch.tap()
-        app.searchFields.firstMatch.typeText("الله")
+        app.searchFields.firstMatch.typeText("الله\n")
         let result = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "quran-result-")).firstMatch
         XCTAssertTrue(result.waitForExistence(timeout: 10))
         let screenshot = XCTAttachment(screenshot: app.screenshot())

@@ -52,21 +52,28 @@ struct TodayView: View {
                     .filter { model.preferences.isVisible($0.name) }
             } ?? []
             TodayPage(transparentBackground: sun != nil) {
-                if let location = model.location {
-                    let tomorrow = engine.addingDays(1, to: now)
-                    let next =
-                        (prayers
-                            + PrayerCalculator.times(
-                                on: tomorrow,
-                                location: location,
-                                method: model.preferences.prayerMethod,
-                                imsakMinutes: model.preferences.imsakMinutes
-                            )).first {
-                            $0.name.isPrayer
-                                && model.preferences.isVisible($0.name)
-                                && $0.date > now
-                        }
-                    Card(skyBackground: sun != nil) {
+                Card(skyBackground: sun != nil, spacing: 8) {
+                    let dateStyle = Date.FormatStyle(locale: locale, calendar: engine.gregorian, timeZone: engine.timeZone)
+                    Text(now.formatted(dateStyle.weekday(.abbreviated).month(.abbreviated).day()))
+                        .font(.headline)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                        .accessibilityAddTraits(.isHeader)
+                        .accessibilityIdentifier("gregorian-date")
+                    if let location = model.location {
+                        let tomorrow = engine.addingDays(1, to: now)
+                        let next =
+                            (prayers
+                                + PrayerCalculator.times(
+                                    on: tomorrow,
+                                    location: location,
+                                    method: model.preferences.prayerMethod,
+                                    imsakMinutes: model.preferences.imsakMinutes
+                                )).first {
+                                $0.name.isPrayer
+                                    && model.preferences.isVisible($0.name)
+                                    && $0.date > now
+                            }
                         if prayers.isEmpty {
                             ContentUnavailableView {
                                 Label("Prayer Times Unavailable", systemImage: "clock")
@@ -77,65 +84,69 @@ struct TodayView: View {
                                     LocationPicker()
                                 }
                             }
-                        }
-                        VStack(spacing: 16) {
-                            ForEach(prayers) { prayer in
-                                let rowLayout = typeSize.isAccessibilitySize
-                                    ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
-                                    : AnyLayout(HStackLayout(spacing: 8))
-                                rowLayout {
+                        } else {
+                            Divider()
+                            VStack(spacing: 16) {
+                                ForEach(prayers) { prayer in
+                                    let rowLayout = typeSize.isAccessibilitySize
+                                        ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+                                        : AnyLayout(HStackLayout(spacing: 8))
                                     rowLayout {
-                                        Label {
-                                            Text(prayer.name.title)
-                                        } icon: {
-                                            Image(systemName: prayer.name.symbol)
-                                                .frame(width: prayerSymbolWidth)
+                                        rowLayout {
+                                            Label {
+                                                Text(prayer.name.title)
+                                            } icon: {
+                                                Image(systemName: prayer.name.symbol)
+                                                    .frame(width: prayerSymbolWidth)
+                                            }
+                                            if !typeSize.isAccessibilitySize {
+                                                Spacer(minLength: 8)
+                                            }
+                                            if prayer.name == next?.name, let next {
+                                                Text(PrayerCountdownFormat(target: next.date, locale: locale).format(now))
+                                                    .font(.caption).monospacedDigit()
+                                                    .padding(.horizontal, 8).padding(.vertical, 4)
+                                                    .background(Color.accentColor.opacity(0.1), in: .capsule)
+                                            }
                                         }
-                                        if !typeSize.isAccessibilitySize {
-                                            Spacer(minLength: 8)
-                                        }
-                                        if prayer.name == next?.name, let next {
-                                            Text(PrayerCountdownFormat(target: next.date, locale: locale).format(now))
-                                                .font(.caption).monospacedDigit()
-                                                .padding(.horizontal, 8).padding(.vertical, 4)
-                                                .background(Color.accentColor.opacity(0.1), in: .capsule)
-                                        }
+                                        prayerTime(prayer.date)
                                     }
-                                    Text(
-                                        prayer.date.formatted(.dateTime.hour().minute().inZone(model.zone))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .foregroundStyle(
+                                        prayer.name == next?.name
+                                            ? Color.accentColor : Color.primary
                                     )
-                                    .font(.system(.title3, design: .monospaced, weight: .medium))
-                                    .fixedSize(horizontal: true, vertical: false)
-                                }
-                                .foregroundStyle(
-                                    prayer.name == next?.name
-                                        ? Color.accentColor : Color.primary
-                                )
-                                .padding(.vertical, 5)
-                                .accessibilityElement(children: .combine)
-                                .contentShape(.rect)
-                                .accessibilityIdentifier("prayer-\(prayer.name.rawValue)")
-                                .contextMenu {
-                                    Button(model.preferences.enabledPrayers.contains(prayer.name) ? "Mute" : "Alert",
-                                           systemImage: model.preferences.enabledPrayers.contains(prayer.name) ? "bell.slash" : "bell")
-                                    {
-                                        Task { await model.setPrayer(prayer.name, enabled: !model.preferences.enabledPrayers.contains(prayer.name)) }
-                                    }
-                                    if !prayer.name.isRequired {
-                                        Button("Hide", systemImage: "eye.slash") {
-                                            model.update { $0.hiddenPrayers.insert(prayer.name) }
+                                    .padding(.vertical, 5)
+                                    .accessibilityElement(children: .combine)
+                                    .contentShape(.rect)
+                                    .accessibilityIdentifier("prayer-\(prayer.name.rawValue)")
+                                    .contextMenu {
+                                        Button(model.preferences.enabledPrayers.contains(prayer.name) ? "Mute" : "Alert",
+                                               systemImage: model.preferences.enabledPrayers.contains(prayer.name) ? "bell.slash" : "bell")
+                                        {
+                                            Task {
+                                                let enabled = !model.preferences.enabledPrayers.contains(prayer.name)
+                                                await model.setPrayer(prayer.name, enabled: enabled)
+                                                if model.preferences.enabledPrayers.contains(prayer.name) == enabled {
+                                                    AppTip.complete(.prayers)
+                                                }
+                                            }
+                                        }
+                                        if !prayer.name.isRequired {
+                                            Button("Hide", systemImage: "eye.slash") {
+                                                model.update { $0.hiddenPrayers.insert(prayer.name) }
+                                                AppTip.complete(.prayers)
+                                            }
                                         }
                                     }
-                                }
-                                if prayer.id != prayers.last?.id {
-                                    Divider()
-                                        .gridCellUnsizedAxes(.horizontal)
+                                    if prayer.id != prayers.last?.id {
+                                        Divider()
+                                            .gridCellUnsizedAxes(.horizontal)
+                                    }
                                 }
                             }
                         }
-                    }
-                } else {
-                    Card(skyBackground: sun != nil) {
+                    } else {
                         ContentUnavailableView {
                             Label(
                                 "Prayer Times Unavailable",
@@ -155,11 +166,13 @@ struct TodayView: View {
                         }
                     }
                 }
+                .appTip(.prayers, enabled: !prayers.isEmpty)
                 if let dailyAyah {
                     DailyAyahCard(ayah: dailyAyah, skyBackground: sun != nil)
                         .layoutValue(key: TodayColumnKey.self, value: 1)
                 }
-                TodayInfoCards(date: now, skyBackground: sun != nil, weather: weather, sun: sun, moon: moon)
+                TodayInfoCards(skyBackground: sun != nil, weather: weather, sun: sun, moon: moon,
+                               event: model.content.upcomingEvent(on: now, engine: engine, sunset: versePrayerSettings.sunset(on:)))
                     .layoutValue(key: TodayColumnKey.self, value: 1)
             }
             .safeAreaInset(edge: .top, spacing: 0) {
@@ -203,13 +216,19 @@ struct TodayView: View {
                 #endif
                 guard referenceDate == nil,
                       let boundary = versePrayerSettings.dailyVerseTimelineDates(from: now, engine: engine).dropFirst().first else { return }
+                let midnight = engine.addingDays(1, to: engine.gregorian.startOfDay(for: now))
                 do {
+                    if midnight < boundary {
+                        try await Task.sleep(for: .seconds(max(0, midnight.timeIntervalSinceNow)))
+                        refreshedAt = .now
+                    }
                     try await Task.sleep(for: .seconds(max(0, boundary.timeIntervalSinceNow)))
                     refreshedAt = .now
                 } catch {}
             }
         }
-        .task(id: model.location) {
+        .task(id: "\(scenePhase)-\(String(describing: model.location))") {
+            guard scenePhase == .active else { return }
             while !Task.isCancelled {
                 await weather.refresh(location: model.location)
                 do { try await Task.sleep(for: .seconds(900)) } catch { break }
@@ -218,7 +237,6 @@ struct TodayView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 refreshedAt = .now
-                Task { await weather.refresh(location: model.location) }
             }
         }
     }
@@ -233,6 +251,24 @@ struct TodayView: View {
             .periodic(from: .now, by: 60)
         }
     #endif
+
+    private func prayerTime(_ date: Date) -> some View {
+        let style = Date.FormatStyle.dateTime.locale(locale).inZone(model.zone)
+        let time = date.formatted(style.hour(.defaultDigits(amPM: .omitted)).minute())
+        let digits = time.filter(\.isWholeNumber)
+        var displayTime = AttributedString(time)
+        if digits.count == 3, let digit = digits.first {
+            // An invisible localized digit reserves the exact width in either writing direction.
+            var padding = AttributedString(String(digit))
+            padding.foregroundColor = .clear
+            displayTime.insert(padding, at: displayTime.startIndex)
+        }
+        return Text(displayTime)
+            .font(.title3.weight(.medium))
+            .monospacedDigit()
+            .fixedSize(horizontal: true, vertical: false)
+            .accessibilityLabel(Text(date, format: style.hour().minute()))
+    }
 
     private func displayDate(_ date: Date) -> Date {
         #if DEBUG
@@ -255,6 +291,51 @@ struct TodayView: View {
         formatter.timeZone = engine.timeZone
         formatter.dateFormat = "MMMM"
         return "\(day.day.formatted(.number.locale(locale))) \(formatter.string(from: engine.baselineStart(day.month)))"
+    }
+}
+
+struct UpcomingEventCard: View {
+    let events: [IslamicEvent]
+    let timing: ContentLibrary.EventTiming
+    @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.locale) private var locale
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label {
+                timingLabel
+            } icon: {
+                Image(systemName: "calendar")
+            }
+            .font(.headline)
+            .foregroundStyle(Color.accentColor)
+            .accessibilityIdentifier("upcoming-event-timing")
+            Text(verbatim: events.map { $0.title(locale: locale) }.joined(separator: "\n"))
+                .font(.subheadline)
+                .lineLimit(typeSize.isAccessibilitySize ? nil : 3)
+                .accessibilityIdentifier("upcoming-event-names")
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    private var timingLabel: Text {
+        switch timing {
+        case .today:
+            Text(verbatim: relativeDay(0))
+        case .tonight:
+            Text("Tonight", comment: "Timing for an observance on the evening before its calendar date.")
+        case .tomorrow:
+            Text(verbatim: relativeDay(1))
+        case let .countdown(duration):
+            Text(verbatim: duration.formatted(.units(allowed: [.days, .hours], width: .wide, maximumUnitCount: 1).locale(locale)))
+        }
+    }
+
+    private func relativeDay(_ days: Int) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.locale = locale
+        formatter.dateTimeStyle = .named
+        return formatter.localizedString(from: DateComponents(day: days))
     }
 }
 

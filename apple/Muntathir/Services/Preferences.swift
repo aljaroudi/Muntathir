@@ -19,7 +19,7 @@ struct Preferences: Codable, Equatable, Sendable {
         time.isPrayer ? notificationSound : (time == .sunset ? sunsetSound : otherTimesSound)
     }
 
-    var selectedSourceID: String? = CalendarSource.middleEast
+    var tabShortcuts: [AppTool] = [.calendar]
     var monthOffsets: [MonthOffset] = []
     var hiddenPrayers: Set<PrayerName> = []
     func isVisible(_ prayer: PrayerName) -> Bool {
@@ -28,7 +28,7 @@ struct Preferences: Codable, Equatable, Sendable {
 
     enum CodingKeys: String, CodingKey {
         case timeSensitiveNotifications, notificationSound, sunsetSound, otherTimesSound, calendarEventNotifications
-        case showFeelsLikeTemperature, savedLocation, prayerMethod, imsakMinutes, enabledPrayers, announcementNotifications, selectedSourceID, monthOffsets, hiddenPrayers
+        case showFeelsLikeTemperature, savedLocation, prayerMethod, imsakMinutes, enabledPrayers, announcementNotifications, tabShortcuts, monthOffsets, hiddenPrayers
     }
 
     init() {}
@@ -45,8 +45,8 @@ struct Preferences: Codable, Equatable, Sendable {
         sunsetSound = try c.decodeIfPresent(PrayerAlertSound.self, forKey: .sunsetSound) ?? .system
         otherTimesSound = try c.decodeIfPresent(PrayerAlertSound.self, forKey: .otherTimesSound) ?? .system
         calendarEventNotifications = try c.decodeIfPresent(Bool.self, forKey: .calendarEventNotifications) ?? false
-        let sourceID = try c.decodeIfPresent(String.self, forKey: .selectedSourceID)
-        selectedSourceID = CalendarSource.method(for: sourceID) == .system ? nil : sourceID
+        let shortcuts = try c.decodeIfPresent([String].self, forKey: .tabShortcuts) ?? [AppTool.calendar.rawValue]
+        tabShortcuts = AppTool.normalized(shortcuts)
         // Absolute month-start overrides cannot be migrated to source-relative offsets.
         monthOffsets = try c.decodeIfPresent([MonthOffset].self, forKey: .monthOffsets) ?? []
         hiddenPrayers = try c.decodeIfPresent(Set<PrayerName>.self, forKey: .hiddenPrayers) ?? []
@@ -54,7 +54,6 @@ struct Preferences: Codable, Equatable, Sendable {
 
     var isValid: Bool {
         (savedLocation == nil || savedLocation!.isValid)
-            && (selectedSourceID == nil || CalendarSource.method(for: selectedSourceID) != .system)
             && monthOffsets.allSatisfy { $0.month.isValid && (-2 ... 2).contains($0.days) }
             && Set(monthOffsets.map(\.month)).count == monthOffsets.count
     }
@@ -74,6 +73,7 @@ struct Preferences: Codable, Equatable, Sendable {
     private let defaults: UserDefaults
     private let cloud: NSUbiquitousKeyValueStore?
     private var observer: NSObjectProtocol?
+    private var readingSync: ReadingPreferencesSync?
     private var notificationTask: Task<Void, Never>?
     private var calendarRevision = 0
     private let key = "preferences.v1"
@@ -100,17 +100,28 @@ struct Preferences: Codable, Equatable, Sendable {
             .flatMap { try? JSONDecoder().decode(SavedLocation.self, from: $0) }
             .flatMap { $0.isValid ? $0 : nil }
         if let feed = feedClient?.cachedFeed(), let location,
-           let matching = try? feed.matching(location: location, sourceID: preferences.selectedSourceID),
+           let matching = try? feed.matching(location: location, sourceID: CalendarSource.middleEast),
            (try? CalendarEngine(timeZone: zone, offsets: preferences.monthOffsets, confirmed: matching.map(\.correction))) != nil
         {
             confirmations = matching
         }
         if let cloud {
-            observer = NotificationCenter.default.addObserver(forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification, object: cloud, queue: .main) { [weak self] _ in
+            observer = NotificationCenter.default.addObserver(forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification, object: cloud, queue: .main) { [weak self] notification in
+                if let keys = notification.userInfo?[NSUbiquitousKeyValueStoreChangedKeysKey] as? [String], !keys.contains("preferences.v1") {
+                    return
+                }
                 Task { @MainActor [weak self] in self?.receiveCloud() }
             }
             cloud.synchronize()
+            if cloud.data(forKey: key) == nil, let decoded, decoded.isValid, let data = try? JSONEncoder().encode(decoded) {
+                cloud.set(data, forKey: key)
+            }
             receiveCloud()
+            if let translationDefaults = QuranTranslationPreferences.defaults {
+                readingSync = ReadingPreferencesSync(defaults: defaults, translationDefaults: translationDefaults, cloud: cloud) {
+                    QuranTranslationStore.shared.select($0)
+                }
+            }
         }
     }
 
@@ -131,44 +142,35 @@ struct Preferences: Codable, Equatable, Sendable {
     }
 
     private func receiveCloud() {
-        guard let data = cloud?.data(forKey: key), let incoming = try? JSONDecoder().decode(Preferences.self, from: data), incoming.isValid else { return }
-        let matching = incoming.selectedSourceID == preferences.selectedSourceID ? confirmations : []
+        guard let data = cloud?.data(forKey: key) else { return }
+        receiveSyncedPreferences(data)
+    }
+
+    func receiveSyncedPreferences(_ data: Data) {
+        guard let incoming = try? JSONDecoder().decode(Preferences.self, from: data), incoming.isValid else { return }
         guard (try? CalendarEngine(timeZone: (liveLocation ?? incoming.savedLocation)?.timeZone ?? .current,
-                                   offsets: incoming.monthOffsets, confirmed: matching.map(\.correction))) != nil else { return }
-        let sourceChanged = incoming.selectedSourceID != preferences.selectedSourceID
+                                   offsets: incoming.monthOffsets, confirmed: confirmations.map(\.correction))) != nil else { return }
         calendarRevision += 1
-        confirmations = matching; preferences = incoming
+        preferences = incoming
         if let normalized = try? JSONEncoder().encode(incoming) {
             defaults.set(normalized, forKey: key)
         }
         reschedule()
-        if sourceChanged {
-            refreshCalendar()
-        }
     }
 
     @discardableResult
     func update(_ change: (inout Preferences) -> Void) -> Bool {
         var updated = preferences; change(&updated)
+        updated.tabShortcuts = AppTool.normalized(updated.tabShortcuts.map(\.rawValue))
         guard updated.isValid, let data = try? JSONEncoder().encode(updated) else { error = String(localized: "Invalid preferences."); return false }
-        let sourceChanged = updated.selectedSourceID != preferences.selectedSourceID
-        let matching = sourceChanged ? [] : confirmations
         do {
             _ = try CalendarEngine(timeZone: (liveLocation ?? updated.savedLocation)?.timeZone ?? .current,
-                                   offsets: updated.monthOffsets, confirmed: matching.map(\.correction))
+                                   offsets: updated.monthOffsets, confirmed: confirmations.map(\.correction))
         } catch { self.error = error.localizedDescription; return false }
         calendarRevision += 1
-        confirmations = matching
         preferences = updated; defaults.set(data, forKey: key); cloud?.set(data, forKey: key)
         reschedule()
-        if sourceChanged {
-            refreshCalendar()
-        }
         return true
-    }
-
-    func refreshCalendar() {
-        Task { await refreshInBackground() }
     }
 
     func select(_ location: SavedLocation) {
@@ -201,7 +203,7 @@ struct Preferences: Codable, Equatable, Sendable {
 
     func receive(_ feed: CorrectionsFeed) async throws {
         guard let location else { return }
-        let matching = try feed.matching(location: location, sourceID: preferences.selectedSourceID)
+        let matching = try feed.matching(location: location, sourceID: CalendarSource.middleEast)
         _ = try CalendarEngine(timeZone: zone, offsets: preferences.monthOffsets, confirmed: matching.map(\.correction))
         confirmations = matching
         reschedule()
@@ -213,12 +215,12 @@ struct Preferences: Codable, Equatable, Sendable {
     @discardableResult func refreshInBackground() async -> Bool {
         var succeeded = true
         let revision = calendarRevision
-        if let feedClient, let requestedLocation = location, let requestedSource = preferences.selectedSourceID {
+        if let feedClient, let requestedLocation = location {
             do {
                 let feed = try await feedClient.refresh()
                 try Task.checkCancellation()
-                // A response for an old location or source must not update the current calendar.
-                guard calendarRevision == revision, location == requestedLocation, preferences.selectedSourceID == requestedSource else { return false }
+                // A response for old preferences or location must not update the current calendar.
+                guard calendarRevision == revision, location == requestedLocation else { return false }
                 try await receive(feed)
             } catch {
                 succeeded = false

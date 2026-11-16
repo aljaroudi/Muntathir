@@ -38,7 +38,7 @@ struct HighlightRange: Codable, Equatable, Sendable {
 }
 
 enum HighlightColor: String, Codable, CaseIterable, Sendable {
-    case yellow, green, blue, pink, purple
+    case yellow, green, blue, pink, purple, orange, red, mint, teal, cyan, indigo, brown
 }
 
 struct ReadingHighlight: Codable, Equatable, Identifiable, Sendable {
