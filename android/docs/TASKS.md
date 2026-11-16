@@ -39,7 +39,7 @@ Verified 2026-11-16: `just android-build` and `just android-test` pass; screensh
   - Channels are versioned by sound (`prayers.chime.v1`); old ones are deleted. There is no Time Sensitive toggle and no adhan foreground service, since the bundled clips play fully as channel sounds.
   - `Rescheduler` follows the settings flow; `RescheduleReceiver` handles boot, time, zone, locale, package-replaced and exact-alarm permission changes.
   - `Notifier` is the `AppModel` announcer for month confirmations.
-- [ ] **P2.7** Feed WorkManager + launch refresh.
+- [x] **P2.7** Feed WorkManager + launch refresh. `KtorFeedTransport` (OkHttp, 20 s timeout, size cap) backs `FeedClient` in `cache/calendar`. `AppModel.refreshFeed` has the stale-response guard (`AppModelTest`). `FeedRefreshWorker` (`@HiltWorker`) runs every 12 h on a network, and every `ON_START` refreshes too. WorkManager's default initializer is removed in favour of the Hilt factory.
 - [ ] **P2.8** Settings (prayers, calendar, tabs, downloads entry, language, credits).
 
 ## P3 — Quran

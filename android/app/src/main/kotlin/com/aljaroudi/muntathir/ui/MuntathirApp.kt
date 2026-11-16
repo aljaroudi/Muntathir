@@ -44,11 +44,17 @@ class MainViewModel
         /** Swift scene-phase `.active`: follow the device to a new place while location access stays granted. */
         fun onForeground() {
             viewModelScope.launch {
-                val current = model.state.value.device.liveLocation ?: return@launch
-                if (!locator.hasPermission()) return@launch
-                val fix = locator.locate() ?: return@launch
-                if (fix.timeZoneID != current.timeZoneID || distanceKm(fix, current) > MOVED_KM) model.applyLive(fix)
+                followDevice()
+                // Swift launch refresh: the corrections feed on every activation.
+                model.refreshFeed()
             }
+        }
+
+        private suspend fun followDevice() {
+            val current = model.state.value.device.liveLocation ?: return
+            if (!locator.hasPermission()) return
+            val fix = locator.locate() ?: return
+            if (fix.timeZoneID != current.timeZoneID || distanceKm(fix, current) > MOVED_KM) model.applyLive(fix)
         }
 
         private fun distanceKm(
