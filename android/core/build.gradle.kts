@@ -17,6 +17,9 @@ kotlin {
 dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)
+    // CommonMark, like Foundation's cmark-based Markdown, so hadith text renders as on iOS.
+    implementation(libs.commonmark)
+    implementation(libs.commonmark.strikethrough)
     testImplementation(libs.kotlin.test)
     testImplementation(libs.sqlite.jdbc)
 }
@@ -34,6 +37,7 @@ tasks.test {
     // Read-only inputs owned by other parts of the repository (bundled Quran DB, production feed).
     val repository = rootProject.file("..")
     inputs.file(repository.resolve("apple/Muntathir/Resources/Quran/quran.db"))
+    inputs.file(repository.resolve("apple/Muntathir/Resources/quran-surahs.json"))
     inputs.file(repository.resolve("web/public/calendar/corrections-v1.json"))
     systemProperty("repository", repository.absolutePath)
 }
