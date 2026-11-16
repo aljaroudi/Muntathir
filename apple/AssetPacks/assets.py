@@ -4,12 +4,20 @@ import argparse
 import json
 from pathlib import Path
 import plistlib
+import shutil
 import sqlite3
 import subprocess
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFESTS = Path(__file__).parent / 'manifests'
+# Play Asset Delivery equivalents of the iOS download policies: module name and delivery type.
+ANDROID_PACKS = {
+    'hadith': ('hadith', 'on-demand'),
+    'supplications': ('supplications', 'fast-follow'),
+    'quran-translations': ('quran_translations', 'on-demand'),
+    'rulings': ('rulings', 'on-demand'),
+}
 
 
 def validate_quran(root=ROOT, manifests=MANIFESTS):
@@ -94,6 +102,28 @@ def validate_rulings(root=ROOT, manifests=MANIFESTS):
     return [path]
 
 
+def android_pack(manifest, root=ROOT):
+    """Copy a validated pack's files into its Gradle asset-pack module, keeping the iOS folder layout."""
+    pack = json.loads(Path(manifest).read_text())
+    name, delivery = ANDROID_PACKS[pack['assetPackID']]
+    module = root / 'android/packs' / name
+    build = module / 'build.gradle.kts'
+    assert build.exists(), f'Missing asset-pack module {module.relative_to(root)}'
+    script = build.read_text()
+    assert f'packName = "{name}"' in script and f'deliveryType = "{delivery}"' in script, \
+        f'{build.relative_to(root)} must declare pack {name} as {delivery}'
+    copied = []
+    for selector in pack['fileSelectors']:
+        source = (Path(manifest).parent / pack['sourceRoot'] / selector['fileSource']).resolve()
+        target = module / 'src/main/assets' / selector['fileDestination']
+        if not target.exists() or target.stat().st_size != source.stat().st_size \
+                or target.stat().st_mtime < source.stat().st_mtime:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
+        copied.append(target)
+    return copied
+
+
 def check_bundle(path):
     path = Path(path)
     if path.suffix == '.ipa':
@@ -134,7 +164,7 @@ def check_bundle(path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['validate', 'package', 'check-bundle'])
+    parser.add_argument('command', choices=['validate', 'package', 'android', 'check-bundle'])
     parser.add_argument('path', nargs='?')
     parser.add_argument('--content', choices=['hadith', 'supplications', 'quran', 'rulings', 'all'], default='hadith')
     args = parser.parse_args()
@@ -162,6 +192,9 @@ def main():
             sizes[manifest.stem] = (output / (manifest.stem + '.aar')).stat().st_size
         metadata_path.write_text(json.dumps(sizes, indent=2) + '\n')
         print(f'Packaged {len(manifests)} asset packs in {output}')
+    elif args.command == 'android':
+        copied = [path for manifest in manifests for path in android_pack(manifest)]
+        print(f'Copied {len(copied)} files into {len(manifests)} Android asset-pack modules')
     elif args.command == 'check-bundle':
         assert args.path, 'Provide an .app or .ipa path'
         check_bundle(args.path)

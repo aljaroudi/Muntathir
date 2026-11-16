@@ -5,5 +5,9 @@
         <activity
             android:name=".ui.reader.ReaderSpikeActivity"
             android:exported="true" />
+        <!-- P1.8 asset pack + FTS5 spike. -->
+        <activity
+            android:name=".assets.AssetPackSpikeActivity"
+            android:exported="true" />
     </application>
 </manifest>

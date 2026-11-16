@@ -109,6 +109,22 @@ android-screenshots:
 android-format:
     {{ android_gradle }} spotlessApply
 
+# Validate content databases (same checks as iOS) and copy them into the Play asset-pack modules
+android-packs:
+    python3 apple/AssetPacks/assets.py android --content hadith
+    python3 apple/AssetPacks/assets.py android --content supplications
+
+# Install the debug bundle with local Play Asset Delivery testing; set ANDROID_SERIAL to choose a device
+android-local-testing: android-packs
+    #!/usr/bin/env bash
+    set -euo pipefail
+    sdk="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
+    # Maven's bundletool doesn't embed aapt2; use the newest SDK build-tools.
+    aapt2="$(ls -d "$sdk"/build-tools/*/ | sort -V | tail -1)aapt2"
+    ({{ android_gradle }} :app:bundleDebug)
+    ({{ android_gradle }} bundletool --args="build-apks --local-testing --overwrite --aapt2=$aapt2 --bundle=app/build/outputs/bundle/debug/app-debug.aab --output=build/local-testing.apks")
+    ({{ android_gradle }} bundletool --args="install-apks --apks=build/local-testing.apks --adb=$sdk/platform-tools/adb ${ANDROID_SERIAL:+--device-id=$ANDROID_SERIAL}")
+
 [arg("args", help="astro/bun flags after dev, e.g. -- --background")]
 [doc("Run the Astro landing page (web/); uses bun run dev")]
 web-dev *args:

@@ -28,7 +28,7 @@ android/
 |---|---|
 | Quran Arabic + English, events, surahs, daily ids | `assets/`, copied once to `noBackupFilesDir` |
 | Hadith, Supplications, Rulings, Quran translations | PAD packs |
-| Content SQLite (read-only, FTS5 + trigram) | `androidx.sqlite` **BundledSQLiteDriver** (platform SQLite lacks FTS5) |
+| Content SQLite (read-only, FTS5 `unicode61 remove_diacritics 2`) | `androidx.sqlite` **BundledSQLiteDriver** (platform SQLite lacks FTS5) |
 | Preferences (`preferences.v1`, same JSON shape and validation as `Preferences.swift`) | DataStore |
 | Device-local: onboarding step, live location, installation ID, hadith session | DataStore file excluded from backup |
 | Highlights, bookmarks, prayer history, activity | Room (bundled driver) |

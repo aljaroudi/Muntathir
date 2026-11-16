@@ -1,0 +1,2 @@
+# Databases are copied from build/ by `just android-packs`; never commit them.
+*/src/main/assets/

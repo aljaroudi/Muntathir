@@ -37,6 +37,9 @@ android {
     // Generates the per-app language list from res/values-* (see res/resources.properties).
     androidResources.generateLocaleConfig = true
 
+    // Content databases ship as Play Asset Delivery packs; only the Quran text is in the base APK.
+    assetPacks += listOf(":packs:hadith", ":packs:supplications")
+
     testOptions {
         // Required by Compose Preview screenshot tests to resolve themes and fonts.
         unitTests.isIncludeAndroidResources = true
@@ -53,6 +56,9 @@ android {
 
 dependencies {
     implementation(project(":core"))
+    // Platform SQLite lacks FTS5 on older releases; the bundled build has it everywhere.
+    implementation(libs.androidx.sqlite.bundled)
+    implementation(libs.play.asset.delivery.ktx)
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
