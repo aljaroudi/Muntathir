@@ -23,6 +23,7 @@ import java.time.ZoneOffset
 import java.util.Date
 import java.util.Locale
 import kotlin.math.ceil
+import kotlin.math.floor
 
 /** The per-app language as Compose sees it (AppCompat updates the activity configuration). */
 @Composable
@@ -144,6 +145,30 @@ object Formats {
         return MeasureFormat
             .getInstance(ULocale.forLocale(locale), MeasureFormat.FormatWidth.WIDE)
             .format(Measure(duration.value, unit))
+    }
+
+    /**
+     * Time read, abbreviated (Swift `ActivityProgressView.duration`): whole seconds below a minute, whole minutes
+     * below an hour, otherwise hours with up to one decimal.
+     */
+    fun readDuration(
+        seconds: Double,
+        locale: Locale,
+    ): String {
+        val measure =
+            when {
+                seconds < 60 -> Measure(floor(seconds).toLong(), MeasureUnit.SECOND)
+                seconds < 3600 -> Measure(floor(seconds / 60).toLong(), MeasureUnit.MINUTE)
+                else -> Measure(seconds / 3600, MeasureUnit.HOUR)
+            }
+        val numbers =
+            NumberFormat.getInstance(locale).apply {
+                minimumFractionDigits = 0
+                maximumFractionDigits = 1
+            }
+        return MeasureFormat
+            .getInstance(ULocale.forLocale(locale), MeasureFormat.FormatWidth.SHORT, numbers)
+            .format(measure)
     }
 
     /** One unit, rounded up: "2 hours", "35 minutes", "3 days" (Swift countdown badges). */
