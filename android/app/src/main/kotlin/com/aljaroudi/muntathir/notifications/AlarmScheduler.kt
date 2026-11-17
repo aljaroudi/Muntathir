@@ -56,19 +56,34 @@ class AlarmScheduler
             state: AppState,
             after: Instant = clock.instant(),
         ) {
-            val next = alerts(state, after).firstOrNull()
-            val intent = pendingIntent(next?.time)
+            val next = alerts(state, after).firstOrNull()?.time ?: planningWakeUp(state, after)
+            val intent = pendingIntent(next)
             if (next == null) {
                 alarms.cancel(intent)
                 return
             }
-            val at = next.time.toEpochMilli()
+            val at = next.toEpochMilli()
             if (canScheduleExact) {
                 alarms.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, intent)
             } else {
                 alarms.setWindow(AlarmManager.RTC_WAKEUP, at, INEXACT_WINDOW.toMillis(), intent)
             }
         }
+
+        /**
+         * Event alerts are only planned [NotificationPlan.DAYS] ahead, so an empty plan doesn't mean nothing is
+         * coming. While calendar alerts can still occur, wake again a day later to replan; the receiver finds
+         * nothing due and schedules from there, so consecutive windows overlap.
+         */
+        private fun planningWakeUp(
+            state: AppState,
+            after: Instant,
+        ): Instant? =
+            if (state.preferences.calendarEventNotifications && state.location != null) {
+                after.plus(PLANNING_RETRY)
+            } else {
+                null
+            }
 
         private fun pendingIntent(at: Instant?): PendingIntent =
             PendingIntent.getBroadcast(
@@ -81,6 +96,9 @@ class AlarmScheduler
         companion object {
             const val EXTRA_AT = "at"
             val INEXACT_WINDOW: Duration = Duration.ofMinutes(10)
+
+            /** How long to wait before replanning when nothing falls inside the current window. */
+            val PLANNING_RETRY: Duration = Duration.ofHours(24)
 
             /** Alerts older than this when their alarm finally fires (e.g. after a long doze) are dropped. */
             val GRACE: Duration = Duration.ofMinutes(30)

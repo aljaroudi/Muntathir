@@ -50,6 +50,7 @@ import com.aljaroudi.muntathir.core.highlight.HighlightColor
 import com.aljaroudi.muntathir.core.highlight.ReadingHighlight
 import com.aljaroudi.muntathir.core.highlight.serialName
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -77,9 +78,15 @@ val HighlightColor.title: Int
             HighlightColor.Brown -> R.string.brown
         }
 
+/** The editor's in-flight autosave, so a close, color change or delete can wait for it. */
+private class Autosave {
+    var job: Job? = null
+}
+
 /**
  * Swift `HighlightEditor`: tapping a color saves (every selected verse takes it) and closes. A saved highlight
- * also has its note, saved as it's typed, and Delete. Failures offer Retry or Discard changes.
+ * also has its note, saved as it's typed, and Delete; closing it any way (back, swipe, tap outside) saves the
+ * latest note first. Writes run one at a time; failures offer Retry or Discard changes.
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -97,49 +104,78 @@ fun HighlightEditorSheet(
     var pending by remember { mutableStateOf<(suspend () -> Unit)?>(null) }
     var failed by remember { mutableStateOf(false) }
     var confirmingDelete by remember { mutableStateOf(false) }
+    // A close, color change or delete is under way (or failed and awaiting Retry/Discard): autosave pauses and
+    // the editor stops taking input until the sheet goes away.
+    var closing by remember { mutableStateOf(false) }
+    val autosave = remember { Autosave() }
 
-    fun run(
-        dismiss: Boolean,
-        action: suspend () -> Unit,
-    ) {
+    suspend fun write(value: ReadingHighlight) {
+        if (value == saved) return
+        onSave(listOf(value) + draft.highlights.drop(1).map { it.copy(color = value.color, note = value.note) })
+        saved = value
+    }
+
+    /** Runs [action] and closes, or offers Retry/Discard. Only called once [closing] is set. */
+    suspend fun attempt(action: suspend () -> Unit) {
+        try {
+            action()
+            onDismiss()
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (_: Exception) {
+            pending = action
+            failed = true
+        }
+    }
+
+    /** The last write: waits for any running autosave so writes never overlap or land out of order. */
+    fun close(action: suspend () -> Unit) {
+        if (closing) return
+        closing = true
         scope.launch {
-            try {
-                action()
-                failed = false
-                if (dismiss) onDismiss()
-            } catch (cancellation: CancellationException) {
-                throw cancellation
-            } catch (_: Exception) {
-                pending = action
-                failed = true
-            }
+            autosave.job?.join()
+            attempt(action)
         }
     }
 
-    fun save(
-        value: ReadingHighlight,
-        dismiss: Boolean,
-    ) {
-        if (value == saved) {
-            if (dismiss) onDismiss()
-            return
-        }
-        val batch = listOf(value) + draft.highlights.drop(1).map { it.copy(color = value.color, note = value.note) }
-        run(dismiss) {
-            onSave(batch)
-            saved = value
-        }
-    }
+    // Reads `current` when it runs, so it always saves the latest draft.
+    val saveLatest: suspend () -> Unit = { write(current) }
 
     if (draft.existing) {
-        // The note saves as it's typed, after a short pause.
-        LaunchedEffect(current.note) {
+        // The note saves as it's typed, after a short pause. Restarting on `closing` drops a pending pause.
+        LaunchedEffect(current.note, closing) {
+            if (closing) return@LaunchedEffect
             delay(400)
-            save(current, dismiss = false)
+            autosave.job?.join()
+            // A close may have started while this was waiting; it saves the latest draft itself.
+            if (closing || current == saved) return@LaunchedEffect
+            autosave.job =
+                scope.launch {
+                    try {
+                        write(current)
+                    } catch (cancellation: CancellationException) {
+                        throw cancellation
+                    } catch (_: Exception) {
+                        // A waiting close retries and reports on its own.
+                        if (!closing) {
+                            closing = true
+                            pending = { saveLatest() }
+                            failed = true
+                        }
+                    }
+                }
         }
     }
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(
+        onDismissRequest = {
+            // A new highlight without a color is just discarded; once a color is saving, that save closes.
+            when {
+                draft.existing -> close(saveLatest)
+                !closing -> onDismiss()
+            }
+        },
+    ) {
         Column(
             Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -149,9 +185,9 @@ fun HighlightEditorSheet(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 for (color in colors) {
-                    HighlightSwatch(color, selected = color == current.color) {
+                    HighlightSwatch(color, selected = color == current.color, enabled = !closing) {
                         current = current.copy(color = color)
-                        save(current, dismiss = true)
+                        close(saveLatest)
                     }
                 }
             }
@@ -159,13 +195,18 @@ fun HighlightEditorSheet(
                 OutlinedTextField(
                     value = current.note,
                     onValueChange = { current = current.copy(note = it) },
+                    enabled = !closing,
                     placeholder = { Text(stringResource(R.string.add_note)) },
                     label = { Text(stringResource(R.string.highlight_note)) },
                     modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp).testTag("highlight-note-editor"),
                 )
                 Row {
                     Spacer(Modifier.weight(1f))
-                    IconButton(onClick = { confirmingDelete = true }, Modifier.testTag("highlight-delete")) {
+                    IconButton(
+                        onClick = { confirmingDelete = true },
+                        Modifier.testTag("highlight-delete"),
+                        enabled = !closing,
+                    ) {
                         Icon(
                             Icons.Outlined.Delete,
                             stringResource(R.string.delete_highlight),
@@ -183,7 +224,7 @@ fun HighlightEditorSheet(
             confirmButton = {
                 TextButton(onClick = {
                     confirmingDelete = false
-                    run(dismiss = true) { onDelete(current) }
+                    close { onDelete(current) }
                 }) { Text(stringResource(R.string.delete_highlight), color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = {
@@ -200,7 +241,11 @@ fun HighlightEditorSheet(
             text = { Text(stringResource(R.string.please_try_again)) },
             confirmButton = {
                 TextButton(
-                    onClick = { pending?.let { run(dismiss = true, it) } },
+                    onClick = {
+                        val action = pending ?: return@TextButton
+                        failed = false
+                        scope.launch { attempt(action) }
+                    },
                 ) { Text(stringResource(R.string.retry)) }
             },
             dismissButton = {
@@ -220,6 +265,7 @@ fun HighlightSwatch(
     selected: Boolean,
     modifier: Modifier = Modifier,
     size: Int = 36,
+    enabled: Boolean = true,
     onClick: (() -> Unit)? = null,
 ) {
     val label = stringResource(color.title)
@@ -228,7 +274,7 @@ fun HighlightSwatch(
             .size(44.dp)
             .then(
                 if (onClick != null) {
-                    Modifier.selectable(selected, role = Role.RadioButton, onClick = onClick)
+                    Modifier.selectable(selected, enabled = enabled, role = Role.RadioButton, onClick = onClick)
                 } else {
                     Modifier
                 },
