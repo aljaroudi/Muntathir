@@ -7,7 +7,7 @@ import com.aljaroudi.muntathir.core.text.InvalidReferenceException
 import com.aljaroudi.muntathir.core.text.QuranSearchText
 import com.aljaroudi.muntathir.core.text.SearchArea
 import com.aljaroudi.muntathir.data.QuranDatabase
-import com.aljaroudi.muntathir.data.QuranTranslationStore
+import com.aljaroudi.muntathir.data.QuranTranslations
 import com.aljaroudi.muntathir.data.SearchHistoryStore
 import com.aljaroudi.muntathir.search.SmartSearch
 import kotlinx.coroutines.CancellationException
@@ -61,7 +61,7 @@ sealed interface SmartResults {
 class QuranSearchModel(
     private val scope: CoroutineScope,
     private val quran: QuranDatabase,
-    private val translations: QuranTranslationStore,
+    private val translations: QuranTranslations,
     private val history: SearchHistoryStore,
     smartSearch: SmartSearch,
     val surah: Int?,

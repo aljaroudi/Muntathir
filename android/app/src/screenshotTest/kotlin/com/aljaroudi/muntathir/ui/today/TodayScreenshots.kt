@@ -10,6 +10,7 @@ import com.aljaroudi.muntathir.core.quran.Ayah
 import com.aljaroudi.muntathir.core.quran.DailyAyah
 import com.aljaroudi.muntathir.data.QuranDatabase
 import com.aljaroudi.muntathir.ui.ScreenPreviews
+import com.aljaroudi.muntathir.ui.components.currentLocale
 import com.aljaroudi.muntathir.ui.theme.MuntathirTheme
 import com.android.tools.screenshot.PreviewTest
 import java.time.Instant
@@ -24,19 +25,23 @@ private val ayah =
         "وَمَآ أَنَا۠ بِطَارِدِ ٱلْمُؤْمِنِينَ",
         mapOf(QuranDatabase.ENGLISH to "And I will not drive away the faithful."),
     )
-private val daily = DailyAyah(List(DailyAyah.COUNT) { ayah })
 private val names = mapOf(26 to "الشعراء")
 
+/** Auto resolves to no translation in Arabic and to the bundled English otherwise. */
+@Composable
 private fun state(
     instant: String,
     location: SavedLocation? = mecca,
-) = TodayUi.make(
-    AppState(Preferences(), DeviceState(liveLocation = location), emptyList(), 0, ZoneId.of("Asia/Riyadh")),
-    Instant.parse(instant),
-    library,
-    daily,
-    names,
-)
+): TodayUi {
+    val verse = if (currentLocale().language == "ar") ayah.copy(translations = emptyMap()) else ayah
+    return TodayUi.make(
+        AppState(Preferences(), DeviceState(liveLocation = location), emptyList(), 0, ZoneId.of("Asia/Riyadh")),
+        Instant.parse(instant),
+        library,
+        DailyAyah(List(DailyAyah.COUNT) { verse }),
+        names,
+    )
+}
 
 @PreviewTest
 @ScreenPreviews

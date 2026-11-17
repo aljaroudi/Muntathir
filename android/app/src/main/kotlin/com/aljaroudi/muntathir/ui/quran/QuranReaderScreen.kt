@@ -21,6 +21,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FormatSize
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -90,6 +91,8 @@ fun QuranReaderScreen(
     val locale = currentLocale()
     var juz by remember { mutableIntStateOf(0) }
     var sizing by rememberSaveable { mutableStateOf(false) }
+    var picking by rememberSaveable { mutableStateOf(false) }
+    TranslationPickerHost(viewModel.translations, picking) { picking = false }
     val surahs = catalog?.surahs.orEmpty()
     val surahTitle = surahs.getOrNull(position.surah - 1)?.title(locale.language).orEmpty()
     val mode = reading.quranReadingMode
@@ -118,6 +121,7 @@ fun QuranReaderScreen(
             ReaderMenu(
                 mode = mode,
                 onMode = { viewModel.setMode(it) },
+                onTranslation = { picking = true },
                 onTextSize = { sizing = true }.takeIf { mode == QuranReadingMode.Verses },
             )
         },
@@ -382,6 +386,7 @@ const val ARABIC_BLOCK = "arabic"
 private fun ReaderMenu(
     mode: QuranReadingMode,
     onMode: (QuranReadingMode) -> Unit,
+    onTranslation: () -> Unit,
     onTextSize: (() -> Unit)?,
 ) {
     var open by remember { mutableStateOf(false) }
@@ -418,8 +423,17 @@ private fun ReaderMenu(
                     modifier = Modifier.testTag("reading-mode-${option.id}"),
                 )
             }
+            HorizontalDivider()
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.translation)) },
+                leadingIcon = { Icon(Icons.Outlined.Translate, null) },
+                onClick = {
+                    open = false
+                    onTranslation()
+                },
+                modifier = Modifier.testTag("quran-translation-picker-open"),
+            )
             if (onTextSize != null) {
-                HorizontalDivider()
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.text_size)) },
                     leadingIcon = { Icon(Icons.Outlined.FormatSize, null) },

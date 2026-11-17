@@ -64,11 +64,8 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 import kotlin.math.ceil
 
-/** The translation to show beside Arabic: the bundled English, except in an Arabic interface (P3.3 adds the picker). */
-fun dailyTranslation(
-    ayah: Ayah,
-    locale: Locale,
-): String? = if (locale.language == "ar") null else ayah.translations[QuranDatabase.ENGLISH]
+/** The selected translation beside Arabic; the schedule is loaded with only that translation, if any. */
+fun dailyTranslation(ayah: Ayah): String? = ayah.translations.values.firstOrNull()
 
 /** Swift `DailyAyahCard`. */
 @Composable
@@ -80,7 +77,7 @@ fun DailyAyahCard(
     modifier: Modifier = Modifier,
 ) {
     val reference = QuranReference.display(ayah.id, locale.language, surahNames)
-    val translation = dailyTranslation(ayah, locale)
+    val translation = dailyTranslation(ayah)
     val shape = RoundedCornerShape(28.dp)
     Box(
         modifier

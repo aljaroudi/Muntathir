@@ -19,12 +19,16 @@ import com.aljaroudi.muntathir.core.sky.MoonPosition
 import com.aljaroudi.muntathir.core.sky.SolarArcMarker
 import com.aljaroudi.muntathir.core.sky.SolarPosition
 import com.aljaroudi.muntathir.data.QuranDatabase
+import com.aljaroudi.muntathir.data.QuranTranslations
 import com.aljaroudi.muntathir.data.minutes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Clock
@@ -104,15 +108,20 @@ class TodayViewModel
         private val model: AppModel,
         library: EventLibrary,
         quran: QuranDatabase,
+        translations: QuranTranslations,
         clock: Clock,
     ) : ViewModel() {
         private val daily = MutableStateFlow(DailyAyah(emptyList()))
         private val names = MutableStateFlow(emptyMap<Int, String>())
 
         init {
+            viewModelScope.launch { names.value = quran.surahNames() }
+            // Swift: the selected installed translation also controls the daily ayah.
             viewModelScope.launch {
-                names.value = quran.surahNames()
-                daily.value = quran.dailyAyah(QuranDatabase.ENGLISH)
+                translations.state
+                    .map { it.activeID to it.revision }
+                    .distinctUntilChanged()
+                    .collectLatest { (translation, _) -> daily.value = quran.dailyAyah(translation) }
             }
         }
 

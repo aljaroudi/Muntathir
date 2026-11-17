@@ -11,7 +11,9 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,6 +22,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,7 +63,18 @@ fun QuranScreen(
     val smart by search.smart.collectAsStateWithLifecycle()
     val recent by search.recent.collectAsStateWithLifecycle()
     var focused by remember { mutableStateOf(false) }
-    ScreenScaffold(stringResource(R.string.holy_quran), onBack = onBack) { padding ->
+    var picking by rememberSaveable { mutableStateOf(false) }
+    TranslationPickerHost(viewModel.translations, picking) { picking = false }
+    ScreenScaffold(
+        stringResource(R.string.holy_quran),
+        onBack = onBack,
+        actions = {
+            // Swift "Reading options" holds only the translation picker here.
+            IconButton(onClick = { picking = true }, Modifier.testTag("quran-reading-options")) {
+                Icon(Icons.Outlined.Translate, stringResource(R.string.translation))
+            }
+        },
+    ) { padding ->
         LazyColumn(Modifier.fillMaxSize().testTag("quran-list"), contentPadding = padding) {
             item(key = "search") {
                 SearchField(

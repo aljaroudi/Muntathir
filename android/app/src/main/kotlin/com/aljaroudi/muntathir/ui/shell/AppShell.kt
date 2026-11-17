@@ -22,6 +22,7 @@ import com.aljaroudi.muntathir.ui.calendar.EventsScreen
 import com.aljaroudi.muntathir.ui.calendar.EventsViewModel
 import com.aljaroudi.muntathir.ui.calendar.MonthAdjustmentsScreen
 import com.aljaroudi.muntathir.ui.components.isTwoPane
+import com.aljaroudi.muntathir.ui.downloads.DownloadsScreen
 import com.aljaroudi.muntathir.ui.location.LocationScreen
 import com.aljaroudi.muntathir.ui.navigation.AppNavigator
 import com.aljaroudi.muntathir.ui.navigation.CreditsRoute
@@ -153,7 +154,7 @@ fun AppShell(
                                 MonthAdjustmentsScreen(hiltViewModel(), detailBack)
                             }
                             entry<DownloadsRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
-                                ComingSoonScreen(stringResource(com.aljaroudi.muntathir.R.string.downloads), detailBack)
+                                DownloadsScreen(hiltViewModel(), detailBack)
                             }
                             entry<CreditsRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
                                 CreditsScreen(detailBack)

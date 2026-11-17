@@ -57,7 +57,10 @@ Done 2026-11-17. `just android-test` passes. The instrumented tests (`MuntathirA
   - `QuranReader.search` (core) is the Swift algorithm and LRU cache; `ui/quran/QuranSearchModel` is shared by the surah list and the in-reader search (scoped to the surah open when search starts; results cover the reader without rebuilding it).
   - `core/text/SearchHistory` per area (max 20) in the backed-up `files/datastore/search-history.v1.json`; recent searches show while the empty field is focused.
   - `core/search/SemanticSearchClient` keeps the request/response validation; `KtorSemanticSearchTransport` posts to `BuildConfig.SEMANTIC_SEARCH_URL`: the `semanticSearchUrl` Gradle property, else the git-ignored iOS `SemanticSearchConfiguration.plist`; without either, Smart search is hidden. Nothing is sent until Smart search is tapped. `QuranSearchTest` swaps `SearchModule` for a fake.
-- [ ] **P3.3** Translations pack, picker (Auto/None/explicit), Downloads screen.
+- [x] **P3.3** Translations pack, picker (Auto/None/explicit), Downloads screen.
+  - `packs/quran_translations` (on-demand, `Quran/<id>.db` × 12, filled by `just android-packs`). Verified with `just android-local-testing` on the API 37 emulator: choosing German downloaded the pack, installed all 12, removed the pack and showed German in the reader.
+  - `core/quran/QuranTranslationFiles` + `QuranTranslationStore` port the Swift index (generation folders, atomic `index.json`, cleanup) and state machine behind a `TranslationPack` interface, so `QuranTranslationStoreTest` runs the `QuranAssetStoreTests` cases on the JVM. `data/QuranTranslations` drives it on the main thread with `PlayTranslationPack` (Play statuses → began/progress/finished/failed, plus a Wi-Fi/confirmation prompt Play needs).
+  - The picker is a dialog (Auto, None, each language with a download mark); the Downloads rows use icon buttons instead of swipe actions. Today's daily ayah follows the selected installed translation.
 - [ ] **P3.4** Highlights/bookmarks (Room), Saved list, editor.
 - [ ] **P3.5** Reading timers → Activity.
 

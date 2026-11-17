@@ -1,6 +1,8 @@
 package com.aljaroudi.muntathir.data
 
 import android.content.Context
+import com.aljaroudi.muntathir.assets.AssetPackBackend
+import com.aljaroudi.muntathir.assets.PlayAssetPackBackend
 import com.aljaroudi.muntathir.core.app.Announcer
 import com.aljaroudi.muntathir.core.app.AppModel
 import com.aljaroudi.muntathir.core.app.AppStorage
@@ -56,6 +58,12 @@ object DataModule {
         @ApplicationContext context: Context,
         @AppScope scope: CoroutineScope,
     ): ReadingSettings = ReadingSettings.create(context, CoroutineScope(scope.coroutineContext + Dispatchers.IO))
+
+    @Provides
+    @Singleton
+    fun assetPacks(
+        @ApplicationContext context: Context,
+    ): AssetPackBackend = PlayAssetPackBackend(context)
 
     @Provides
     @Singleton

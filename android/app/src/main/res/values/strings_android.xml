@@ -22,4 +22,5 @@
     <string name="clear_search">Clear search</string>
     <string name="search">Search</string>
     <string name="close_search">Close search</string>
+    <string name="download_waiting_for_confirmation">Waiting for Wi-Fi. Continue to download over mobile data.</string>
 </resources>

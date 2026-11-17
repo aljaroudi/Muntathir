@@ -33,7 +33,8 @@ class QuranDatabase
         @OptIn(ExperimentalCoroutinesApi::class)
         private val dispatcher = Dispatchers.IO.limitedParallelism(1)
         private val connections = mutableMapOf<String, SQLiteConnection>()
-        private var translationFiles: Map<String, File> = emptyMap()
+
+        @Volatile private var translationFiles: Map<String, File> = emptyMap()
 
         private val surahList: List<QuranSurah> by lazy {
             json.decodeFromString<List<QuranSurah>>(asset(SURAHS))
@@ -50,30 +51,34 @@ class QuranDatabase
             )
 
         /** Runs [block] on the database thread. */
-        suspend fun <T> read(block: suspend QuranReader.() -> T): T = withContext(dispatcher) { reader.block() }
-
-        /** Points downloaded translations at newly installed files, closing connections to replaced ones. */
-        suspend fun setTranslations(files: Map<String, File>) =
+        suspend fun <T> read(block: suspend QuranReader.() -> T): T =
             withContext(dispatcher) {
-                translationFiles = files
-                val keep = files.values.map { it.absolutePath }.toSet()
-                val bundled = File(directory(), "").absolutePath
-                connections.keys
-                    .filter { it !in keep && !it.startsWith(bundled) }
-                    .forEach { connections.remove(it)?.close() }
+                closeReplacedTranslations()
+                reader.block()
             }
 
-        /** Whether [file] is a complete translation database. Swift `QuranDatabase.validateTranslation`. */
-        suspend fun isValidTranslation(file: File): Boolean =
-            withContext(Dispatchers.IO) {
-                runCatching {
-                    driver
-                        .open(
-                            file.absolutePath,
-                            SQLITE_OPEN_READONLY,
-                        ).use { QuranReader.isValidTranslation(AndroidQuranSql(it)) }
-                }.getOrDefault(false)
-            }
+        /** Points downloaded translations at the installed files; connections to replaced ones close on the next read. */
+        fun setTranslations(files: Map<String, File>) {
+            translationFiles = files
+        }
+
+        private fun closeReplacedTranslations() {
+            val keep = translationFiles.values.map { it.absolutePath }.toSet()
+            val bundled = directory().absolutePath
+            connections.keys
+                .filter { it !in keep && !it.startsWith(bundled) }
+                .forEach { connections.remove(it)?.close() }
+        }
+
+        /** Whether [file] is a complete translation database (blocking). Swift `QuranDatabase.validateTranslation`. */
+        fun isValidTranslation(file: File): Boolean =
+            runCatching {
+                driver
+                    .open(
+                        file.absolutePath,
+                        SQLITE_OPEN_READONLY,
+                    ).use { QuranReader.isValidTranslation(AndroidQuranSql(it)) }
+            }.getOrDefault(false)
 
         /** Arabic surah names by number, for Arabic verse references. */
         suspend fun surahNames(): Map<Int, String> =

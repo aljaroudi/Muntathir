@@ -29,11 +29,11 @@ class SearchHistoryStore
         @param:AppScope private val scope: CoroutineScope,
     ) {
         private val store: DataStore<SearchHistory> =
-            DataStoreFactory.create(
-                HistorySerializer,
-                scope = CoroutineScope(scope.coroutineContext + Dispatchers.IO),
-            ) {
-                context.dataStoreFile(FILE)
+            synchronized(SearchHistoryStore) {
+                shared ?: DataStoreFactory
+                    .create(HistorySerializer, scope = CoroutineScope(scope.coroutineContext + Dispatchers.IO)) {
+                        context.dataStoreFile(FILE)
+                    }.also { shared = it }
             }
 
         val state: StateFlow<SearchHistory> = store.data.stateIn(scope, SharingStarted.Eagerly, SearchHistory())
@@ -56,6 +56,9 @@ class SearchHistoryStore
 
         companion object {
             const val FILE = "search-history.v1.json"
+
+            /** One DataStore per file and process, even when tests build several Hilt components. */
+            private var shared: DataStore<SearchHistory>? = null
         }
     }
 

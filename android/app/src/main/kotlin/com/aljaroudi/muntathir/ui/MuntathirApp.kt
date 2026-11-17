@@ -21,6 +21,7 @@ import com.aljaroudi.muntathir.core.app.AppError
 import com.aljaroudi.muntathir.core.app.AppModel
 import com.aljaroudi.muntathir.core.app.AppState
 import com.aljaroudi.muntathir.core.location.SavedLocation
+import com.aljaroudi.muntathir.data.QuranTranslations
 import com.aljaroudi.muntathir.location.DeviceLocator
 import com.aljaroudi.muntathir.ui.components.message
 import com.aljaroudi.muntathir.ui.onboarding.OnboardingScreen
@@ -37,12 +38,15 @@ class MainViewModel
     constructor(
         private val model: AppModel,
         private val locator: DeviceLocator,
+        private val translations: QuranTranslations,
     ) : ViewModel() {
         val state: StateFlow<AppState> = model.state
         val errors: SharedFlow<AppError> = model.errors
 
         /** Swift scene-phase `.active`: follow the device to a new place while location access stays granted. */
         fun onForeground() {
+            // Swift scene activation: finish interrupted translation downloads and follow language changes.
+            translations.onForeground()
             viewModelScope.launch {
                 followDevice()
                 // Swift launch refresh: the corrections feed on every activation.

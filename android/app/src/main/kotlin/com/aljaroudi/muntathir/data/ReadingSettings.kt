@@ -34,11 +34,18 @@ class ReadingSettings(
     companion object {
         const val FILE = "reading.v1.json"
 
+        private var store: DataStore<ReadingPreferences>? = null
+
+        /** One DataStore per file and process, even when tests build several Hilt components. */
         fun create(
             context: Context,
             scope: CoroutineScope,
         ) = ReadingSettings(
-            DataStoreFactory.create(ReadingSerializer, scope = scope) { context.dataStoreFile(FILE) },
+            synchronized(this) {
+                store ?: DataStoreFactory
+                    .create(ReadingSerializer, scope = scope) { context.dataStoreFile(FILE) }
+                    .also { store = it }
+            },
             scope,
         )
     }

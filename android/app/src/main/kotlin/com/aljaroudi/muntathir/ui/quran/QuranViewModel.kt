@@ -3,10 +3,10 @@ package com.aljaroudi.muntathir.ui.quran
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aljaroudi.muntathir.core.quran.QuranCatalog
+import com.aljaroudi.muntathir.core.quran.TranslationState
 import com.aljaroudi.muntathir.data.QuranDatabase
-import com.aljaroudi.muntathir.data.QuranTranslationStore
+import com.aljaroudi.muntathir.data.QuranTranslations
 import com.aljaroudi.muntathir.data.SearchHistoryStore
-import com.aljaroudi.muntathir.data.TranslationState
 import com.aljaroudi.muntathir.search.SmartSearch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -32,7 +32,7 @@ class QuranViewModel
     @Inject
     constructor(
         private val quran: QuranDatabase,
-        private val translations: QuranTranslationStore,
+        val translations: QuranTranslations,
         history: SearchHistoryStore,
         smartSearch: SmartSearch,
     ) : ViewModel() {

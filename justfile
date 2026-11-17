@@ -113,6 +113,7 @@ android-format:
 android-packs:
     python3 apple/AssetPacks/assets.py android --content hadith
     python3 apple/AssetPacks/assets.py android --content supplications
+    python3 apple/AssetPacks/assets.py android --content quran
 
 # Install the debug bundle with local Play Asset Delivery testing; set ANDROID_SERIAL to choose a device
 android-local-testing: android-packs

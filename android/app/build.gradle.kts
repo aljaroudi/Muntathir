@@ -50,7 +50,7 @@ android {
     androidResources.generateLocaleConfig = true
 
     // Content databases ship as Play Asset Delivery packs; only the Quran text is in the base APK.
-    assetPacks += listOf(":packs:hadith", ":packs:supplications")
+    assetPacks += listOf(":packs:hadith", ":packs:supplications", ":packs:quran_translations")
     // Databases are copied out once; storing them uncompressed keeps that a plain stream copy.
     androidResources.noCompress += "db"
 
@@ -77,6 +77,8 @@ val quranAssets =
             appleResources.resolve("Quran/en.qarai.db"),
             appleResources.resolve("quran-daily-ids.json"),
             appleResources.resolve("quran-surahs.json"),
+            // Estimated pack sizes, shown before a download (Swift `AssetDownloadSize`).
+            appleResources.resolve("AssetDownloadSizes.json"),
         )
         subdirectory = "quran"
         lowercase = false

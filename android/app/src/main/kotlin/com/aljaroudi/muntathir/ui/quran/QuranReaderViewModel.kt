@@ -7,11 +7,11 @@ import com.aljaroudi.muntathir.core.app.ReadingPreferences
 import com.aljaroudi.muntathir.core.quran.Ayah
 import com.aljaroudi.muntathir.core.quran.QuranCatalog
 import com.aljaroudi.muntathir.core.quran.QuranPage
+import com.aljaroudi.muntathir.core.quran.TranslationState
 import com.aljaroudi.muntathir.data.QuranDatabase
-import com.aljaroudi.muntathir.data.QuranTranslationStore
+import com.aljaroudi.muntathir.data.QuranTranslations
 import com.aljaroudi.muntathir.data.ReadingSettings
 import com.aljaroudi.muntathir.data.SearchHistoryStore
-import com.aljaroudi.muntathir.data.TranslationState
 import com.aljaroudi.muntathir.search.SmartSearch
 import com.aljaroudi.muntathir.ui.navigation.QuranReaderRoute
 import dagger.assisted.Assisted
@@ -63,7 +63,7 @@ class QuranReaderViewModel
         @Assisted val route: QuranReaderRoute,
         private val quran: QuranDatabase,
         private val settings: ReadingSettings,
-        private val translations: QuranTranslationStore,
+        val translations: QuranTranslations,
         private val history: SearchHistoryStore,
         private val smartSearch: SmartSearch,
     ) : ViewModel() {
