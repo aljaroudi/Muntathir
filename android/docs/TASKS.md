@@ -56,7 +56,7 @@ Done 2026-11-17. `just android-test` passes. The instrumented tests (`MuntathirA
 - [x] **P3.2** Search + history (+ smart search hook).
   - `QuranReader.search` (core) is the Swift algorithm and LRU cache; `ui/quran/QuranSearchModel` is shared by the surah list and the in-reader search (scoped to the surah open when search starts; results cover the reader without rebuilding it).
   - `core/text/SearchHistory` per area (max 20) in the backed-up `files/datastore/search-history.v1.json`; recent searches show while the empty field is focused.
-  - `core/search/SemanticSearchClient` keeps the request/response validation; `KtorSemanticSearchTransport` posts to `BuildConfig.SEMANTIC_SEARCH_URL` (Gradle property `semanticSearchUrl`, defaulting to the iOS plist URL). Nothing is sent until Smart search is tapped. `QuranSearchTest` swaps `SearchModule` for a fake.
+  - `core/search/SemanticSearchClient` keeps the request/response validation; `KtorSemanticSearchTransport` posts to `BuildConfig.SEMANTIC_SEARCH_URL`: the `semanticSearchUrl` Gradle property, else the git-ignored iOS `SemanticSearchConfiguration.plist`; without either, Smart search is hidden. Nothing is sent until Smart search is tapped. `QuranSearchTest` swaps `SearchModule` for a fake.
 - [ ] **P3.3** Translations pack, picker (Auto/None/explicit), Downloads screen.
 - [ ] **P3.4** Highlights/bookmarks (Room), Saved list, editor.
 - [ ] **P3.5** Reading timers → Activity.

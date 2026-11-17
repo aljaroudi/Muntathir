@@ -17,9 +17,16 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "com.aljaroudi.muntathir.HiltTestRunner"
-        // Smart search (`/v1/search`), as in apple/Muntathir/Resources/SemanticSearchConfiguration.plist.
+        // Smart search (`/v1/search`): the `semanticSearchUrl` Gradle property, else the git-ignored iOS
+        // SemanticSearchConfiguration.plist, like Swift `SemanticSearchClient.configured`. Empty hides the feature.
+        val semanticSearchPlist = rootProject.file("../apple/Muntathir/Resources/SemanticSearchConfiguration.plist")
         val semanticSearchUrl =
-            providers.gradleProperty("semanticSearchUrl").orElse("https://search.xn--pgbou4cf.com/v1/search").get()
+            providers.gradleProperty("semanticSearchUrl").orNull
+                ?: semanticSearchPlist
+                    .takeIf { it.isFile }
+                    ?.readText()
+                    ?.let { Regex("<key>url</key>\\s*<string>([^<]*)</string>").find(it)?.groupValues?.get(1) }
+                ?: ""
         buildConfigField("String", "SEMANTIC_SEARCH_URL", "\"$semanticSearchUrl\"")
     }
 
