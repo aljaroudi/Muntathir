@@ -37,3 +37,11 @@ Native Kotlin + Jetpack Compose version of the iOS app in [`apple/`](../../apple
 - **One chained alarm** instead of a 10-day batch of 50 requests.
 - **`AppModel` lives in `core/app`**, so the iOS AppModel tests (stale feed responses, conflicts, persistence) run on the JVM.
 - **Android-only strings** go in `values*/strings_android.xml`, translated by hand for all 15 locales; `strings.py` owns only `strings.xml`.
+
+## Decisions (2026-11-17, P3)
+
+- **Platform-neutral stores in `core`.** The Quran reader (`QuranSql`), translation downloads (`TranslationPack`) and highlights/bookmarks (`UserRecords`) sit behind tiny interfaces, so the Swift tests run on the JVM against the iOS databases; the app only adapts the bundled driver, Play Asset Delivery and Room.
+- **Reader choices are their own backed-up file** (`reading.v1.json`) with the iOS sync keys and per-key validation; there's no cloud sync.
+- **The smart-search endpoint isn't in the repo.** The build reads the `semanticSearchUrl` Gradle property, else the git-ignored iOS `SemanticSearchConfiguration.plist`; without either the button is hidden. Nothing is sent until the user taps Smart search.
+- **DataStores are one per file and process** (cached in companions), since Hilt tests build several components in one process.
+- **The asset-pack API can be missing** (Studio and test installs): the translation pack treats its errors as "not downloaded" instead of crashing.

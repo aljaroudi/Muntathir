@@ -49,6 +49,8 @@ Done 2026-11-17. `just android-test` passes. The instrumented tests (`MuntathirA
   - Android-only strings live in `strings_android.xml` in all 15 locales.
 
 ## P3 — Quran
+Done 2026-11-17. `just android-test` passes (193 core tests). All instrumented tests pass on the API 37 emulator, and the translation pack was verified with `just android-local-testing`.
+
 - [x] **P3.1** Bundled DBs, surah list, reader modes, Mushaf.
   - `core/quran/QuranReader` holds every query from Swift `QuranReader`/`QuranDatabase` behind a tiny `QuranSql` interface, so `QuranReaderTest` runs all the Swift cases on the JVM against the iOS databases (sqlite-jdbc). `data/QuranDatabase` adapts the bundled driver and keeps connections on one thread.
   - Reader choices (`readingSizePercent`, `quranReadingMode`, translation selection, palette, Saved grouping) live in `core/app/ReadingPreferences`, stored as the backed-up `files/datastore/reading.v1.json` with the iOS keys and per-key validation. There's no cloud sync.
@@ -66,7 +68,9 @@ Done 2026-11-17. `just android-test` passes. The instrumented tests (`MuntathirA
   - Room 2.8 (`databases/user.db`, bundled driver, schema exported to `app/schemas`) holds `highlights`, `bookmarks` and `activity`; it's in Auto Backup. The installation id lives in `no_backup/QuranIdentity`, so a restored device writes its own rows.
   - Reader: selecting text → Highlight → editor (palette from `ReadingPreferences`; tapping a color saves); tapping highlighted text opens it (a chooser for overlaps); TalkBack gets one action per highlight. Mushaf selections save one highlight per verse. Bookmark is in each verse's menu.
   - Deviations: row actions are an overflow menu rather than swipe; palette reorder uses move buttons; Pearl is the iOS lavender as a solid swatch (no sheen). The P1.7 `ReaderSpikeActivity` and its test stay as they were. `SavedTest` covers bookmark → Saved → open/remove and select → highlight → reopen on in-memory Room.
-- [ ] **P3.5** Reading timers → Activity.
+- [x] **P3.5** Reading timers → Activity.
+  - `ui/reader/trackReading` wraps `ReadingActivityClock`: it counts while the screen is resumed and the verses or pages are showing (not under search or the size sheet), pauses after 5 idle minutes, treats any pointer down as interaction, saves every 15 s and on pause or exit, with one session id per kind and the monotonic clock.
+  - `data/user/ProgressStore` keeps sessions in Room's `activity` table and only stores growth (max, not sum). The Activity screen itself is P5.5. `ProgressStoreTest` and `SavedTest` cover it on device.
 
 ## P4 — Library
 - [ ] **P4.1** Hadith asset store (install index, integrity scan cache, update state).

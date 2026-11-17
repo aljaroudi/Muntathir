@@ -36,6 +36,13 @@ object UserDataModule {
             scope.launch { store.reopen() }
         }
 
+    @Provides
+    @Singleton
+    fun progressStore(
+        database: UserDatabase,
+        @AppScope scope: CoroutineScope,
+    ): ProgressStore = ProgressStore(database.dao(), scope)
+
     /**
      * Swift `QuranUserStore.localInstallationID`: a UUID in `no_backup`, so a restored device writes its own rows
      * instead of editing the source device's.

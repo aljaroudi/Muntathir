@@ -8,6 +8,7 @@ import com.aljaroudi.muntathir.core.highlight.HighlightRange
 import com.aljaroudi.muntathir.core.highlight.QuranUserStore
 import com.aljaroudi.muntathir.core.highlight.ReadingBookmark
 import com.aljaroudi.muntathir.core.highlight.ReadingHighlight
+import com.aljaroudi.muntathir.core.progress.ProgressActivity
 import com.aljaroudi.muntathir.core.quran.Ayah
 import com.aljaroudi.muntathir.core.quran.QuranCatalog
 import com.aljaroudi.muntathir.core.quran.QuranPage
@@ -17,6 +18,7 @@ import com.aljaroudi.muntathir.data.QuranDatabase
 import com.aljaroudi.muntathir.data.QuranTranslations
 import com.aljaroudi.muntathir.data.ReadingSettings
 import com.aljaroudi.muntathir.data.SearchHistoryStore
+import com.aljaroudi.muntathir.data.user.ProgressStore
 import com.aljaroudi.muntathir.search.SmartSearch
 import com.aljaroudi.muntathir.ui.navigation.QuranReaderRoute
 import com.aljaroudi.muntathir.ui.reader.HighlightDraft
@@ -74,6 +76,7 @@ class QuranReaderViewModel
         private val history: SearchHistoryStore,
         private val smartSearch: SmartSearch,
         val user: QuranUserStore,
+        private val progress: ProgressStore,
     ) : ViewModel() {
         @AssistedFactory
         interface Factory {
@@ -282,6 +285,9 @@ class QuranReaderViewModel
         fun dismissBookmarkFailure() {
             mutableBookmarkFailed.value = false
         }
+
+        /** Saves a reading-time snapshot for Activity. */
+        fun record(activity: ProgressActivity) = progress.record(activity)
 
         /** A mushaf page, or `null` when it can't be read. */
         suspend fun page(number: Int): QuranPage? = runCatching { quran.read { page(number) } }.getOrNull()

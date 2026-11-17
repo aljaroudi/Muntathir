@@ -68,6 +68,7 @@ import com.aljaroudi.muntathir.core.app.ReadingPreferences
 import com.aljaroudi.muntathir.core.highlight.HighlightColor
 import com.aljaroudi.muntathir.core.highlight.ReadingBookmark
 import com.aljaroudi.muntathir.core.highlight.ReadingHighlight
+import com.aljaroudi.muntathir.core.progress.ProgressActivityKind
 import com.aljaroudi.muntathir.core.quran.Ayah
 import com.aljaroudi.muntathir.core.quran.QuranReference
 import com.aljaroudi.muntathir.core.quran.QuranTranslation
@@ -85,6 +86,7 @@ import com.aljaroudi.muntathir.ui.reader.HighlightSwatch
 import com.aljaroudi.muntathir.ui.reader.ReaderText
 import com.aljaroudi.muntathir.ui.reader.ReadingTextStyle
 import com.aljaroudi.muntathir.ui.reader.quranTypeface
+import com.aljaroudi.muntathir.ui.reader.trackReading
 import java.util.Locale
 
 /** Swift `QuranReadingView`: one surah as verses, or the mushaf, keeping the position across modes. */
@@ -145,10 +147,13 @@ fun QuranReaderScreen(
                 ?.value
                 ?.isNotBlank() == true
         // Search results cover the reader without rebuilding it, so its place and layout survive.
+        // Swift `trackReading(.quranReading)`: only while the verses or pages are on screen.
+        val shown = mode == QuranReadingMode.Mushaf || chapter is ChapterState.Loaded
         Box(
-            Modifier.fillMaxSize().then(
-                if (covered) Modifier.alpha(0f).clearAndSetSemantics {} else Modifier,
-            ),
+            Modifier
+                .fillMaxSize()
+                .trackReading(ProgressActivityKind.QuranReading, shown && !covered && !sizing, viewModel::record)
+                .then(if (covered) Modifier.alpha(0f).clearAndSetSemantics {} else Modifier),
         ) {
             ReaderContent(viewModel, mode, chapter, position, reading.readingSizePercent, surahs, padding) { juz = it }
         }

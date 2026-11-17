@@ -20,7 +20,9 @@ import com.aljaroudi.muntathir.core.app.DeviceState
 import com.aljaroudi.muntathir.core.highlight.HighlightColor
 import com.aljaroudi.muntathir.core.highlight.QuranUserStore
 import com.aljaroudi.muntathir.core.highlight.ReadingHighlight
+import com.aljaroudi.muntathir.core.progress.ProgressActivityKind
 import com.aljaroudi.muntathir.data.StorageModule
+import com.aljaroudi.muntathir.data.user.ProgressStore
 import com.aljaroudi.muntathir.data.user.RoomUserRecords
 import com.aljaroudi.muntathir.data.user.UserDataModule
 import com.aljaroudi.muntathir.data.user.UserDatabase
@@ -31,6 +33,8 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -59,6 +63,9 @@ class SavedTest {
 
     @BindValue @JvmField
     val user: QuranUserStore = QuranUserStore(RoomUserRecords(database.dao()), { "test-device" })
+
+    @BindValue @JvmField
+    val progress: ProgressStore = ProgressStore(database.dao(), CoroutineScope(Dispatchers.IO))
 
     @Before
     fun setUp() {
@@ -158,5 +165,12 @@ class SavedTest {
         compose.waitUntil(10_000) { user.bookmark("1:1") == null }
         assertTrue(user.bookmarks.value.isEmpty())
         assertEquals(1, user.highlights.value.size)
+        // Time in the reader was saved for Activity when it closed.
+        compose.waitUntil(10_000) {
+            runBlocking { progress.activities() }.any {
+                it.kind ==
+                    ProgressActivityKind.QuranReading
+            }
+        }
     }
 }

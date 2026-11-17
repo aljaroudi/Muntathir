@@ -31,7 +31,10 @@ android/
 | Content SQLite (read-only, FTS5 `unicode61 remove_diacritics 2`) | `androidx.sqlite` **BundledSQLiteDriver** (platform SQLite lacks FTS5) |
 | Preferences (`preferences.v1`, same JSON shape and validation as `Preferences.swift`) | DataStore (`files/datastore/preferences.v1.json`) behind `core/app/AppModel` |
 | Device-local: onboarding step, GPS location, delivered announcements (later: hadith session) | DataStore in `no_backup/device.v1.json` |
-| Highlights, bookmarks, prayer history, activity | Room (bundled driver) |
+| Reader choices (iOS `ReadingPreferencesSync` keys: text size, mode, translation, palette, Saved grouping) | DataStore `files/datastore/reading.v1.json` via `core/app/ReadingPreferences` (backed up) |
+| Recent searches per area | DataStore `files/datastore/search-history.v1.json` (backed up) |
+| Downloaded Quran translations | `no_backup/QuranTranslations/<generation>/<id>.db` + atomic `index.json` (`core/quran/QuranTranslationFiles`) |
+| Highlights, bookmarks, activity (later: prayer history) | Room `databases/user.db` (bundled driver, schemas in `app/schemas`), stores in `core` behind small interfaces; installation id in `no_backup/QuranIdentity` |
 
 Schema checks match iOS: Hadith `application_id` 1230262606, `user_version` 7–8; Rulings 1179809601 v1. Keep the iOS record design (stable IDs, `modifiedAt`, tombstones) so that restore and merge logic stays identical.
 
@@ -47,7 +50,7 @@ Schema checks match iOS: Hadith `application_id` 1230262606, `user_version` 7–
 |---|---|---|
 | `hadith` | on-demand | |
 | `supplications` | fast-follow | Real file path; iOS "essential" equivalent |
-| `quran_translations` | on-demand | Copy validated DBs to `noBackupFilesDir`, then `removePack` (iOS App Group flow) |
+| `quran_translations` | on-demand | Copy validated DBs to `noBackupFilesDir`, then `removePack` (iOS App Group flow); state machine in `core/quran/QuranTranslationStore` |
 | `rulings` | on-demand | |
 
 One `AssetPackBackend` interface over `AssetPackManager`, mirroring `AssetPackBackend.swift` events. Handle the confirmation dialogs (cellular / user confirmation) and the post-update "patching" state. Pack content ships with app releases. Packaging extends `apple/AssetPacks/assets.py` with an Android target that reuses the same validators.
