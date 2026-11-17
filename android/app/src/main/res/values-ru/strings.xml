@@ -10,9 +10,9 @@
     <string name="x_ah_9cf12d">%d г. х.</string>
     <string name="x_rakaat">%d ракаатов</string>
     <plurals name="x_verses">
+        <item quantity="one">%d аят</item>
         <item quantity="few">%d аята</item>
         <item quantity="many">%d аятов</item>
-        <item quantity="one">%d аят</item>
         <item quantity="other">%d аята</item>
     </plurals>
     <string name="a_companion_for_your_daily_worship">Спутник в вашем ежедневном поклонении.</string>

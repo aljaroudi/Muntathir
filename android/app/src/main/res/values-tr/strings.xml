@@ -10,6 +10,7 @@
     <string name="x_ah_9cf12d">%d H</string>
     <string name="x_rakaat">%d rekât</string>
     <plurals name="x_verses">
+        <item quantity="one">%d ayet</item>
         <item quantity="other">%d ayet</item>
     </plurals>
     <string name="a_companion_for_your_daily_worship">Günlük ibadetlerinizde yol arkadaşınız.</string>

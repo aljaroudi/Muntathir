@@ -10,6 +10,11 @@
     <string name="x_ah_9cf12d">%d هـ</string>
     <string name="x_rakaat">%d ركعات</string>
     <plurals name="x_verses">
+        <item quantity="zero">عدد الآيات: %d</item>
+        <item quantity="one">عدد الآيات: %d</item>
+        <item quantity="two">عدد الآيات: %d</item>
+        <item quantity="few">عدد الآيات: %d</item>
+        <item quantity="many">عدد الآيات: %d</item>
         <item quantity="other">عدد الآيات: %d</item>
     </plurals>
     <string name="a_companion_for_your_daily_worship">رفيقك في عباداتك اليومية.</string>
