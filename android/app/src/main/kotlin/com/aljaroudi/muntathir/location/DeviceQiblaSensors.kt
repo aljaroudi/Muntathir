@@ -21,6 +21,7 @@ import androidx.core.content.getSystemService
 import androidx.core.location.LocationManagerCompat
 import com.aljaroudi.muntathir.core.qibla.QiblaGeometry
 import com.aljaroudi.muntathir.core.qibla.QiblaSession
+import com.google.android.gms.location.Granularity
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -121,7 +122,10 @@ class DeviceQiblaSensors
                 LocationRequest
                     .Builder(Priority.PRIORITY_HIGH_ACCURACY, UPDATE_MS)
                     .setMinUpdateIntervalMillis(UPDATE_MS)
-                    .setWaitForAccurateLocation(false)
+                    // The most accurate fix GPS gives: precise granularity, and no coarse first fixes
+                    // (the session rejects anything over 20 m anyway).
+                    .setGranularity(Granularity.GRANULARITY_FINE)
+                    .setWaitForAccurateLocation(true)
                     .build()
             try {
                 // Swift's optional mode also uses the cached fix; the session accepts it when it's recent enough.
