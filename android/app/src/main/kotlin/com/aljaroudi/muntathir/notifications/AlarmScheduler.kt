@@ -144,11 +144,27 @@ class RescheduleReceiver : BroadcastReceiver() {
         context: Context,
         intent: Intent,
     ) {
+        // Exported for the system; ignore explicit intents from other apps.
+        if (intent.action !in ACTIONS) return
         val state = model.state.value
         // Locale changes rename the channels.
         notifier.ensureChannels(state.preferences)
         scheduler.schedule(state)
         widgets.refresh(goAsync()::finish)
+    }
+
+    private companion object {
+        /** The manifest's intent filter. */
+        val ACTIONS =
+            setOf(
+                Intent.ACTION_BOOT_COMPLETED,
+                Intent.ACTION_TIME_CHANGED,
+                Intent.ACTION_TIMEZONE_CHANGED,
+                Intent.ACTION_LOCALE_CHANGED,
+                Intent.ACTION_MY_PACKAGE_REPLACED,
+                // AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED (API 31).
+                "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED",
+            )
     }
 }
 

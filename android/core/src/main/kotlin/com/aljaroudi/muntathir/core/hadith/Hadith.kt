@@ -27,10 +27,12 @@ data class HadithCollection(
 
     fun title(locale: Locale) = if (locale.isArabic || english.isEmpty()) arabic else english
 
-    fun matches(query: String): Boolean {
-        val text = QuranSearchText.normalize("$arabic $english").lowercase()
-        return SearchRelevance.score(text, QuranSearchText.terms(query)) != null
-    }
+    /** Normalized once: browse filters every book on each keystroke. */
+    private val searchText by lazy { QuranSearchText.normalize("$arabic $english").lowercase() }
+
+    fun matches(query: String): Boolean = matches(QuranSearchText.terms(query))
+
+    fun matches(terms: List<String>): Boolean = SearchRelevance.score(searchText, terms) != null
 }
 
 data class HadithChapter(
@@ -46,11 +48,14 @@ data class HadithChapter(
     val count: Int = 0,
     val readingWords: Int = 0,
 ) {
-    fun matches(query: String): Boolean {
-        if (query.isBlank()) return true
-        val text = QuranSearchText.normalize("$arabic $english $bookArabic $bookEnglish").lowercase()
-        return SearchRelevance.score(text, QuranSearchText.terms(query)) != null
+    /** Normalized once: browse filters every chapter on each keystroke. */
+    private val searchText by lazy {
+        QuranSearchText.normalize("$arabic $english $bookArabic $bookEnglish").lowercase()
     }
+
+    fun matches(query: String): Boolean = query.isBlank() || matches(QuranSearchText.terms(query))
+
+    fun matches(terms: List<String>): Boolean = SearchRelevance.score(searchText, terms) != null
 
     fun title(locale: Locale): String {
         val book = bookTitle(locale)

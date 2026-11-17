@@ -6,7 +6,6 @@
     <string name="move_down">Aşağı taşı</string>
     <string name="decrease_x">%1$s azalt</string>
     <string name="increase_x">%1$s artır</string>
-    <string name="coming_soon">Çok yakında</string>
     <string name="update_location">Konumu güncelle</string>
     <string name="use_your_device_location_to_calculate_prayer_times">Namaz vakitlerini ve kıbleyi hesaplamak için cihaz konumunu kullanın.</string>
     <string name="location_access_is_disabled_allow_it_in_settings">Konum erişimi kapalı. Namaz vakitlerini hesaplamak için Ayarlar\'dan izin verin.</string>
@@ -14,7 +13,6 @@
     <string name="system_default">Sistem varsayılanı</string>
     <string name="exact_alarms">Dakikası dakikasına alarmlar</string>
     <string name="exact_alarms_footer">Bu izin olmadan uyarılar 10 dakikaya kadar gecikebilir.</string>
-    <string name="settings_backup_footer">Ayarlar Android yedeğinize dahildir. Konum ve bildirim izinleri bu cihazda kalır.</string>
     <string name="sources_and_licenses">Kaynaklar ve lisanslar</string>
     <string name="calculations">Hesaplamalar</string>
     <string name="supplication_translations">Dua çevirileri</string>

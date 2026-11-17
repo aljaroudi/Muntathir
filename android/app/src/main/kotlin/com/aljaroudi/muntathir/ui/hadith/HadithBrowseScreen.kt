@@ -293,6 +293,7 @@ private fun rows(
     val hadith = stringResource(R.string.hadith)
     return remember(state, query, submitted, locale, four) {
         val live = query.trim()
+        val liveTerms = QuranSearchText.terms(live)
         buildList {
             if (route.collectionID == null && route.chapterID == null && submitted.isBlank()) add(BrowseRow.Saved)
             // Books: in the library, filtered by the live query unless it's a number or chapter lookup.
@@ -300,7 +301,7 @@ private fun rows(
                 val terms = QuranSearchText.terms(live)
                 val books =
                     state.catalog
-                        .filter { live.isEmpty() || it.matches(live) }
+                        .filter { live.isEmpty() || it.matches(liveTerms) }
                         .sortedWith(
                             compareBy<HadithCollection> {
                                 if (live.isEmpty()) null else SearchRelevance.score("${it.arabic} ${it.english}", terms)
@@ -351,7 +352,7 @@ private fun rows(
                     else -> {
                         state.chapters.filter {
                             (route.chapterID == null || it.id == route.chapterID) &&
-                                it.matches(live)
+                                (live.isBlank() || it.matches(liveTerms))
                         }
                     }
                 }

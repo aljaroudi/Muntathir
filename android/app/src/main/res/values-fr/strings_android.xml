@@ -6,7 +6,6 @@
     <string name="move_down">Descendre</string>
     <string name="decrease_x">Diminuer %1$s</string>
     <string name="increase_x">Augmenter %1$s</string>
-    <string name="coming_soon">Bientôt disponible</string>
     <string name="update_location">Mettre à jour la position</string>
     <string name="use_your_device_location_to_calculate_prayer_times">Utilisez la position de l\'appareil pour calculer les heures de prière et la qibla.</string>
     <string name="location_access_is_disabled_allow_it_in_settings">L\'accès à la position est désactivé. Autorisez-le dans les Paramètres pour calculer les heures de prière.</string>
@@ -14,7 +13,6 @@
     <string name="system_default">Langue du système</string>
     <string name="exact_alarms">Alarmes à la minute</string>
     <string name="exact_alarms_footer">Sans cette autorisation, les alertes peuvent arriver jusqu\'à 10 minutes en retard.</string>
-    <string name="settings_backup_footer">Les réglages sont inclus dans votre sauvegarde Android. La position et les autorisations de notification restent sur cet appareil.</string>
     <string name="sources_and_licenses">Sources et licences</string>
     <string name="calculations">Calculs</string>
     <string name="supplication_translations">Traductions des invocations</string>

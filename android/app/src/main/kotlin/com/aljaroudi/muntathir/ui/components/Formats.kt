@@ -8,6 +8,7 @@ import android.icu.text.MeasureFormat
 import android.icu.text.NumberFormat
 import android.icu.text.RelativeDateTimeFormatter
 import android.icu.text.SimpleDateFormat
+import android.icu.text.TimeZoneNames
 import android.icu.util.IslamicCalendar
 import android.icu.util.Measure
 import android.icu.util.MeasureUnit
@@ -16,6 +17,7 @@ import android.icu.util.ULocale
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.platform.LocalConfiguration
+import com.aljaroudi.muntathir.core.location.SavedLocation
 import java.time.Duration
 import java.time.LocalDate
 import java.time.ZoneId
@@ -35,6 +37,19 @@ fun currentLocale(): Locale = LocalConfiguration.current.locales[0]
  * locale-aware date skeletons.
  */
 object Formats {
+    /**
+     * A fix has no name (no geocoding), so show its zone's city ("Riyadh", "الرياض"), or rounded coordinates
+     * for zones without one (`Etc/GMT+3`).
+     */
+    fun place(
+        location: SavedLocation,
+        locale: Locale,
+    ): String =
+        TimeZoneNames.getInstance(ULocale.forLocale(locale)).getExemplarLocationName(location.timeZoneID)
+            ?: NumberFormat.getInstance(locale).apply { maximumFractionDigits = 2 }.let {
+                "${it.format(location.latitude)}, ${it.format(location.longitude)}"
+            }
+
     /** Hijri month names (Swift `DateFormatter` with `.islamicUmmAlQura`, `monthSymbols`). */
     fun hijriMonth(
         month: Int,

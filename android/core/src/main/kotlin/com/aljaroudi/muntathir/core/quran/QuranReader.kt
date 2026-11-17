@@ -40,9 +40,21 @@ class QuranReader(
         val revision: Int,
     )
 
+    /** Every Arabic verse by index, read once: search ranks and filters in memory instead of rereading the table. */
+    private class ArabicCorpus(
+        val texts: Map<Int, String>,
+        val surahs: IntArray,
+        val searchable: BooleanArray,
+    )
+
     private val mutex = Mutex()
     private val recentSearches = ArrayDeque<Pair<SearchKey, List<Ayah>>>()
     private var cachedCatalog: QuranCatalog? = null
+    private var corpus: ArabicCorpus? = null
+
+    /** The last searched translation's texts; dropped when [searchRevision] changes. */
+    private var translationTexts: Pair<String, Map<Int, String>>? = null
+    private var searchRevision = 0
 
     suspend fun catalog(): QuranCatalog =
         locked {
@@ -128,7 +140,11 @@ class QuranReader(
     ): List<Ayah> =
         locked {
             val key = SearchKey(query, translation, limit, surah, revision)
-            recentSearches.removeAll { it.first.revision != revision }
+            if (revision != searchRevision) {
+                recentSearches.clear()
+                translationTexts = null
+                searchRevision = revision
+            }
             recentSearches.indexOfFirst { it.first == key }.takeIf { it >= 0 }?.let { index ->
                 val entry = recentSearches.removeAt(index)
                 recentSearches.addLast(entry)
@@ -160,29 +176,30 @@ class QuranReader(
         }
         val terms = QuranSearchText.terms(query)
         if (terms.isEmpty()) return emptyList()
-        val arabicSql = arabicSql()
-        val arabicRanks = guarded { ranked(matches(terms, arabicSql, job), terms, arabicSql, job) }
+        val corpus = corpus()
+        val arabicRanks = guarded { ranked(matches(terms, arabicSql(), corpus.texts, job), terms, corpus.texts, job) }
         val translated =
-            translation?.let(::translationSql)?.let { sql ->
+            translation?.let { id ->
                 // Optional assets can disappear or be invalid; Arabic search must still work.
                 try {
-                    ranked(matches(terms, sql, job), terms, sql, job)
+                    val sql = translationSql(id) ?: return@let null
+                    val texts = translationTexts(id, sql)
+                    ranked(matches(terms, sql, texts, job), terms, texts, job)
                 } catch (cancellation: CancellationException) {
                     throw cancellation
                 } catch (_: Exception) {
                     null
                 }
             } ?: List(TIERS) { emptyList() }
-        var ids = (0 until TIERS).flatMap { arabicRanks[it] + translated[it] }.distinct()
-        if (surah != null) {
-            val chapter = arabicQuery("SELECT \"index\" FROM quran WHERE sura = ?", surah) { it.int(0) }.toSet()
-            ids = ids.filter { it in chapter }
-        }
-        val eligible =
-            arabicQuery("SELECT \"index\", text FROM quran") {
-                if (QuranSearchText.isSearchableVerse(it.text(1))) it.int(0) else -1
-            }.toSet()
-        val page = ids.filter { it in eligible }.take(maxOf(0, limit))
+        val page =
+            (0 until TIERS)
+                .asSequence()
+                .flatMap { arabicRanks[it] + translated[it] }
+                .distinct()
+                .filter { it in 1..VERSE_COUNT && corpus.searchable[it] }
+                .filter { surah == null || corpus.surahs[it] == surah }
+                .take(maxOf(0, limit))
+                .toList()
         if (page.isEmpty()) return emptyList()
         job?.ensureActive()
         val verses = page.chunked(CHUNK).flatMap { readVerses(indexIn(it.size), it, translation) }.toMap()
@@ -193,11 +210,10 @@ class QuranReader(
     private fun ranked(
         ids: List<Int>,
         terms: List<String>,
-        sql: ContentSql,
+        texts: Map<Int, String>,
         job: Job?,
     ): List<List<Int>> {
         if (ids.isEmpty()) return List(TIERS) { emptyList() }
-        val texts = sql.query("SELECT \"index\", text FROM quran") { it.int(0) to it.text(1) }.toMap()
         val groups = List(TIERS) { mutableListOf<Pair<Int, SearchRelevance>>() }
         for (id in ids) {
             job?.ensureActive()
@@ -211,6 +227,7 @@ class QuranReader(
     private fun matches(
         terms: List<String>,
         sql: ContentSql,
+        texts: Map<Int, String>,
         job: Job?,
     ): List<Int> {
         val hasIndex = sql.query("SELECT name FROM sqlite_master WHERE name='quran_words'") { it.text(0) }.isNotEmpty()
@@ -221,13 +238,37 @@ class QuranReader(
                 match,
             ) { it.int(0) }
         }
-        return sql
-            .query("SELECT \"index\", text FROM quran ORDER BY \"index\"") { it.int(0) to it.text(1) }
-            .filter { (_, text) ->
-                job?.ensureActive()
-                QuranSearchText.literalRank(text, terms) < 2
-            }.map { it.first }
+        return texts.keys.sorted().filter { index ->
+            job?.ensureActive()
+            QuranSearchText.literalRank(texts.getValue(index), terms) < 2
+        }
     }
+
+    private fun corpus(): ArabicCorpus =
+        corpus ?: run {
+            val texts = HashMap<Int, String>(VERSE_COUNT * 2)
+            val surahs = IntArray(VERSE_COUNT + 1)
+            val searchable = BooleanArray(VERSE_COUNT + 1)
+            arabicQuery("SELECT \"index\", sura, text FROM quran") { Triple(it.int(0), it.int(1), it.text(2)) }
+                .forEach { (index, surah, text) ->
+                    texts[index] = text
+                    if (index in 1..VERSE_COUNT) {
+                        surahs[index] = surah
+                        searchable[index] = QuranSearchText.isSearchableVerse(text)
+                    }
+                }
+            ArabicCorpus(texts, surahs, searchable).also { corpus = it }
+        }
+
+    private fun translationTexts(
+        id: String,
+        sql: ContentSql,
+    ): Map<Int, String> =
+        translationTexts?.takeIf { it.first == id }?.second
+            ?: sql
+                .query("SELECT \"index\", text FROM quran") { it.int(0) to it.text(1) }
+                .toMap()
+                .also { translationTexts = id to it }
 
     private fun pageLocked(number: Int): QuranPage {
         class Bounds(

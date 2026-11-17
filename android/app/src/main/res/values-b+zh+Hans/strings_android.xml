@@ -6,7 +6,6 @@
     <string name="move_down">下移</string>
     <string name="decrease_x">减少%1$s</string>
     <string name="increase_x">增加%1$s</string>
-    <string name="coming_soon">即将推出</string>
     <string name="update_location">更新位置</string>
     <string name="use_your_device_location_to_calculate_prayer_times">使用设备位置计算礼拜时间和朝向。</string>
     <string name="location_access_is_disabled_allow_it_in_settings">位置访问已关闭。请在设置中允许，以计算礼拜时间。</string>
@@ -14,7 +13,6 @@
     <string name="system_default">跟随系统</string>
     <string name="exact_alarms">准时闹钟</string>
     <string name="exact_alarms_footer">没有此权限时，提醒最多可能延迟 10 分钟。</string>
-    <string name="settings_backup_footer">设置包含在你的 Android 备份中。位置和通知权限保留在此设备上。</string>
     <string name="sources_and_licenses">来源与许可</string>
     <string name="calculations">计算</string>
     <string name="supplication_translations">祈祷文译本</string>

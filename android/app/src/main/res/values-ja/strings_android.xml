@@ -6,7 +6,6 @@
     <string name="move_down">下へ移動</string>
     <string name="decrease_x">%1$sを減らす</string>
     <string name="increase_x">%1$sを増やす</string>
-    <string name="coming_soon">近日公開</string>
     <string name="update_location">位置情報を更新</string>
     <string name="use_your_device_location_to_calculate_prayer_times">デバイスの位置情報を使って礼拝時刻とキブラを計算します。</string>
     <string name="location_access_is_disabled_allow_it_in_settings">位置情報へのアクセスがオフです。礼拝時刻を計算するには設定で許可してください。</string>
@@ -14,7 +13,6 @@
     <string name="system_default">システムのデフォルト</string>
     <string name="exact_alarms">正確な時刻のアラーム</string>
     <string name="exact_alarms_footer">この権限がない場合、通知が最大10分遅れることがあります。</string>
-    <string name="settings_backup_footer">設定はAndroidのバックアップに含まれます。位置情報と通知の権限はこのデバイスに残ります。</string>
     <string name="sources_and_licenses">出典とライセンス</string>
     <string name="calculations">計算</string>
     <string name="supplication_translations">祈願文の翻訳</string>

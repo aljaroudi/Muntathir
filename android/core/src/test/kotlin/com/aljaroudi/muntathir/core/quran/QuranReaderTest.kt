@@ -219,6 +219,19 @@ class QuranReaderTest {
         }
 
     @Test
+    fun warmSearchesStayFast() =
+        runBlocking {
+            reader.search("رحيم", "en.qarai") // Cold: reads the corpus and the translation once.
+            val queries = listOf("الله", "الرحمن", "قال", "موسى", "الصلاة", "mercy", "lord", "prayer", "day", "the")
+            val start = System.nanoTime()
+            for (query in queries) reader.search(query, "en.qarai", surah = 2)
+            for (query in queries) reader.search(query, "en.qarai")
+            val average = (System.nanoTime() - start) / 1_000_000.0 / (queries.size * 2)
+            println("Quran warm search: %.1f ms".format(average))
+            assertTrue(average < 100, "$average ms")
+        }
+
+    @Test
     fun referencesAcceptArabicIndicDigitsAndRejectInvalidVerses() =
         runBlocking {
             assertEquals(listOf("2:255"), reader.search("٢:٢٥٥", null).map { it.id })

@@ -6,7 +6,6 @@
     <string name="move_down">Nach unten</string>
     <string name="decrease_x">%1$s verringern</string>
     <string name="increase_x">%1$s erhöhen</string>
-    <string name="coming_soon">Demnächst</string>
     <string name="update_location">Standort aktualisieren</string>
     <string name="use_your_device_location_to_calculate_prayer_times">Verwende den Gerätestandort, um Gebetszeiten und Qibla zu berechnen.</string>
     <string name="location_access_is_disabled_allow_it_in_settings">Standortzugriff ist deaktiviert. Erlaube ihn in den Einstellungen, um Gebetszeiten zu berechnen.</string>
@@ -14,7 +13,6 @@
     <string name="system_default">Systemstandard</string>
     <string name="exact_alarms">Minutengenaue Wecker</string>
     <string name="exact_alarms_footer">Ohne diese Berechtigung können Hinweise bis zu 10 Minuten zu spät kommen.</string>
-    <string name="settings_backup_footer">Einstellungen sind in deiner Android-Sicherung enthalten. Standort und Mitteilungsberechtigungen bleiben auf diesem Gerät.</string>
     <string name="sources_and_licenses">Quellen und Lizenzen</string>
     <string name="calculations">Berechnungen</string>
     <string name="supplication_translations">Übersetzungen der Bittgebete</string>

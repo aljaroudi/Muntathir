@@ -6,7 +6,6 @@
     <string name="move_down">نیچے منتقل کریں</string>
     <string name="decrease_x">%1$s کم کریں</string>
     <string name="increase_x">%1$s بڑھائیں</string>
-    <string name="coming_soon">جلد آ رہا ہے</string>
     <string name="update_location">مقام اپ ڈیٹ کریں</string>
     <string name="use_your_device_location_to_calculate_prayer_times">نماز کے اوقات اور قبلہ معلوم کرنے کے لیے آلے کا مقام استعمال کریں۔</string>
     <string name="location_access_is_disabled_allow_it_in_settings">مقام تک رسائی بند ہے۔ نماز کے اوقات کے لیے ترتیبات میں اجازت دیں۔</string>
@@ -14,7 +13,6 @@
     <string name="system_default">سسٹم کی ڈیفالٹ</string>
     <string name="exact_alarms">بروقت الارم</string>
     <string name="exact_alarms_footer">اس اجازت کے بغیر یاد دہانیاں ۱۰ منٹ تک تاخیر سے آ سکتی ہیں۔</string>
-    <string name="settings_backup_footer">ترتیبات آپ کے Android بیک اپ میں شامل ہیں۔ مقام اور اطلاعات کی اجازتیں اسی آلے پر رہتی ہیں۔</string>
     <string name="sources_and_licenses">ماخذ اور لائسنس</string>
     <string name="calculations">حسابات</string>
     <string name="supplication_translations">دعاؤں کے تراجم</string>

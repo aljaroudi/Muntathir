@@ -8,7 +8,6 @@
     <!-- Stepper buttons; the argument is the setting's title. -->
     <string name="decrease_x">Decrease %1$s</string>
     <string name="increase_x">Increase %1$s</string>
-    <string name="coming_soon">Coming soon</string>
     <string name="update_location">Update location</string>
     <string name="use_your_device_location_to_calculate_prayer_times">Use your device location to calculate prayer times and Qibla.</string>
     <string name="location_access_is_disabled_allow_it_in_settings">Location access is disabled. Allow it in Settings to calculate prayer times.</string>
@@ -16,7 +15,6 @@
     <string name="system_default">System default</string>
     <string name="exact_alarms">Alarms on the minute</string>
     <string name="exact_alarms_footer">Without this permission, alerts can arrive up to 10 minutes late.</string>
-    <string name="settings_backup_footer">Settings are included in your Android backup. Location and notification permissions stay on this device.</string>
     <string name="sources_and_licenses">Sources and licenses</string>
     <string name="calculations">Calculations</string>
     <string name="supplication_translations">Supplication translations</string>

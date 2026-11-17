@@ -319,6 +319,9 @@ class FigureLibrary(
     val events: Map<String, List<IslamicEvent>>
     private val searchTerms: Map<String, List<String>>
 
+    /** [searchTerms] folded for the last search's locale, so typing doesn't refold every name. */
+    @Volatile private var foldedTerms: Pair<Locale, Map<String, List<String>>>? = null
+
     init {
         val dataset = json.decodeFromString<Dataset>(text)
         if (dataset.schemaVersion != 1) fail(FigureLibraryException.Failure.UnsupportedVersion)
@@ -410,9 +413,12 @@ class FigureLibrary(
         val trimmed = query.trim()
         if (trimmed.isEmpty()) return people
         val needle = fold(trimmed, locale)
-        return people.filter { person ->
-            searchTerms[person.id].orEmpty().any { fold(it, locale).contains(needle) }
-        }
+        val folded =
+            foldedTerms?.takeIf { it.first == locale }?.second
+                ?: searchTerms
+                    .mapValues { (_, terms) -> terms.map { fold(it, locale) } }
+                    .also { foldedTerms = locale to it }
+        return people.filter { person -> folded[person.id].orEmpty().any { it.contains(needle) } }
     }
 
     /** Siblings by degree from the selected parentage [account]; only default claims count. */

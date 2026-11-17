@@ -40,6 +40,17 @@ class HadithReader(
     /** Whether the open database has supplication translations; looked up once per connection. */
     private var translationTable: Boolean? = null
 
+    /** Every supplication with its search text normalized, built once per database so typing only filters. */
+    private class SupplicationEntry(
+        val row: Hadith,
+        val title: String,
+        val text: String,
+        val variants: List<SupplicationTranslation>,
+        val variantTexts: Map<SupplicationTranslation, String>,
+    )
+
+    private var supplicationIndex: List<SupplicationEntry>? = null
+
     /** Switches to [file] once it validates (keeping the current one otherwise), or to none. */
     suspend fun install(file: File?) =
         locked {
@@ -401,41 +412,22 @@ class HadithReader(
         read { sql ->
             val terms = QuranSearchText.terms(query)
             if (query.isNotBlank() && terms.isEmpty()) return@read emptyList()
-            val rows =
-                sql.query(
-                    "SELECT $COLUMNS $JOINS WHERE b.collection_id IN (?,?) AND c.chapter_idx > 0 " +
-                        "ORDER BY b.sort_order, c.chapter_idx, h.id",
-                    Hadith.SUPPLICATION_COLLECTION_IDS,
-                    ::narration,
-                )
-            if (rows.isEmpty()) throw HadithDatabaseException.Incompatible()
-            // Every translation in one query, rather than one per supplication.
-            val translations =
-                if (!hasTranslations(sql)) {
-                    emptyMap()
-                } else {
-                    sql
-                        .query(
-                            "SELECT hadith_id,language,edition,text FROM supplication_translation ORDER BY language,edition",
-                        ) {
-                            it.int(0) to SupplicationTranslation(it.text(1), it.text(2), it.text(3))
-                        }.groupBy({ it.first }, { it.second })
-                }
             val titled = mutableListOf<Hadith>()
             val content = mutableListOf<Hadith>()
-            for (row in rows) {
+            for (entry in supplicationIndex(sql)) {
                 currentCoroutineContext().ensureActive()
-                val variants = translations[row.id].orEmpty()
-                val title = QuranSearchText.normalize(row.chapter.arabic + " " + row.chapter.english).lowercase()
+                val row = entry.row
+                val variants = entry.variants
+                val title = entry.title
 
-                fun matches(text: String): Boolean {
-                    val normalized = title + " " + QuranSearchText.normalize(text).lowercase()
+                fun matches(variant: SupplicationTranslation): Boolean {
+                    val normalized = entry.variantTexts[variant] ?: searchText(title, variant.text)
                     return terms.all { it in normalized }
                 }
                 val titleMatch = terms.all { it in title }
                 val selected = SupplicationTranslation.selected(variants, translation, languages)
-                val matched = selected?.takeIf { matches(it.text) } ?: variants.firstOrNull { matches(it.text) }
-                if (!matches(row.arabic + " " + row.english) && matched == null) continue
+                val matched = selected?.takeIf(::matches) ?: variants.firstOrNull(::matches)
+                if (terms.any { it !in entry.text } && matched == null) continue
                 val preview = HadithText.preview(row.arabic, terms)
                 var result =
                     row.copy(
@@ -530,7 +522,49 @@ class HadithReader(
         rankedRequest = null
         rankedMatches = emptyList()
         translationTable = null
+        supplicationIndex = null
     }
+
+    private fun supplicationIndex(sql: ContentSql): List<SupplicationEntry> {
+        supplicationIndex?.let { return it }
+        val rows =
+            sql.query(
+                "SELECT $COLUMNS $JOINS WHERE b.collection_id IN (?,?) AND c.chapter_idx > 0 " +
+                    "ORDER BY b.sort_order, c.chapter_idx, h.id",
+                Hadith.SUPPLICATION_COLLECTION_IDS,
+                ::narration,
+            )
+        if (rows.isEmpty()) throw HadithDatabaseException.Incompatible()
+        // Every translation in one query, rather than one per supplication.
+        val translations =
+            if (!hasTranslations(sql)) {
+                emptyMap()
+            } else {
+                sql
+                    .query(
+                        "SELECT hadith_id,language,edition,text FROM supplication_translation ORDER BY language,edition",
+                    ) {
+                        it.int(0) to SupplicationTranslation(it.text(1), it.text(2), it.text(3))
+                    }.groupBy({ it.first }, { it.second })
+            }
+        return rows
+            .map { row ->
+                val title = QuranSearchText.normalize(row.chapter.arabic + " " + row.chapter.english).lowercase()
+                val variants = translations[row.id].orEmpty()
+                SupplicationEntry(
+                    row,
+                    title,
+                    searchText(title, row.arabic + " " + row.english),
+                    variants,
+                    variants.associateWith { searchText(title, it.text) },
+                )
+            }.also { supplicationIndex = it }
+    }
+
+    private fun searchText(
+        title: String,
+        text: String,
+    ) = title + " " + QuranSearchText.normalize(text).lowercase()
 
     private fun close() {
         closeConnection()

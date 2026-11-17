@@ -142,11 +142,6 @@ fun OnboardingScreen(
                         Heading(R.string.choose_your_location)
                         Text(stringResource(R.string.use_your_device_location_to_calculate_prayer_times))
                         DeviceLocationSection(hiltViewModel())
-                        Text(
-                            stringResource(R.string.device_location_stays_on_this_device),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
                     }
 
                     3 -> {

@@ -6,7 +6,6 @@
     <string name="move_down">نقل لأسفل</string>
     <string name="decrease_x">تقليل %1$s</string>
     <string name="increase_x">زيادة %1$s</string>
-    <string name="coming_soon">قريبًا</string>
     <string name="update_location">تحديث الموقع</string>
     <string name="use_your_device_location_to_calculate_prayer_times">استخدم موقع جهازك لحساب أوقات الصلاة والقبلة.</string>
     <string name="location_access_is_disabled_allow_it_in_settings">الوصول إلى الموقع معطّل. اسمح به في الإعدادات لحساب أوقات الصلاة.</string>
@@ -14,7 +13,6 @@
     <string name="system_default">لغة النظام</string>
     <string name="exact_alarms">التنبيه في الدقيقة نفسها</string>
     <string name="exact_alarms_footer">بدون هذا الإذن قد تتأخر التنبيهات حتى ١٠ دقائق.</string>
-    <string name="settings_backup_footer">تُضمَّن الإعدادات في نسخة Android الاحتياطية. يبقى الموقع وأذونات الإشعارات على هذا الجهاز.</string>
     <string name="sources_and_licenses">المصادر والتراخيص</string>
     <string name="calculations">الحسابات</string>
     <string name="supplication_translations">ترجمات الأدعية</string>

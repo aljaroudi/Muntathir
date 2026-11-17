@@ -6,7 +6,6 @@
     <string name="move_down">Переместить вниз</string>
     <string name="decrease_x">Уменьшить: %1$s</string>
     <string name="increase_x">Увеличить: %1$s</string>
-    <string name="coming_soon">Скоро</string>
     <string name="update_location">Обновить местоположение</string>
     <string name="use_your_device_location_to_calculate_prayer_times">Используйте местоположение устройства, чтобы рассчитать время молитв и киблу.</string>
     <string name="location_access_is_disabled_allow_it_in_settings">Доступ к местоположению отключён. Разрешите его в настройках, чтобы рассчитать время молитв.</string>
@@ -14,7 +13,6 @@
     <string name="system_default">Как в системе</string>
     <string name="exact_alarms">Будильники с точностью до минуты</string>
     <string name="exact_alarms_footer">Без этого разрешения напоминания могут приходить с опозданием до 10 минут.</string>
-    <string name="settings_backup_footer">Настройки входят в резервную копию Android. Местоположение и разрешения на уведомления остаются на этом устройстве.</string>
     <string name="sources_and_licenses">Источники и лицензии</string>
     <string name="calculations">Расчёты</string>
     <string name="supplication_translations">Переводы мольб</string>

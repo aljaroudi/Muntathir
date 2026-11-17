@@ -39,8 +39,8 @@ android {
         applicationId = "com.aljaroudi.muntathir"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "1.1.0"
         testInstrumentationRunner = "com.aljaroudi.muntathir.HiltTestRunner"
         // Smart search (`/v1/search`): the `semanticSearchUrl` Gradle property, else the git-ignored iOS
         // SemanticSearchConfiguration.plist, like Swift `SemanticSearchClient.configured`. Empty hides the feature.
@@ -92,6 +92,8 @@ android {
 
     // Generates the per-app language list from res/values-* (see res/resources.properties).
     androidResources.generateLocaleConfig = true
+    // The in-app picker can choose a language the system doesn't have, so every install needs all of them.
+    bundle.language.enableSplit = false
 
     // Content databases ship as Play Asset Delivery packs; only the Quran text is in the base APK.
     assetPacks += listOf(":packs:hadith", ":packs:supplications", ":packs:quran_translations", ":packs:rulings")

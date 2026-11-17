@@ -11,11 +11,11 @@ import androidx.test.rule.GrantPermissionRule
 import com.aljaroudi.muntathir.FakeLocator
 import com.aljaroudi.muntathir.MainActivity
 import com.aljaroudi.muntathir.MemoryStorage
-import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.app.AppStorage
 import com.aljaroudi.muntathir.data.StorageModule
 import com.aljaroudi.muntathir.location.DeviceLocator
 import com.aljaroudi.muntathir.location.LocationModule
+import com.aljaroudi.muntathir.ui.components.Formats
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -54,7 +54,8 @@ class OnboardingTest {
         compose.onNodeWithTag("onboarding-continue").assertIsNotEnabled()
         compose.onNodeWithTag("use-device-location").performClick()
         compose.waitUntil { memory.device.liveLocation != null }
-        compose.onNodeWithTag("location-name").assertTextEquals(compose.activity.getString(R.string.device_location))
+        val locale = compose.activity.resources.configuration.locales[0]
+        compose.onNodeWithTag("location-name").assertTextEquals(Formats.place(FakeLocator.MECCA, locale))
         compose.onNodeWithTag("onboarding-continue").assertIsEnabled().performClick()
         compose.onNodeWithTag("onboarding-continue").performClick() // Method
         compose.onNodeWithTag("onboarding-finish").performClick() // Not now

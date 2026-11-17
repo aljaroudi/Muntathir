@@ -36,6 +36,8 @@ import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.app.AppModel
 import com.aljaroudi.muntathir.core.location.SavedLocation
 import com.aljaroudi.muntathir.location.DeviceLocator
+import com.aljaroudi.muntathir.ui.components.Formats
+import com.aljaroudi.muntathir.ui.components.currentLocale
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -106,10 +108,10 @@ fun DeviceLocationSection(
                 Modifier.padding(start = ButtonDefaults.IconSpacing),
             )
         }
-        if (location != null) {
+        location?.let { location ->
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                Text(stringResource(R.string.device_location), Modifier.testTag("location-name"))
+                Text(Formats.place(location, currentLocale()), Modifier.testTag("location-name"))
             }
         }
         when (status) {

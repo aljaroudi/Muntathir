@@ -195,11 +195,8 @@ fun SettingsScreen(
                     stringResource(R.string.location),
                     links.onLocation,
                     "settings-location",
-                    stringResource(if (state.location != null) R.string.device_location else R.string.not_selected),
+                    state.location?.let { Formats.place(it, locale) } ?: stringResource(R.string.not_selected),
                 )
-            }
-            if (state.location != null) {
-                item { SectionFooter(stringResource(R.string.device_location_stays_on_this_device)) }
             }
 
             section(R.string.prayer_calculations)
@@ -329,7 +326,6 @@ fun SettingsScreen(
             item { SectionFooter(stringResource(R.string.silent_reminders_at_sunset_for_observances_begin)) }
 
             item { LinkRow(stringResource(R.string.sources_and_licenses), links.onCredits, "settings-credits") }
-            item { SectionFooter(stringResource(R.string.settings_backup_footer), Modifier.padding(bottom = 24.dp)) }
         }
     }
 }

@@ -1,7 +1,5 @@
 package com.aljaroudi.muntathir.ui.settings
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -72,7 +71,7 @@ fun CreditsScreen(
     val plex by produceState("") {
         value = withContext(Dispatchers.IO) { context.asset("licenses/IBMPlexSansArabic-OFL.txt") }
     }
-    val open: (String) -> Unit = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) }
+    val open = LocalUriHandler.current::openUri
     ScreenScaffold(R.string.sources_and_licenses, modifier, onBack) { padding ->
         LazyColumn(contentPadding = padding) {
             item { SectionHeader(stringResource(R.string.calculations)) }

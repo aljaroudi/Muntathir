@@ -6,7 +6,6 @@
     <string name="move_down">Alih ke bawah</string>
     <string name="decrease_x">Kurangkan %1$s</string>
     <string name="increase_x">Tambah %1$s</string>
-    <string name="coming_soon">Akan datang</string>
     <string name="update_location">Kemas kini lokasi</string>
     <string name="use_your_device_location_to_calculate_prayer_times">Gunakan lokasi peranti untuk mengira waktu solat dan kiblat.</string>
     <string name="location_access_is_disabled_allow_it_in_settings">Akses lokasi dinyahdayakan. Benarkan dalam Tetapan untuk mengira waktu solat.</string>
@@ -14,7 +13,6 @@
     <string name="system_default">Lalai sistem</string>
     <string name="exact_alarms">Penggera tepat pada minitnya</string>
     <string name="exact_alarms_footer">Tanpa kebenaran ini, peringatan mungkin lewat sehingga 10 minit.</string>
-    <string name="settings_backup_footer">Tetapan disertakan dalam sandaran Android anda. Lokasi dan kebenaran pemberitahuan kekal pada peranti ini.</string>
     <string name="sources_and_licenses">Sumber dan lesen</string>
     <string name="calculations">Pengiraan</string>
     <string name="supplication_translations">Terjemahan doa</string>
