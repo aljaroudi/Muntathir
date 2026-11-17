@@ -15,6 +15,15 @@
     <!-- Below API 31, expedited work (installing a downloaded library) runs as a short data-sync service. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <!-- The Rakaat tracker measures front-camera brightness on the device; frames are never stored. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- CAMERA would otherwise imply a required rear camera. -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.front"
+        android:required="false" />
 
     <application
         android:name=".MuntathirApplication"
