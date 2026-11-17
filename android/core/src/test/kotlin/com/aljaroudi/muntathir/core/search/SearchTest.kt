@@ -75,6 +75,22 @@ class SearchTest {
     }
 
     @Test
+    fun semanticRulingsReferenceAndRequestRetainScope() {
+        val result =
+            SemanticSearchClient.result(
+                """{"kind":"rulings","authority":"sistani","language":"ar","id":"42","score":0.8}""",
+            )
+        assertEquals("rulings:sistani:ar:42", result.id)
+        val body =
+            Json
+                .parseToJsonElement(
+                    SemanticSearchClient.requestBody("الصلاة", "rulings", listOf("sistani"), null, listOf("ar")),
+                ).jsonObject
+        assertEquals(listOf("ar"), body["languages"]?.jsonArray?.map { (it as JsonPrimitive).content })
+        assertEquals(listOf("sistani"), body["sources"]?.jsonArray?.map { (it as JsonPrimitive).content })
+    }
+
+    @Test
     fun endpointMustBeTheHttpsSearchPath() {
         assertEquals("https://example.com/v1/search", SemanticSearchClient.endpoint("https://example.com/v1/search"))
         for (value in listOf(

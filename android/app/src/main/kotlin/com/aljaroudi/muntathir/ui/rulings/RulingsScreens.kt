@@ -76,6 +76,8 @@ import com.aljaroudi.muntathir.ui.quran.ReadingSizeSheet
 import com.aljaroudi.muntathir.ui.quran.recentSearches
 import com.aljaroudi.muntathir.ui.reader.ReaderText
 import com.aljaroudi.muntathir.ui.reader.ReadingTextStyle
+import com.aljaroudi.muntathir.ui.search.SmartSearchRunner
+import com.aljaroudi.muntathir.ui.search.smartSearchSection
 import com.aljaroudi.muntathir.ui.theme.HadithFont
 
 /** Swift `RulingsIntroSection`: the disclaimer and the Saved link. */
@@ -193,6 +195,7 @@ fun RulingsScreen(
     val questions by viewModel.questions.collectAsStateWithLifecycle()
     val query by viewModel.query.collectAsStateWithLifecycle()
     val recent by viewModel.recent.collectAsStateWithLifecycle()
+    val smart by viewModel.smart.state.collectAsStateWithLifecycle()
     var focused by remember { mutableStateOf(false) }
     val locale = currentLocale()
     ScreenScaffold(stringResource(R.string.rulings), onBack = onBack) { padding ->
@@ -252,9 +255,22 @@ fun RulingsScreen(
                     if (language == null) {
                         item(key = "choose") { EmptyState(stringResource(R.string.choose_a_language)) }
                     } else {
-                        rulingRows(questions, language, query, viewModel::retry) { ruling ->
+                        val open: (Ruling) -> Unit = { ruling ->
                             viewModel.record()
                             onOpen(RulingDetailRoute(ruling.id.authority, ruling.id.language, ruling.id.siteID))
+                        }
+                        val searching = query.isNotBlank()
+                        rulingRows(questions, language, emptyMessage = !searching, viewModel::retry, open)
+                        val local = questions as? Loadable.Loaded
+                        if (searching && local != null && SmartSearchRunner.accepts(query.trim())) {
+                            // Swift: the same rows, not filtered against local results and without a header.
+                            smartSearchSection(
+                                smart,
+                                viewModel.smart.available,
+                                hasLocalResults = local.value.isNotEmpty(),
+                                onSearch = { viewModel.smartSearch(value) },
+                                header = null,
+                            ) { found -> rulingItems(found, language, "rulings-smart", open) }
                         }
                     }
                 }
@@ -268,7 +284,7 @@ fun RulingsScreen(
 private fun LazyListScope.rulingRows(
     questions: Loadable<List<Ruling>>,
     language: RulingsLanguage,
-    query: String,
+    emptyMessage: Boolean,
     onRetry: () -> Unit,
     onOpen: (Ruling) -> Unit,
 ) {
@@ -286,26 +302,28 @@ private fun LazyListScope.rulingRows(
         }
 
         is Loadable.Loaded -> {
-            if (questions.value.isEmpty() && query.isNotBlank()) {
+            if (questions.value.isEmpty() && emptyMessage) {
                 item(key = "questions-empty") { EmptyState(stringResource(R.string.no_results)) }
             }
-            val direction = if (language.rightToLeft) LayoutDirection.Rtl else LayoutDirection.Ltr
-            items(questions.value, key = { "ruling-${it.id.siteID}" }) { ruling ->
-                CompositionLocalProvider(LocalLayoutDirection provides direction) {
-                    ListItem(
-                        headlineContent = {
-                            Text(ruling.question, style = MaterialTheme.typography.titleMedium, maxLines = 3)
-                        },
-                        modifier =
-                            Modifier
-                                .clickable {
-                                    onOpen(
-                                        ruling,
-                                    )
-                                }.testTag("rulings-question-${ruling.id.siteID}"),
-                    )
-                }
-            }
+            rulingItems(questions.value, language, "rulings-question", onOpen)
+        }
+    }
+}
+
+/** One row per ruling; [tag] prefixes each row's key and test tag. */
+private fun LazyListScope.rulingItems(
+    rulings: List<Ruling>,
+    language: RulingsLanguage,
+    tag: String,
+    onOpen: (Ruling) -> Unit,
+) {
+    val direction = if (language.rightToLeft) LayoutDirection.Rtl else LayoutDirection.Ltr
+    items(rulings, key = { "$tag-${it.id.siteID}" }) { ruling ->
+        CompositionLocalProvider(LocalLayoutDirection provides direction) {
+            ListItem(
+                headlineContent = { Text(ruling.question, style = MaterialTheme.typography.titleMedium, maxLines = 3) },
+                modifier = Modifier.clickable { onOpen(ruling) }.testTag("$tag-${ruling.id.siteID}"),
+            )
         }
     }
 }
@@ -522,7 +540,7 @@ fun RulingSectionScreen(
                     Loadable.Failed -> Loadable.Failed
                     is Loadable.Loaded -> Loadable.Loaded(current.value.first)
                 }
-            rulingRows(rows, language, "", viewModel::retry) { ruling ->
+            rulingRows(rows, language, emptyMessage = false, viewModel::retry) { ruling ->
                 onOpen(RulingDetailRoute(ruling.id.authority, ruling.id.language, ruling.id.siteID))
             }
         }

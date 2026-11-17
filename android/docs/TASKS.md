@@ -73,6 +73,8 @@ Done 2026-11-17. `just android-test` passes (193 core tests). All instrumented t
   - `data/user/ProgressStore` keeps sessions in Room's `activity` table and only stores growth (max, not sum). The Activity screen itself is P5.5. `ProgressStoreTest` and `SavedTest` cover it on device.
 
 ## P4 — Library
+Done 2026-11-17. `just android-test` passes, and all 20 instrumented tests pass on the API 37 emulator.
+
 - [x] **P4.1** Hadith asset store (install index, integrity scan cache, update state).
   - `core/hadith` ports `HadithAssetStore`, `HadithLocalLibrary`, `HadithReader`, the models and `HadithSession`. `HadithAssetStoreTest` and `HadithLocalLibraryTest` run every Swift case on the JVM against a JDBC port of `HadithFixture`; the timing case reads `build/hadith/dist/hadith.db` when it's built (cold refresh 4 ms, background scan 1.4 s).
   - There's no install index on iOS either: the pack is copied into `no_backup/Libraries/<pack>/library.db` and removed. Swift's `UserDefaults` flags (`restoring`, `cleanup`, `removed`, `validated.v1`) live in `no_backup/Libraries/<pack>.state.json`.
@@ -91,7 +93,12 @@ Done 2026-11-17. `just android-test` passes (193 core tests). All instrumented t
   - `packs/rulings` (on-demand, `Rulings/rulings.db`, filled by `just android-packs`). `core/rulings` ports `RulingsReader` and `RulingsAssetStore`, which reads the pack in place as on iOS. `RulingsTest` runs the Swift cases on a JDBC port of `RulingsFixture`, plus the packaged `rulings.db` when it's built.
   - `ui/rulings` has the browser (disclaimer, Saved, authority and language pickers, a random sample or search with 150 ms debounce and history area `Rulings`), the detail (selectable answer, authority, Source link, sections, text size, bookmark), section and Saved screens, all list-detail. Downloads has a Rulings section. The instrumented `RulingsTest` covers download, default authority, English reader and bookmark.
   - `rulings.authority` and `rulings.languages.v2` are in `ReadingPreferences` (iOS keeps them in local `UserDefaults`); Android backs them up with the other reader choices.
-- [ ] **P4.5** Smart search across kinds.
+- [x] **P4.5** Smart search across kinds.
+  - `ui/search/SmartSearchRunner` + `smartSearchSection` are Swift's `MeaningSearchResults` for any result type: nothing is sent before consent, and a new query or scope asks again.
+  - Hadith: kind `hadith`, scoped by `meaningSearchScope` (book volumes or chapter), skipped for numbers and `chN`. Each reference resolves to exactly one local narration; supplications and narrations already listed are dropped. Results show under "Smart search".
+  - Rulings: kind `rulings` with the chosen authority and language. A result outside them, or missing locally, fails the search. Duplicates are dropped, and rows have no header. Supplications have no smart search, as on iOS.
+  - `HadithReaderTest` and `SearchTest` cover the ambiguous lookup, the online scope and the rulings request. The instrumented `SmartSearchTest` covers both screens with a fake endpoint.
+  - Quran keeps its own `SmartResults` in `QuranSearchModel` (unchanged).
 
 ## P5 — Tools (parallelizable)
 - [ ] **P5.1** Qibla. Skill: android-permissions-security.

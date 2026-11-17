@@ -11,13 +11,18 @@ import com.aljaroudi.muntathir.core.hadith.HadithIntroduction
 import com.aljaroudi.muntathir.core.hadith.HadithRequest
 import com.aljaroudi.muntathir.core.hadith.HadithSearch
 import com.aljaroudi.muntathir.core.hadith.LibraryStatus
+import com.aljaroudi.muntathir.core.search.SemanticSearchResult
+import com.aljaroudi.muntathir.core.text.HadithText
+import com.aljaroudi.muntathir.core.text.QuranSearchText
 import com.aljaroudi.muntathir.core.text.SearchArea
 import com.aljaroudi.muntathir.data.ReadingSettings
 import com.aljaroudi.muntathir.data.SearchHistoryStore
 import com.aljaroudi.muntathir.data.library.ContentLibraries
 import com.aljaroudi.muntathir.data.library.HadithSessionStore
+import com.aljaroudi.muntathir.search.SmartSearch
 import com.aljaroudi.muntathir.ui.navigation.HadithBrowseRoute
 import com.aljaroudi.muntathir.ui.navigation.HadithRoute
+import com.aljaroudi.muntathir.ui.search.SmartSearchRunner
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -65,6 +70,7 @@ class HadithBrowseViewModel
         private val history: SearchHistoryStore,
         private val session: HadithSessionStore,
         private val settings: ReadingSettings,
+        smartSearch: SmartSearch,
     ) : ViewModel() {
         @AssistedFactory
         interface Factory {
@@ -116,6 +122,9 @@ class HadithBrowseViewModel
         /** A restored first visible row to scroll to once loaded. */
         val restoredRow: StateFlow<String?> = mutableRestoredRow.asStateFlow()
 
+        /** Opt-in meaning search for the submitted query, within this screen's book or chapter. */
+        val smart = SmartSearchRunner<Hadith>(viewModelScope, smartSearch.client)
+
         private val retry = MutableStateFlow(0)
         private var cursor: HadithCursor? = null
         private var loadingJob: Job? = null
@@ -166,6 +175,8 @@ class HadithBrowseViewModel
 
         fun submit() {
             if (mutableSubmitted.value == mutableQuery.value) return
+            // A new query asks for consent again.
+            smart.reset()
             mutableSubmitted.value = mutableQuery.value
             if (isRoot) session.setRootQuery(mutableQuery.value)
         }
@@ -188,6 +199,44 @@ class HadithBrowseViewModel
 
         fun saveRow(row: String?) {
             level?.let { session.setRow(it, row) }
+        }
+
+        /** Whether smart search may be offered: a meaning, not a number or chapter lookup. */
+        fun offersSmartSearch(submitted: String): Boolean {
+            val query = submitted.trim()
+            return SmartSearchRunner.accepts(query) && HadithSearch.number(query) == null &&
+                HadithSearch.chapter(query) == null
+        }
+
+        /**
+         * Swift `HadithView` meaning search: references in this scope resolved locally (exactly one match each),
+         * without supplications, in the API's order.
+         */
+        fun smartSearch() {
+            val query = mutableSubmitted.value.trim()
+            val request = request(query)
+            smart.run { client ->
+                val (sources, chapter) = reader.meaningSearchScope(request)
+                val terms = QuranSearchText.terms(query)
+                val seen = mutableSetOf<Int>()
+                client
+                    .search(query, kind = "hadith", sources = sources, chapter = chapter)
+                    .mapNotNull { it.reference as? SemanticSearchResult.Reference.Hadith }
+                    .mapNotNull { reference ->
+                        val id = reader.resolveSearch(reference.book, reference.chapter, reference.number)
+                        if (id == null || !seen.add(id)) return@mapNotNull null
+                        val narration = reader.detail(id, query).narration
+                        if (narration.isSupplication) return@mapNotNull null
+                        narration.copy(
+                            arabicPreview = HadithText.preview(narration.arabic, terms),
+                            englishPreview =
+                                HadithText.preview(
+                                    narration.englishNarrator + " " + narration.english,
+                                    terms,
+                                ),
+                        )
+                    }
+            }
         }
 
         /** Whether narrations are listed: a chapter, or a text or number search (not a `ch12` filter). */

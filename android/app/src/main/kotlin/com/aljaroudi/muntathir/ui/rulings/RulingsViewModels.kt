@@ -2,6 +2,7 @@ package com.aljaroudi.muntathir.ui.rulings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aljaroudi.muntathir.core.hadith.HadithDatabaseException
 import com.aljaroudi.muntathir.core.highlight.QuranUserStore
 import com.aljaroudi.muntathir.core.highlight.ReadingBookmark
 import com.aljaroudi.muntathir.core.highlight.RulingID
@@ -11,13 +12,16 @@ import com.aljaroudi.muntathir.core.rulings.RulingsLanguage
 import com.aljaroudi.muntathir.core.rulings.RulingsReader
 import com.aljaroudi.muntathir.core.rulings.RulingsSection
 import com.aljaroudi.muntathir.core.rulings.RulingsStatus
+import com.aljaroudi.muntathir.core.search.SemanticSearchResult
 import com.aljaroudi.muntathir.core.text.SearchArea
 import com.aljaroudi.muntathir.data.QuranTranslations
 import com.aljaroudi.muntathir.data.ReadingSettings
 import com.aljaroudi.muntathir.data.SearchHistoryStore
 import com.aljaroudi.muntathir.data.library.RulingsLibrary
+import com.aljaroudi.muntathir.search.SmartSearch
 import com.aljaroudi.muntathir.ui.navigation.RulingDetailRoute
 import com.aljaroudi.muntathir.ui.navigation.RulingSectionRoute
+import com.aljaroudi.muntathir.ui.search.SmartSearchRunner
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -95,9 +99,13 @@ class RulingsViewModel
         val library: RulingsLibrary,
         private val settings: ReadingSettings,
         private val history: SearchHistoryStore,
+        smartSearch: SmartSearch,
     ) : ViewModel() {
         private val reader: RulingsReader get() = library.reader
         val query = MutableStateFlow("")
+
+        /** Opt-in meaning search within the chosen authority and language. */
+        val smart = SmartSearchRunner<Ruling>(viewModelScope, smartSearch.client)
         private val retry = MutableStateFlow(0)
 
         val recent: StateFlow<List<String>> =
@@ -129,15 +137,52 @@ class RulingsViewModel
                     reader.questions(scope.authority, language.id, query)
                 }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Loadable.Loading)
 
-        fun setAuthority(id: String) = viewModelScope.launch { settings.update { it.copy(rulingsAuthority = id) } }
+        fun setAuthority(id: String) {
+            smart.reset()
+            viewModelScope.launch { settings.update { it.copy(rulingsAuthority = id) } }
+        }
 
-        fun setLanguage(id: String) =
+        fun setLanguage(id: String) {
+            smart.reset()
             viewModelScope.launch {
                 settings.update { it.copy(rulingsLanguages = it.rulingsLanguages + (it.rulingsAuthority to id)) }
             }
+        }
 
         fun search(value: String) {
+            // A new query or scope asks for consent again (Swift `.id([authority, language, query])`).
+            if (value != query.value) smart.reset()
             query.value = value
+        }
+
+        /**
+         * Swift's rulings meaning search: every result must be in this authority and language and exist locally,
+         * or the search fails; duplicates are dropped.
+         */
+        fun smartSearch(scope: RulingsScope) {
+            val query = query.value.trim()
+            val language = scope.language ?: return
+            smart.run { client ->
+                val seen = mutableSetOf<RulingID>()
+                val found = mutableListOf<Ruling>()
+                for (result in client.search(
+                    query,
+                    kind = "rulings",
+                    sources = listOf(scope.authority),
+                    languages = listOf(language.id),
+                )) {
+                    val reference = result.reference as? SemanticSearchResult.Reference.Rulings
+                    if (reference == null || reference.authority != scope.authority ||
+                        reference.language != language.id
+                    ) {
+                        throw HadithDatabaseException.InvalidReference()
+                    }
+                    val id = RulingID(reference.authority, reference.language, reference.id)
+                    val ruling = reader.question(id) ?: throw HadithDatabaseException.Incompatible()
+                    if (seen.add(id)) found += ruling
+                }
+                found
+            }
         }
 
         fun record() = history.record(query.value, SearchArea.Rulings)

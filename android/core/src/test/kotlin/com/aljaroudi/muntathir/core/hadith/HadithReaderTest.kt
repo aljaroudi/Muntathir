@@ -691,6 +691,35 @@ class HadithReaderTest {
     }
 
     @Test
+    fun compactHadithLookupRejectsAmbiguity() =
+        runBlocking<Unit> {
+            val fixture = fixture(2)
+            val reader = reader(fixture.file)
+            assertEquals(1, reader.resolveSearch("v1", "1.json", 1))
+            HadithFixture.script(fixture.file, "UPDATE hadith SET id_in_book = 1 WHERE id = 2;")
+            assertNull(reader.resolveSearch("v1", "1.json", 1))
+            assertNull(reader.resolveSearch("missing", "1.json", 1))
+        }
+
+    @Test
+    fun onlineScopePreservesVolumesAndChapter() =
+        runBlocking<Unit> {
+            val reader = reader(fixture(2).file)
+            assertEquals(listOf("v1", "v2") to null, reader.meaningSearchScope(HadithRequest(collectionID = "merged")))
+            val chapter = reader.chapterID(HadithSource("v1", "1.json", 0))!!
+            assertEquals(
+                listOf("v1") to "1.json",
+                reader.meaningSearchScope(HadithRequest(collectionID = "merged", chapterID = chapter)),
+            )
+            assertFailsWith<HadithDatabaseException> {
+                reader.meaningSearchScope(
+                    HadithRequest(collectionID = "missing"),
+                )
+            }
+            assertEquals(null to null, reader.meaningSearchScope(HadithRequest()))
+        }
+
+    @Test
     fun sourceKeysMatchSwiftEncoding() {
         // Swift's JSONEncoder (sorted keys) escapes slashes and omits a nil source id.
         val source = HadithSource("a/b", "1.json", 3, null)
