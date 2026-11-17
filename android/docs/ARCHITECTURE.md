@@ -34,6 +34,8 @@ android/
 | Reader choices (iOS `ReadingPreferencesSync` keys: text size, mode, translation, palette, Saved grouping) | DataStore `files/datastore/reading.v1.json` via `core/app/ReadingPreferences` (backed up) |
 | Recent searches per area | DataStore `files/datastore/search-history.v1.json` (backed up) |
 | Hadith and Supplications libraries (copied from the pack, books removable) | `no_backup/Libraries/<pack>/library.db`, flags in `no_backup/Libraries/<pack>.state.json` (`core/hadith/HadithAssetStore`) |
+| Rulings | Read in place from the `rulings` pack (`core/rulings/RulingsAssetStore`) |
+| Hadith reading position | `no_backup/hadith.session.v1.json` (`data/library/HadithSessionStore`) |
 | Downloaded Quran translations | `no_backup/QuranTranslations/<generation>/<id>.db` + atomic `index.json` (`core/quran/QuranTranslationFiles`) |
 | Highlights, bookmarks, activity (later: prayer history) | Room `databases/user.db` (bundled driver, schemas in `app/schemas`), stores in `core` behind small interfaces; installation id in `no_backup/QuranIdentity` |
 

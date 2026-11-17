@@ -49,6 +49,10 @@ import com.aljaroudi.muntathir.ui.navigation.MonthAdjustmentsRoute
 import com.aljaroudi.muntathir.ui.navigation.QuranReaderRoute
 import com.aljaroudi.muntathir.ui.navigation.QuranSavedRoute
 import com.aljaroudi.muntathir.ui.navigation.Route
+import com.aljaroudi.muntathir.ui.navigation.RulingDetailRoute
+import com.aljaroudi.muntathir.ui.navigation.RulingSectionRoute
+import com.aljaroudi.muntathir.ui.navigation.RulingsRoute
+import com.aljaroudi.muntathir.ui.navigation.RulingsSavedRoute
 import com.aljaroudi.muntathir.ui.navigation.SettingsRoute
 import com.aljaroudi.muntathir.ui.navigation.TabsSettingsRoute
 import com.aljaroudi.muntathir.ui.navigation.TodayRoute
@@ -64,6 +68,12 @@ import com.aljaroudi.muntathir.ui.quran.QuranReaderScreen
 import com.aljaroudi.muntathir.ui.quran.QuranReaderViewModel
 import com.aljaroudi.muntathir.ui.quran.QuranSavedScreen
 import com.aljaroudi.muntathir.ui.quran.QuranScreen
+import com.aljaroudi.muntathir.ui.rulings.RulingDetailScreen
+import com.aljaroudi.muntathir.ui.rulings.RulingDetailViewModel
+import com.aljaroudi.muntathir.ui.rulings.RulingSectionScreen
+import com.aljaroudi.muntathir.ui.rulings.RulingSectionViewModel
+import com.aljaroudi.muntathir.ui.rulings.RulingsSavedScreen
+import com.aljaroudi.muntathir.ui.rulings.RulingsScreen
 import com.aljaroudi.muntathir.ui.settings.CreditsScreen
 import com.aljaroudi.muntathir.ui.settings.HighlightPaletteScreen
 import com.aljaroudi.muntathir.ui.settings.SettingsLinks
@@ -99,6 +109,17 @@ fun AppShell(
         if (twoPane) {
             while (navigator.current.lastOrNull().let { it is HadithRoute && it !is HadithBrowseRoute }) {
                 navigator.current.removeAt(navigator.current.lastIndex)
+            }
+        }
+        navigator.push(route)
+    }
+    // Beside the Rulings list, a ruling, section or Saved replaces the one open.
+    val openRulings: (Route) -> Unit = { route ->
+        if (twoPane) {
+            while (navigator.current.lastOrNull() is RulingsRoute) {
+                navigator.current.removeAt(
+                    navigator.current.lastIndex,
+                )
             }
         }
         navigator.push(route)
@@ -155,6 +176,7 @@ fun AppShell(
                                     onBack = navigator::back.takeIf { route != navigator.tab },
                                     openReader,
                                     openHadith,
+                                    openRulings,
                                     onRestoreHadith = { routes -> routes.forEach(navigator::push) },
                                 )
                             }
@@ -209,6 +231,31 @@ fun AppShell(
                                     onBack = detailBack,
                                 )
                             }
+                            entry<RulingDetailRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
+                                RulingDetailScreen(
+                                    hiltViewModel<RulingDetailViewModel, RulingDetailViewModel.Factory>(
+                                        creationCallback = { it.create(route) },
+                                    ),
+                                    onOpen = { navigator.push(it) },
+                                    onBack = detailBack,
+                                )
+                            }
+                            entry<RulingSectionRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
+                                RulingSectionScreen(
+                                    hiltViewModel<RulingSectionViewModel, RulingSectionViewModel.Factory>(
+                                        creationCallback = { it.create(route) },
+                                    ),
+                                    onOpen = { navigator.push(it) },
+                                    onBack = detailBack ?: navigator::back,
+                                )
+                            }
+                            entry<RulingsSavedRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
+                                RulingsSavedScreen(
+                                    hiltViewModel(),
+                                    onOpen = { navigator.push(it) },
+                                    onBack = detailBack,
+                                )
+                            }
                             entry<SettingsRoute>(metadata = ListDetailSceneStrategy.listPane()) {
                                 // A detail opened from Settings replaces the one beside it rather than stacking.
                                 val open: (Route) -> Unit = { route ->
@@ -259,7 +306,13 @@ fun AppShell(
 private val SETTINGS_DETAILS =
     setOf(TabsSettingsRoute, HighlightPaletteRoute, DownloadsRoute, LocationRoute, MonthAdjustmentsRoute, CreditsRoute)
 
-private val LIST_TOOLS = setOf(ToolRoute(AppTool.Quran), ToolRoute(AppTool.Hadith), ToolRoute(AppTool.Supplications))
+private val LIST_TOOLS =
+    setOf(
+        ToolRoute(AppTool.Quran),
+        ToolRoute(AppTool.Hadith),
+        ToolRoute(AppTool.Supplications),
+        ToolRoute(AppTool.Rulings),
+    )
 
 /** Holds app-wide stores the shell needs outside any screen. */
 @HiltViewModel
@@ -288,6 +341,7 @@ private fun ToolScreen(
     onBack: (() -> Unit)?,
     openReader: (Route) -> Unit,
     openHadith: (Route) -> Unit,
+    openRulings: (Route) -> Unit,
     onRestoreHadith: (List<HadithRoute>) -> Unit,
 ) {
     when (tool) {
@@ -308,6 +362,10 @@ private fun ToolScreen(
 
         AppTool.Supplications -> {
             SupplicationsScreen(hiltViewModel(), openHadith, onBack)
+        }
+
+        AppTool.Rulings -> {
+            RulingsScreen(hiltViewModel(), openRulings, onBack)
         }
 
         AppTool.Calendar -> {

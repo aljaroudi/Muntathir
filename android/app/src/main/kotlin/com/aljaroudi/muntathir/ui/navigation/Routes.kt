@@ -84,6 +84,27 @@ data class HadithSavedRoute(
     val supplications: Boolean = false,
 ) : HadithRoute
 
+/** A ruling, or the rulings of one of its sections; in two panes these sit beside the Rulings list. */
+sealed interface RulingsRoute : Route
+
+@Serializable
+data class RulingDetailRoute(
+    val authority: String,
+    val language: String,
+    val siteID: String,
+) : RulingsRoute
+
+@Serializable
+data class RulingSectionRoute(
+    val authority: String,
+    val language: String,
+    val section: Long,
+    val title: String,
+) : RulingsRoute
+
+@Serializable
+data object RulingsSavedRoute : RulingsRoute
+
 /** Settings → Highlight colors. */
 @Serializable
 data object HighlightPaletteRoute : Route

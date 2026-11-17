@@ -49,11 +49,13 @@ import com.aljaroudi.muntathir.core.quran.TranslationState
 import com.aljaroudi.muntathir.data.QuranTranslations
 import com.aljaroudi.muntathir.data.library.ContentLibraries
 import com.aljaroudi.muntathir.data.library.ContentLibrary
+import com.aljaroudi.muntathir.data.library.RulingsLibrary
 import com.aljaroudi.muntathir.ui.components.ScreenScaffold
 import com.aljaroudi.muntathir.ui.components.SectionHeader
 import com.aljaroudi.muntathir.ui.components.currentLocale
 import com.aljaroudi.muntathir.ui.quran.ConfirmationPrompt
 import com.aljaroudi.muntathir.ui.quran.languageName
+import com.aljaroudi.muntathir.ui.rulings.rulingsDownload
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
@@ -64,6 +66,7 @@ class DownloadsViewModel
     constructor(
         val translations: QuranTranslations,
         val libraries: ContentLibraries,
+        val rulings: RulingsLibrary,
     ) : ViewModel()
 
 /** Swift `DownloadsSettingsView`: Hadith (with its books), Supplications and Quran translations. */
@@ -86,6 +89,7 @@ fun DownloadsScreen(
     val supplications = viewModel.libraries.supplications
     val hadithState by hadith.state.collectAsStateWithLifecycle()
     val supplicationsState by supplications.state.collectAsStateWithLifecycle()
+    val rulingsState by viewModel.rulings.state.collectAsStateWithLifecycle()
     var booksExpanded by rememberSaveable { mutableStateOf(false) }
     var requestedBook by rememberSaveable { mutableStateOf<String?>(null) }
     LaunchedEffect(hadithState.status) {
@@ -120,6 +124,8 @@ fun DownloadsScreen(
                 onRestoreBook = {},
                 onConfirm = { activity?.let(supplications::confirm) },
             )
+            item(key = "rulings-header") { SectionHeader(stringResource(R.string.rulings)) }
+            rulingsDownload(viewModel.rulings, rulingsState)
             quranTranslations(
                 state = state,
                 requested = requested,

@@ -87,7 +87,10 @@ Done 2026-11-17. `just android-test` passes (193 core tests). All instrumented t
 - [x] **P4.3** Supplications (fast-follow) + translations.
   - `ui/supplications/SupplicationsScreen` is Swift's `SupplicationsView`: Saved, then each collection's supplications. Search covers title, text and translations (150 ms debounce, history area `Supplications`). The translation picker is a dialog with Auto, None and each language. Detail reuses `HadithDetailScreen` without previous/next, records `SupplicationReading`, and isn't kept in the session.
   - The fast-follow pack is requested on the first start when Play hasn't delivered it (iOS: essential). The instrumented `SupplicationsTest` covers it: the pack arrives, then open, bookmark, back, search.
-- [ ] **P4.4** Rulings.
+- [x] **P4.4** Rulings.
+  - `packs/rulings` (on-demand, `Rulings/rulings.db`, filled by `just android-packs`). `core/rulings` ports `RulingsReader` and `RulingsAssetStore`, which reads the pack in place as on iOS. `RulingsTest` runs the Swift cases on a JDBC port of `RulingsFixture`, plus the packaged `rulings.db` when it's built.
+  - `ui/rulings` has the browser (disclaimer, Saved, authority and language pickers, a random sample or search with 150 ms debounce and history area `Rulings`), the detail (selectable answer, authority, Source link, sections, text size, bookmark), section and Saved screens, all list-detail. Downloads has a Rulings section. The instrumented `RulingsTest` covers download, default authority, English reader and bookmark.
+  - `rulings.authority` and `rulings.languages.v2` are in `ReadingPreferences` (iOS keeps them in local `UserDefaults`); Android backs them up with the other reader choices.
 - [ ] **P4.5** Smart search across kinds.
 
 ## P5 — Tools (parallelizable)

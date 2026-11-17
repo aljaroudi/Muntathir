@@ -38,6 +38,10 @@ data class ReadingPreferences(
     val hadithEnglishEnabled: Boolean? = null,
     /** `auto`, `none` or a language code (Swift `supplicationTranslation.v2`). */
     val supplicationTranslation: String = SupplicationTranslation.AUTO,
+    /** Swift `rulings.authority` (a device setting on iOS, backed up here with the reader's other choices). */
+    val rulingsAuthority: String = DEFAULT_AUTHORITY,
+    /** Swift `rulings.languages.v2`: the language chosen for each authority. */
+    val rulingsLanguages: Map<String, String> = emptyMap(),
 ) {
     /** Whether hadith show English: the choice, else whether English comes before Arabic in [languages]. */
     fun showsHadithEnglish(languages: List<Locale>) =
@@ -71,6 +75,8 @@ data class ReadingPreferences(
             put(GROUP_BY_DATE, savedGroupByDate)
             hadithEnglishEnabled?.let { put(HADITH_ENGLISH, it) }
             put(SUPPLICATION_TRANSLATION, supplicationTranslation)
+            put(RULINGS_AUTHORITY, rulingsAuthority)
+            put(RULINGS_LANGUAGES, JsonObject(rulingsLanguages.mapValues { JsonPrimitive(it.value) }))
         }.toString()
 
     companion object {
@@ -86,6 +92,9 @@ data class ReadingPreferences(
         private const val GROUP_BY_DATE = "savedGroupByDate"
         private const val HADITH_ENGLISH = "hadithEnglishEnabled.v2"
         private const val SUPPLICATION_TRANSLATION = "supplicationTranslation.v2"
+        private const val RULINGS_AUTHORITY = "rulings.authority"
+        private const val RULINGS_LANGUAGES = "rulings.languages.v2"
+        const val DEFAULT_AUTHORITY = "sistani"
 
         /** Swift: `auto`, `none` or an ISO language code. */
         fun isValidSupplicationTranslation(value: String) =
@@ -118,6 +127,14 @@ data class ReadingPreferences(
                 supplicationTranslation =
                     json.string(SUPPLICATION_TRANSLATION)?.takeIf(::isValidSupplicationTranslation)
                         ?: defaults.supplicationTranslation,
+                rulingsAuthority =
+                    json.string(RULINGS_AUTHORITY)?.takeIf { it.isNotBlank() } ?: defaults.rulingsAuthority,
+                rulingsLanguages =
+                    (json[RULINGS_LANGUAGES] as? JsonObject)
+                        ?.mapNotNull { (key, value) ->
+                            (value as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull?.let { key to it }
+                        }?.toMap()
+                        .orEmpty(),
             )
         }
 
