@@ -12,9 +12,9 @@
     <!-- Prayer alerts at the minute; falls back to a 10-minute window when not granted. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <!-- Below API 31, expedited work (installing a downloaded library) runs as a short data-sync service. -->
+    <!-- Below API 31, expedited work (installing a downloaded library) runs as WorkManager's untyped foreground
+         service; from API 31 it's an expedited job, so no service type is declared. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <!-- The Rakaat tracker measures front-camera brightness on the device; frames are never stored. -->
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- CAMERA would otherwise imply a required rear camera. -->
@@ -129,11 +129,6 @@
                 android:value="androidx.startup"
                 tools:node="remove" />
         </provider>
-
-        <service
-            android:name="androidx.work.impl.foreground.SystemForegroundService"
-            android:foregroundServiceType="dataSync"
-            tools:node="merge" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

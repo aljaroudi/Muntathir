@@ -66,3 +66,10 @@ Native Kotlin + Jetpack Compose version of the iOS app in [`apple/`](../../apple
 - **IBM Plex Sans Arabic is the app font**, where iOS uses the system font. Its four weights are bundled in `res/font`, not downloaded with `ui-text-google-fonts`, so the font works offline, on first launch and in widgets (a launcher can only use fonts that ship in the APK). Reader bodies keep their fonts: Quran text uses Hafs, Hadith and supplication Arabic uses Lateef, and translations use the system font (`ReaderBodyFont`). Anything that shows Quran text uses Hafs.
 - **Glance lays out widgets; widget text is RemoteViews.** Glance's own `Text` can't use app fonts, so text goes through small XML layouts (`widgets/WidgetText`) that carry the font and a dark-mode-aware color. Rows that mix RemoteViews children use a single XML layout, because Glance rows of them collapse.
 - **Widgets read the app state directly** (single process, through a Hilt entry point). There's no App Group mirror and no Glance state store. One `WidgetUpdater` re-renders when what the widgets show changes, and keeps one alarm for the next prayer, sunset or midnight. The countdown is a launcher-driven `Chronometer`.
+
+## Decisions (2026-11-17, P7)
+
+- **Play Console answers live in [PLAY_DATA_SAFETY.md](PLAY_DATA_SAFETY.md).** Smart search queries are the only collected data; everything else stays on the device.
+- **No foreground-service type of our own.** WorkManager's service stays untyped, since it only runs below API 31. The Play declaration (Data sync) is still needed because Play Asset Delivery's `ExtractionForegroundService` declares `dataSync`; keep that library service.
+- **`:baselineprofile` is allowed** as a test-only fourth module type (P7.2); it never ships.
+- **Play upload is deferred** (P7.5) until the app exists in Play Console; P7.4 prepares everything locally.

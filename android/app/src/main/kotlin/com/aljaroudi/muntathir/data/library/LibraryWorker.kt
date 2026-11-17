@@ -3,8 +3,6 @@ package com.aljaroudi.muntathir.data.library
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.content.pm.ServiceInfo
-import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
@@ -25,7 +23,9 @@ import kotlinx.coroutines.flow.first
 /**
  * Keeps the process alive while a [ContentLibrary] copies its pack or removes a book. The work itself runs in
  * the library; this expedited job only raises the process's priority until it finishes. Below API 31 expedited
- * work runs as a foreground service, with a silent notification.
+ * work runs as a foreground service, with a silent notification; from API 31 it's a JobScheduler expedited job
+ * and [getForegroundInfo] isn't called. So WorkManager's service keeps its untyped declaration (only API 34+
+ * requires a type).
  */
 @HiltWorker
 class LibraryWorker
@@ -64,12 +64,8 @@ class LibraryWorker
                     .setOngoing(true)
                     .setSilent(true)
                     .build()
-            val id = NOTIFICATION + (pack?.ordinal ?: 0)
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                ForegroundInfo(id, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
-            } else {
-                ForegroundInfo(id, notification)
-            }
+            // Untyped: a type the manifest doesn't declare would throw on API 29-30.
+            return ForegroundInfo(NOTIFICATION + (pack?.ordinal ?: 0), notification)
         }
 
         companion object {

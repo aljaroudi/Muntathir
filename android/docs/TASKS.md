@@ -147,10 +147,17 @@ Done 2026-11-17. `just android-test` passes (with new screenshot references for 
   - Device-to-device transfer uses the same rules but wasn't run.
 
 ## P7 — Release
+Order: P7.3 → P7.1 → P7.2 → P7.4. P7.5 waits for the app to exist in Play Console.
+
 - [ ] **P7.1** TalkBack, RTL, 200% font, tablets/foldables. Skill: adaptive.
-- [ ] **P7.2** Baseline Profile, R8, ANR/perf pass. Skills: r8-analyzer, android-profiler, anr-audit-and-fix.
-- [ ] **P7.3** Play policy audit (exact alarms, location, camera, foreground service). Skill: play-policy-insights.
-- [ ] **P7.4** fastlane `supply` metadata (reuse 15-locale listings) + screenshots; internal app sharing PAD check.
+- [ ] **P7.2** Baseline Profile (`:baselineprofile` test module), R8, ANR/perf pass. Skills: r8-analyzer, android-profiler, anr-audit-and-fix.
+- [x] **P7.3** Play policy audit (exact alarms, location, camera, foreground service). Skill: play-policy-insights.
+  - The audit rated the app compliant. The Console answers are in [PLAY_DATA_SAFETY.md](PLAY_DATA_SAFETY.md): Smart search queries are the only collected data.
+  - `LibraryWorker` now returns an untyped `ForegroundInfo`, and the manifest no longer adds `dataSync` to WorkManager's service, since on API 31+ expedited work never starts it. The foreground-service declaration is still needed: Play Asset Delivery's own `ExtractionForegroundService` declares `dataSync`.
+  - `HadithTest` and `SupplicationsTest` pass on the API 37 emulator. Open: the API 26–30 install notification wasn't checked (no API 30 image installed). `HadithTest.downloadCopiesThePackThenBrowseReadAndBookmark` passes alone but fails after `searchFindsNarrationsAndNumbers` (Arabic book name in the reference), with or without this change.
+  - `.scratch/` (skill output) is git-ignored.
+- [ ] **P7.4** fastlane `supply` metadata (reuse 15-locale listings, add Persian) + store screenshots, release signing and versioning, all local.
+- [ ] **P7.5** Upload with `supply`, internal app sharing PAD check on a physical device (plus the P5 device-only checks). *Blocked:* the app isn't in Play Console yet.
 
 ## P8 — Wear OS (later)
 - [ ] **P8.1** Wear app, tiles/widgets, complications, Data Layer snapshot. Skills: wear-compose-m3, wear-widgets.
