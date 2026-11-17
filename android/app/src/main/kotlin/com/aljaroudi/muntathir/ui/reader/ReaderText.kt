@@ -24,6 +24,7 @@ fun ReaderText(
     highlights: List<ReadingHighlight> = emptyList(),
     onHighlight: (List<TextRange>) -> Unit = {},
     canHighlight: (List<TextRange>) -> Boolean = { false },
+    onOpenHighlights: (List<ReadingHighlight>) -> Unit = {},
     configure: HighlightTextView.() -> Unit = {},
 ) {
     val color = LocalContentColor.current.toArgb()
@@ -46,6 +47,7 @@ fun ReaderText(
             }
             view.onHighlight = onHighlight
             view.canHighlight = canHighlight
+            view.onOpenHighlights = onOpenHighlights
             view.render(text, highlights, block)
         },
         modifier = modifier,

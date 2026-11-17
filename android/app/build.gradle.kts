@@ -4,6 +4,12 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.androidx.room)
+}
+
+// Highlights, bookmarks and activity; exported schemas keep future migrations honest.
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 android {
@@ -113,6 +119,8 @@ dependencies {
     implementation(project(":core"))
     // Platform SQLite lacks FTS5 on older releases; the bundled build has it everywhere.
     implementation(libs.androidx.sqlite.bundled)
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
     implementation(libs.play.asset.delivery.ktx)
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)

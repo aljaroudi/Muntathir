@@ -1,5 +1,6 @@
 package com.aljaroudi.muntathir.ui.reader
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Typeface
@@ -14,12 +15,15 @@ import android.text.style.TypefaceSpan
 import android.text.style.URLSpan
 import android.text.style.UnderlineSpan
 import android.view.ActionMode
+import android.view.GestureDetector
 import android.view.Menu
 import android.view.MenuItem
+import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.ViewCompat
 import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.highlight.ReadingHighlight
 import com.aljaroudi.muntathir.core.text.StyledText
@@ -39,7 +43,40 @@ class HighlightTextView(
     /** Whether the selection may be highlighted (e.g. it covers verse words, not only headings). */
     var canHighlight: (List<TextRange>) -> Boolean = { true }
 
+    /** A tap on highlighted text: every highlight under the tap, newest first. */
+    var onOpenHighlights: (List<ReadingHighlight>) -> Unit = {}
+
+    /** TalkBack action label for a highlight (Swift: the note, else the excerpt, up to 60 characters). */
+    var highlightLabel: (ReadingHighlight) -> String = { (it.note.ifBlank { it.excerpt }).take(60) }
+
     private var rendered: Rendered? = null
+    private var drawn: List<Pair<ReadingHighlight, List<TextRange>>> = emptyList()
+    private val actionIDs = mutableListOf<Int>()
+
+    private val taps =
+        GestureDetector(
+            context,
+            object : GestureDetector.SimpleOnGestureListener() {
+                override fun onSingleTapUp(event: MotionEvent): Boolean {
+                    if (selection() != null) return false
+                    val offset = getOffsetForPosition(event.x, event.y)
+                    val hits = highlightsAt(offset)
+                    if (hits.isEmpty()) return false
+                    onOpenHighlights(hits)
+                    return true
+                }
+            },
+        )
+
+    @SuppressLint("ClickableViewAccessibility") // TalkBack users get custom actions instead.
+    override fun onTouchEvent(event: MotionEvent): Boolean = taps.onTouchEvent(event) || super.onTouchEvent(event)
+
+    /** Highlights covering [offset], newest first (the one drawn on top). */
+    fun highlightsAt(offset: Int): List<ReadingHighlight> =
+        drawn
+            .filter { (_, ranges) -> ranges.any { offset >= it.location && offset < it.end } }
+            .map { it.first }
+            .reversed()
 
     private data class Rendered(
         val text: StyledText,
@@ -129,9 +166,18 @@ class HighlightTextView(
                 }
             spannable.setSpan(style, span.start, span.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
-        for (highlight in highlights.sortedWith(compareBy({ it.modifiedAt }, { it.id }))) {
+        drawn =
+            highlights
+                .sortedWith(
+                    compareBy({
+                        it.modifiedAt
+                    }, { it.id }),
+                ).map { it to rangesOf(it) }
+                .filter { it.second.isNotEmpty() }
+        updateAccessibilityActions()
+        for ((highlight, ranges) in drawn) {
             val background = highlightBackground(highlight.color, dark)
-            for (range in rangesOf(highlight)) {
+            for (range in ranges) {
                 spannable.setSpan(
                     BackgroundColorSpan(background),
                     range.location,
@@ -141,6 +187,20 @@ class HighlightTextView(
             }
         }
         setText(spannable, BufferType.SPANNABLE)
+    }
+
+    /** Swift: one accessibility action per visible highlight, opening it. */
+    private fun updateAccessibilityActions() {
+        actionIDs.forEach { ViewCompat.removeAccessibilityAction(this, it) }
+        actionIDs.clear()
+        for ((highlight, _) in drawn.reversed()) {
+            val label = context.getString(R.string.highlight_note) + ": " + highlightLabel(highlight)
+            actionIDs +=
+                ViewCompat.addAccessibilityAction(this, label) { _, _ ->
+                    onOpenHighlights(listOf(highlight))
+                    true
+                }
+        }
     }
 }
 

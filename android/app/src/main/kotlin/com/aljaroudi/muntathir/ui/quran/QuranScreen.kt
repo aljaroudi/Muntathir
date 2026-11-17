@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.Icon
@@ -46,13 +47,15 @@ import com.aljaroudi.muntathir.ui.components.SearchField
 import com.aljaroudi.muntathir.ui.components.SectionHeader
 import com.aljaroudi.muntathir.ui.components.currentLocale
 import com.aljaroudi.muntathir.ui.navigation.QuranReaderRoute
+import com.aljaroudi.muntathir.ui.navigation.QuranSavedRoute
+import com.aljaroudi.muntathir.ui.navigation.Route
 import java.util.Locale
 
 /** Swift `QuranView`: search, then the surahs. */
 @Composable
 fun QuranScreen(
     viewModel: QuranViewModel,
-    onOpen: (QuranReaderRoute) -> Unit,
+    onOpen: (Route) -> Unit,
     onBack: (() -> Unit)?,
 ) {
     val catalog by viewModel.catalog.collectAsStateWithLifecycle()
@@ -92,6 +95,15 @@ fun QuranScreen(
                     onRemove = search::removeRecent,
                     onClear = search::clearRecent,
                 )
+            }
+            if (submitted.isBlank()) {
+                item(key = "saved") {
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.saved)) },
+                        leadingContent = { Icon(Icons.Outlined.BookmarkBorder, null) },
+                        modifier = Modifier.clickable { onOpen(QuranSavedRoute) }.testTag("quran-saved"),
+                    )
+                }
             }
             when (val state = catalog) {
                 CatalogState.Loading -> {

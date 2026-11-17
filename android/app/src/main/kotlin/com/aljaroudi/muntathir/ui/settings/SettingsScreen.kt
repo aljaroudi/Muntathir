@@ -136,13 +136,14 @@ class SettingsViewModel
 /** Navigation out of Settings; detail screens open in the list-detail pane on wide windows. */
 class SettingsLinks(
     val onTabs: () -> Unit = {},
+    val onHighlightColors: () -> Unit = {},
     val onDownloads: () -> Unit = {},
     val onLocation: () -> Unit = {},
     val onMonthAdjustments: () -> Unit = {},
     val onCredits: () -> Unit = {},
 )
 
-/** Swift `SettingsView`, without weather and reading (P3). */
+/** Swift `SettingsView`, without weather. */
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel,
@@ -184,6 +185,8 @@ fun SettingsScreen(
         ) {
             item { AppLanguageRow() }
             item { LinkRow(stringResource(R.string.tabs), links.onTabs, "settings-tabs") }
+            item { ReadingSizeRow() }
+            item { HighlightColorsRow(links.onHighlightColors) }
             item { LinkRow(stringResource(R.string.downloads), links.onDownloads, "settings-downloads") }
 
             section(R.string.location)

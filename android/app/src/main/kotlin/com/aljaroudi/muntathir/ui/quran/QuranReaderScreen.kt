@@ -2,6 +2,7 @@ package com.aljaroudi.muntathir.ui.quran
 
 import android.icu.text.NumberFormat
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,18 +17,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FormatSize
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Translate
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedIconButton
@@ -60,10 +65,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.app.QuranReadingMode
 import com.aljaroudi.muntathir.core.app.ReadingPreferences
+import com.aljaroudi.muntathir.core.highlight.HighlightColor
+import com.aljaroudi.muntathir.core.highlight.ReadingBookmark
+import com.aljaroudi.muntathir.core.highlight.ReadingHighlight
 import com.aljaroudi.muntathir.core.quran.Ayah
 import com.aljaroudi.muntathir.core.quran.QuranReference
 import com.aljaroudi.muntathir.core.quran.QuranTranslation
 import com.aljaroudi.muntathir.core.text.SearchMatch
+import com.aljaroudi.muntathir.core.text.TextRange
 import com.aljaroudi.muntathir.ui.components.EmptyState
 import com.aljaroudi.muntathir.ui.components.LoadingState
 import com.aljaroudi.muntathir.ui.components.ScreenScaffold
@@ -71,6 +80,8 @@ import com.aljaroudi.muntathir.ui.components.SearchField
 import com.aljaroudi.muntathir.ui.components.currentLocale
 import com.aljaroudi.muntathir.ui.components.plus
 import com.aljaroudi.muntathir.ui.navigation.QuranReaderRoute
+import com.aljaroudi.muntathir.ui.reader.HighlightEditorSheet
+import com.aljaroudi.muntathir.ui.reader.HighlightSwatch
 import com.aljaroudi.muntathir.ui.reader.ReaderText
 import com.aljaroudi.muntathir.ui.reader.ReadingTextStyle
 import com.aljaroudi.muntathir.ui.reader.quranTypeface
@@ -156,6 +167,71 @@ fun QuranReaderScreen(
     if (sizing) {
         ReadingSizeSheet(reading.readingSizePercent, locale, viewModel::setSize) { sizing = false }
     }
+    HighlightDialogs(viewModel, reading.highlightColors)
+}
+
+/** The editor, the chooser for overlapping highlights, and the bookmark failure alert. */
+@Composable
+private fun HighlightDialogs(
+    viewModel: QuranReaderViewModel,
+    colors: List<HighlightColor>,
+) {
+    val editing by viewModel.editing.collectAsStateWithLifecycle()
+    val choosing by viewModel.choosing.collectAsStateWithLifecycle()
+    val bookmarkFailed by viewModel.bookmarkFailed.collectAsStateWithLifecycle()
+    editing?.let { draft ->
+        key(draft) {
+            HighlightEditorSheet(draft, colors, viewModel::save, viewModel::delete, viewModel::closeEditor)
+        }
+    }
+    if (choosing.isNotEmpty()) {
+        AlertDialog(
+            onDismissRequest = viewModel::closeEditor,
+            title = { Text(stringResource(R.string.highlights)) },
+            text = {
+                Column {
+                    for (highlight in choosing) {
+                        ListItem(
+                            headlineContent = { Text(highlight.note.ifBlank { highlight.excerpt }.take(60)) },
+                            leadingContent = { HighlightSwatch(highlight.color, selected = false, size = 20) },
+                            modifier = Modifier.clickable { viewModel.edit(highlight) },
+                        )
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = viewModel::closeEditor) { Text(stringResource(R.string.cancel)) } },
+        )
+    }
+    if (bookmarkFailed) {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissBookmarkFailure,
+            title = { Text(stringResource(R.string.unable_to_save_bookmark)) },
+            text = { Text(stringResource(R.string.please_try_again)) },
+            confirmButton = {
+                TextButton(
+                    onClick = viewModel::dismissBookmarkFailure,
+                ) { Text(stringResource(R.string.ok)) }
+            },
+        )
+    }
+}
+
+/** Swift `BookmarkButton` as a verse-menu item. */
+@Composable
+fun BookmarkItem(
+    bookmarked: Boolean,
+    onToggle: () -> Unit,
+    close: () -> Unit,
+) {
+    DropdownMenuItem(
+        text = { Text(stringResource(if (bookmarked) R.string.remove_bookmark else R.string.bookmark)) },
+        leadingIcon = { Icon(if (bookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder, null) },
+        onClick = {
+            close()
+            onToggle()
+        },
+        modifier = Modifier.testTag("verse-bookmark"),
+    )
 }
 
 @Composable
@@ -174,6 +250,8 @@ private fun ReaderContent(
         key(mode) {
             when (mode) {
                 QuranReadingMode.Verses -> {
+                    val highlights by viewModel.highlights.collectAsStateWithLifecycle()
+                    val bookmarks by viewModel.bookmarks.collectAsStateWithLifecycle()
                     VersesReader(
                         chapter = chapter,
                         initialVerse = position.verse,
@@ -183,6 +261,20 @@ private fun ReaderContent(
                         padding = padding,
                         onPosition = viewModel::setPosition,
                         onRetry = viewModel::retry,
+                        highlights = highlights,
+                        onSelect = viewModel::select,
+                        onOpenHighlights = viewModel::open,
+                        actions = { ayah ->
+                            val bookmarked =
+                                bookmarks.any {
+                                    it.kind == ReadingBookmark.Kind.Quran &&
+                                        it.source == ayah.id
+                                }
+                            val item: @Composable (() -> Unit) -> Unit = { close ->
+                                BookmarkItem(bookmarked, { viewModel.toggleBookmark(ayah) }, close)
+                            }
+                            item
+                        },
                     )
                 }
 
@@ -190,6 +282,7 @@ private fun ReaderContent(
                     if (surahs.isEmpty()) {
                         LoadingState(stringResource(R.string.loading_quran), Modifier.padding(padding))
                     } else {
+                        val highlights by viewModel.highlights.collectAsStateWithLifecycle()
                         MushafReader(
                             viewModel,
                             position,
@@ -197,6 +290,14 @@ private fun ReaderContent(
                             padding,
                             onPage = { onJuz(it.juz) },
                             onPosition = viewModel::setPosition,
+                            highlights =
+                                remember(highlights) {
+                                    MushafHighlights(
+                                        highlights = { page -> highlights.filter { it.source in page.verses } },
+                                        onSelect = { page, selection -> viewModel.select(page.highlights(selection)) },
+                                        onOpen = viewModel::open,
+                                    )
+                                },
                         )
                     }
                 }
@@ -282,7 +383,12 @@ private fun VersesReader(
     padding: PaddingValues,
     onPosition: (ReaderPosition) -> Unit,
     onRetry: () -> Unit,
+    highlights: List<ReadingHighlight>,
+    onSelect: (Ayah, String, String, List<TextRange>) -> Unit,
+    onOpenHighlights: (List<ReadingHighlight>) -> Unit,
+    actions: (Ayah) -> (@Composable (close: () -> Unit) -> Unit),
 ) {
+    val bySource = remember(highlights) { highlights.groupBy { it.source } }
     when (chapter) {
         ChapterState.Loading -> {
             LoadingState(stringResource(R.string.loading_quran), Modifier.padding(padding))
@@ -314,6 +420,10 @@ private fun VersesReader(
                             query = query,
                             sizePercent = sizePercent,
                             surahNames = surahNames,
+                            actions = actions(ayah),
+                            highlights = bySource[ayah.id].orEmpty(),
+                            onSelect = { block, text, ranges -> onSelect(ayah, block, text, ranges) },
+                            onOpenHighlights = onOpenHighlights,
                         )
                         HorizontalDivider(Modifier.padding(horizontal = 20.dp))
                     }
@@ -333,6 +443,9 @@ fun QuranVerseRow(
     surahNames: Map<Int, String>,
     modifier: Modifier = Modifier,
     actions: (@Composable (close: () -> Unit) -> Unit)? = null,
+    highlights: List<ReadingHighlight> = emptyList(),
+    onSelect: ((block: String, text: String, ranges: List<TextRange>) -> Unit)? = null,
+    onOpenHighlights: (List<ReadingHighlight>) -> Unit = {},
 ) {
     val locale = currentLocale()
     val reference = QuranReference.display(ayah.id, locale.language, surahNames)
@@ -365,6 +478,10 @@ fun QuranVerseRow(
                 typeface = quranTypeface(),
                 rightToLeft = true,
                 modifier = Modifier.fillMaxWidth().testTag("quran-arabic-${ayah.id}"),
+                highlights = highlights,
+                onHighlight = { onSelect?.invoke(ARABIC_BLOCK, ayah.text, it) },
+                canHighlight = { onSelect != null },
+                onOpenHighlights = onOpenHighlights,
             )
             if (translation != null && translated != null) {
                 ReaderText(
@@ -373,6 +490,10 @@ fun QuranVerseRow(
                     sizeSp = ReadingTextStyle.bodySize(sizePercent),
                     rightToLeft = QuranTranslation.of(translation)?.isRightToLeft == true,
                     modifier = Modifier.fillMaxWidth().testTag("quran-translation-${ayah.id}"),
+                    highlights = highlights,
+                    onHighlight = { onSelect?.invoke(translation, translated, it) },
+                    canHighlight = { onSelect != null },
+                    onOpenHighlights = onOpenHighlights,
                 )
             }
         }

@@ -1,0 +1,155 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "48f513d76e18174945dfd5ca82ced487",
+    "entities": [
+      {
+        "tableName": "highlights",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recordID` TEXT NOT NULL, `itemID` TEXT NOT NULL, `installationID` TEXT NOT NULL, `payload` TEXT NOT NULL, `modifiedAt` INTEGER NOT NULL, `isTombstone` INTEGER NOT NULL, PRIMARY KEY(`recordID`))",
+        "fields": [
+          {
+            "fieldPath": "recordID",
+            "columnName": "recordID",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "itemID",
+            "columnName": "itemID",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "installationID",
+            "columnName": "installationID",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payload",
+            "columnName": "payload",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "modifiedAt",
+            "columnName": "modifiedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isTombstone",
+            "columnName": "isTombstone",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "recordID"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_highlights_itemID",
+            "unique": false,
+            "columnNames": [
+              "itemID"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_highlights_itemID` ON `${TABLE_NAME}` (`itemID`)"
+          }
+        ]
+      },
+      {
+        "tableName": "bookmarks",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recordID` TEXT NOT NULL, `itemID` TEXT NOT NULL, `installationID` TEXT NOT NULL, `payload` TEXT NOT NULL, `modifiedAt` INTEGER NOT NULL, `isTombstone` INTEGER NOT NULL, PRIMARY KEY(`recordID`))",
+        "fields": [
+          {
+            "fieldPath": "recordID",
+            "columnName": "recordID",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "itemID",
+            "columnName": "itemID",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "installationID",
+            "columnName": "installationID",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payload",
+            "columnName": "payload",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "modifiedAt",
+            "columnName": "modifiedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isTombstone",
+            "columnName": "isTombstone",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "recordID"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_bookmarks_itemID",
+            "unique": false,
+            "columnNames": [
+              "itemID"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_bookmarks_itemID` ON `${TABLE_NAME}` (`itemID`)"
+          }
+        ]
+      },
+      {
+        "tableName": "activity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`activityID` TEXT NOT NULL, `payload` TEXT NOT NULL, PRIMARY KEY(`activityID`))",
+        "fields": [
+          {
+            "fieldPath": "activityID",
+            "columnName": "activityID",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payload",
+            "columnName": "payload",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "activityID"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '48f513d76e18174945dfd5ca82ced487')"
+    ]
+  }
+}

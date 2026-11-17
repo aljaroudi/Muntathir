@@ -15,10 +15,18 @@ private val swatches =
         HighlightColor.Red to 0xFFFF3B30,
         HighlightColor.Mint to 0xFF00C7BE,
         HighlightColor.Teal to 0xFF30B0C7,
-        HighlightColor.Cyan to 0xFF32ADE6,
+        // "Pearl": the iOS lavender (0.67, 0.66, 0.88), not system cyan.
+        HighlightColor.Cyan to 0xFFABA8E0,
         HighlightColor.Indigo to 0xFF5856D6,
         HighlightColor.Brown to 0xFFA2845E,
     ).mapValues { it.value.toInt() }
+
+/** The swatch itself, for the palette. */
+fun highlightSwatch(color: HighlightColor): Int = swatches.getValue(color)
+
+/** Swatches dark enough for a white checkmark (Swift `HighlightSwatch`). */
+fun highlightSwatchIsDark(color: HighlightColor): Boolean =
+    color in setOf(HighlightColor.Indigo, HighlightColor.Brown, HighlightColor.Blue, HighlightColor.Purple)
 
 /**
  * An opaque pastel behind highlighted text: 28% of the swatch over white (light) or black (dark), as on iOS,

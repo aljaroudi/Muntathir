@@ -61,7 +61,11 @@ Done 2026-11-17. `just android-test` passes. The instrumented tests (`MuntathirA
   - `packs/quran_translations` (on-demand, `Quran/<id>.db` × 12, filled by `just android-packs`). Verified with `just android-local-testing` on the API 37 emulator: choosing German downloaded the pack, installed all 12, removed the pack and showed German in the reader.
   - `core/quran/QuranTranslationFiles` + `QuranTranslationStore` port the Swift index (generation folders, atomic `index.json`, cleanup) and state machine behind a `TranslationPack` interface, so `QuranTranslationStoreTest` runs the `QuranAssetStoreTests` cases on the JVM. `data/QuranTranslations` drives it on the main thread with `PlayTranslationPack` (Play statuses → began/progress/finished/failed, plus a Wi-Fi/confirmation prompt Play needs).
   - The picker is a dialog (Auto, None, each language with a download mark); the Downloads rows use icon buttons instead of swipe actions. Today's daily ayah follows the selected installed translation.
-- [ ] **P3.4** Highlights/bookmarks (Room), Saved list, editor.
+- [x] **P3.4** Highlights/bookmarks (Room), Saved list, editor.
+  - `core/highlight/QuranUserStore` ports the Swift store over a `UserRecords` table interface: winners by `modifiedAt` then record id, this installation's own rows, atomic batches, tombstones, rollback on failure. `QuranUserStoreTest` runs the Swift cases on the JVM. `ReadingBookmark` (with ruling ids and the `isHadith` coding rule) and `SavedEntry` sections are in `core` too.
+  - Room 2.8 (`databases/user.db`, bundled driver, schema exported to `app/schemas`) holds `highlights`, `bookmarks` and `activity`; it's in Auto Backup. The installation id lives in `no_backup/QuranIdentity`, so a restored device writes its own rows.
+  - Reader: selecting text → Highlight → editor (palette from `ReadingPreferences`; tapping a color saves); tapping highlighted text opens it (a chooser for overlaps); TalkBack gets one action per highlight. Mushaf selections save one highlight per verse. Bookmark is in each verse's menu.
+  - Deviations: row actions are an overflow menu rather than swipe; palette reorder uses move buttons; Pearl is the iOS lavender as a solid swatch (no sheen). The P1.7 `ReaderSpikeActivity` and its test stay as they were. `SavedTest` covers bookmark → Saved → open/remove and select → highlight → reopen on in-memory Room.
 - [ ] **P3.5** Reading timers → Activity.
 
 ## P4 — Library

@@ -27,9 +27,11 @@ import com.aljaroudi.muntathir.ui.location.LocationScreen
 import com.aljaroudi.muntathir.ui.navigation.AppNavigator
 import com.aljaroudi.muntathir.ui.navigation.CreditsRoute
 import com.aljaroudi.muntathir.ui.navigation.DownloadsRoute
+import com.aljaroudi.muntathir.ui.navigation.HighlightPaletteRoute
 import com.aljaroudi.muntathir.ui.navigation.LocationRoute
 import com.aljaroudi.muntathir.ui.navigation.MonthAdjustmentsRoute
 import com.aljaroudi.muntathir.ui.navigation.QuranReaderRoute
+import com.aljaroudi.muntathir.ui.navigation.QuranSavedRoute
 import com.aljaroudi.muntathir.ui.navigation.Route
 import com.aljaroudi.muntathir.ui.navigation.SettingsRoute
 import com.aljaroudi.muntathir.ui.navigation.TabsSettingsRoute
@@ -44,8 +46,10 @@ import com.aljaroudi.muntathir.ui.navigation.testTag
 import com.aljaroudi.muntathir.ui.navigation.title
 import com.aljaroudi.muntathir.ui.quran.QuranReaderScreen
 import com.aljaroudi.muntathir.ui.quran.QuranReaderViewModel
+import com.aljaroudi.muntathir.ui.quran.QuranSavedScreen
 import com.aljaroudi.muntathir.ui.quran.QuranScreen
 import com.aljaroudi.muntathir.ui.settings.CreditsScreen
+import com.aljaroudi.muntathir.ui.settings.HighlightPaletteScreen
 import com.aljaroudi.muntathir.ui.settings.SettingsLinks
 import com.aljaroudi.muntathir.ui.settings.SettingsScreen
 import com.aljaroudi.muntathir.ui.today.TodayScreen
@@ -65,8 +69,8 @@ fun AppShell(
     // Detail panes beside their list have no Up button.
     val detailBack: (() -> Unit)? = if (twoPane) null else navigator::back
     // Beside the surah list, another surah replaces the open one rather than stacking.
-    val openReader: (QuranReaderRoute) -> Unit = { route ->
-        if (twoPane && navigator.current.lastOrNull() is QuranReaderRoute) {
+    val openReader: (Route) -> Unit = { route ->
+        if (twoPane && navigator.current.lastOrNull().let { it is QuranReaderRoute || it == QuranSavedRoute }) {
             navigator.current.removeAt(navigator.current.lastIndex)
         }
         navigator.push(route)
@@ -116,6 +120,13 @@ fun AppShell(
                                     openReader,
                                 )
                             }
+                            entry<QuranSavedRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
+                                // Opening a saved verse replaces Saved beside the list, but stacks on phones.
+                                QuranSavedScreen(hiltViewModel(), onOpen = { navigator.push(it) }, onBack = detailBack)
+                            }
+                            entry<HighlightPaletteRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
+                                HighlightPaletteScreen(hiltViewModel(), detailBack)
+                            }
                             entry<QuranReaderRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
                                 QuranReaderScreen(
                                     hiltViewModel<QuranReaderViewModel, QuranReaderViewModel.Factory>(
@@ -139,6 +150,7 @@ fun AppShell(
                                     hiltViewModel(),
                                     SettingsLinks(
                                         onTabs = { open(TabsSettingsRoute) },
+                                        onHighlightColors = { open(HighlightPaletteRoute) },
                                         onDownloads = { open(DownloadsRoute) },
                                         onLocation = { open(LocationRoute) },
                                         onMonthAdjustments = { open(MonthAdjustmentsRoute) },
@@ -172,7 +184,7 @@ fun AppShell(
 }
 
 private val SETTINGS_DETAILS =
-    setOf(TabsSettingsRoute, DownloadsRoute, LocationRoute, MonthAdjustmentsRoute, CreditsRoute)
+    setOf(TabsSettingsRoute, HighlightPaletteRoute, DownloadsRoute, LocationRoute, MonthAdjustmentsRoute, CreditsRoute)
 
 /** Tools whose root lists items for a detail pane beside it. */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
@@ -191,7 +203,7 @@ private fun listPanes(provider: (NavKey) -> NavEntry<NavKey>): (NavKey) -> NavEn
 private fun ToolScreen(
     tool: AppTool,
     onBack: (() -> Unit)?,
-    openReader: (QuranReaderRoute) -> Unit,
+    openReader: (Route) -> Unit,
 ) {
     when (tool) {
         AppTool.Quran -> QuranScreen(hiltViewModel(), openReader, onBack)

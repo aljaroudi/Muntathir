@@ -58,6 +58,7 @@ import com.aljaroudi.muntathir.ui.reader.quranTypeface
 class MushafHighlights(
     val highlights: (QuranPageText) -> List<ReadingHighlight> = { emptyList() },
     val onSelect: (QuranPageText, List<TextRange>) -> Unit = { _, _ -> },
+    val onOpen: (List<ReadingHighlight>) -> Unit = {},
 )
 
 /**
@@ -181,6 +182,7 @@ private fun MushafPage(
                                 view.setTextSize(TypedValue.COMPLEX_UNIT_PX, layout.fontSize)
                                 view.canHighlight = { text.canHighlight(it) }
                                 view.onHighlight = { highlights.onSelect(text, it) }
+                                view.onOpenHighlights = highlights.onOpen
                                 view.render(
                                     StyledText(layout.text),
                                     saved,

@@ -46,6 +46,14 @@ data class QuranReaderRoute(
     val highlight: String? = null,
 ) : Route
 
+/** Saved Quran highlights and bookmarks. */
+@Serializable
+data object QuranSavedRoute : Route
+
+/** Settings → Highlight colors. */
+@Serializable
+data object HighlightPaletteRoute : Route
+
 /** Opened from Today's empty state and Settings; a dialog over the current tab. */
 @Serializable
 data object LocationRoute : Route
