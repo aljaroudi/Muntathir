@@ -362,11 +362,11 @@ private fun ToolScreen(
         }
 
         AppTool.Calendar -> {
-            CalendarScreen(hiltViewModel(), onBack)
+            CalendarScreen(hiltViewModel(), onBack, open = open)
         }
 
         AppTool.Events -> {
-            EventsScreen(hiltViewModel<EventsViewModel>().library, onBack)
+            EventsScreen(hiltViewModel<EventsViewModel>(), open, onBack)
         }
 
         AppTool.Figures -> {

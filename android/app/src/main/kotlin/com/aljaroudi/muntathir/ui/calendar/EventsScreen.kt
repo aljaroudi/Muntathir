@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -23,12 +24,19 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.calendar.EventLibrary
+import com.aljaroudi.muntathir.core.figures.FigureLibrary
+import com.aljaroudi.muntathir.data.FigureLoad
+import com.aljaroudi.muntathir.data.FigureStore
+import com.aljaroudi.muntathir.data.library
 import com.aljaroudi.muntathir.ui.components.Formats
 import com.aljaroudi.muntathir.ui.components.ScreenScaffold
 import com.aljaroudi.muntathir.ui.components.currentLocale
+import com.aljaroudi.muntathir.ui.navigation.Route
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,7 +44,21 @@ class EventsViewModel
     @Inject
     constructor(
         val library: EventLibrary,
-    ) : ViewModel()
+        figures: FigureStore,
+    ) : ViewModel() {
+        /** Figures that observances link to, once loaded. */
+        val figures: StateFlow<FigureLoad> = figures.state
+    }
+
+@Composable
+fun EventsScreen(
+    viewModel: EventsViewModel,
+    open: (Route) -> Unit,
+    onBack: (() -> Unit)?,
+) {
+    val figures by viewModel.figures.collectAsStateWithLifecycle()
+    EventsScreen(viewModel.library, onBack, figures = figures.library, open = open)
+}
 
 /** Swift `EventsView`: every observance by Hijri month, independent of year. */
 @Composable
@@ -44,10 +66,16 @@ fun EventsScreen(
     library: EventLibrary,
     onBack: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    figures: FigureLibrary? = null,
+    open: (Route) -> Unit = {},
 ) {
     val locale = currentLocale()
     ScreenScaffold(R.string.events, modifier, onBack) { padding ->
-        LazyColumn(state = rememberLazyListState(), contentPadding = padding) {
+        LazyColumn(
+            state = rememberLazyListState(),
+            contentPadding = padding,
+            modifier = Modifier.testTag("events-list"),
+        ) {
             (1..12).forEach { month ->
                 val name = Formats.hijriMonth(month, locale)
                 stickyHeader(key = "events-month-$month") {
@@ -99,7 +127,7 @@ fun EventsScreen(
                                     .padding(horizontal = 10.dp, vertical = 6.dp)
                                     .semantics { contentDescription = "$day $name" },
                         )
-                        EventTitle(event, locale, Modifier.weight(1f))
+                        EventTitle(event, locale, Modifier.weight(1f), figures, open)
                     }
                 }
             }

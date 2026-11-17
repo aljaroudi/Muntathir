@@ -39,5 +39,7 @@ tasks.test {
     inputs.dir(repository.resolve("apple/Muntathir/Resources/Quran"))
     inputs.file(repository.resolve("apple/Muntathir/Resources/quran-surahs.json"))
     inputs.file(repository.resolve("web/public/calendar/corrections-v1.json"))
+    inputs.file(repository.resolve("shared/figures/figures.json"))
+    inputs.file(repository.resolve("apple/MuntathirTests/figure-example.json"))
     systemProperty("repository", repository.absolutePath)
 }

@@ -43,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -60,10 +61,16 @@ import com.aljaroudi.muntathir.core.calendar.EventLibrary
 import com.aljaroudi.muntathir.core.calendar.HijriMonth
 import com.aljaroudi.muntathir.core.calendar.IslamicEvent
 import com.aljaroudi.muntathir.core.calendar.MonthCorrection
+import com.aljaroudi.muntathir.core.figures.FigureLibrary
+import com.aljaroudi.muntathir.data.FigureStore
+import com.aljaroudi.muntathir.data.library
 import com.aljaroudi.muntathir.data.minutes
 import com.aljaroudi.muntathir.ui.components.Formats
 import com.aljaroudi.muntathir.ui.components.ScreenScaffold
 import com.aljaroudi.muntathir.ui.components.currentLocale
+import com.aljaroudi.muntathir.ui.navigation.FigurePickerRoute
+import com.aljaroudi.muntathir.ui.navigation.FigureProfileRoute
+import com.aljaroudi.muntathir.ui.navigation.Route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -83,6 +90,8 @@ data class CalendarUi(
     val engine: CalendarEngine,
     val confirmations: List<MonthCorrection>,
     val library: EventLibrary,
+    /** Linked figures for observance rows, once loaded. */
+    val figures: FigureLibrary? = null,
 ) {
     val today: LocalDate get() = engine.localDate(now)
     val currentMonth: HijriMonth get() = engine.resolve(now).month
@@ -95,15 +104,22 @@ class CalendarViewModel
         model: AppModel,
         library: EventLibrary,
         clock: Clock,
+        figures: FigureStore,
     ) : ViewModel() {
         val state: StateFlow<CalendarUi> =
-            combine(model.state, clock.minutes()) { app, now ->
-                CalendarUi(now, app.engine, app.confirmations.map { it.correction }, library)
+            combine(model.state, clock.minutes(), figures.state) { app, now, load ->
+                CalendarUi(now, app.engine, app.confirmations.map { it.correction }, library, load.library)
             }.stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(5_000),
                 model.state.value.let { app ->
-                    CalendarUi(clock.instant(), app.engine, app.confirmations.map { it.correction }, library)
+                    CalendarUi(
+                        clock.instant(),
+                        app.engine,
+                        app.confirmations.map { it.correction },
+                        library,
+                        figures.state.value.library,
+                    )
                 },
             )
     }
@@ -114,9 +130,10 @@ fun CalendarScreen(
     viewModel: CalendarViewModel,
     onBack: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    open: (Route) -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    CalendarContent(state, onBack, modifier)
+    CalendarContent(state, onBack, modifier, open)
 }
 
 @Composable
@@ -124,6 +141,7 @@ fun CalendarContent(
     state: CalendarUi,
     onBack: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    open: (Route) -> Unit = {},
 ) {
     val locale = currentLocale()
     val current = state.currentMonth
@@ -184,7 +202,7 @@ fun CalendarContent(
                     keys.indexOf(target).takeIf { it >= 0 }?.let { list.animateScrollToItem(it) }
                     pendingTarget = null
                 }
-                MonthList(sections, state, nextEvent, list, locale, onMonth = { pickerMonth = it.index })
+                MonthList(sections, state, nextEvent, list, locale, onMonth = { pickerMonth = it.index }, open = open)
             }
         }
     }
@@ -265,6 +283,7 @@ private fun MonthList(
     list: LazyListState,
     locale: Locale,
     onMonth: (HijriMonth) -> Unit,
+    open: (Route) -> Unit,
 ) {
     LazyColumn(state = list, modifier = Modifier.widthIn(max = 760.dp).fillMaxSize()) {
         sections.forEach { section ->
@@ -316,6 +335,7 @@ private fun MonthList(
                         isNext = day.date == nextEvent,
                         expected = section.expected,
                         locale = locale,
+                        open = open,
                     )
                 }
             }
@@ -330,6 +350,7 @@ private fun EventDayRow(
     isNext: Boolean,
     expected: Boolean,
     locale: Locale,
+    open: (Route) -> Unit,
 ) {
     val civil = Formats.date(day.date, "EEEdMMM", locale)
     val colors = MaterialTheme.colorScheme
@@ -372,18 +393,37 @@ private fun EventDayRow(
                 modifier = Modifier.testTag("calendar-countdown"),
             )
         }
-        day.events.forEach { EventTitle(it, locale) }
+        day.events.forEach { EventTitle(it, locale, figures = state.figures, open = open) }
     }
 }
 
-/** Swift `FigureObservanceRow` without figure links (Figures arrive in P5.4). */
+/**
+ * Swift `FigureObservanceRow`: an observance linked to one published figure opens its profile, one linked to
+ * several opens a picker, otherwise it's plain text.
+ */
 @Composable
 fun EventTitle(
     event: IslamicEvent,
     locale: Locale,
     modifier: Modifier = Modifier,
+    figures: FigureLibrary? = null,
+    open: (Route) -> Unit = {},
 ) {
-    Column(modifier.testTag("observance-${event.id}")) {
+    val ids =
+        remember(event, figures) {
+            figures
+                ?.let { library ->
+                    event.figureIDs.filter { it in library.byID }
+                }.orEmpty()
+        }
+    val target =
+        when {
+            ids.size == 1 -> FigureProfileRoute(ids.single())
+            ids.size > 1 -> FigurePickerRoute(ids)
+            else -> null
+        }
+    val link = target?.let { Modifier.clickable(role = Role.Button) { open(it) } } ?: Modifier
+    Column(modifier.then(link).testTag("observance-${event.id}")) {
         Text(event.title(locale), style = MaterialTheme.typography.bodyLarge)
         event.year?.let {
             Text(

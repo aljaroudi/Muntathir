@@ -125,8 +125,18 @@ val licenseAssets =
         outputDir = layout.buildDirectory.dir("generated/shared/licenses")
     }
 
+// Religious figures and their family links (`shared/figures`), read offline by `FigureStore`.
+val figureAssets =
+    tasks.register<SharedContent>("figureAssets") {
+        files.from(rootProject.file("../shared/figures/figures.json"))
+        subdirectory = "figures"
+        lowercase = false
+        outputDir = layout.buildDirectory.dir("generated/shared/figures")
+    }
+
 androidComponents.onVariants { variant ->
     variant.sources.assets?.addGeneratedSourceDirectory(quranAssets, SharedContent::outputDir)
+    variant.sources.assets?.addGeneratedSourceDirectory(figureAssets, SharedContent::outputDir)
     variant.sources.assets?.addGeneratedSourceDirectory(licenseAssets, SharedContent::outputDir)
     variant.sources.res?.addGeneratedSourceDirectory(alertSounds, SharedContent::outputDir)
 }
