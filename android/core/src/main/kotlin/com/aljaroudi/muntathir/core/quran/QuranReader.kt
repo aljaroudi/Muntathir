@@ -1,5 +1,7 @@
 package com.aljaroudi.muntathir.core.quran
 
+import com.aljaroudi.muntathir.core.sql.ContentSql
+import com.aljaroudi.muntathir.core.sql.query
 import com.aljaroudi.muntathir.core.text.InvalidReferenceException
 import com.aljaroudi.muntathir.core.text.QuranSearchText
 import com.aljaroudi.muntathir.core.text.ReadingTime
@@ -26,9 +28,9 @@ data class QuranCatalog(
  * translation isn't installed.
  */
 class QuranReader(
-    private val arabic: () -> QuranSql,
+    private val arabic: () -> ContentSql,
     private val surahs: () -> List<QuranSurah>,
-    private val translation: (String) -> QuranSql? = { null },
+    private val translation: (String) -> ContentSql? = { null },
 ) {
     private data class SearchKey(
         val query: String,
@@ -191,7 +193,7 @@ class QuranReader(
     private fun ranked(
         ids: List<Int>,
         terms: List<String>,
-        sql: QuranSql,
+        sql: ContentSql,
         job: Job?,
     ): List<List<Int>> {
         if (ids.isEmpty()) return List(TIERS) { emptyList() }
@@ -208,7 +210,7 @@ class QuranReader(
     /** One word index per database; Chinese translations have none and use literal matching. */
     private fun matches(
         terms: List<String>,
-        sql: QuranSql,
+        sql: ContentSql,
         job: Job?,
     ): List<Int> {
         val hasIndex = sql.query("SELECT name FROM sqlite_master WHERE name='quran_words'") { it.text(0) }.isNotEmpty()
@@ -319,20 +321,20 @@ class QuranReader(
         }
     }
 
-    private fun translationSql(id: String): QuranSql? = runCatching { translation(id) }.getOrNull()
+    private fun translationSql(id: String): ContentSql? = runCatching { translation(id) }.getOrNull()
 
-    private fun arabicSql(): QuranSql = runCatching(arabic).getOrElse { throw QuranUnavailableException(it) }
+    private fun arabicSql(): ContentSql = runCatching(arabic).getOrElse { throw QuranUnavailableException(it) }
 
     private fun <T> arabicQuery(
         sql: String,
         vararg parameters: Any,
-        row: (QuranSql.Row) -> T,
+        row: (ContentSql.Row) -> T,
     ): List<T> = arabicQuery(sql, parameters.toList(), row)
 
     private fun <T> arabicQuery(
         sql: String,
         parameters: List<Any>,
-        row: (QuranSql.Row) -> T,
+        row: (ContentSql.Row) -> T,
     ): List<T> = guarded { arabicSql().query(sql, parameters, row) }
 
     /** Database errors surface as [QuranUnavailableException]; reference errors and cancellation pass through. */
@@ -363,7 +365,7 @@ class QuranReader(
         private fun indexIn(count: Int) = "\"index\" IN ${inList(count)}"
 
         /** Swift `QuranDatabase.validateTranslation`: 6,236 non-blank verses indexed 1…6236. */
-        fun isValidTranslation(sql: QuranSql): Boolean =
+        fun isValidTranslation(sql: ContentSql): Boolean =
             runCatching {
                 sql
                     .query("SELECT count(*), min(\"index\"), max(\"index\") FROM quran WHERE trim(text) != ''") {

@@ -1,5 +1,7 @@
 package com.aljaroudi.muntathir.core.quran
 
+import com.aljaroudi.muntathir.core.sql.execute
+import com.aljaroudi.muntathir.core.sql.query
 import com.aljaroudi.muntathir.core.text.InvalidReferenceException
 import com.aljaroudi.muntathir.core.text.QuranSearchText
 import com.aljaroudi.muntathir.core.text.ReadingTime

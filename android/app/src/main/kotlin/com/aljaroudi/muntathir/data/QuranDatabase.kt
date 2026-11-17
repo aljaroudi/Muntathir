@@ -2,11 +2,8 @@ package com.aljaroudi.muntathir.data
 
 import android.content.Context
 import androidx.sqlite.SQLiteConnection
-import androidx.sqlite.driver.bundled.BundledSQLiteDriver
-import androidx.sqlite.driver.bundled.SQLITE_OPEN_READONLY
 import com.aljaroudi.muntathir.core.quran.DailyAyah
 import com.aljaroudi.muntathir.core.quran.QuranReader
-import com.aljaroudi.muntathir.core.quran.QuranSql
 import com.aljaroudi.muntathir.core.quran.QuranSurah
 import com.aljaroudi.muntathir.core.quran.QuranTranslation
 import com.aljaroudi.muntathir.core.quran.QuranUnavailableException
@@ -42,11 +39,11 @@ class QuranDatabase
 
         private val reader =
             QuranReader(
-                arabic = { AndroidQuranSql(connection(install("$QURAN.db"))) },
+                arabic = { BundledContentSql(connection(install("$QURAN.db"))) },
                 surahs = { surahList },
                 translation = { id ->
                     val file = if (id == QuranTranslation.BUNDLED_ID) install("$id.db") else translationFiles[id]
-                    file?.takeIf(File::isFile)?.let { AndroidQuranSql(connection(it)) }
+                    file?.takeIf(File::isFile)?.let { BundledContentSql(connection(it)) }
                 },
             )
 
@@ -73,11 +70,7 @@ class QuranDatabase
         /** Whether [file] is a complete translation database (blocking). Swift `QuranDatabase.validateTranslation`. */
         fun isValidTranslation(file: File): Boolean =
             runCatching {
-                driver
-                    .open(
-                        file.absolutePath,
-                        SQLITE_OPEN_READONLY,
-                    ).use { QuranReader.isValidTranslation(AndroidQuranSql(it)) }
+                BundledContentSql.Driver.open(file, writable = false).use(QuranReader::isValidTranslation)
             }.getOrDefault(false)
 
         /** Arabic surah names by number, for Arabic verse references. */
@@ -100,7 +93,7 @@ class QuranDatabase
         private fun connection(file: File): SQLiteConnection =
             connections.getOrPut(file.absolutePath) {
                 try {
-                    driver.open(file.absolutePath, SQLITE_OPEN_READONLY)
+                    BundledContentSql.Driver.connection(file)
                 } catch (error: Exception) {
                     throw QuranUnavailableException(error)
                 }
@@ -127,33 +120,5 @@ class QuranDatabase
             const val DAILY_IDS = "quran-daily-ids.json"
             const val SURAHS = "quran-surahs.json"
             private val json = Json { ignoreUnknownKeys = true }
-            private val driver = BundledSQLiteDriver()
         }
     }
-
-/** [QuranSql] over a bundled-driver connection; errors surface as [QuranUnavailableException]. */
-private class AndroidQuranSql(
-    private val connection: SQLiteConnection,
-) : QuranSql {
-    override fun <T> query(
-        sql: String,
-        parameters: List<Any>,
-        row: (QuranSql.Row) -> T,
-    ): List<T> =
-        connection.prepare(sql).use { statement ->
-            parameters.forEachIndexed { offset, value ->
-                when (value) {
-                    is Int -> statement.bindLong(offset + 1, value.toLong())
-                    is Long -> statement.bindLong(offset + 1, value)
-                    else -> statement.bindText(offset + 1, value.toString())
-                }
-            }
-            val adapter =
-                object : QuranSql.Row {
-                    override fun int(column: Int) = statement.getLong(column).toInt()
-
-                    override fun text(column: Int) = if (statement.isNull(column)) "" else statement.getText(column)
-                }
-            buildList { while (statement.step()) add(row(adapter)) }
-        }
-}

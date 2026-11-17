@@ -45,3 +45,9 @@ Native Kotlin + Jetpack Compose version of the iOS app in [`apple/`](../../apple
 - **The smart-search endpoint isn't in the repo.** The build reads the `semanticSearchUrl` Gradle property, else the git-ignored iOS `SemanticSearchConfiguration.plist`; without either the button is hidden. Nothing is sent until the user taps Smart search.
 - **DataStores are one per file and process** (cached in companions), since Hilt tests build several components in one process.
 - **The asset-pack API can be missing** (Studio and test installs): the translation pack treats its errors as "not downloaded" instead of crashing.
+
+## Decisions (2026-11-17, P4)
+
+- **Hadith keeps full parity with iOS.** Each hadith-schema pack (Hadith, Supplications) is copied into an app-owned `no_backup/Libraries/<pack>/library.db`, then the Play pack is removed, so single books can be removed and restored. A long copy or rewrite runs in the process and is kept alive by an expedited WorkManager job. Staging and an atomic rename make an interrupted install resume on the next start.
+- **One SQL and pack interface.** Every content database goes through `core/sql/ContentSql` (bundled driver in the app, sqlite-jdbc in tests), and every download through `core/assets/AssetPack`.
+- **Android packs are always v8**, so the v7-only `hadith_literal_rank` SQL function isn't ported (the bundled driver can't register functions).

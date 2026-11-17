@@ -73,7 +73,12 @@ Done 2026-11-17. `just android-test` passes (193 core tests). All instrumented t
   - `data/user/ProgressStore` keeps sessions in Room's `activity` table and only stores growth (max, not sum). The Activity screen itself is P5.5. `ProgressStoreTest` and `SavedTest` cover it on device.
 
 ## P4 — Library
-- [ ] **P4.1** Hadith asset store (install index, integrity scan cache, update state).
+- [x] **P4.1** Hadith asset store (install index, integrity scan cache, update state).
+  - `core/hadith` ports `HadithAssetStore`, `HadithLocalLibrary`, `HadithReader`, the models and `HadithSession`. `HadithAssetStoreTest` and `HadithLocalLibraryTest` run every Swift case on the JVM against a JDBC port of `HadithFixture`; the timing case reads `build/hadith/dist/hadith.db` when it's built (cold refresh 4 ms, background scan 1.4 s).
+  - There's no install index on iOS either: the pack is copied into `no_backup/Libraries/<pack>/library.db` and removed. Swift's `UserDefaults` flags (`restoring`, `cleanup`, `removed`, `validated.v1`) live in `no_backup/Libraries/<pack>.state.json`.
+  - `data/library/ContentLibrary` (one per pack, from `ContentLibraries`) drives the store on the main thread. While it copies a pack or removes a book, `LibraryWorker` (expedited, `dataSync` below API 31) keeps the process alive. `StorageManager.allocateBytes` reserves twice the pack size first.
+  - Deviations: the background scan adds `PRAGMA quick_check` to the probe queries. The signature has no inode (path, size, mtime). The v7-only `hadith_literal_rank` filter is skipped, since the bundled driver can't register functions and Android packs are v8. Cancellation is checked between statements, not by a progress handler.
+  - Shared groundwork: `QuranSql` became `core/sql/ContentSql` (plus `SqlDriver`, `execute`, nullable columns), and `TranslationPack` became `core/assets/AssetPack` (`PlayAssetPack` per `ContentPack`). `AssetPackBackend` is bound in its own `AssetPackModule` for tests.
 - [ ] **P4.2** Hadith library/contents/chapter/detail, grading, introductions, number lookup, route restore.
 - [ ] **P4.3** Supplications (fast-follow) + translations.
 - [ ] **P4.4** Rulings.

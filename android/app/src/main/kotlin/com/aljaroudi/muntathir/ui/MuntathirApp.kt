@@ -22,6 +22,7 @@ import com.aljaroudi.muntathir.core.app.AppModel
 import com.aljaroudi.muntathir.core.app.AppState
 import com.aljaroudi.muntathir.core.location.SavedLocation
 import com.aljaroudi.muntathir.data.QuranTranslations
+import com.aljaroudi.muntathir.data.library.ContentLibraries
 import com.aljaroudi.muntathir.location.DeviceLocator
 import com.aljaroudi.muntathir.ui.components.message
 import com.aljaroudi.muntathir.ui.onboarding.OnboardingScreen
@@ -39,6 +40,7 @@ class MainViewModel
         private val model: AppModel,
         private val locator: DeviceLocator,
         private val translations: QuranTranslations,
+        private val libraries: ContentLibraries,
     ) : ViewModel() {
         val state: StateFlow<AppState> = model.state
         val errors: SharedFlow<AppError> = model.errors
@@ -47,12 +49,17 @@ class MainViewModel
         fun onForeground() {
             // Swift scene activation: finish interrupted translation downloads and follow language changes.
             translations.onForeground()
+            // The supplications pack is fast-follow (iOS: essential), so it starts with the app.
+            libraries.supplications
+            libraries.onForeground()
             viewModelScope.launch {
                 followDevice()
                 // Swift launch refresh: the corrections feed on every activation.
                 model.refreshFeed()
             }
         }
+
+        fun onBackground() = libraries.onBackground()
 
         private suspend fun followDevice() {
             val current = model.state.value.device.liveLocation ?: return
@@ -84,6 +91,7 @@ fun MuntathirApp(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LifecycleEventEffect(Lifecycle.Event.ON_START) { viewModel.onForeground() }
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { viewModel.onBackground() }
     if (state.device.onboardingCompleted) {
         AppShell(state.preferences.tabShortcuts, modifier)
     } else {

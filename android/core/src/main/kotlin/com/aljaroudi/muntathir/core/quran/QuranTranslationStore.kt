@@ -1,11 +1,11 @@
 package com.aljaroudi.muntathir.core.quran
 
+import com.aljaroudi.muntathir.core.assets.AssetPack
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,39 +14,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.Locale
-
-/** The one downloadable pack holding every translation but English. Swift `AssetPackBackend` for Quran. */
-interface TranslationPack {
-    /** The installed pack's folder of `<id>.db` files, or `null`; never starts a download. */
-    suspend fun localDirectory(): File?
-
-    /** Whether the store (Play) is already fetching the pack. */
-    suspend fun isDownloading(): Boolean
-
-    /** Fetches the pack, returning once it's installed and throwing when it fails. */
-    suspend fun download()
-
-    suspend fun remove()
-
-    fun events(): Flow<Event>
-
-    sealed interface Event {
-        data object Began : Event
-
-        data class Progress(
-            val fraction: Float,
-        ) : Event
-
-        data object Finished : Event
-
-        data object Failed : Event
-
-        /** Play waits for Wi-Fi or for the user to confirm the download. */
-        data class NeedsConfirmation(
-            val waiting: Boolean,
-        ) : Event
-    }
-}
 
 enum class DownloadState { Idle, Downloading, Installing, Failed }
 
@@ -87,7 +54,8 @@ data class TranslationState(
  */
 class QuranTranslationStore(
     private val files: QuranTranslationFiles,
-    private val pack: TranslationPack,
+    /** The one pack holding every translation but English, as `Quran/<id>.db`. */
+    private val pack: AssetPack,
     selection: String,
     private var languages: List<Locale>,
     /** Persists the selection. */
@@ -265,15 +233,15 @@ class QuranTranslationStore(
         refresh()
     }
 
-    suspend fun receive(event: TranslationPack.Event) {
+    suspend fun receive(event: AssetPack.Event) {
         when (event) {
-            TranslationPack.Event.Began -> {
+            AssetPack.Event.Began -> {
                 if (current.downloadState != DownloadState.Installing && io { files.read() }.pending != null) {
                     mutable.update { it.copy(preparing = false, downloadState = DownloadState.Downloading) }
                 }
             }
 
-            is TranslationPack.Event.Progress -> {
+            is AssetPack.Event.Progress -> {
                 if (current.downloadState == DownloadState.Downloading) {
                     mutable.update {
                         it.copy(
@@ -285,7 +253,7 @@ class QuranTranslationStore(
                 }
             }
 
-            is TranslationPack.Event.NeedsConfirmation -> {
+            is AssetPack.Event.NeedsConfirmation -> {
                 if (current.downloadState ==
                     DownloadState.Downloading
                 ) {
@@ -293,11 +261,11 @@ class QuranTranslationStore(
                 }
             }
 
-            TranslationPack.Event.Finished -> {
+            AssetPack.Event.Finished -> {
                 refresh()
             }
 
-            TranslationPack.Event.Failed -> {
+            AssetPack.Event.Failed -> {
                 finishRequest()
                 refresh()
                 if (io { files.read() }.pending != null) {

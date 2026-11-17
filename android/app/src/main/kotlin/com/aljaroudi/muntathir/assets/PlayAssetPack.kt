@@ -1,6 +1,6 @@
 package com.aljaroudi.muntathir.assets
 
-import com.aljaroudi.muntathir.core.quran.TranslationPack
+import com.aljaroudi.muntathir.core.assets.AssetPack
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
@@ -8,17 +8,17 @@ import kotlinx.coroutines.flow.mapNotNull
 import java.io.File
 import java.io.IOException
 
-/** The `quran_translations` Play asset pack as the store's [TranslationPack]. */
-class PlayTranslationPack(
+/** A Play asset pack as a core [AssetPack]; [localDirectory] is the folder holding the pack's database. */
+class PlayAssetPack(
     private val backend: AssetPackBackend,
-) : TranslationPack {
-    private val pack = ContentPack.QuranTranslations
-
+    private val pack: ContentPack,
+) : AssetPack {
     override suspend fun localDirectory(): File? =
         runCatching { backend.assets(pack) }
             .getOrNull()
-            ?.let { File(it, pack.database).parentFile }
-            ?.takeIf { File(it, File(pack.database).name).isFile }
+            ?.let { File(it, pack.database) }
+            ?.takeIf(File::isFile)
+            ?.parentFile
 
     override suspend fun isDownloading(): Boolean =
         when (runCatching { backend.status(pack) }.getOrNull()) {
@@ -40,42 +40,42 @@ class PlayTranslationPack(
                 it is PackStatus.Installed || it is PackStatus.Failed ||
                     it is PackStatus.Canceled
             }
-        if (result !is PackStatus.Installed) throw IOException("Translations download failed: $result")
+        if (result !is PackStatus.Installed) throw IOException("${pack.packName} download failed: $result")
     }
 
     override suspend fun remove() = backend.remove(pack)
 
     /** Play's status updates; none when the asset-pack API is unavailable (not installed from Play). */
-    override fun events(): Flow<TranslationPack.Event> =
+    override fun events(): Flow<AssetPack.Event> =
         backend
             .updates(pack)
             .catch { }
             .mapNotNull { status ->
                 when (status) {
                     PackStatus.Pending -> {
-                        TranslationPack.Event.Began
+                        AssetPack.Event.Began
                     }
 
                     is PackStatus.Downloading -> {
-                        TranslationPack.Event.Progress(status.fraction)
+                        AssetPack.Event.Progress(status.fraction)
                     }
 
                     PackStatus.Transferring -> {
-                        TranslationPack.Event.Progress(1f)
+                        AssetPack.Event.Progress(1f)
                     }
 
                     PackStatus.WaitingForWifi, PackStatus.RequiresConfirmation -> {
-                        TranslationPack.Event.NeedsConfirmation(
+                        AssetPack.Event.NeedsConfirmation(
                             true,
                         )
                     }
 
                     is PackStatus.Installed -> {
-                        TranslationPack.Event.Finished
+                        AssetPack.Event.Finished
                     }
 
                     is PackStatus.Failed, PackStatus.Canceled -> {
-                        TranslationPack.Event.Failed
+                        AssetPack.Event.Failed
                     }
 
                     PackStatus.NotInstalled -> {

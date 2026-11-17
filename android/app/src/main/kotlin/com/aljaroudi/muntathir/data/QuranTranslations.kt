@@ -5,7 +5,8 @@ import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import com.aljaroudi.muntathir.assets.AssetPackBackend
-import com.aljaroudi.muntathir.assets.PlayTranslationPack
+import com.aljaroudi.muntathir.assets.ContentPack
+import com.aljaroudi.muntathir.assets.PlayAssetPack
 import com.aljaroudi.muntathir.core.quran.QuranTranslationFiles
 import com.aljaroudi.muntathir.core.quran.QuranTranslationStore
 import com.aljaroudi.muntathir.core.quran.TranslationState
@@ -39,7 +40,7 @@ class QuranTranslations
         @AppScope scope: CoroutineScope,
     ) {
         private val main = CoroutineScope(scope.coroutineContext + Dispatchers.Main.immediate)
-        private val pack = PlayTranslationPack(backend)
+        private val pack = PlayAssetPack(backend, ContentPack.QuranTranslations)
 
         private val store =
             QuranTranslationStore(

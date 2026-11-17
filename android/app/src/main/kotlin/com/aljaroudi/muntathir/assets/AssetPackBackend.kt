@@ -30,6 +30,7 @@ enum class ContentPack(
 ) {
     Hadith("hadith", "Hadith/hadith.db"),
     Supplications("supplications", "Supplications/supplications.db"),
+    Rulings("rulings", "Rulings/rulings.db"),
 
     /** Every Quran translation but the bundled English, as `Quran/<id>.db`. */
     QuranTranslations("quran_translations", "Quran/de.bubenheim.db"),

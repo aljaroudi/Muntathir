@@ -1,5 +1,6 @@
 package com.aljaroudi.muntathir.core.quran
 
+import com.aljaroudi.muntathir.core.assets.AssetPack
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -158,9 +159,9 @@ class QuranTranslationStoreTest {
             assertTrue(store.state.value.isDownloading)
             assertTrue(store.state.value.preparing)
             assertNull(store.state.value.progress)
-            store.receive(TranslationPack.Event.Began)
+            store.receive(AssetPack.Event.Began)
             assertFalse(store.state.value.preparing)
-            store.receive(TranslationPack.Event.Progress(0.4f))
+            store.receive(AssetPack.Event.Progress(0.4f))
             assertEquals(0.4f, store.state.value.progress)
             pack.downloadFails = true
             pack.resume()
@@ -223,10 +224,10 @@ class QuranTranslationStoreTest {
             val store = store(pack)
             val request = launch { store.download() }
             pack.waitForRequest()
-            store.receive(TranslationPack.Event.Progress(0.6f))
+            store.receive(AssetPack.Event.Progress(0.6f))
             assertEquals(0.6f, store.state.value.progress)
             pack.installed = true
-            store.receive(TranslationPack.Event.Finished)
+            store.receive(AssetPack.Event.Finished)
             assertEquals(12, store.state.value.installedSizes.size)
             store.remove(listOf("de.bubenheim"))
             pack.resume()
@@ -242,7 +243,7 @@ class QuranTranslationStoreTest {
             val store = store(pack)
             val request = launch { store.download() }
             pack.waitForRequest()
-            store.receive(TranslationPack.Event.Progress(1f))
+            store.receive(AssetPack.Event.Progress(1f))
             store.reconcile(0)
             store.reconcile(121_000)
             assertEquals(DownloadState.Failed, store.state.value.downloadState)
@@ -271,7 +272,7 @@ class QuranTranslationStoreTest {
 /** Swift `QuranTestBackend`: the pack folder is the iOS bundle's translations. */
 private class FakePack(
     private val source: File,
-) : TranslationPack {
+) : AssetPack {
     var installed = false
     var downloads = 0
     var removalFails = false
@@ -302,7 +303,7 @@ private class FakePack(
         installed = false
     }
 
-    override fun events() = emptyFlow<TranslationPack.Event>()
+    override fun events() = emptyFlow<AssetPack.Event>()
 
     suspend fun waitForRequest() {
         if (gate != null) return
