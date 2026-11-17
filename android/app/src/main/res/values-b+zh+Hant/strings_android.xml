@@ -4,6 +4,8 @@
     <string name="remove_tab_x">移除%s</string>
     <string name="move_up">上移</string>
     <string name="move_down">下移</string>
+    <string name="decrease_x">減少%1$s</string>
+    <string name="increase_x">增加%1$s</string>
     <string name="coming_soon">即將推出</string>
     <string name="update_location">更新位置</string>
     <string name="use_your_device_location_to_calculate_prayer_times">使用裝置位置計算禮拜時間和朝向。</string>

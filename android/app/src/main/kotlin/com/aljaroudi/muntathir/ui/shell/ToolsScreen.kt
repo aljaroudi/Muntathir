@@ -23,6 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.app.AppTool
@@ -79,10 +82,14 @@ private fun ToolTile(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ElevatedCard(onClick = onClick, modifier = modifier.fillMaxWidth().heightIn(min = 96.dp)) {
+    // The card carries the name, so a tile half under the navigation bar still has a label.
+    ElevatedCard(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth().heightIn(min = 96.dp).semantics { contentDescription = title },
+    ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-            Text(title, style = MaterialTheme.typography.titleMedium)
+            Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.clearAndSetSemantics {})
         }
     }
 }

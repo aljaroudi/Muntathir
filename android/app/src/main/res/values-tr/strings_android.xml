@@ -4,6 +4,8 @@
     <string name="remove_tab_x">%s kaldır</string>
     <string name="move_up">Yukarı taşı</string>
     <string name="move_down">Aşağı taşı</string>
+    <string name="decrease_x">%1$s azalt</string>
+    <string name="increase_x">%1$s artır</string>
     <string name="coming_soon">Çok yakında</string>
     <string name="update_location">Konumu güncelle</string>
     <string name="use_your_device_location_to_calculate_prayer_times">Namaz vakitlerini ve kıbleyi hesaplamak için cihaz konumunu kullanın.</string>

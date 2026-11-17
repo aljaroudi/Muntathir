@@ -5,6 +5,9 @@
     <string name="remove_tab_x">Remove %s</string>
     <string name="move_up">Move up</string>
     <string name="move_down">Move down</string>
+    <!-- Stepper buttons; the argument is the setting's title. -->
+    <string name="decrease_x">Decrease %1$s</string>
+    <string name="increase_x">Increase %1$s</string>
     <string name="coming_soon">Coming soon</string>
     <string name="update_location">Update location</string>
     <string name="use_your_device_location_to_calculate_prayer_times">Use your device location to calculate prayer times and Qibla.</string>

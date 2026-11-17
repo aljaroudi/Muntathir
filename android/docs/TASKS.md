@@ -149,7 +149,12 @@ Done 2026-11-17. `just android-test` passes (with new screenshot references for 
 ## P7 — Release
 Order: P7.3 → P7.1 → P7.2 → P7.4. P7.5 waits for the app to exist in Play Console.
 
-- [ ] **P7.1** TalkBack, RTL, 200% font, tablets/foldables. Skill: adaptive.
+- [x] **P7.1** TalkBack, RTL, 200% font, tablets/foldables. Skill: adaptive.
+  - `ReleaseLayoutTest` ports Swift `ReleaseLayoutUITests`: English in light mode, and Arabic in dark mode at 200% font, through Today, Tools, Settings, Calendar, the Quran list and reader, Tasbih and Activity. The Accessibility Test Framework (`ui-test-junit4-accessibility`) checks each screen, and each is saved to `/data/local/tmp/release-layout` for review (`adb pull`). It passes at phone size and as a 2560×1600 tablet (`wm size`/`wm density`), where the whole instrumented suite passes too.
+  - Fixes: the imsak, highlight-count and month-offset steppers have labels (`decrease_x`/`increase_x`, all 15 locales); Tools tiles carry their name on the card, so a tile half under the navigation bar still has one; Today's Hijri title no longer clips Arabic at large fonts (its line height is in `em`, since Android scales a 40 sp line less than a 32 sp font, and its slot grows with the sky's horizon). At 100% nothing changed, so the screenshot references stand.
+  - Two panes: list panes show their tool's icon as a detail placeholder; back uses `PopUntilContentChange` (with a placeholder the default skipped the list and left the tool); the pane scaffold no longer auto-focuses each new pane, which put focus in the list's search field and opened the keyboard. The surah list's translation button is `quran-list-translation`, distinct from the reader's options.
+  - The Rakaat session's orientation lock is ignored on large screens (Android 16+); a rotation there keeps the session.
+  - Not changed: the Tasbih phrase sits between the bead layers, so the front strand covers part of it at any size (P5.3 design). On a tablet in light mode the status bar clock sits over the light navigation rail on Today, where the icons are light for the sky.
 - [ ] **P7.2** Baseline Profile (`:baselineprofile` test module), R8, ANR/perf pass. Skills: r8-analyzer, android-profiler, anr-audit-and-fix.
 - [x] **P7.3** Play policy audit (exact alarms, location, camera, foreground service). Skill: play-policy-insights.
   - The audit rated the app compliant. The Console answers are in [PLAY_DATA_SAFETY.md](PLAY_DATA_SAFETY.md): Smart search queries are the only collected data.

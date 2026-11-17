@@ -4,6 +4,8 @@
     <string name="remove_tab_x">Quitar %s</string>
     <string name="move_up">Subir</string>
     <string name="move_down">Bajar</string>
+    <string name="decrease_x">Reducir %1$s</string>
+    <string name="increase_x">Aumentar %1$s</string>
     <string name="coming_soon">Próximamente</string>
     <string name="update_location">Actualizar ubicación</string>
     <string name="use_your_device_location_to_calculate_prayer_times">Usa la ubicación del dispositivo para calcular los horarios de oración y la alquibla.</string>

@@ -219,7 +219,10 @@ fun MonthAdjustmentsContent(
                     enabled =
                         state.offset > MonthOffset.range.first,
                 ) {
-                    Icon(Icons.Outlined.Remove, contentDescription = null)
+                    Icon(
+                        Icons.Outlined.Remove,
+                        stringResource(R.string.decrease_x, stringResource(R.string.day_adjustment)),
+                    )
                 }
                 Text(
                     Formats.signed(state.offset, locale),
@@ -235,7 +238,10 @@ fun MonthAdjustmentsContent(
                     enabled =
                         state.offset < MonthOffset.range.last,
                 ) {
-                    Icon(Icons.Outlined.Add, contentDescription = null)
+                    Icon(
+                        Icons.Outlined.Add,
+                        stringResource(R.string.increase_x, stringResource(R.string.day_adjustment)),
+                    )
                 }
             }
             Row {

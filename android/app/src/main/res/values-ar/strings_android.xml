@@ -4,6 +4,8 @@
     <string name="remove_tab_x">إزالة %s</string>
     <string name="move_up">نقل لأعلى</string>
     <string name="move_down">نقل لأسفل</string>
+    <string name="decrease_x">تقليل %1$s</string>
+    <string name="increase_x">زيادة %1$s</string>
     <string name="coming_soon">قريبًا</string>
     <string name="update_location">تحديث الموقع</string>
     <string name="use_your_device_location_to_calculate_prayer_times">استخدم موقع جهازك لحساب أوقات الصلاة والقبلة.</string>

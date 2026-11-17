@@ -73,7 +73,7 @@ fun QuranScreen(
         onBack = onBack,
         actions = {
             // Swift "Reading options" holds only the translation picker here.
-            IconButton(onClick = { picking = true }, Modifier.testTag("quran-reading-options")) {
+            IconButton(onClick = { picking = true }, Modifier.testTag("quran-list-translation")) {
                 Icon(Icons.Outlined.Translate, stringResource(R.string.translation))
             }
         },

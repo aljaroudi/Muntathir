@@ -73,3 +73,5 @@ Native Kotlin + Jetpack Compose version of the iOS app in [`apple/`](../../apple
 - **No foreground-service type of our own.** WorkManager's service stays untyped, since it only runs below API 31. The Play declaration (Data sync) is still needed because Play Asset Delivery's `ExtractionForegroundService` declares `dataSync`; keep that library service.
 - **`:baselineprofile` is allowed** as a test-only fourth module type (P7.2); it never ships.
 - **Play upload is deferred** (P7.5) until the app exists in Play Console; P7.4 prepares everything locally.
+- **Release layouts are checked on device** (P7.1): `ReleaseLayoutTest` runs the Accessibility Test Framework over the main screens in English and in Arabic at 200% font. Run it at tablet size too (`adb shell wm size 2560x1600; wm density 320`, then `wm size reset; wm density reset`).
+- **Two-pane lists don't move focus** (`shouldAutoFocusCurrentDestination = false`) and back stops at the list (`PopUntilContentChange`), since every list pane has a detail placeholder.

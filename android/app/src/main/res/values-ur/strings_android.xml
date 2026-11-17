@@ -4,6 +4,8 @@
     <string name="remove_tab_x">%s ہٹائیں</string>
     <string name="move_up">اوپر منتقل کریں</string>
     <string name="move_down">نیچے منتقل کریں</string>
+    <string name="decrease_x">%1$s کم کریں</string>
+    <string name="increase_x">%1$s بڑھائیں</string>
     <string name="coming_soon">جلد آ رہا ہے</string>
     <string name="update_location">مقام اپ ڈیٹ کریں</string>
     <string name="use_your_device_location_to_calculate_prayer_times">نماز کے اوقات اور قبلہ معلوم کرنے کے لیے آلے کا مقام استعمال کریں۔</string>

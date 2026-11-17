@@ -4,6 +4,8 @@
     <string name="remove_tab_x">Hapus %s</string>
     <string name="move_up">Pindah ke atas</string>
     <string name="move_down">Pindah ke bawah</string>
+    <string name="decrease_x">Kurangi %1$s</string>
+    <string name="increase_x">Tambah %1$s</string>
     <string name="coming_soon">Segera hadir</string>
     <string name="update_location">Perbarui lokasi</string>
     <string name="use_your_device_location_to_calculate_prayer_times">Gunakan lokasi perangkat untuk menghitung waktu salat dan kiblat.</string>

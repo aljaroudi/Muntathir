@@ -1,17 +1,31 @@
 package com.aljaroudi.muntathir.ui.shell
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.compose.material3.adaptive.layout.PaneScaffoldDirective
+import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
+import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.navigation3.runtime.NavEntry
@@ -66,6 +80,7 @@ import com.aljaroudi.muntathir.ui.navigation.TabsSettingsRoute
 import com.aljaroudi.muntathir.ui.navigation.TodayRoute
 import com.aljaroudi.muntathir.ui.navigation.ToolRoute
 import com.aljaroudi.muntathir.ui.navigation.ToolsRoute
+import com.aljaroudi.muntathir.ui.navigation.icon
 import com.aljaroudi.muntathir.ui.navigation.rememberAppNavigator
 import com.aljaroudi.muntathir.ui.navigation.tabIcon
 import com.aljaroudi.muntathir.ui.navigation.tabTitle
@@ -111,7 +126,13 @@ fun AppShell(
         navigator.open(openRequest.tool, tabs)
         onOpened()
     }
-    val listDetail = rememberListDetailSceneStrategy<NavKey>()
+    // Back stops at the list: with a detail placeholder both panes stay shown, so the default (pop until the
+    // panes change) would also pop the list and leave the tool.
+    val listDetail =
+        rememberListDetailSceneStrategy<NavKey>(
+            backNavigationBehavior = BackNavigationBehavior.PopUntilContentChange,
+            directive = paneDirective(),
+        )
     val twoPane = isTwoPane()
     // Detail panes beside their list have no Up button.
     val detailBack: (() -> Unit)? = if (twoPane) null else navigator::back
@@ -256,7 +277,12 @@ fun AppShell(
                                     onBack = detailBack,
                                 )
                             }
-                            entry<SettingsRoute>(metadata = ListDetailSceneStrategy.listPane()) {
+                            entry<SettingsRoute>(
+                                metadata =
+                                    ListDetailSceneStrategy.listPane(
+                                        detailPlaceholder = { DetailPlaceholder(Icons.Outlined.Settings) },
+                                    ),
+                            ) {
                                 SettingsScreen(
                                     hiltViewModel(),
                                     SettingsLinks(
@@ -320,13 +346,48 @@ class HadithShellViewModel
         val session: HadithSessionStore,
     ) : ViewModel()
 
+/**
+ * The default pane directive without moving focus to each newly shown pane: focusing a list pane lands on its
+ * search field and opens the on-screen keyboard. Tab still moves between panes.
+ */
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
+@Composable
+private fun paneDirective(): PaneScaffoldDirective {
+    val base = calculatePaneScaffoldDirective(currentWindowAdaptiveInfoV2())
+    return PaneScaffoldDirective(
+        maxHorizontalPartitions = base.maxHorizontalPartitions,
+        horizontalPartitionSpacerSize = base.horizontalPartitionSpacerSize,
+        maxVerticalPartitions = base.maxVerticalPartitions,
+        verticalPartitionSpacerSize = base.verticalPartitionSpacerSize,
+        defaultPanePreferredWidth = base.defaultPanePreferredWidth,
+        defaultPanePreferredHeight = base.defaultPanePreferredHeight,
+        excludedBounds = base.excludedBounds,
+        shouldAutoFocusCurrentDestination = false,
+    )
+}
+
+/** The empty detail pane in two panes, until something in the list is opened. */
+@Composable
+private fun DetailPlaceholder(icon: ImageVector) {
+    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceContainerLow), Alignment.Center) {
+        Icon(
+            icon,
+            contentDescription = null,
+            modifier = Modifier.size(96.dp),
+            tint = MaterialTheme.colorScheme.outlineVariant,
+        )
+    }
+}
+
 /** Tools whose root lists items for a detail pane beside it. */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 private fun listPanes(provider: (NavKey) -> NavEntry<NavKey>): (NavKey) -> NavEntry<NavKey> =
     { key ->
         val entry = provider(key)
         if (key in LIST_TOOLS || key is HadithBrowseRoute) {
-            NavEntry(key, entry.contentKey, ListDetailSceneStrategy.listPane()) { entry.Content() }
+            val icon = ((key as? ToolRoute)?.tool ?: AppTool.Hadith).icon
+            val metadata = ListDetailSceneStrategy.listPane(detailPlaceholder = { DetailPlaceholder(icon) })
+            NavEntry(key, entry.contentKey, metadata) { entry.Content() }
         } else {
             entry
         }

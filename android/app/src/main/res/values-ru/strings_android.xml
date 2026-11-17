@@ -4,6 +4,8 @@
     <string name="remove_tab_x">Удалить «%s»</string>
     <string name="move_up">Переместить вверх</string>
     <string name="move_down">Переместить вниз</string>
+    <string name="decrease_x">Уменьшить: %1$s</string>
+    <string name="increase_x">Увеличить: %1$s</string>
     <string name="coming_soon">Скоро</string>
     <string name="update_location">Обновить местоположение</string>
     <string name="use_your_device_location_to_calculate_prayer_times">Используйте местоположение устройства, чтобы рассчитать время молитв и киблу.</string>

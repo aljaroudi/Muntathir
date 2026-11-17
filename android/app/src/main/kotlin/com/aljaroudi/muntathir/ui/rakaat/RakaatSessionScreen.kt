@@ -140,7 +140,8 @@ fun RakaatSessionScreen(
         }
     }
     if (!state.ended) {
-        // The phone lies flat, so keep the screen on and don't let it rotate under the count.
+        // The phone lies flat, so keep the screen on and don't let it rotate under the count. Android 16+ ignores
+        // the lock on large screens; a rotation there is a configuration change, which keeps the session.
         DisposableEffect(Unit) {
             val keepOn = view.keepScreenOn
             val orientation = activity?.requestedOrientation

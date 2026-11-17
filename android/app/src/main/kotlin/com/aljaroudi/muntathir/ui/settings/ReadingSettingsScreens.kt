@@ -119,19 +119,20 @@ fun HighlightPaletteScreen(
         LazyColumn(contentPadding = padding) {
             item(key = "count") {
                 val value = Formats.number(count, locale)
+                val title = stringResource(R.string.colors_shown)
                 ListItem(
-                    headlineContent = { Text(stringResource(R.string.colors_shown)) },
+                    headlineContent = { Text(title) },
                     trailingContent = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             IconButton(
                                 onClick = { viewModel.update { it.copy(highlightColorCount = count - 1) } },
                                 enabled = count > MIN_COLORS,
-                            ) { Icon(Icons.Outlined.Remove, null) }
+                            ) { Icon(Icons.Outlined.Remove, stringResource(R.string.decrease_x, title)) }
                             Text(value)
                             IconButton(
                                 onClick = { viewModel.update { it.copy(highlightColorCount = count + 1) } },
                                 enabled = count < order.size,
-                            ) { Icon(Icons.Outlined.Add, null) }
+                            ) { Icon(Icons.Outlined.Add, stringResource(R.string.increase_x, title)) }
                         }
                     },
                     modifier = Modifier.semantics { stateDescription = value }.testTag("highlight-color-count"),

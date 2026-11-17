@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -62,6 +63,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aljaroudi.muntathir.R
@@ -135,19 +137,22 @@ fun TodayContent(
             val compactHeight = maxHeight < 480.dp
             val wide = maxWidth >= 720.dp
             val band = if (compactHeight) 96.dp else 148.dp
-            val titleHeight = 56.dp
+            // Large fonts scale non-linearly (a 40 sp line grows less than a 32 sp font), which clipped Arabic
+            // descenders, so the title's line height is relative to its font. Its slot grows with it and the
+            // sky's horizon follows. At 100% this is the style's 32/40 sp in a 56 dp slot.
+            val headline = MaterialTheme.typography.headlineLarge
+            val titleStyle = headline.copy(lineHeight = (headline.lineHeight.value / headline.fontSize.value).em)
+            val titleLine = with(LocalDensity.current) { headline.fontSize.toDp() } * titleStyle.lineHeight.value
+            val titleHeight = maxOf(56.dp, titleLine + 16.dp)
             if (sun != null) {
-                val statusBar =
-                    with(
-                        androidx.compose.ui.platform.LocalDensity.current,
-                    ) { WindowInsets.statusBars.getTop(this).toDp() }
+                val statusBar = with(LocalDensity.current) { WindowInsets.statusBars.getTop(this).toDp() }
                 TodaySky(sun, horizonY = statusBar + titleHeight + band - 12.dp)
             }
             Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars)) {
                 Text(
                     title,
                     style =
-                        MaterialTheme.typography.headlineLarge.copy(
+                        titleStyle.copy(
                             fontWeight = FontWeight.Bold,
                             shadow =
                                 if (sun !=
@@ -159,6 +164,7 @@ fun TodayContent(
                                 },
                         ),
                     color = if (sun != null) Color.White else MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
                     modifier =
                         Modifier
                             .height(titleHeight)

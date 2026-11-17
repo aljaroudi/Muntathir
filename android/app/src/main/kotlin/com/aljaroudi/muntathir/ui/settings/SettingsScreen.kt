@@ -396,7 +396,9 @@ private fun StepperRow(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 FilledTonalIconButton(onClick = {
                     onChange(value - 1)
-                }, enabled = value > range.first) { Icon(Icons.Outlined.Remove, null) }
+                }, enabled = value > range.first) {
+                    Icon(Icons.Outlined.Remove, stringResource(R.string.decrease_x, title))
+                }
                 Text(
                     display,
                     style = MaterialTheme.typography.titleMedium,
@@ -404,7 +406,9 @@ private fun StepperRow(
                 )
                 FilledTonalIconButton(onClick = {
                     onChange(value + 1)
-                }, enabled = value < range.last) { Icon(Icons.Outlined.Add, null) }
+                }, enabled = value < range.last) {
+                    Icon(Icons.Outlined.Add, stringResource(R.string.increase_x, title))
+                }
             }
         },
     )

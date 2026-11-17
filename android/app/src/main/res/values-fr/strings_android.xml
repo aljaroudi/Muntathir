@@ -4,6 +4,8 @@
     <string name="remove_tab_x">Retirer %s</string>
     <string name="move_up">Monter</string>
     <string name="move_down">Descendre</string>
+    <string name="decrease_x">Diminuer %1$s</string>
+    <string name="increase_x">Augmenter %1$s</string>
     <string name="coming_soon">Bientôt disponible</string>
     <string name="update_location">Mettre à jour la position</string>
     <string name="use_your_device_location_to_calculate_prayer_times">Utilisez la position de l\'appareil pour calculer les heures de prière et la qibla.</string>
