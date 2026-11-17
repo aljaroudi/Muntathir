@@ -38,6 +38,15 @@ describe("legacy figures feed", () => {
     expect("death_place" in published).toBe(false)
   })
 
+  test("defaults missing citations to an empty list", () => {
+    const source = structuredClone(dataset)
+    const person = source.people.find(person => person.id === "abbas-ibn-ali")!
+    Object.assign(person, { verified: true })
+    Reflect.deleteProperty(person.death_dates[0], "citations")
+    const published = legacyDataset(source).people.find(person => person.id === "abbas-ibn-ali")!
+    expect(published.death_dates[0].citations).toEqual([])
+  })
+
   test("keeps notes and citations compatible with released decoders", () => {
     const published = legacyDataset()
     const claims = [
@@ -51,9 +60,6 @@ describe("legacy figures feed", () => {
       for (const citation of claim.citations)
         expect(published.sources.some(source => source.id === citation.source_id)).toBe(true)
     }
-    expect(
-      published.people.find(person => person.id === "abbas-ibn-ali")?.death_dates[0].citations
-    ).toEqual([])
     const schema = legacySchema()
     expect(schema.$defs.dateClaim.required).toContain("citations")
     expect(schema.$defs.dateClaim.properties.notes as unknown).toEqual({ type: "string" })
