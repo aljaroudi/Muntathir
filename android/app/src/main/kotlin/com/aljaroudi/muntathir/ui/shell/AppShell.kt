@@ -68,6 +68,7 @@ import com.aljaroudi.muntathir.ui.settings.CreditsScreen
 import com.aljaroudi.muntathir.ui.settings.HighlightPaletteScreen
 import com.aljaroudi.muntathir.ui.settings.SettingsLinks
 import com.aljaroudi.muntathir.ui.settings.SettingsScreen
+import com.aljaroudi.muntathir.ui.supplications.SupplicationsScreen
 import com.aljaroudi.muntathir.ui.today.TodayScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -258,7 +259,7 @@ fun AppShell(
 private val SETTINGS_DETAILS =
     setOf(TabsSettingsRoute, HighlightPaletteRoute, DownloadsRoute, LocationRoute, MonthAdjustmentsRoute, CreditsRoute)
 
-private val LIST_TOOLS = setOf(ToolRoute(AppTool.Quran), ToolRoute(AppTool.Hadith))
+private val LIST_TOOLS = setOf(ToolRoute(AppTool.Quran), ToolRoute(AppTool.Hadith), ToolRoute(AppTool.Supplications))
 
 /** Holds app-wide stores the shell needs outside any screen. */
 @HiltViewModel
@@ -303,6 +304,10 @@ private fun ToolScreen(
                 onRestore = onRestoreHadith,
                 onBack = onBack,
             )
+        }
+
+        AppTool.Supplications -> {
+            SupplicationsScreen(hiltViewModel(), openHadith, onBack)
         }
 
         AppTool.Calendar -> {

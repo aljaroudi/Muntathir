@@ -84,7 +84,9 @@ Done 2026-11-17. `just android-test` passes (193 core tests). All instrumented t
   - `HadithReaderTest` (24 cases, including the packaged `hadith.db`/`supplications.db` when built) covers `HadithReaderTests`, `HadithContentsTests`, `HadithBookGroupTests` and Swift's source-key encoding. The instrumented `HadithTest` uses a `FakeAssetPackBackend`: download → copy into the library → book → chapter → narration → bookmark → next, plus search.
   - Reader choices `hadithEnglishEnabled.v2` and `supplicationTranslation.v2` are in `ReadingPreferences` (iOS syncs them). Downloads lists Hadith (with per-book remove/restore) and Supplications.
   - Deviations: narrations load a page at a time as the list scrolls (no Previous/Next pages, no Paging 3). Session restore (`HadithSessionStore`, `no_backup/hadith.session.v1.json`) reopens the open book, chapter and narration by stable source, with the first visible row and the narration's scroll offset, but not deeper result pages. Share is plain text (no image). The P1.8 spike `data/HadithDatabase` stays for the debug pack activity.
-- [ ] **P4.3** Supplications (fast-follow) + translations.
+- [x] **P4.3** Supplications (fast-follow) + translations.
+  - `ui/supplications/SupplicationsScreen` is Swift's `SupplicationsView`: Saved, then each collection's supplications. Search covers title, text and translations (150 ms debounce, history area `Supplications`). The translation picker is a dialog with Auto, None and each language. Detail reuses `HadithDetailScreen` without previous/next, records `SupplicationReading`, and isn't kept in the session.
+  - The fast-follow pack is requested on the first start when Play hasn't delivered it (iOS: essential). The instrumented `SupplicationsTest` covers it: the pack arrives, then open, bookmark, back, search.
 - [ ] **P4.4** Rulings.
 - [ ] **P4.5** Smart search across kinds.
 

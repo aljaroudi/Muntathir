@@ -13,6 +13,20 @@ import kotlin.test.assertTrue
 /** Validation from Swift `ReadingPreferencesSyncTests`, palette and translation selection tests. */
 class ReadingPreferencesTest {
     @Test
+    fun hadithChoicesUseTheSwiftKeysAndValidation() {
+        val chosen = ReadingPreferences(hadithEnglishEnabled = false, supplicationTranslation = "ur")
+        assertEquals(chosen, ReadingPreferences.decode(chosen.encode()))
+        assertTrue("\"hadithEnglishEnabled.v2\":false" in chosen.encode())
+        assertTrue("\"supplicationTranslation.v2\":\"ur\"" in chosen.encode())
+        val invalid = """{"hadithEnglishEnabled.v2":"yes","supplicationTranslation.v2":"ur:edition"}"""
+        assertEquals(ReadingPreferences(), ReadingPreferences.decode(invalid))
+        // Unchosen, English follows the device languages.
+        assertTrue(ReadingPreferences().showsHadithEnglish(listOf(Locale.ENGLISH)))
+        assertFalse(ReadingPreferences().showsHadithEnglish(listOf(Locale.forLanguageTag("ar"), Locale.ENGLISH)))
+        assertFalse(chosen.showsHadithEnglish(listOf(Locale.ENGLISH)))
+    }
+
+    @Test
     fun roundTripsAndRejectsInvalidValuesKeyByKey() {
         val custom =
             ReadingPreferences(
