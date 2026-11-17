@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Swift `PrayerSkyBackground` from −6° to 10°: an orange wash fading into the surface. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/widget_background" />
+    <item>
+        <shape>
+            <gradient
+                android:angle="270"
+                android:endColor="@android:color/transparent"
+                android:startColor="@color/widget_sky_twilight" />
+            <corners android:radius="@dimen/widget_radius" />
+        </shape>
+    </item>
+</layer-list>

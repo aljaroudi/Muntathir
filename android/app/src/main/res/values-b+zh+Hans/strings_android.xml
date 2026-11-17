@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_tab_x">添加%s</string>
+    <string name="remove_tab_x">移除%s</string>
+    <string name="move_up">上移</string>
+    <string name="move_down">下移</string>
+    <string name="decrease_x">减少%1$s</string>
+    <string name="increase_x">增加%1$s</string>
+    <string name="update_location">更新位置</string>
+    <string name="use_your_device_location_to_calculate_prayer_times">使用设备位置计算礼拜时间和朝向。</string>
+    <string name="location_access_is_disabled_allow_it_in_settings">位置访问已关闭。请在设置中允许，以计算礼拜时间。</string>
+    <string name="could_not_find_your_location_try_again">找不到你的位置。请重试。</string>
+    <string name="system_default">跟随系统</string>
+    <string name="exact_alarms">准时闹钟</string>
+    <string name="exact_alarms_footer">没有此权限时，提醒最多可能延迟 10 分钟。</string>
+    <string name="sources_and_licenses">来源与许可</string>
+    <string name="calculations">计算</string>
+    <string name="supplication_translations">祈祷文译本</string>
+    <string name="adhan_sounds">宣礼声音</string>
+    <string name="duas_org_credit">Duas.org 允许自由再使用；请注明来源。</string>
+    <string name="clear_search">清除搜索</string>
+    <string name="search">搜索</string>
+    <string name="close_search">关闭搜索</string>
+    <string name="download_waiting_for_confirmation">正在等待 Wi-Fi。继续即可使用移动数据下载。</string>
+    <string name="allow_precise_location">允许使用精确位置</string>
+    <string name="compass_north">北</string>
+    <string name="fonts">字体</string>
+</resources>

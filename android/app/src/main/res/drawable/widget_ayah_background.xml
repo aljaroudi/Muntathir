@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Swift `AyahBackground`'s emerald-to-ivory wash with the faint accent border (no grain or contours). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="315"
+        android:endColor="@color/widget_ayah_end"
+        android:startColor="@color/widget_ayah_start" />
+    <stroke
+        android:width="1dp"
+        android:color="#260D664F" />
+    <corners android:radius="@dimen/widget_radius" />
+</shape>

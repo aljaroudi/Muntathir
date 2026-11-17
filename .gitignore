@@ -39,3 +39,7 @@ apple/Muntathir/Resources/SemanticSearchConfiguration.plist
 backend/api/node_modules/
 
 !/build/library/README.md
+.idea/
+
+# Agent skill scratch output (e.g. play-policy-insights)
+.scratch/

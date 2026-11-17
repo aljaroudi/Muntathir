@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Share images only (verse cards); written to cache/share and replaced on each share. -->
+<paths>
+    <cache-path name="share" path="share/" />
+</paths>

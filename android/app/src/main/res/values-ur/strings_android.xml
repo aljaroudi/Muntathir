@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_tab_x">%s شامل کریں</string>
+    <string name="remove_tab_x">%s ہٹائیں</string>
+    <string name="move_up">اوپر منتقل کریں</string>
+    <string name="move_down">نیچے منتقل کریں</string>
+    <string name="decrease_x">%1$s کم کریں</string>
+    <string name="increase_x">%1$s بڑھائیں</string>
+    <string name="update_location">مقام اپ ڈیٹ کریں</string>
+    <string name="use_your_device_location_to_calculate_prayer_times">نماز کے اوقات اور قبلہ معلوم کرنے کے لیے آلے کا مقام استعمال کریں۔</string>
+    <string name="location_access_is_disabled_allow_it_in_settings">مقام تک رسائی بند ہے۔ نماز کے اوقات کے لیے ترتیبات میں اجازت دیں۔</string>
+    <string name="could_not_find_your_location_try_again">آپ کا مقام نہیں مل سکا۔ دوبارہ کوشش کریں۔</string>
+    <string name="system_default">سسٹم کی ڈیفالٹ</string>
+    <string name="exact_alarms">بروقت الارم</string>
+    <string name="exact_alarms_footer">اس اجازت کے بغیر یاد دہانیاں ۱۰ منٹ تک تاخیر سے آ سکتی ہیں۔</string>
+    <string name="sources_and_licenses">ماخذ اور لائسنس</string>
+    <string name="calculations">حسابات</string>
+    <string name="supplication_translations">دعاؤں کے تراجم</string>
+    <string name="adhan_sounds">اذان کی آوازیں</string>
+    <string name="duas_org_credit">Duas.org آزادانہ دوبارہ استعمال کی اجازت دیتا ہے؛ ماخذ کا حوالہ دینے کی درخواست ہے۔</string>
+    <string name="clear_search">تلاش صاف کریں</string>
+    <string name="search">تلاش</string>
+    <string name="close_search">تلاش بند کریں</string>
+    <string name="download_waiting_for_confirmation">Wi-Fi کا انتظار ہے۔ موبائل ڈیٹا سے ڈاؤن لوڈ کرنے کے لیے جاری رکھیں۔</string>
+    <string name="allow_precise_location">درست مقام کی اجازت دیں</string>
+    <string name="compass_north">ش</string>
+    <string name="fonts">فونٹس</string>
+</resources>

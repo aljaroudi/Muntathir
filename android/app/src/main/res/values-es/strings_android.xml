@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_tab_x">Añadir %s</string>
+    <string name="remove_tab_x">Quitar %s</string>
+    <string name="move_up">Subir</string>
+    <string name="move_down">Bajar</string>
+    <string name="decrease_x">Reducir %1$s</string>
+    <string name="increase_x">Aumentar %1$s</string>
+    <string name="update_location">Actualizar ubicación</string>
+    <string name="use_your_device_location_to_calculate_prayer_times">Usa la ubicación del dispositivo para calcular los horarios de oración y la alquibla.</string>
+    <string name="location_access_is_disabled_allow_it_in_settings">El acceso a la ubicación está desactivado. Permítelo en Ajustes para calcular los horarios de oración.</string>
+    <string name="could_not_find_your_location_try_again">No se pudo encontrar tu ubicación. Inténtalo de nuevo.</string>
+    <string name="system_default">Predeterminado del sistema</string>
+    <string name="exact_alarms">Alarmas al minuto</string>
+    <string name="exact_alarms_footer">Sin este permiso, los avisos pueden llegar hasta 10 minutos tarde.</string>
+    <string name="sources_and_licenses">Fuentes y licencias</string>
+    <string name="calculations">Cálculos</string>
+    <string name="supplication_translations">Traducciones de súplicas</string>
+    <string name="adhan_sounds">Sonidos del adhan</string>
+    <string name="duas_org_credit">Duas.org permite su libre reutilización; se solicita citar la fuente.</string>
+    <string name="clear_search">Borrar búsqueda</string>
+    <string name="search">Buscar</string>
+    <string name="close_search">Cerrar búsqueda</string>
+    <string name="download_waiting_for_confirmation">Esperando Wi-Fi. Continúa para descargar con datos móviles.</string>
+    <string name="allow_precise_location">Permitir ubicación exacta</string>
+    <string name="compass_north">N</string>
+    <string name="fonts">Fuentes</string>
+</resources>

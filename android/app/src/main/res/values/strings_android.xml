@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android-only strings (not in the Apple catalogs). Keep every values-*/strings_android.xml in sync. -->
+<resources>
+    <string name="add_tab_x">Add %s</string>
+    <string name="remove_tab_x">Remove %s</string>
+    <string name="move_up">Move up</string>
+    <string name="move_down">Move down</string>
+    <!-- Stepper buttons; the argument is the setting's title. -->
+    <string name="decrease_x">Decrease %1$s</string>
+    <string name="increase_x">Increase %1$s</string>
+    <string name="update_location">Update location</string>
+    <string name="use_your_device_location_to_calculate_prayer_times">Use your device location to calculate prayer times and Qibla.</string>
+    <string name="location_access_is_disabled_allow_it_in_settings">Location access is disabled. Allow it in Settings to calculate prayer times.</string>
+    <string name="could_not_find_your_location_try_again">Could not find your location. Try again.</string>
+    <string name="system_default">System default</string>
+    <string name="exact_alarms">Alarms on the minute</string>
+    <string name="exact_alarms_footer">Without this permission, alerts can arrive up to 10 minutes late.</string>
+    <string name="sources_and_licenses">Sources and licenses</string>
+    <string name="calculations">Calculations</string>
+    <string name="supplication_translations">Supplication translations</string>
+    <string name="adhan_sounds">Adhan sounds</string>
+    <string name="duas_org_credit">Free reuse permitted by Duas.org; source credit requested.</string>
+    <string name="clear_search">Clear search</string>
+    <string name="search">Search</string>
+    <string name="close_search">Close search</string>
+    <string name="download_waiting_for_confirmation">Waiting for Wi-Fi. Continue to download over mobile data.</string>
+    <string name="allow_precise_location">Allow precise location</string>
+    <!-- The north mark on Qibla's compass dial. -->
+    <string name="compass_north">N</string>
+    <string name="fonts">Fonts</string>
+</resources>

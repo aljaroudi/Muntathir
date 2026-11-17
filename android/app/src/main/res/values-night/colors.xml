@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="window_background">#FF0E1513</color>
+
+    <color name="widget_surface">#FF0E1513</color>
+    <color name="widget_text">#FFE6E1E5</color>
+    <color name="widget_text_secondary">#FFCAC4D0</color>
+    <!-- 25% in dark mode, as on iOS. -->
+    <color name="widget_sky_night">#405E5CE6</color>
+    <color name="widget_sky_twilight">#40FF9F0A</color>
+    <color name="widget_sky_day">#4064D2FF</color>
+    <color name="widget_ayah_start">#FF0A362E</color>
+    <color name="widget_ayah_end">#FF0F1F2B</color>
+</resources>

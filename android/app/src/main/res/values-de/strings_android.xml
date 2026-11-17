@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_tab_x">%s hinzufügen</string>
+    <string name="remove_tab_x">%s entfernen</string>
+    <string name="move_up">Nach oben</string>
+    <string name="move_down">Nach unten</string>
+    <string name="decrease_x">%1$s verringern</string>
+    <string name="increase_x">%1$s erhöhen</string>
+    <string name="update_location">Standort aktualisieren</string>
+    <string name="use_your_device_location_to_calculate_prayer_times">Verwende den Gerätestandort, um Gebetszeiten und Qibla zu berechnen.</string>
+    <string name="location_access_is_disabled_allow_it_in_settings">Standortzugriff ist deaktiviert. Erlaube ihn in den Einstellungen, um Gebetszeiten zu berechnen.</string>
+    <string name="could_not_find_your_location_try_again">Dein Standort wurde nicht gefunden. Versuche es erneut.</string>
+    <string name="system_default">Systemstandard</string>
+    <string name="exact_alarms">Minutengenaue Wecker</string>
+    <string name="exact_alarms_footer">Ohne diese Berechtigung können Hinweise bis zu 10 Minuten zu spät kommen.</string>
+    <string name="sources_and_licenses">Quellen und Lizenzen</string>
+    <string name="calculations">Berechnungen</string>
+    <string name="supplication_translations">Übersetzungen der Bittgebete</string>
+    <string name="adhan_sounds">Adhan-Klänge</string>
+    <string name="duas_org_credit">Freie Weiterverwendung durch Duas.org erlaubt; Quellenangabe erbeten.</string>
+    <string name="clear_search">Suche löschen</string>
+    <string name="search">Suchen</string>
+    <string name="close_search">Suche schließen</string>
+    <string name="download_waiting_for_confirmation">Warten auf WLAN. Fortfahren, um über mobile Daten herunterzuladen.</string>
+    <string name="allow_precise_location">Genauen Standort erlauben</string>
+    <string name="compass_north">N</string>
+    <string name="fonts">Schriftarten</string>
+</resources>

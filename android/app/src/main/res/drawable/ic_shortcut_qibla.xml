@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launcher shortcut: Material "explore" (outlined), as in the app's tool grid. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <background android:drawable="@color/shortcut_background" />
+    <foreground>
+        <aapt:attr name="android:drawable">
+            <vector
+                android:width="108dp"
+                android:height="108dp"
+                android:viewportWidth="108"
+                android:viewportHeight="108">
+                <group
+                    android:scaleX="2"
+                    android:scaleY="2"
+                    android:translateX="30"
+                    android:translateY="30">
+                    <path
+                        android:fillColor="@color/brand"
+                        android:pathData="M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zM12,20c-4.41,0 -8,-3.59 -8,-8s3.59,-8 8,-8 8,3.59 8,8 -3.59,8 -8,8zM6.5,17.5l7.51,-3.49L17.5,6.5 9.99,9.99 6.5,17.5zM12,10.9c0.61,0 1.1,0.49 1.1,1.1s-0.49,1.1 -1.1,1.1 -1.1,-0.49 -1.1,-1.1 0.49,-1.1 1.1,-1.1z" />
+                </group>
+            </vector>
+        </aapt:attr>
+    </foreground>
+</adaptive-icon>

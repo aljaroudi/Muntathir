@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Prayer times need about a kilometre; the fix stays on this device. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Qibla only, while its screen is open: a fix within 20 m. Never saved or backed up. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Qibla's alignment pulses. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Prayer alerts at the minute; falls back to a 10-minute window when not granted. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Below API 31, expedited work (installing a downloaded library) runs as WorkManager's untyped foreground
+         service; from API 31 it's an expedited job, so no service type is declared. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- The Rakaat tracker measures front-camera brightness on the device; frames are never stored. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- CAMERA would otherwise imply a required rear camera. -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.front"
+        android:required="false" />
+
+    <application
+        android:name=".MuntathirApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Muntathir"
+        tools:targetApi="37">
+
+        <!-- singleTop: launcher shortcuts, widgets and the tile reach the running activity (onNewIntent). -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity>
+
+        <!-- Home screen widgets; WidgetUpdater keeps them current. -->
+        <receiver
+            android:name=".widgets.PrayerWidgetReceiver"
+            android:exported="true"
+            android:label="@string/prayer_times">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_prayer_info" />
+        </receiver>
+        <receiver
+            android:name=".widgets.AyahWidgetReceiver"
+            android:exported="true"
+            android:label="@string/daily_ayah">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_ayah_info" />
+        </receiver>
+        <receiver
+            android:name=".widgets.HijriWidgetReceiver"
+            android:exported="true"
+            android:label="@string/islamic_calendar">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_hijri_info" />
+        </receiver>
+        <receiver
+            android:name=".widgets.WidgetRefreshReceiver"
+            android:exported="false" />
+
+        <service
+            android:name=".widgets.NextPrayerTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_notification"
+            android:label="@string/next_prayer"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name=".notifications.AlarmReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".notifications.RescheduleReceiver"
+            android:exported="true"
+            tools:ignore="ExportedReceiver">
+            <!-- System broadcasts only; exported so the platform can deliver them. -->
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.LOCALE_CHANGED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- WorkManager is configured by MuntathirApplication (Hilt workers). -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.share"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <!-- Qibla's map; empty without a key, in which case Qibla shows a compass dial. -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${mapsApiKey}" />
+
+        <!-- Persists the per-app language below API 33. -->
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
+    </application>
+</manifest>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_tab_x">Добавить «%s»</string>
+    <string name="remove_tab_x">Удалить «%s»</string>
+    <string name="move_up">Переместить вверх</string>
+    <string name="move_down">Переместить вниз</string>
+    <string name="decrease_x">Уменьшить: %1$s</string>
+    <string name="increase_x">Увеличить: %1$s</string>
+    <string name="update_location">Обновить местоположение</string>
+    <string name="use_your_device_location_to_calculate_prayer_times">Используйте местоположение устройства, чтобы рассчитать время молитв и киблу.</string>
+    <string name="location_access_is_disabled_allow_it_in_settings">Доступ к местоположению отключён. Разрешите его в настройках, чтобы рассчитать время молитв.</string>
+    <string name="could_not_find_your_location_try_again">Не удалось определить местоположение. Повторите попытку.</string>
+    <string name="system_default">Как в системе</string>
+    <string name="exact_alarms">Будильники с точностью до минуты</string>
+    <string name="exact_alarms_footer">Без этого разрешения напоминания могут приходить с опозданием до 10 минут.</string>
+    <string name="sources_and_licenses">Источники и лицензии</string>
+    <string name="calculations">Расчёты</string>
+    <string name="supplication_translations">Переводы мольб</string>
+    <string name="adhan_sounds">Звуки азана</string>
+    <string name="duas_org_credit">Duas.org разрешает свободное повторное использование; просим указывать источник.</string>
+    <string name="clear_search">Очистить поиск</string>
+    <string name="search">Поиск</string>
+    <string name="close_search">Закрыть поиск</string>
+    <string name="download_waiting_for_confirmation">Ожидание Wi-Fi. Продолжите, чтобы скачать через мобильный интернет.</string>
+    <string name="allow_precise_location">Разрешить точную геопозицию</string>
+    <string name="compass_north">С</string>
+    <string name="fonts">Шрифты</string>
+</resources>

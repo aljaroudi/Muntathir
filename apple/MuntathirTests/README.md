@@ -6,6 +6,6 @@ Override selection with `TEST_DESTINATION='platform=iOS Simulator,id=YOUR-SIMULA
 
 Swift Testing covers calendar boundaries, overrides, content integrity, prayer fixtures/high latitudes, notification planning, preferences, device-location restoration, feed caching/worldwide source selection, widgets, Watch settings, and ayah rendering.
 
-`Fixtures/` is copied into the test bundle; maintain parity with [Shared fixtures](../Shared/Fixtures/). Feed tests inject simulated HTTP responses, not a deployed server. Hardware behavior requires [device checks](../README.md#release-checks).
+`Fixtures/` is copied into the test bundle; maintain parity with [shared fixtures](../../shared/fixtures/). Feed tests inject simulated HTTP responses, not a deployed server. Hardware behavior requires [device checks](../README.md#release-checks).
 
 `just apple-localizations` checks all interface strings, placeholder parity, observance translations, and location-purpose strings in the 15 supported locales. `just apple-test` runs this check before simulator tests.

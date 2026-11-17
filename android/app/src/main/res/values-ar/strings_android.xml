@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_tab_x">إضافة %s</string>
+    <string name="remove_tab_x">إزالة %s</string>
+    <string name="move_up">نقل لأعلى</string>
+    <string name="move_down">نقل لأسفل</string>
+    <string name="decrease_x">تقليل %1$s</string>
+    <string name="increase_x">زيادة %1$s</string>
+    <string name="update_location">تحديث الموقع</string>
+    <string name="use_your_device_location_to_calculate_prayer_times">استخدم موقع جهازك لحساب أوقات الصلاة والقبلة.</string>
+    <string name="location_access_is_disabled_allow_it_in_settings">الوصول إلى الموقع معطّل. اسمح به في الإعدادات لحساب أوقات الصلاة.</string>
+    <string name="could_not_find_your_location_try_again">تعذّر تحديد موقعك. حاول مرة أخرى.</string>
+    <string name="system_default">لغة النظام</string>
+    <string name="exact_alarms">التنبيه في الدقيقة نفسها</string>
+    <string name="exact_alarms_footer">بدون هذا الإذن قد تتأخر التنبيهات حتى ١٠ دقائق.</string>
+    <string name="sources_and_licenses">المصادر والتراخيص</string>
+    <string name="calculations">الحسابات</string>
+    <string name="supplication_translations">ترجمات الأدعية</string>
+    <string name="adhan_sounds">أصوات الأذان</string>
+    <string name="duas_org_credit">يسمح موقع Duas.org بإعادة الاستخدام مع طلب ذكر المصدر.</string>
+    <string name="clear_search">مسح البحث</string>
+    <string name="search">بحث</string>
+    <string name="close_search">إغلاق البحث</string>
+    <string name="download_waiting_for_confirmation">بانتظار شبكة Wi-Fi. تابع للتنزيل عبر بيانات الجوال.</string>
+    <string name="allow_precise_location">السماح بالموقع الدقيق</string>
+    <string name="compass_north">ش</string>
+    <string name="fonts">الخطوط</string>
+</resources>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_tab_x">%s ekle</string>
+    <string name="remove_tab_x">%s kaldır</string>
+    <string name="move_up">Yukarı taşı</string>
+    <string name="move_down">Aşağı taşı</string>
+    <string name="decrease_x">%1$s azalt</string>
+    <string name="increase_x">%1$s artır</string>
+    <string name="update_location">Konumu güncelle</string>
+    <string name="use_your_device_location_to_calculate_prayer_times">Namaz vakitlerini ve kıbleyi hesaplamak için cihaz konumunu kullanın.</string>
+    <string name="location_access_is_disabled_allow_it_in_settings">Konum erişimi kapalı. Namaz vakitlerini hesaplamak için Ayarlar\'dan izin verin.</string>
+    <string name="could_not_find_your_location_try_again">Konumunuz bulunamadı. Tekrar deneyin.</string>
+    <string name="system_default">Sistem varsayılanı</string>
+    <string name="exact_alarms">Dakikası dakikasına alarmlar</string>
+    <string name="exact_alarms_footer">Bu izin olmadan uyarılar 10 dakikaya kadar gecikebilir.</string>
+    <string name="sources_and_licenses">Kaynaklar ve lisanslar</string>
+    <string name="calculations">Hesaplamalar</string>
+    <string name="supplication_translations">Dua çevirileri</string>
+    <string name="adhan_sounds">Ezan sesleri</string>
+    <string name="duas_org_credit">Duas.org serbest yeniden kullanıma izin verir; kaynak belirtilmesi rica edilir.</string>
+    <string name="clear_search">Aramayı temizle</string>
+    <string name="search">Ara</string>
+    <string name="close_search">Aramayı kapat</string>
+    <string name="download_waiting_for_confirmation">Wi-Fi bekleniyor. Mobil veriyle indirmek için devam edin.</string>
+    <string name="allow_precise_location">Tam konuma izin ver</string>
+    <string name="compass_north">K</string>
+    <string name="fonts">Yazı tipleri</string>
+</resources>

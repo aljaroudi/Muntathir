@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launcher shortcut: Material "toll" (outlined), as in the app's tool grid. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <background android:drawable="@color/shortcut_background" />
+    <foreground>
+        <aapt:attr name="android:drawable">
+            <vector
+                android:width="108dp"
+                android:height="108dp"
+                android:viewportWidth="108"
+                android:viewportHeight="108">
+                <group
+                    android:scaleX="2"
+                    android:scaleY="2"
+                    android:translateX="30"
+                    android:translateY="30">
+                    <path
+                        android:fillColor="@color/brand"
+                        android:pathData="M15,4c-4.42,0 -8,3.58 -8,8s3.58,8 8,8 8,-3.58 8,-8 -3.58,-8 -8,-8zM15,18c-3.31,0 -6,-2.69 -6,-6s2.69,-6 6,-6 6,2.69 6,6 -2.69,6 -6,6zM3,12c0,-2.61 1.67,-4.83 4,-5.65V4.26C3.55,5.15 1,8.27 1,12s2.55,6.85 6,7.74v-2.09c-2.33,-0.82 -4,-3.04 -4,-5.65z" />
+                </group>
+            </vector>
+        </aapt:attr>
+    </foreground>
+</adaptive-icon>

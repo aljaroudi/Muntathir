@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+. Room (database/) and the preferences DataStore (files/datastore/preferences.v1.json)
+     back up by default. Device-local state (no_backup/device.v1.json: onboarding, GPS fix) and copied
+     content live in noBackupFilesDir, and the feed cache in cacheDir; neither is ever backed up.
+     Play re-delivers packs. Glance's widget bookkeeping describes this device's home screen only. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="assetpacks/" />
+        <exclude domain="file" path="datastore/GlanceAppWidgetManager-com.aljaroudi.muntathir.preferences_pb" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="assetpacks/" />
+        <exclude domain="file" path="datastore/GlanceAppWidgetManager-com.aljaroudi.muntathir.preferences_pb" />
+    </device-transfer>
+</data-extraction-rules>
