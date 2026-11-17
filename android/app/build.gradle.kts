@@ -7,7 +7,24 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.androidx.room)
+    alias(libs.plugins.androidx.baselineprofile)
 }
+
+// Git-ignored local settings: the Maps API key and the Play upload key.
+val localProperties =
+    rootProject
+        .file("local.properties")
+        .takeIf { it.isFile }
+        ?.reader()
+        ?.use { reader -> Properties().apply { load(reader) } }
+
+// The Play upload key: UPLOAD_STORE_FILE (relative to android/), UPLOAD_STORE_PASSWORD, UPLOAD_KEY_ALIAS and
+// UPLOAD_KEY_PASSWORD in local.properties or as Gradle properties.
+val upload: Map<String, String?> =
+    listOf("UPLOAD_STORE_FILE", "UPLOAD_STORE_PASSWORD", "UPLOAD_KEY_ALIAS", "UPLOAD_KEY_PASSWORD")
+        .associateWith { providers.gradleProperty(it).orNull ?: localProperties?.getProperty(it) }
+
+// The Baseline Profile comes from :baselineprofile (generated on a device and checked in under src/release).
 
 // Highlights, bookmarks and activity; exported schemas keep future migrations honest.
 room {
@@ -38,12 +55,6 @@ android {
         buildConfigField("String", "SEMANTIC_SEARCH_URL", "\"$semanticSearchUrl\"")
         // Qibla's hybrid map: the `mapsApiKey` Gradle property, else `MAPS_API_KEY` in the git-ignored
         // local.properties. Without a key, Qibla shows a compass dial instead of the map.
-        val localProperties =
-            rootProject
-                .file("local.properties")
-                .takeIf { it.isFile }
-                ?.reader()
-                ?.use { reader -> Properties().apply { load(reader) } }
         val mapsApiKey =
             providers.gradleProperty("mapsApiKey").orNull
                 ?: localProperties?.getProperty("MAPS_API_KEY")
@@ -52,8 +63,19 @@ android {
         buildConfigField("boolean", "MAPS_API_KEY_SET", mapsApiKey.isNotBlank().toString())
     }
 
+    // Without an upload key, release builds use the debug key so they install locally; Play rejects those.
+    if (upload.values.all { it != null }) {
+        signingConfigs.create("upload") {
+            storeFile = rootProject.file(upload.getValue("UPLOAD_STORE_FILE")!!)
+            storePassword = upload["UPLOAD_STORE_PASSWORD"]
+            keyAlias = upload["UPLOAD_KEY_ALIAS"]
+            keyPassword = upload["UPLOAD_KEY_PASSWORD"]
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("upload") ?: signingConfigs.getByName("debug")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -143,6 +165,9 @@ androidComponents.onVariants { variant ->
 
 dependencies {
     implementation(project(":core"))
+    baselineProfile(project(":baselineprofile"))
+    // Installs the Baseline Profile on sideloads and before Play's cloud profiles arrive.
+    implementation(libs.androidx.profileinstaller)
     // Platform SQLite lacks FTS5 on older releases; the bundled build has it everywhere.
     implementation(libs.androidx.sqlite.bundled)
     implementation(libs.androidx.room.runtime)

@@ -6,6 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import com.aljaroudi.muntathir.ui.MainViewModel
 import com.aljaroudi.muntathir.ui.MuntathirApp
 import com.aljaroudi.muntathir.ui.navigation.OpenRequest
@@ -24,7 +27,8 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) OpenRequest.from(intent)?.let(viewModel::open)
         setContent {
             MuntathirTheme {
-                MuntathirApp(viewModel)
+                // Test tags double as resource ids so UiAutomator (the Baseline Profile journeys) finds them.
+                MuntathirApp(viewModel, Modifier.semantics { testTagsAsResourceId = true })
             }
         }
     }

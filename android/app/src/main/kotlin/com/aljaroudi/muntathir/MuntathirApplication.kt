@@ -1,6 +1,7 @@
 package com.aljaroudi.muntathir
 
 import android.app.Application
+import android.os.StrictMode
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.WorkManager
@@ -25,6 +26,24 @@ class MuntathirApplication :
         get() = Configuration.Builder().setWorkerFactory(workerFactory).build()
 
     override fun onCreate() {
+        // Debug builds log main-thread disk and network access. The small preference reads that load AppModel
+        // and ReadingSettings at injection are expected (see DataModule); anything else is an ANR risk.
+        if (BuildConfig.DEBUG) {
+            StrictMode.setThreadPolicy(
+                StrictMode.ThreadPolicy
+                    .Builder()
+                    .detectAll()
+                    .penaltyLog()
+                    .build(),
+            )
+            StrictMode.setVmPolicy(
+                StrictMode.VmPolicy
+                    .Builder()
+                    .detectAll()
+                    .penaltyLog()
+                    .build(),
+            )
+        }
         super.onCreate()
         // Every process start (launch, alarm, boot) re-derives the next alert from current settings.
         rescheduler.start()
