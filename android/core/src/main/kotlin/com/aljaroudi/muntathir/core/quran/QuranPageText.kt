@@ -135,20 +135,39 @@ class QuranPageText(
         }
 
     companion object {
-        private val token = Regex("(?U)\\S+")
-
         /** Word ranges in a Tanzil verse: tokens with a letter other than tatweel (standalone pause marks aren't words). */
         fun canonicalWords(verse: Ayah): List<TextRange> {
             val ranges =
-                token
-                    .findAll(verse.text)
-                    .filter { match -> match.value.codePoints().anyMatch { Character.isLetter(it) && it != 0x0640 } }
-                    .map { TextRange.of(it.range.first, it.range.last + 1) }
-                    .toMutableList()
+                tokens(verse.text)
+                    .filter { range ->
+                        verse.text.substring(range.location, range.end).codePoints().anyMatch {
+                            Character.isLetter(it) && it != 0x0640
+                        }
+                    }.toMutableList()
             // QPC joins إِل ياسين into one word; Tanzil keeps the two source words.
             if (verse.id == "37:130" && ranges.size == 4) {
                 ranges[2] = ranges[2].union(ranges[3])
                 ranges.removeAt(3)
+            }
+            return ranges
+        }
+
+        /** Runs of non-whitespace (Unicode, like Swift `\S`); Android's ICU regex has no `(?U)` flag. */
+        private fun tokens(text: String): List<TextRange> {
+            val ranges = mutableListOf<TextRange>()
+            var start = -1
+            var index = 0
+            while (index <= text.length) {
+                val space =
+                    index == text.length ||
+                        text.codePointAt(index).let { Character.isWhitespace(it) || Character.isSpaceChar(it) }
+                if (space && start >= 0) {
+                    ranges += TextRange.of(start, index)
+                    start = -1
+                } else if (!space && start < 0) {
+                    start = index
+                }
+                index += if (index < text.length) Character.charCount(text.codePointAt(index)) else 1
             }
             return ranges
         }

@@ -34,6 +34,18 @@ data object DownloadsRoute : Route
 @Serializable
 data object CreditsRoute : Route
 
+/**
+ * A surah in the reader, opened at [verse]. [query] underlines a search match; [highlight] scrolls to and focuses
+ * a saved highlight.
+ */
+@Serializable
+data class QuranReaderRoute(
+    val surah: Int,
+    val verse: Int = 1,
+    val query: String? = null,
+    val highlight: String? = null,
+) : Route
+
 /** Opened from Today's empty state and Settings; a dialog over the current tab. */
 @Serializable
 data object LocationRoute : Route

@@ -128,6 +128,24 @@ object Formats {
                 RelativeDateTimeFormatter.RelativeUnit.DAYS,
             )
 
+    /** Swift `ReadingTimeHint`: "12 minutes" below an hour, otherwise whole hours rounded up; `null` without words. */
+    fun readingTime(
+        words: Int,
+        locale: Locale,
+    ): String? {
+        val duration =
+            com.aljaroudi.muntathir.core.text.ReadingTime
+                .duration(words) ?: return null
+        val unit =
+            when (duration.unit) {
+                com.aljaroudi.muntathir.core.text.ReadingTime.Unit.Minutes -> MeasureUnit.MINUTE
+                com.aljaroudi.muntathir.core.text.ReadingTime.Unit.Hours -> MeasureUnit.HOUR
+            }
+        return MeasureFormat
+            .getInstance(ULocale.forLocale(locale), MeasureFormat.FormatWidth.WIDE)
+            .format(Measure(duration.value, unit))
+    }
+
     /** One unit, rounded up: "2 hours", "35 minutes", "3 days" (Swift countdown badges). */
     fun duration(
         duration: Duration,

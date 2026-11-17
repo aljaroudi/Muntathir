@@ -46,6 +46,7 @@ class HighlightTextView(
         val highlights: List<ReadingHighlight>,
         val block: String,
         val dark: Boolean,
+        val layoutKey: Any?,
     )
 
     init {
@@ -98,19 +99,24 @@ class HighlightTextView(
 
     /**
      * Shows [text] with [highlights] for [block]. Oldest highlights are drawn first so the newest color wins.
-     * Unchanged input keeps the current selection.
+     * [rangesOf] maps a highlight to display ranges (the mushaf maps verse text to page text). [decorate] adds
+     * layout spans and must depend only on [layoutKey]. Unchanged input keeps the current selection.
      */
     fun render(
         text: StyledText,
         highlights: List<ReadingHighlight>,
         block: String,
+        layoutKey: Any? = null,
+        rangesOf: (ReadingHighlight) -> List<TextRange> = { it.ranges(text.text, block) },
+        decorate: (Spannable) -> Unit = {},
     ) {
         val dark =
             resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
-        val next = Rendered(text, highlights, block, dark)
+        val next = Rendered(text, highlights, block, dark, layoutKey)
         if (next == rendered) return
         rendered = next
         val spannable = SpannableString(text.text)
+        decorate(spannable)
         for (span in text.spans) {
             val style =
                 when (val style = span.style) {
@@ -125,7 +131,7 @@ class HighlightTextView(
         }
         for (highlight in highlights.sortedWith(compareBy({ it.modifiedAt }, { it.id }))) {
             val background = highlightBackground(highlight.color, dark)
-            for (range in highlight.ranges(text.text, block)) {
+            for (range in rangesOf(highlight)) {
                 spannable.setSpan(
                     BackgroundColorSpan(background),
                     range.location,

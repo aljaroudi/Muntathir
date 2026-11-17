@@ -49,7 +49,10 @@ Done 2026-11-17. `just android-test` passes. The instrumented tests (`MuntathirA
   - Android-only strings live in `strings_android.xml` in all 15 locales.
 
 ## P3 — Quran
-- [ ] **P3.1** Bundled DBs, surah list, reader modes, Mushaf.
+- [x] **P3.1** Bundled DBs, surah list, reader modes, Mushaf.
+  - `core/quran/QuranReader` holds every query from Swift `QuranReader`/`QuranDatabase` behind a tiny `QuranSql` interface, so `QuranReaderTest` runs all the Swift cases on the JVM against the iOS databases (sqlite-jdbc). `data/QuranDatabase` adapts the bundled driver and keeps connections on one thread.
+  - Reader choices (`readingSizePercent`, `quranReadingMode`, translation selection, palette, Saved grouping) live in `core/app/ReadingPreferences`, stored as the backed-up `files/datastore/reading.v1.json` with the iOS keys and per-key validation. There's no cloud sync.
+  - Mushaf: an RTL `HorizontalPager` of `HighlightTextView` pages. Each mushaf line is its own paragraph (joins become `\n`, so offsets don't move); verse lines are justified by a `ReplacementSpan` per space and every line gets a fixed height. Android's ICU regex rejects `(?U)`, so `QuranPageText` tokenizes by hand.
 - [ ] **P3.2** Search + history (+ smart search hook).
 - [ ] **P3.3** Translations pack, picker (Auto/None/explicit), Downloads screen.
 - [ ] **P3.4** Highlights/bookmarks (Room), Saved list, editor.

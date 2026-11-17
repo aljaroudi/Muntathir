@@ -18,4 +18,5 @@
     <string name="supplication_translations">Traductions des invocations</string>
     <string name="adhan_sounds">Sons de l\'adhan</string>
     <string name="duas_org_credit">Réutilisation libre autorisée par Duas.org ; mention de la source demandée.</string>
+    <string name="clear_search">Effacer la recherche</string>
 </resources>

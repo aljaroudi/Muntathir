@@ -36,7 +36,7 @@ tasks.test {
     systemProperty("fixtures", fixtures.absolutePath)
     // Read-only inputs owned by other parts of the repository (bundled Quran DB, production feed).
     val repository = rootProject.file("..")
-    inputs.file(repository.resolve("apple/Muntathir/Resources/Quran/quran.db"))
+    inputs.dir(repository.resolve("apple/Muntathir/Resources/Quran"))
     inputs.file(repository.resolve("apple/Muntathir/Resources/quran-surahs.json"))
     inputs.file(repository.resolve("web/public/calendar/corrections-v1.json"))
     systemProperty("repository", repository.absolutePath)

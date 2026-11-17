@@ -4,14 +4,15 @@ import android.content.Context
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.driver.bundled.SQLITE_OPEN_READONLY
-import com.aljaroudi.muntathir.core.quran.Ayah
 import com.aljaroudi.muntathir.core.quran.DailyAyah
+import com.aljaroudi.muntathir.core.quran.QuranReader
+import com.aljaroudi.muntathir.core.quran.QuranSql
 import com.aljaroudi.muntathir.core.quran.QuranSurah
+import com.aljaroudi.muntathir.core.quran.QuranTranslation
+import com.aljaroudi.muntathir.core.quran.QuranUnavailableException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -20,7 +21,8 @@ import javax.inject.Singleton
 
 /**
  * The bundled Quran text (`assets/quran/quran.db`) and English translation, copied once per app install or
- * update into `noBackupFilesDir` and read with the bundled SQLite build. Swift `QuranDatabase`.
+ * update into `noBackupFilesDir`, plus installed translations, read with the bundled SQLite build (FTS5).
+ * Connections stay open and are confined to one thread; [read] runs the core [QuranReader] there.
  */
 @Singleton
 class QuranDatabase
@@ -30,104 +32,123 @@ class QuranDatabase
     ) {
         @OptIn(ExperimentalCoroutinesApi::class)
         private val dispatcher = Dispatchers.IO.limitedParallelism(1)
-        private val mutex = Mutex()
-        private val connections = mutableMapOf<String, SQLiteConnection?>()
+        private val connections = mutableMapOf<String, SQLiteConnection>()
+        private var translationFiles: Map<String, File> = emptyMap()
 
-        /** Verses by global index (1…6236) with the [translation] text when given; unknown indices are absent. */
-        suspend fun verses(
-            ids: Set<Int>,
-            translation: String? = null,
-        ): Map<Int, Ayah> =
+        private val surahList: List<QuranSurah> by lazy {
+            json.decodeFromString<List<QuranSurah>>(asset(SURAHS))
+        }
+
+        private val reader =
+            QuranReader(
+                arabic = { AndroidQuranSql(connection(install("$QURAN.db"))) },
+                surahs = { surahList },
+                translation = { id ->
+                    val file = if (id == QuranTranslation.BUNDLED_ID) install("$id.db") else translationFiles[id]
+                    file?.takeIf(File::isFile)?.let { AndroidQuranSql(connection(it)) }
+                },
+            )
+
+        /** Runs [block] on the database thread. */
+        suspend fun <T> read(block: suspend QuranReader.() -> T): T = withContext(dispatcher) { reader.block() }
+
+        /** Points downloaded translations at newly installed files, closing connections to replaced ones. */
+        suspend fun setTranslations(files: Map<String, File>) =
             withContext(dispatcher) {
-                mutex.withLock {
-                    val arabic = query(QURAN, ids) ?: return@withLock emptyMap()
-                    val translated = translation?.let { query(it, ids) }.orEmpty()
-                    arabic.mapValues { (index, ayah) ->
-                        val text = translated[index]?.text
-                        if (translation != null &&
-                            text != null
-                        ) {
-                            ayah.copy(translations = mapOf(translation to text))
-                        } else {
-                            ayah
-                        }
-                    }
-                }
+                translationFiles = files
+                val keep = files.values.map { it.absolutePath }.toSet()
+                val bundled = File(directory(), "").absolutePath
+                connections.keys
+                    .filter { it !in keep && !it.startsWith(bundled) }
+                    .forEach { connections.remove(it)?.close() }
+            }
+
+        /** Whether [file] is a complete translation database. Swift `QuranDatabase.validateTranslation`. */
+        suspend fun isValidTranslation(file: File): Boolean =
+            withContext(Dispatchers.IO) {
+                runCatching {
+                    driver
+                        .open(
+                            file.absolutePath,
+                            SQLITE_OPEN_READONLY,
+                        ).use { QuranReader.isValidTranslation(AndroidQuranSql(it)) }
+                }.getOrDefault(false)
             }
 
         /** Arabic surah names by number, for Arabic verse references. */
         suspend fun surahNames(): Map<Int, String> =
-            withContext(Dispatchers.IO) {
-                runCatching {
-                    json.decodeFromString<List<QuranSurah>>(asset(SURAHS)).associate { it.id to it.arabic }
-                }.getOrDefault(emptyMap())
-            }
+            withContext(
+                Dispatchers.IO,
+            ) { runCatching { surahList.associate { it.id to it.arabic } }.getOrDefault(emptyMap()) }
 
         /** The 360-day schedule, or an empty one when the bundled data is incomplete. */
         suspend fun dailyAyah(translation: String?): DailyAyah {
             val json = withContext(Dispatchers.IO) { runCatching { asset(DAILY_IDS) }.getOrNull() }
             val ids = DailyAyah.ids(json)
-            val records = if (ids.size == DailyAyah.COUNT) verses(ids.toSet(), translation) else emptyMap()
+            val records = if (ids.size == DailyAyah.COUNT) read { verses(ids.toSet(), translation) } else emptyMap()
             return DailyAyah.load(ids, records)
         }
-
-        /** Row: index, surah, verse, text. */
-        private fun androidx.sqlite.SQLiteStatement.ayah(): Pair<Int, Ayah> =
-            getLong(0).toInt() to Ayah(getLong(1).toInt(), getLong(2).toInt(), getText(3))
 
         private fun asset(name: String): String =
             context.assets.open("quran/$name").use { it.readBytes().decodeToString() }
 
-        private fun query(
-            name: String,
-            ids: Set<Int>,
-        ): Map<Int, Ayah>? {
-            val connection = connection(name) ?: return null
-            return ids
-                .filter { it in 1..VERSE_COUNT }
-                .chunked(500)
-                .flatMap { chunk ->
-                    val marks = chunk.joinToString(",") { "?" }
-                    val sql = "SELECT \"index\", sura, aya, text FROM quran WHERE \"index\" IN ($marks)"
-                    connection.prepare(sql).use { statement ->
-                        chunk.forEachIndexed { position, id -> statement.bindLong(position + 1, id.toLong()) }
-                        buildList {
-                            while (statement.step()) {
-                                add(statement.ayah())
-                            }
-                        }
-                    }
-                }.toMap()
-        }
-
-        private fun connection(name: String): SQLiteConnection? =
-            connections.getOrPut(name) {
-                runCatching {
-                    val file = install("$name.db")
+        private fun connection(file: File): SQLiteConnection =
+            connections.getOrPut(file.absolutePath) {
+                try {
                     driver.open(file.absolutePath, SQLITE_OPEN_READONLY)
-                }.getOrNull()
+                } catch (error: Exception) {
+                    throw QuranUnavailableException(error)
+                }
             }
+
+        private fun directory() = File(context.noBackupFilesDir, "quran").apply { mkdirs() }
 
         /** Copies an asset when missing or older than the installed APK, then returns the file. */
         private fun install(asset: String): File {
-            val directory = File(context.noBackupFilesDir, "quran").apply { mkdirs() }
-            val file = File(directory, asset)
+            val file = File(directory(), asset)
+            if (file.absolutePath in connections) return file
             val installed = context.packageManager.getPackageInfo(context.packageName, 0).lastUpdateTime
             if (!file.isFile || file.lastModified() < installed) {
-                val temporary = File(directory, "$asset.tmp")
+                val temporary = File(directory(), "$asset.tmp")
                 context.assets.open("quran/$asset").use { input -> temporary.outputStream().use(input::copyTo) }
-                if (!temporary.renameTo(file)) error("Unable to install $asset")
+                if (!temporary.renameTo(file)) throw QuranUnavailableException()
             }
             return file
         }
 
         companion object {
             const val QURAN = "quran"
-            const val ENGLISH = "en.qarai"
+            const val ENGLISH = QuranTranslation.BUNDLED_ID
             const val DAILY_IDS = "quran-daily-ids.json"
             const val SURAHS = "quran-surahs.json"
             private val json = Json { ignoreUnknownKeys = true }
-            const val VERSE_COUNT = 6236
             private val driver = BundledSQLiteDriver()
         }
     }
+
+/** [QuranSql] over a bundled-driver connection; errors surface as [QuranUnavailableException]. */
+private class AndroidQuranSql(
+    private val connection: SQLiteConnection,
+) : QuranSql {
+    override fun <T> query(
+        sql: String,
+        parameters: List<Any>,
+        row: (QuranSql.Row) -> T,
+    ): List<T> =
+        connection.prepare(sql).use { statement ->
+            parameters.forEachIndexed { offset, value ->
+                when (value) {
+                    is Int -> statement.bindLong(offset + 1, value.toLong())
+                    is Long -> statement.bindLong(offset + 1, value)
+                    else -> statement.bindText(offset + 1, value.toString())
+                }
+            }
+            val adapter =
+                object : QuranSql.Row {
+                    override fun int(column: Int) = statement.getLong(column).toInt()
+
+                    override fun text(column: Int) = if (statement.isNull(column)) "" else statement.getText(column)
+                }
+            buildList { while (statement.step()) add(row(adapter)) }
+        }
+}

@@ -18,4 +18,5 @@
     <string name="supplication_translations">ترجمات الأدعية</string>
     <string name="adhan_sounds">أصوات الأذان</string>
     <string name="duas_org_credit">يسمح موقع Duas.org بإعادة الاستخدام مع طلب ذكر المصدر.</string>
+    <string name="clear_search">مسح البحث</string>
 </resources>

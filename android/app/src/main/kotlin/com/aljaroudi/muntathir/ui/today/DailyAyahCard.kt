@@ -58,6 +58,7 @@ import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.quran.Ayah
 import com.aljaroudi.muntathir.core.quran.QuranReference
 import com.aljaroudi.muntathir.data.QuranDatabase
+import com.aljaroudi.muntathir.ui.quran.VerseActions
 import com.aljaroudi.muntathir.ui.theme.QuranFont
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -110,7 +111,7 @@ fun DailyAyahCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(start = 8.dp).weight(1f),
                     )
-                    VerseMenu(ayah, translation, reference, locale)
+                    VerseActions(ayah, translation, reference, Modifier.testTag("share-daily-ayah"))
                 }
                 SelectionContainer {
                     Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
@@ -153,59 +154,6 @@ fun AyahArabic(
             textAlign = TextAlign.Center,
             modifier = modifier.fillMaxWidth(),
         )
-    }
-}
-
-/** Swift `VerseActions` for the daily card: copy and share as image (bookmarks arrive with P3.4). */
-@Composable
-private fun VerseMenu(
-    ayah: Ayah,
-    translation: String?,
-    reference: String,
-    locale: Locale,
-) {
-    var open by remember { mutableStateOf(false) }
-    var sharing by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    val clipboard = LocalClipboard.current
-    val scope = rememberCoroutineScope()
-    val copied = stringResource(R.string.text_copied)
-    val text = listOfNotNull(ayah.text, translation, reference).joinToString("\n\n")
-    Box {
-        IconButton(onClick = { open = true }, Modifier.testTag("share-daily-ayah")) {
-            Icon(Icons.Outlined.MoreVert, stringResource(R.string.actions_for_verse_x, reference))
-        }
-        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.copy_text)) },
-                leadingIcon = { Icon(Icons.Outlined.ContentCopy, null) },
-                onClick = {
-                    open = false
-                    scope.launch { clipboard.setClipEntry(ClipEntry(ClipData.newPlainText(reference, text))) }
-                    // Android 13+ confirms copies itself.
-                    if (Build.VERSION.SDK_INT <
-                        Build.VERSION_CODES.TIRAMISU
-                    ) {
-                        Toast.makeText(context, copied, Toast.LENGTH_SHORT).show()
-                    }
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.share_as_image)) },
-                leadingIcon = { Icon(Icons.Outlined.Share, null) },
-                onClick = {
-                    open = false
-                    sharing = true
-                },
-            )
-        }
-    }
-    if (sharing) {
-        ShareImage(
-            name = "ayah-${ayah.surah}-${ayah.number}",
-            fallbackText = text,
-            onDone = { sharing = false },
-        ) { AyahShareArtwork(ayah, translation, reference) }
     }
 }
 

@@ -52,6 +52,13 @@ object DataModule {
 
     @Provides
     @Singleton
+    fun readingSettings(
+        @ApplicationContext context: Context,
+        @AppScope scope: CoroutineScope,
+    ): ReadingSettings = ReadingSettings.create(context, CoroutineScope(scope.coroutineContext + Dispatchers.IO))
+
+    @Provides
+    @Singleton
     fun transport(): FeedTransport = KtorFeedTransport()
 
     @Provides
