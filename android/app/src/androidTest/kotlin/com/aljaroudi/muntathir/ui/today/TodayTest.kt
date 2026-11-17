@@ -1,5 +1,8 @@
 package com.aljaroudi.muntathir.ui.today
 
+import androidx.compose.ui.semantics.SemanticsNode
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.longClick
@@ -20,6 +23,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -42,6 +46,11 @@ class TodayTest {
     @BindValue @JvmField
     val locator: DeviceLocator = FakeLocator()
 
+    /** Every content description in the tree under [node]. */
+    private fun allDescriptions(node: SemanticsNode): List<String> =
+        node.config.getOrElse(SemanticsProperties.ContentDescription) { emptyList() } +
+            node.children.flatMap(::allDescriptions)
+
     @Test
     fun showsPrayersAndDailyAyahAndHidesOptionalTimes() {
         compose.onNodeWithTag("prayer-fajr").assertIsDisplayed()
@@ -55,6 +64,25 @@ class TodayTest {
                 ).fetchSemanticsNodes()
                 .isNotEmpty()
         }
+        // A 3-digit time gets an invisible alignment digit; assistive tech must read the real time, never "44:31".
+        val clock = Regex("(\\d+):\\d{2}")
+        val hours =
+            compose
+                .onAllNodes(
+                    androidx.compose.ui.test
+                        .isRoot(),
+                    useUnmergedTree = true,
+                ).fetchSemanticsNodes()
+                .flatMap { root -> allDescriptions(root) }
+                .mapNotNull {
+                    clock
+                        .matchEntire(it)
+                        ?.groupValues
+                        ?.get(1)
+                        ?.toInt()
+                }
+        assertTrue(hours.isNotEmpty())
+        assertTrue(hours.all { it <= 23 })
         compose.onNodeWithTag("prayer-asr").performTouchInput { longClick() }
         compose.onNodeWithTag("hide-asr").performClick()
         compose.waitUntil { memory.preferences?.hiddenPrayers == setOf(PrayerName.Asr) }

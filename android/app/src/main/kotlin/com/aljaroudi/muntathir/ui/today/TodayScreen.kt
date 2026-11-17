@@ -51,6 +51,8 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -413,6 +415,8 @@ private fun PrayerTime(
         text,
         color = color,
         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium, fontFeatureSettings = "tnum"),
+        // The alignment digit is only visual; TalkBack must read the real time ("4:31", not "44:31").
+        modifier = Modifier.clearAndSetSemantics { contentDescription = time },
     )
 }
 
