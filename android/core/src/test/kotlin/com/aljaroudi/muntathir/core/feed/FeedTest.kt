@@ -12,13 +12,12 @@ import java.time.ZoneId
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 // Ports `FeedTests` and the feed cases of `CalendarTests` (MuntathirTests.swift).
 class FeedTest {
-    private val riyadh = SavedLocation(24.0, 46.0, "Riyadh", "SA", "Asia/Riyadh")
+    private val riyadh = SavedLocation(24.0, 46.0, "Asia/Riyadh")
     private val month = HijriMonth(1448, 1)
 
     private fun square() =
@@ -36,10 +35,8 @@ class FeedTest {
     }
 
     @Test
-    fun coverageAndSelectedSource() {
+    fun selectedSource() {
         val polygon = square()
-        assertTrue(polygon.contains(riyadh))
-        assertFalse(Coverage(listOf("IQ"), emptyList()).contains(riyadh))
         val engine = CalendarEngine(riyadh.zone)
         val row =
             Announcement(
@@ -99,24 +96,6 @@ class FeedTest {
     }
 
     @Test
-    fun dateLinePolygon() {
-        val coverage =
-            Coverage(
-                emptyList(),
-                listOf(
-                    listOf(
-                        GeoPoint(-10.0, 170.0),
-                        GeoPoint(10.0, 170.0),
-                        GeoPoint(10.0, -170.0),
-                        GeoPoint(-10.0, -170.0),
-                    ),
-                ),
-            )
-        assertTrue(coverage.contains(SavedLocation(0.0, 179.0, "Date line", "", "GMT")))
-        assertFalse(coverage.contains(SavedLocation(0.0, 0.0, "Greenwich", "", "GMT")))
-    }
-
-    @Test
     fun governmentSourceIsSaudiOnly() {
         assertEquals(listOf("SA"), CalendarSource.countries)
         assertEquals(CalendarMethod.Government, CalendarSource.method("government-SA"))
@@ -134,7 +113,7 @@ class FeedTest {
     @Test
     fun productionAnnouncementsResolveConfirmedMonths() {
         val feed = CorrectionsFeed.decode(Fixtures.repository("web/public/calendar/corrections-v1.json").readText())
-        val mecca = SavedLocation(21.4, 39.8, "Mecca", "SA", "Asia/Riyadh")
+        val mecca = SavedLocation(21.4, 39.8, "Asia/Riyadh")
         val october = CivilDate(2026, 10, 13)
         val november = CivilDate(2026, 11, 12)
         for ((source, starts) in listOf(
@@ -153,7 +132,7 @@ class FeedTest {
 
     @Test
     fun knownSourcesApplyWorldwideAndRequireMatchingMethod() {
-        val london = SavedLocation(51.5, -0.1, "London", "GB", "Europe/London")
+        val london = SavedLocation(51.5, -0.1, "Europe/London")
         val coverage = Coverage(listOf("SA"), emptyList())
         val base = CalendarEngine(london.zone)
         for (source in listOf(CalendarSource.MIDDLE_EAST) + CalendarSource.countries.map { "government-$it" }) {

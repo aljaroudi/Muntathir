@@ -44,8 +44,8 @@ class AppModelTest {
         }
     }
 
-    private val riyadh = SavedLocation(24.0, 46.0, "Riyadh", "SA", "Asia/Riyadh")
-    private val london = SavedLocation(51.5, -0.1, "London", "GB", "Europe/London")
+    private val riyadh = SavedLocation(24.0, 46.0, "Asia/Riyadh")
+    private val london = SavedLocation(51.5, -0.1, "Europe/London")
 
     private fun row(
         id: String,
@@ -104,7 +104,6 @@ class AppModelTest {
             assertFalse(model.applyLive(riyadh.copy(timeZoneID = "Nowhere/City")))
             assertTrue(model.applyLive(riyadh))
             assertEquals(riyadh, storage.device.liveLocation)
-            assertEquals(null, storage.preferences?.savedLocation)
             assertEquals(riyadh.zone, model.state.value.zone)
             model.moveOnboarding(9)
             assertEquals(4, storage.device.onboardingStep)

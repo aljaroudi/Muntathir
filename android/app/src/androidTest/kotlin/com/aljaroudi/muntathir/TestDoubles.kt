@@ -31,6 +31,6 @@ class FakeLocator(
     override suspend fun locate() = fix
 
     companion object {
-        val MECCA = SavedLocation(21.4225, 39.8262, "Mecca", "SA", "Asia/Riyadh")
+        val MECCA = SavedLocation(21.4225, 39.8262, "Asia/Riyadh")
     }
 }

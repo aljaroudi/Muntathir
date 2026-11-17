@@ -9,12 +9,10 @@ import com.aljaroudi.muntathir.core.calendar.HijriMonth
 import com.aljaroudi.muntathir.core.calendar.MonthCorrection
 import com.aljaroudi.muntathir.core.calendar.MonthOffset
 import com.aljaroudi.muntathir.core.location.SavedLocation
-import com.aljaroudi.muntathir.core.roundedAwayFromZero
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.time.ZoneOffset
-import kotlin.math.abs
 
 @Serializable
 enum class SightingMethod {
@@ -59,6 +57,7 @@ data class GeoPoint(
     val longitude: Double,
 )
 
+/** Where an announcement was observed. Informational: following a source is worldwide, so it's only validated. */
 @Serializable
 data class Coverage(
     val countries: List<String>,
@@ -75,43 +74,6 @@ data class Coverage(
                                 it.longitude in -180.0..180.0
                         }
                 }
-
-    fun contains(location: SavedLocation): Boolean {
-        if (location.countryCode.uppercase() in countries) return true
-        return polygons.any { contains(it, location) }
-    }
-
-    private fun contains(
-        polygon: List<GeoPoint>,
-        location: SavedLocation,
-    ): Boolean {
-        if (polygon.size < 3) return false
-        // Unwrap consecutive vertices, then place the query in that same longitude band.
-        val longitudes = mutableListOf(polygon[0].longitude)
-        for (point in polygon.drop(1)) {
-            var longitude = point.longitude
-            while (longitude - longitudes.last() > 180) longitude -= 360
-            while (longitude - longitudes.last() < -180) longitude += 360
-            longitudes += longitude
-        }
-        val center = (longitudes.min() + longitudes.max()) / 2
-        val query = location.longitude + ((center - location.longitude) / 360).roundedAwayFromZero() * 360
-        var inside = false
-        for (index in polygon.indices) {
-            val next = (index + 1) % polygon.size
-            val ax = longitudes[index] - query
-            val bx = longitudes[next] - query
-            val ay = polygon[index].latitude - location.latitude
-            val by = polygon[next].latitude - location.latitude
-            if (abs(ax * by - bx * ay) < 1e-9 && minOf(ax, bx) <= 0 && maxOf(ax, bx) >= 0 && minOf(ay, by) <= 0 &&
-                maxOf(ay, by) >= 0
-            ) {
-                return true
-            }
-            if ((ay > 0) != (by > 0) && ax + (bx - ax) * -ay / (by - ay) > 0) inside = !inside
-        }
-        return inside
-    }
 }
 
 @Serializable

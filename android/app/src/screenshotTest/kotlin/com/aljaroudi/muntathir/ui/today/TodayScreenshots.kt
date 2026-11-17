@@ -16,7 +16,7 @@ import com.android.tools.screenshot.PreviewTest
 import java.time.Instant
 import java.time.ZoneId
 
-private val mecca = SavedLocation(21.4225, 39.8262, "Mecca", "SA", "Asia/Riyadh")
+private val mecca = SavedLocation(21.4225, 39.8262, "Asia/Riyadh")
 private val library = EventLibrary.bundled()
 private val ayah =
     Ayah(

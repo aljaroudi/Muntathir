@@ -7,7 +7,7 @@ Spec paths are relative to `apple/Muntathir/` unless noted. Read the listed Swif
 | App shell, tabs | `ContentView.swift`, `Core/AppTab.swift`, `Core/AppTool.swift`, `Features/TabsSettingsView.swift`, `Features/ToolDestination.swift` | `NavigationSuiteScaffold` + Nav3 per-tab stacks. Tools is an adaptive tile grid. |
 | Preferences | `Services/Preferences.swift` | DataStore JSON with identical validation. `update {}` validates before commit. Backed up. |
 | Onboarding | `Features/OnboardingView.swift`, `Features/AppLanguageLink.swift` | Same steps and resume. Language step is an in-app picker (AppCompat locales). |
-| Location | `Services/LocationService.swift` | GPS only: coarse Fused fix named "Device location" (no reverse geocoding), offline time-zone map. No city search. Never uploaded or backed up. Qibla has its own precise session. |
+| Location | `Services/LocationService.swift` | GPS only: coarse Fused fix (coordinates + time zone, no name or reverse geocoding), offline time-zone map. Preferences have no saved city. No city search. Never uploaded or backed up. Qibla has its own precise session. |
 | Hijri calendar | `Core/CalendarEngine.swift`, `Features/CalendarScreen.swift`, `Features/MonthAdjustmentsView.swift` | Port to `core`. Baseline = `HijrahChronology` (Umm al-Qura); verify against a 1350–1500 AH fixture exported from iOS. |
 | Corrections feed | `Core/CorrectionsFeed.swift`, `Services/BackgroundRefresh.swift`, `shared/fixtures/corrections-v1.json` | `core` parser/validator + Ktor + ETag cache + WorkManager 12 h |
 | Prayer times | `Core/PrayerCalculator.swift`, `Core/WidgetPrayerData.swift` | Adhan Swift 1.5.0 ported to `core/prayer/adhan`. Same Tehran Maghrib rule, Imsak, Islamic midnight. Shared prayer fixtures. |

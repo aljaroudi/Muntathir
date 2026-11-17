@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 // Ports `WidgetPrayerTests`, `CompactWidgetTests` and `LockScreenPrayerTests`. Not ported: App Group storage
 // (`sharedSettingsRoundTripAndOnlyReloadOnChange`, P6.1), countdown formatting and widget bundles (iOS-only).
 class WidgetPrayerTest {
-    private val mecca = SavedLocation(21.4225, 39.8262, "Mecca", "SA", "Asia/Riyadh")
+    private val mecca = SavedLocation(21.4225, 39.8262, "Asia/Riyadh")
 
     private fun midnight(date: LocalDate): Instant = date.atStartOfDay(mecca.zone).toInstant()
 

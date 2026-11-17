@@ -5,12 +5,11 @@ import java.time.DateTimeException
 import java.time.ZoneId
 import java.time.ZoneOffset
 
+/** The device's GPS fix for prayer times and its time zone. It has no name: the UI calls it "Device location". */
 @Serializable
 data class SavedLocation(
     val latitude: Double,
     val longitude: Double,
-    val name: String,
-    val countryCode: String,
     val timeZoneID: String,
 ) {
     /** The location's zone, falling back to UTC when the identifier is unknown. */
@@ -21,7 +20,7 @@ data class SavedLocation(
 
     val hasValidZone: Boolean get() = zoneOrNull() != null
 
-    val isValid: Boolean get() = hasValidCoordinates && hasValidZone && name.isNotEmpty()
+    val isValid: Boolean get() = hasValidCoordinates && hasValidZone
 
     private fun zoneOrNull(): ZoneId? =
         try {

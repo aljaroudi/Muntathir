@@ -44,7 +44,7 @@ class ProgressStoreTest {
     @Test
     fun prayersSaveOnce() =
         runBlocking {
-            val mecca = SavedLocation(21.4225, 39.8262, "Mecca", "SA", "Asia/Riyadh")
+            val mecca = SavedLocation(21.4225, 39.8262, "Asia/Riyadh")
             val record =
                 PrayerProgress.snapshot(
                     PrayerName.Fajr,

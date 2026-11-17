@@ -56,6 +56,12 @@ class NotifierTest {
             ScheduledAlert("event.1", now, null, listOf(IslamicEvent("a", 1, 1, mapOf("en" to "A")))),
             preferences,
         )
+        // Posting is asynchronous; wait for all three to show up.
+        val tags = setOf("prayer.1.fajr", "prayer.1.sunrise", "event.1")
+        val deadline = System.currentTimeMillis() + 5_000
+        while (!system.activeNotifications.map { it.tag }.containsAll(tags) && System.currentTimeMillis() < deadline) {
+            Thread.sleep(50)
+        }
         val posted = system.activeNotifications.associateBy { it.tag }
         assertEquals("prayers.chime.v1", posted.getValue("prayer.1.fajr").notification.channelId)
         assertEquals("other.system.v1", posted.getValue("prayer.1.sunrise").notification.channelId)

@@ -16,7 +16,7 @@ import kotlin.test.assertTrue
 
 // Ports `PrayerProgressTests`; the SwiftData persistence case is covered by the instrumented `ProgressStoreTest`.
 class PrayerProgressTest {
-    private val location = SavedLocation(21.4225, 39.8262, "Mecca", "SA", "Asia/Riyadh")
+    private val location = SavedLocation(21.4225, 39.8262, "Asia/Riyadh")
     private val day = Instant.ofEpochSecond(1_794_520_800)
 
     private fun times(
@@ -100,7 +100,7 @@ class PrayerProgressTest {
 
     @Test
     fun dstAndTravelKeepPrayerDay() {
-        val newYork = SavedLocation(40.7128, -74.006, "New York", "US", "America/New_York")
+        val newYork = SavedLocation(40.7128, -74.006, "America/New_York")
         for ((instant, expectedDay) in listOf(
             "2026-11-01T06:30:00Z" to "2026-10-31",
             "2026-03-08T07:30:00Z" to "2026-03-07",

@@ -100,7 +100,7 @@ class FeedClientTest {
             val row = CorrectionsFeed.decode(body).announcements.first()
             val transport = FakeTransport(200 to body, 304 to "", 200 to "broken", 503 to "", 304 to "")
             val client = client(transport)
-            val covered = SavedLocation(24.0, 46.0, "Fixture coverage", "SA", "Asia/Riyadh")
+            val covered = SavedLocation(24.0, 46.0, "Asia/Riyadh")
             repeat(4) {
                 val confirmations = client.refresh().confirmations(covered, emptyList())
                 assertEquals(listOf(row), confirmations)
@@ -114,14 +114,14 @@ class FeedClientTest {
             // A new client (app relaunch) restores from cache.
             assertEquals(listOf(row), client(FakeTransport()).cachedFeed()!!.confirmations(covered, emptyList()))
             // Following a source is independent of physical coverage.
-            val mecca = SavedLocation(21.4225, 39.8262, "Mecca", "SA", "Asia/Riyadh")
+            val mecca = SavedLocation(21.4225, 39.8262, "Asia/Riyadh")
             assertEquals(listOf(row), client.refresh().confirmations(mecca, emptyList()))
             assertNull(FeedClient(url, folder.resolve("missing.json"), FakeTransport()).cachedFeed())
         }
 
     @Test
     fun conflictingFeedIsRejectedSoTheCallerKeepsItsCalendar() {
-        val london = SavedLocation(51.5, -0.1, "London", "GB", "Europe/London")
+        val london = SavedLocation(51.5, -0.1, "Europe/London")
         val month = HijriMonth(1448, 1)
         val baseline = CalendarEngine(london.zone)
         val coverage = Coverage(listOf("SA"), emptyList())
@@ -149,7 +149,7 @@ class FeedClientTest {
 
     @Test
     fun incompatibleAdjustmentIsRejected() {
-        val riyadh = SavedLocation(24.0, 46.0, "Riyadh", "SA", "Asia/Riyadh")
+        val riyadh = SavedLocation(24.0, 46.0, "Asia/Riyadh")
         val base = CalendarEngine(riyadh.zone)
         val month = (1..12).map { HijriMonth(1448, it) }.first { base.baselineLength(it) == 29 }
         val next = month.advanced(1)

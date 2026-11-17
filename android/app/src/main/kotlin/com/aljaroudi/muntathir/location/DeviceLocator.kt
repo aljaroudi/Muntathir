@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.os.SystemClock
 import androidx.core.content.ContextCompat
-import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.location.SavedLocation
 import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.Granularity
@@ -41,14 +40,14 @@ interface LocationModule {
 interface DeviceLocator {
     fun hasPermission(): Boolean
 
-    /** One coarse fix with a time zone, or `null` when no fix arrives. */
+    /** One coarse fix with its time zone, or `null` when no fix arrives. */
     suspend fun locate(): SavedLocation?
 }
 
 /**
  * A coarse Fused fix (prayer times only need about a kilometre), zoned with an offline time-zone map so a fix
- * taken while travelling gets the place's zone rather than the phone's. Like iOS, there's no reverse geocoding:
- * the place is "Device location" and the coordinates never leave the device. Qibla has its own precise session
+ * taken while travelling gets the place's zone rather than the phone's. There's no reverse geocoding, so the
+ * coordinates never leave the device. Qibla has its own precise session
  * ([DeviceQiblaSensors]).
  */
 @Singleton
@@ -73,13 +72,7 @@ class FusedDeviceLocator
                     ?: withTimeoutOrNull(FIX_TIMEOUT_MS) { currentLocation() }
                     ?: last
                     ?: return null
-            return SavedLocation(
-                latitude = fix.latitude,
-                longitude = fix.longitude,
-                name = context.getString(R.string.device_location),
-                countryCode = "",
-                timeZoneID = zone(fix.latitude, fix.longitude),
-            ).takeIf { it.isValid }
+            return SavedLocation(fix.latitude, fix.longitude, zone(fix.latitude, fix.longitude)).takeIf { it.isValid }
         }
 
         @SuppressLint("MissingPermission")

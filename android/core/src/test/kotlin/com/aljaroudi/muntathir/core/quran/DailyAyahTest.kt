@@ -68,7 +68,7 @@ class DailyAyahTest {
             val engine = CalendarEngine(zone)
             val riyadh = zoneID == "Asia/Riyadh"
             val location =
-                SavedLocation(if (riyadh) 24.7136 else 40.7128, if (riyadh) 46.6753 else -74.006, "Test", "", zoneID)
+                SavedLocation(if (riyadh) 24.7136 else 40.7128, if (riyadh) 46.6753 else -74.006, zoneID)
             val prayers = WidgetPrayerSettings(location, PrayerMethod.Jafari, setOf(PrayerName.Sunset))
             for (offset in 0L until 3L) {
                 val date = LocalDate.of(2026, 3, 7).plusDays(offset)
@@ -103,7 +103,7 @@ class DailyAyahTest {
         val correction = MonthCorrection(month, CivilDate.of(baseline.start(month).plusDays(1)), DateProvenance.Manual)
         val engine = CalendarEngine(zone, manual = listOf(correction))
         val prayers =
-            WidgetPrayerSettings(SavedLocation(24.7136, 46.6753, "Riyadh", "SA", zone.id), PrayerMethod.Jafari)
+            WidgetPrayerSettings(SavedLocation(24.7136, 46.6753, zone.id), PrayerMethod.Jafari)
         val lengths = mutableSetOf<Int>()
         for (offset in 0 until 13) {
             val nextMonth = month.advanced(offset)
@@ -123,7 +123,7 @@ class DailyAyahTest {
     fun missingOrUncalculableSunsetFallsBackToMidnight() {
         val engine = CalendarEngine(ZoneOffset.UTC)
         val instant = engine.startOfDay(LocalDate.of(2026, 3, 7)).plusSeconds(23 * 3600L)
-        val invalid = SavedLocation(Double.NaN, 0.0, "Invalid", "", "GMT")
+        val invalid = SavedLocation(Double.NaN, 0.0, "GMT")
         for (location in listOf(null, invalid)) {
             val prayers = WidgetPrayerSettings(location, PrayerMethod.Jafari)
             assertNull(prayers.sunset(engine.localDate(instant)))

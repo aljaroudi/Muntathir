@@ -106,10 +106,10 @@ fun DeviceLocationSection(
                 Modifier.padding(start = ButtonDefaults.IconSpacing),
             )
         }
-        location?.let {
+        if (location != null) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                Text(it.name, Modifier.testTag("location-name"))
+                Text(stringResource(R.string.device_location), Modifier.testTag("location-name"))
             }
         }
         when (status) {

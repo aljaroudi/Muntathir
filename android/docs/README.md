@@ -32,7 +32,7 @@ Native Kotlin + Jetpack Compose version of the iOS app in [`apple/`](../../apple
 
 ## Decisions (2026-11-17, P2)
 
-- **Location is GPS only.** There is no city text search and no `locations` search history. The time zone comes from an offline boundary map (`us.dustinj.timezonemap`), falling back to the device zone. The fix stays in the device-local store. There's no reverse geocoding (decided after P5, matching iOS), so coordinates are never sent to a geocoding service. Prayer times use coarse location; only Qibla asks for precise.
+- **Location is GPS only.** There is no city text search and no `locations` search history. The time zone comes from an offline boundary map (`us.dustinj.timezonemap`), falling back to the device zone. The fix stays in the device-local store. There's no reverse geocoding (decided after P5, matching iOS), so coordinates are never sent to a geocoding service. `SavedLocation` holds only coordinates and a time zone, and the preferences have no `savedLocation` city. The app is pre-release, so no older stored shapes are migrated. Prayer times use coarse location; only Qibla asks for precise.
 - **Notification channels are versioned by sound** and there's no Time Sensitive toggle; `timeSensitiveNotifications` stays in the JSON for parity. There's no full-adhan foreground service.
 - **One chained alarm** instead of a 10-day batch of 50 requests.
 - **`AppModel` lives in `core/app`**, so the iOS AppModel tests (stale feed responses, conflicts, persistence) run on the JVM.

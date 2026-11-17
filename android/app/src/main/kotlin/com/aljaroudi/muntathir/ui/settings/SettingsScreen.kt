@@ -195,12 +195,10 @@ fun SettingsScreen(
                     stringResource(R.string.location),
                     links.onLocation,
                     "settings-location",
-                    state.location?.name ?: stringResource(R.string.not_selected),
+                    stringResource(if (state.location != null) R.string.device_location else R.string.not_selected),
                 )
             }
-            if (state.device.liveLocation !=
-                null
-            ) {
+            if (state.location != null) {
                 item { SectionFooter(stringResource(R.string.device_location_stays_on_this_device)) }
             }
 

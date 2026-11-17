@@ -19,7 +19,7 @@ import kotlin.test.assertTrue
 // Ports the logic of `PrayerPreferencesTests` and the sunset case of `EventsTests`. Preferences JSON migration
 // lives in `PreferencesTest`; Watch round trips are P8.
 class NotificationPlanTest {
-    private val mecca = SavedLocation(21.4225, 39.8262, "Mecca", "SA", "Asia/Riyadh")
+    private val mecca = SavedLocation(21.4225, 39.8262, "Asia/Riyadh")
 
     private fun midnight(
         date: LocalDate,
@@ -142,7 +142,7 @@ class NotificationPlanTest {
 
     @Test
     fun polarDatesWithoutSunsetDoNotInventEventTimes() {
-        val polar = SavedLocation(78.2232, 15.6469, "Longyearbyen", "NO", "Arctic/Longyearbyen")
+        val polar = SavedLocation(78.2232, 15.6469, "Arctic/Longyearbyen")
         val today = LocalDate.of(2026, 6, 21)
         val engine = CalendarEngine(polar.zone)
         val tomorrow = engine.resolve(today.plusDays(1))
@@ -154,7 +154,7 @@ class NotificationPlanTest {
     @Test
     fun eventRemindersUseLocationTimezone() {
         for (zone in listOf("America/New_York", "Asia/Riyadh")) {
-            val place = SavedLocation(40.7128, -74.006, "Test", "US", zone)
+            val place = SavedLocation(40.7128, -74.006, zone)
             val today = LocalDate.of(2026, 11, 1)
             val engine = CalendarEngine(place.zone)
             val day = engine.resolve(today.plusDays(1))

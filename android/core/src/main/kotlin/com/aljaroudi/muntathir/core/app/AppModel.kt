@@ -71,7 +71,7 @@ data class AppState(
     val revision: Int,
     val systemZone: ZoneId,
 ) {
-    val location: SavedLocation? get() = device.liveLocation ?: preferences.savedLocation
+    val location: SavedLocation? get() = device.liveLocation
 
     val zone: ZoneId get() = location?.zone ?: systemZone
 
@@ -123,7 +123,7 @@ class AppModel private constructor(
             if (!updated.isValid) return fail(AppError.InvalidPreferences)
             try {
                 check(
-                    current.device.liveLocation ?: updated.savedLocation,
+                    current.device.liveLocation,
                     updated.monthOffsets,
                     current.confirmations,
                     current.systemZone,

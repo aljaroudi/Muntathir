@@ -68,7 +68,7 @@ fun RakaatQiblaHint(
 ) {
     val fix = reading?.fix ?: return
     val heading = reading.heading ?: return
-    val place = SavedLocation(fix.latitude, fix.longitude, "", "", ZoneId.systemDefault().id)
+    val place = SavedLocation(fix.latitude, fix.longitude, ZoneId.systemDefault().id)
     val alignment = QiblaAlignment.of(PrayerCalculator.qibla(place), heading.degrees) ?: return
     val (icon, text) =
         when {

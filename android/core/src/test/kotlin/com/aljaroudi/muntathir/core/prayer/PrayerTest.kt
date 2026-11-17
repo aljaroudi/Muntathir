@@ -47,8 +47,8 @@ class PrayerTest {
 
     private val json = Json { ignoreUnknownKeys = true }
     private val timeFormat = DateTimeFormatter.ofPattern("h:mm a", Locale.US)
-    private val mecca = SavedLocation(21.4225, 39.8262, "Mecca", "SA", "Asia/Riyadh")
-    private val riyadh = SavedLocation(24.7, 46.7, "Riyadh", "SA", "Asia/Riyadh")
+    private val mecca = SavedLocation(21.4225, 39.8262, "Asia/Riyadh")
+    private val riyadh = SavedLocation(24.7, 46.7, "Asia/Riyadh")
     private val reference =
         listOf(
             PrayerName.Fajr,
@@ -83,14 +83,7 @@ class PrayerTest {
     @Test
     fun matchesTehranReferenceFixture() {
         val fixture = fixture("Tehran-Tehran")
-        val location =
-            SavedLocation(
-                fixture.params.latitude,
-                fixture.params.longitude,
-                "Tehran-Tehran",
-                "",
-                fixture.params.timezone,
-            )
+        val location = SavedLocation(fixture.params.latitude, fixture.params.longitude, fixture.params.timezone)
         for (row in fixture.times) {
             val times = PrayerCalculator.times(LocalDate.parse(row.getValue("date")), location, PrayerMethod.Tehran)
             assertEquals(9, times.size)
@@ -134,7 +127,7 @@ class PrayerTest {
 
     @Test
     fun highLatitudeFailureIsHonest() {
-        val polar = SavedLocation(89.0, 0.0, "Polar", "", "GMT")
+        val polar = SavedLocation(89.0, 0.0, "GMT")
         assertTrue(PrayerCalculator.times(LocalDate.of(2026, 6, 21), polar, PrayerMethod.Tehran).isEmpty())
     }
 
@@ -180,12 +173,6 @@ class PrayerTest {
             assertEquals(18, maghrib.hour)
             assertEquals(minute, maghrib.minute, "$method")
         }
-    }
-
-    @Test
-    fun gpsWithoutPlaceNameStillCalculates() {
-        val unnamed = mecca.copy(name = "", countryCode = "")
-        assertEquals(9, PrayerCalculator.times(LocalDate.of(2026, 10, 17), unnamed, PrayerMethod.Tehran).size)
     }
 
     @Test
@@ -244,8 +231,8 @@ class PrayerTest {
             val y = sin(delta) * cos(kaaba.first)
             val x = cos(phi) * sin(kaaba.first) - sin(phi) * cos(kaaba.first) * cos(delta)
             val bearing = (Math.toDegrees(atan2(y, x)) + 360) % 360
-            assertEquals(bearing, PrayerCalculator.qibla(SavedLocation(latitude, longitude, "", "", "UTC")), 1e-9)
+            assertEquals(bearing, PrayerCalculator.qibla(SavedLocation(latitude, longitude, "UTC")), 1e-9)
         }
-        assertEquals(58.48, PrayerCalculator.qibla(SavedLocation(40.7128, -74.0059, "New York", "US", "UTC")), 0.01)
+        assertEquals(58.48, PrayerCalculator.qibla(SavedLocation(40.7128, -74.0059, "UTC")), 0.01)
     }
 }

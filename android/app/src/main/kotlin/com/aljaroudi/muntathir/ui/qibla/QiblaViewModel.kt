@@ -30,7 +30,7 @@ data class QiblaUiState(
         val bearing =
             fix?.let {
                 // Same calculation as the prayer screen; the zone is irrelevant to the bearing.
-                PrayerCalculator.qibla(SavedLocation(it.latitude, it.longitude, "", "", "UTC"))
+                PrayerCalculator.qibla(SavedLocation(it.latitude, it.longitude, "UTC"))
             }
         val heading = reading.heading
         val alignment = if (bearing != null && heading != null) QiblaAlignment.of(bearing, heading.degrees) else null

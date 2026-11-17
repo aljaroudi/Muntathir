@@ -68,7 +68,7 @@ class ActivityTest {
     @BindValue @JvmField
     val progress: ProgressStore = ProgressStore(database.dao(), CoroutineScope(Dispatchers.IO))
 
-    private val mecca = SavedLocation(21.4225, 39.8262, "Mecca", "SA", "Asia/Riyadh")
+    private val mecca = SavedLocation(21.4225, 39.8262, "Asia/Riyadh")
 
     @Before
     fun setUp() =

@@ -2,7 +2,6 @@ package com.aljaroudi.muntathir.core.app
 
 import com.aljaroudi.muntathir.core.calendar.HijriMonth
 import com.aljaroudi.muntathir.core.calendar.MonthOffset
-import com.aljaroudi.muntathir.core.location.SavedLocation
 import com.aljaroudi.muntathir.core.prayer.PrayerMethod
 import com.aljaroudi.muntathir.core.prayer.PrayerName
 import kotlinx.serialization.json.Json
@@ -123,8 +122,6 @@ class PreferencesTest {
             ),
             keys,
         )
-        val location = SavedLocation(21.4225, 39.8262, "Mecca", "SA", "Asia/Riyadh")
-        assertEquals(location, Preferences.decode(Preferences(savedLocation = location).encode()).savedLocation)
     }
 
     @Test
@@ -134,10 +131,5 @@ class PreferencesTest {
         assertNull(Preferences.decodeValid("""{"monthOffsets":[{"month":{"year":1448,"month":1},"days":3}]}"""))
         val duplicate = """{"month":{"year":1448,"month":1},"days":1}"""
         assertNull(Preferences.decodeValid("""{"monthOffsets":[$duplicate,$duplicate]}"""))
-        assertNull(
-            Preferences.decodeValid(
-                """{"savedLocation":{"latitude":91,"longitude":0,"name":"X","countryCode":"","timeZoneID":"UTC"}}""",
-            ),
-        )
     }
 }

@@ -1,7 +1,6 @@
 package com.aljaroudi.muntathir.core.app
 
 import com.aljaroudi.muntathir.core.calendar.MonthOffset
-import com.aljaroudi.muntathir.core.location.SavedLocation
 import com.aljaroudi.muntathir.core.prayer.PrayerMethod
 import com.aljaroudi.muntathir.core.prayer.PrayerName
 import kotlinx.serialization.SerialName
@@ -36,12 +35,12 @@ enum class PrayerAlertSound(
 }
 
 /**
- * Backed-up user preferences, stored as `preferences.v1` in the same JSON shape as Swift `Preferences`.
- * Every key is optional on decode; unknown (legacy) keys are dropped.
+ * Backed-up user preferences, stored as `preferences.v1` in the JSON shape of Swift `Preferences`, without the
+ * saved city (the location is a device-only GPS fix in [DeviceState]). Every key is optional on decode; unknown
+ * keys are dropped.
  */
 @Serializable
 data class Preferences(
-    val savedLocation: SavedLocation? = null,
     val prayerMethod: PrayerMethod = PrayerMethod.Tehran,
     val imsakMinutes: Int = 10,
     val enabledPrayers: Set<PrayerName> = setOf(PrayerName.Fajr, PrayerName.Dhuhr, PrayerName.Maghrib),
@@ -69,7 +68,7 @@ data class Preferences(
     fun isVisible(prayer: PrayerName): Boolean = prayer.isVisible(hiddenPrayers)
 
     val isValid: Boolean
-        get() = (savedLocation == null || savedLocation.isValid) && MonthOffset.isValid(monthOffsets)
+        get() = MonthOffset.isValid(monthOffsets)
 
     /** Applies the decode-time rules Swift enforces: Imsak bounds and shortcut normalization. */
     fun normalized(): Preferences =

@@ -206,7 +206,7 @@ class SkyTest {
         }
     }
 
-    private val equator = SavedLocation(0.0, 0.0, "Equator", "", "GMT")
+    private val equator = SavedLocation(0.0, 0.0, "GMT")
 
     private fun time(hour: Int): Instant = Instant.ofEpochSecond(1_773_964_800L + hour * 3600L) // 2026-03-20 UTC
 

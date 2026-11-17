@@ -11,6 +11,7 @@ import androidx.test.rule.GrantPermissionRule
 import com.aljaroudi.muntathir.FakeLocator
 import com.aljaroudi.muntathir.MainActivity
 import com.aljaroudi.muntathir.MemoryStorage
+import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.app.AppStorage
 import com.aljaroudi.muntathir.data.StorageModule
 import com.aljaroudi.muntathir.location.DeviceLocator
@@ -20,7 +21,6 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -54,14 +54,12 @@ class OnboardingTest {
         compose.onNodeWithTag("onboarding-continue").assertIsNotEnabled()
         compose.onNodeWithTag("use-device-location").performClick()
         compose.waitUntil { memory.device.liveLocation != null }
-        compose.onNodeWithTag("location-name").assertTextEquals("Mecca")
+        compose.onNodeWithTag("location-name").assertTextEquals(compose.activity.getString(R.string.device_location))
         compose.onNodeWithTag("onboarding-continue").assertIsEnabled().performClick()
         compose.onNodeWithTag("onboarding-continue").performClick() // Method
         compose.onNodeWithTag("onboarding-finish").performClick() // Not now
         compose.waitUntil { memory.device.onboardingCompleted }
         compose.onNodeWithTag("tab-today").assertExists()
         assertEquals(FakeLocator.MECCA, memory.device.liveLocation)
-        // The fix never enters backed-up preferences.
-        assertTrue(memory.preferences?.savedLocation == null)
     }
 }
