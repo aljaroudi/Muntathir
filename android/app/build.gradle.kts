@@ -182,6 +182,8 @@ dependencies {
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.compose)
+    // Home screen widgets (prayer, daily ayah, Hijri date).
+    implementation(libs.androidx.glance.appwidget)
 
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)

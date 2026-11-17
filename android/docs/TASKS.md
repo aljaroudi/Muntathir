@@ -127,9 +127,24 @@ Groundwork, so the tools could be built in parallel worktrees:
 - [x] **P5.5** Activity screen. `ui/activity` is Swift `ActivityProgressView`: on-time prayers as Compose bars (rows at ≥1.5× font), reader time, bookmarks, highlights and beads, all live from `ProgressStore` and `QuranUserStore`. `Formats.readDuration` matches the Swift units. Tested by `ActivityTest`.
 
 ## P6 — System surfaces
-- [ ] **P6.1** Glance prayer, ayah, and Hijri widgets. Skills: glance-appwidget-updates-and-memory, glance-canonical-layouts.
-- [ ] **P6.2** Quick Settings tile (next prayer), app shortcuts.
-- [ ] **P6.3** Verify backup/restore (`bmgr backupnow`, reinstall, restore).
+Done 2026-11-17. `just android-test` passes (with new screenshot references for the font), and all instrumented tests pass on the API 37 emulator. Widgets, tile, shortcuts and backup were checked by hand there. `FiguresTest` now activates the observance row through its click action, since the taller Plex rows can leave it under the sticky month header.
+
+- [x] **P6.0** IBM Plex Sans Arabic as the app font.
+  - Four weights are bundled in `res/font` (from Google Fonts; the OFL is in Sources and licenses under Fonts). They're bundled rather than downloaded so the font works offline and in widgets.
+  - `Typography` sets `AppFont` on every Material style, and `Theme.Muntathir` sets it for Views.
+  - Reader bodies keep Hafs, Lateef, or the system font for translations (`ReaderBodyFont`; `HighlightTextView` falls back to `Typeface.DEFAULT`). Quran excerpts in Saved now use Hafs.
+- [x] **P6.1** Glance prayer, ayah and Hijri widgets (`app/widgets`).
+  - The Prayer widget (2×2, resizable) shows the next prayer, its time, a `Chronometer` countdown and up to two more prayers as the height allows, on a sky tint that follows the sun. The Daily ayah widget (4×2) shows Hafs Arabic, with the selected translation when it's tall enough. The Hijri widget (2×2) shows the day, weekday, month and Gregorian date. There's no weather and no Lock Screen family.
+  - Glance lays out each widget, and every piece of text is a RemoteViews XML layout (`WidgetText`), so Plex and Hafs render in the launcher. Colors follow dark mode, and use dynamic colors on API 31+.
+  - `WidgetUpdater` re-renders placed widgets on state changes, time, zone or locale changes, and the per-app language. It sets one RTC alarm for `WidgetPrayerSettings.nextChange` (next prayer, sunset or midnight): exact when allowed, otherwise a 10-minute window. A revision `StateFlow` makes open Glance sessions recompose. `WidgetPrayerTest` covers `nextChange`.
+  - Known limit: RemoteViews take the launcher's layout direction, so with an Arabic per-app language on an English system, the widgets are Arabic but laid out left to right. Not checked on API 26 (no AVD).
+- [x] **P6.2** Quick Settings tile and app shortcuts.
+  - `NextPrayerTileService` shows the next prayer and its time, read when the panel opens, and tapping it opens Today.
+  - Static shortcuts open Quran, Qibla, Tasbih and Calendar. Shortcuts, widgets and the tile share `OpenRequest`: `MainActivity` is `singleTop`, and `AppNavigator.open` selects the tool's tab or pushes the tool onto Tools. `MuntathirAppTest.openRequestsShowTheToolOrItsTab` covers it.
+- [x] **P6.3** Backup and restore checked on the emulator (`bmgr enable true`, `bmgr transport com.android.localtransport/.LocalTransport`, `bmgr backupnow com.aljaroudi.muntathir`, uninstall, install).
+  - The install restored `preferences.v1.json` (the non-default method came back) and `databases/user.db`. Nothing in `no_backup` was restored, so onboarding asks for location again. The backup was about 95 KB, so no content databases were in it.
+  - Fix: Glance's `datastore/GlanceAppWidgetManager-…preferences_pb` is now excluded in both rule files.
+  - Device-to-device transfer uses the same rules but wasn't run.
 
 ## P7 — Release
 - [ ] **P7.1** TalkBack, RTL, 200% font, tablets/foldables. Skill: adaptive.

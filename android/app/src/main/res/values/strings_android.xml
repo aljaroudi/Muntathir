@@ -26,4 +26,5 @@
     <string name="allow_precise_location">Allow precise location</string>
     <!-- The north mark on Qibla's compass dial. -->
     <string name="compass_north">N</string>
+    <string name="fonts">Fonts</string>
 </resources>

@@ -53,6 +53,7 @@ import com.aljaroudi.muntathir.ui.navigation.HadithSavedRoute
 import com.aljaroudi.muntathir.ui.navigation.HighlightPaletteRoute
 import com.aljaroudi.muntathir.ui.navigation.LocationRoute
 import com.aljaroudi.muntathir.ui.navigation.MonthAdjustmentsRoute
+import com.aljaroudi.muntathir.ui.navigation.OpenRequest
 import com.aljaroudi.muntathir.ui.navigation.QuranReaderRoute
 import com.aljaroudi.muntathir.ui.navigation.QuranSavedRoute
 import com.aljaroudi.muntathir.ui.navigation.RakaatSessionRoute
@@ -100,9 +101,16 @@ fun AppShell(
     shortcuts: List<AppTool>,
     modifier: Modifier = Modifier,
     navigator: AppNavigator = rememberAppNavigator(),
+    openRequest: OpenRequest? = null,
+    onOpened: () -> Unit = {},
 ) {
     val tabs = tabs(shortcuts)
     LaunchedEffect(tabs) { navigator.keepAvailable(tabs) }
+    LaunchedEffect(openRequest) {
+        openRequest ?: return@LaunchedEffect
+        navigator.open(openRequest.tool, tabs)
+        onOpened()
+    }
     val listDetail = rememberListDetailSceneStrategy<NavKey>()
     val twoPane = isTwoPane()
     // Detail panes beside their list have no Up button.

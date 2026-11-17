@@ -69,6 +69,7 @@ import com.aljaroudi.muntathir.ui.reader.HighlightEditorSheet
 import com.aljaroudi.muntathir.ui.reader.highlightSwatch
 import com.aljaroudi.muntathir.ui.reader.title
 import com.aljaroudi.muntathir.ui.reader.toAnnotatedString
+import com.aljaroudi.muntathir.ui.theme.QuranFont
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -304,6 +305,8 @@ private fun SavedRow(
     val locale = currentLocale()
     val highlight = entry.highlight
     val available = highlight == null || (verse != null && highlight.isAvailable(blocks(verse)))
+    // Bookmarks keep the Arabic verse; highlights quote whichever block they were made in.
+    val excerptFont = if (highlight == null || highlight.block == ARABIC_BLOCK) QuranFont else null
     val tag = "saved-verse-${entry.source}"
     Row(
         Modifier
@@ -338,6 +341,7 @@ private fun SavedRow(
                     maxLines = 4,
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.bodyLarge,
+                    fontFamily = excerptFont,
                 )
                 if (entry.note.isNotEmpty()) {
                     Text(
@@ -356,6 +360,7 @@ private fun SavedRow(
                             SearchMatch.preview(match, compact = true).toAnnotatedString(),
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
+                            fontFamily = if (text == entry.excerpt) excerptFont else null,
                         )
                     }
                 }

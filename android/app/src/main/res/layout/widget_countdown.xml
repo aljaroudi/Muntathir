@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The next prayer's countdown; the launcher ticks it, so the widget needs no per-minute updates. -->
+<Chronometer xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_countdown"
+    style="@style/Widget.Muntathir.Text.Secondary"
+    android:countDown="true"
+    android:fontFeatureSettings="tnum"
+    android:textSize="13sp" />

@@ -25,9 +25,11 @@ import com.aljaroudi.muntathir.data.QuranTranslations
 import com.aljaroudi.muntathir.data.library.ContentLibraries
 import com.aljaroudi.muntathir.location.DeviceLocator
 import com.aljaroudi.muntathir.ui.components.message
+import com.aljaroudi.muntathir.ui.navigation.OpenRequest
 import com.aljaroudi.muntathir.ui.onboarding.OnboardingScreen
 import com.aljaroudi.muntathir.ui.shell.AppShell
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -44,6 +46,18 @@ class MainViewModel
     ) : ViewModel() {
         val state: StateFlow<AppState> = model.state
         val errors: SharedFlow<AppError> = model.errors
+
+        /** Kept until the shell shows it, so a request made during onboarding opens afterwards. */
+        private val pendingOpen = MutableStateFlow<OpenRequest?>(null)
+        val openRequest: StateFlow<OpenRequest?> = pendingOpen
+
+        fun open(request: OpenRequest) {
+            pendingOpen.value = request
+        }
+
+        fun opened() {
+            pendingOpen.value = null
+        }
 
         /** Swift scene-phase `.active`: follow the device to a new place while location access stays granted. */
         fun onForeground() {
@@ -90,10 +104,11 @@ fun MuntathirApp(
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val openRequest by viewModel.openRequest.collectAsStateWithLifecycle()
     LifecycleEventEffect(Lifecycle.Event.ON_START) { viewModel.onForeground() }
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) { viewModel.onBackground() }
     if (state.device.onboardingCompleted) {
-        AppShell(state.preferences.tabShortcuts, modifier)
+        AppShell(state.preferences.tabShortcuts, modifier, openRequest = openRequest, onOpened = viewModel::opened)
     } else {
         OnboardingScreen(modifier)
     }

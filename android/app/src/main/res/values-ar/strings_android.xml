@@ -24,4 +24,5 @@
     <string name="download_waiting_for_confirmation">بانتظار شبكة Wi-Fi. تابع للتنزيل عبر بيانات الجوال.</string>
     <string name="allow_precise_location">السماح بالموقع الدقيق</string>
     <string name="compass_north">ش</string>
+    <string name="fonts">الخطوط</string>
 </resources>

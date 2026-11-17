@@ -1,5 +1,6 @@
 package com.aljaroudi.muntathir.ui.figures
 
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasTestTag
@@ -7,6 +8,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
 import com.aljaroudi.muntathir.FakeLocator
 import com.aljaroudi.muntathir.MainActivity
@@ -74,7 +76,8 @@ class FiguresTest {
         compose.onNodeWithTag("events-list").performScrollToNode(hasTestTag("observance-prophet-khadija-marriage"))
         // Rows link once the figures have loaded.
         waitFor(hasTestTag("observance-prophet-khadija-marriage") and hasClickAction())
-        compose.onNodeWithTag("observance-prophet-khadija-marriage").performClick()
+        // The row can end up under the sticky month header, so activate it like TalkBack rather than tapping.
+        compose.onNodeWithTag("observance-prophet-khadija-marriage").performSemanticsAction(SemanticsActions.OnClick)
         waitFor("figure-khadija-bint-khuwaylid")
         compose.onNodeWithTag("figure-prophet-muhammad").assertExists()
         compose.onNodeWithTag("figure-khadija-bint-khuwaylid").performClick()

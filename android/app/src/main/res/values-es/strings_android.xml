@@ -24,4 +24,5 @@
     <string name="download_waiting_for_confirmation">Esperando Wi-Fi. Continúa para descargar con datos móviles.</string>
     <string name="allow_precise_location">Permitir ubicación exacta</string>
     <string name="compass_north">N</string>
+    <string name="fonts">Fuentes</string>
 </resources>

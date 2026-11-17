@@ -24,4 +24,5 @@
     <string name="download_waiting_for_confirmation">Wi-Fi کا انتظار ہے۔ موبائل ڈیٹا سے ڈاؤن لوڈ کرنے کے لیے جاری رکھیں۔</string>
     <string name="allow_precise_location">درست مقام کی اجازت دیں</string>
     <string name="compass_north">ش</string>
+    <string name="fonts">فونٹس</string>
 </resources>

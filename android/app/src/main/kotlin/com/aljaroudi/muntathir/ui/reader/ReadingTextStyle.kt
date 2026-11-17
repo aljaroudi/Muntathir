@@ -25,7 +25,8 @@ fun HighlightTextView.applyReadingStyle(
     typeface: Typeface?,
 ) {
     setTextSize(TypedValue.COMPLEX_UNIT_SP, sizeSp)
-    this.typeface = typeface
+    // Reading text without its own font (translations, English) stays on the system font, not the app font.
+    this.typeface = typeface ?: Typeface.DEFAULT
     val lineHeight =
         TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_SP,

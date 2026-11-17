@@ -4,6 +4,7 @@ import com.aljaroudi.muntathir.core.location.SavedLocation
 import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 
 /** Prayer settings shared with widgets and other surfaces. Port of Swift `WidgetPrayerSettings`. */
 @Serializable
@@ -47,6 +48,30 @@ data class WidgetPrayerSettings(
 
     /** The next prayer strictly after [after]; a prayer starting exactly now is already current. */
     fun nextPrayer(after: Instant): PrayerMoment? = upcomingPrayers(after, 1).firstOrNull()
+
+    /**
+     * The next instant any home screen surface changes after [after]: the next prayer passing (prayer widget),
+     * sunset (the daily ayah turns over) or midnight in [zone] (dates). Android needs only this one boundary,
+     * since the countdown runs on its own, where WidgetKit takes a [timelineDates] list.
+     */
+    fun nextChange(
+        after: Instant,
+        zone: ZoneId,
+    ): Instant {
+        val midnight =
+            after
+                .atZone(zone)
+                .toLocalDate()
+                .plusDays(1)
+                .atStartOfDay(zone)
+                .toInstant()
+        val sunset =
+            location?.let { place ->
+                val today = place.localDate(after)
+                listOf(today, today.plusDays(1)).firstNotNullOfOrNull { day -> sunset(day)?.takeIf { it > after } }
+            }
+        return listOfNotNull(midnight, nextPrayer(after)?.time, sunset).min()
+    }
 
     /** Minute ticks for six hours plus local midnights and prayer times around [from], sorted. */
     fun timelineDates(from: Instant): List<Instant> {

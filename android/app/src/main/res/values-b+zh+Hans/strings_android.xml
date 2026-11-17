@@ -24,4 +24,5 @@
     <string name="download_waiting_for_confirmation">正在等待 Wi-Fi。继续即可使用移动数据下载。</string>
     <string name="allow_precise_location">允许使用精确位置</string>
     <string name="compass_north">北</string>
+    <string name="fonts">字体</string>
 </resources>

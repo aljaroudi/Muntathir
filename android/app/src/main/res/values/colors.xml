@@ -5,4 +5,18 @@
     <color name="icon_background_end">#FF082F2B</color>
     <!-- Notification accent; the iOS accent emerald. -->
     <color name="brand">#FF0D664F</color>
+    <!-- Launcher shortcut icons: the emerald glyph on a pale wash. -->
+    <color name="shortcut_background">#FFE3F1EA</color>
+
+    <!-- Home screen widgets. values-v31 switches the neutrals to the wallpaper's dynamic colors. -->
+    <color name="widget_surface">#FFFBFAF4</color>
+    <color name="widget_text">#FF1C1B1F</color>
+    <color name="widget_text_secondary">#FF49454F</color>
+    <!-- Swift `PrayerSkyBackground` tints by sun elevation (indigo, orange, cyan at 14% in light mode). -->
+    <color name="widget_sky_night">#245856D6</color>
+    <color name="widget_sky_twilight">#24FF9500</color>
+    <color name="widget_sky_day">#2432ADE6</color>
+    <!-- Swift `AyahBackground`'s wash, emerald to ivory. -->
+    <color name="widget_ayah_start">#FFC4E3D1</color>
+    <color name="widget_ayah_end">#FFFAEDCF</color>
 </resources>

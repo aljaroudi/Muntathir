@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Long-press launcher shortcuts. The `open` extra is OpenRequest.EXTRA: an AppTool id. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:icon="@drawable/ic_shortcut_quran"
+        android:shortcutId="quran"
+        android:shortcutShortLabel="@string/holy_quran">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.aljaroudi.muntathir.MainActivity"
+            android:targetPackage="com.aljaroudi.muntathir">
+            <extra
+                android:name="open"
+                android:value="quran" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:icon="@drawable/ic_shortcut_qibla"
+        android:shortcutId="qibla"
+        android:shortcutShortLabel="@string/qibla">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.aljaroudi.muntathir.MainActivity"
+            android:targetPackage="com.aljaroudi.muntathir">
+            <extra
+                android:name="open"
+                android:value="qibla" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:icon="@drawable/ic_shortcut_tasbih"
+        android:shortcutId="tasbih"
+        android:shortcutShortLabel="@string/tasbih">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.aljaroudi.muntathir.MainActivity"
+            android:targetPackage="com.aljaroudi.muntathir">
+            <extra
+                android:name="open"
+                android:value="tasbih" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:icon="@drawable/ic_shortcut_calendar"
+        android:shortcutId="calendar"
+        android:shortcutShortLabel="@string/calendar">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.aljaroudi.muntathir.MainActivity"
+            android:targetPackage="com.aljaroudi.muntathir">
+            <extra
+                android:name="open"
+                android:value="calendar" />
+        </intent>
+    </shortcut>
+</shortcuts>

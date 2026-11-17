@@ -53,6 +53,28 @@ class AppNavigator(
         if (current.size > 1) current.removeAt(current.lastIndex) else tab = TodayRoute
     }
 
+    /**
+     * Opens Today or [tool] from outside the app (launcher shortcut, widget, tile): the tool's own tab when it is
+     * one of [tabs], otherwise on top of Tools.
+     */
+    fun open(
+        tool: AppTool?,
+        tabs: List<Route>,
+    ) {
+        val route = tool?.let(::ToolRoute) ?: TodayRoute
+        when {
+            route in tabs -> {
+                select(route)
+            }
+
+            else -> {
+                tab = ToolsRoute
+                while (current.size > 1) current.removeAt(current.lastIndex)
+                push(route)
+            }
+        }
+    }
+
     /** Falls back to Today when the selected shortcut is removed. Swift `AppTab.available(in:)`. */
     fun keepAvailable(tabs: List<Route>) {
         if (tab !in tabs) tab = TodayRoute

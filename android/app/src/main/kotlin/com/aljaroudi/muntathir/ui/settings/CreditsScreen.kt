@@ -69,6 +69,9 @@ fun CreditsScreen(
         value =
             withContext(Dispatchers.IO) { context.asset("licenses/AdhanSounds-CREDITS.txt") }
     }
+    val plex by produceState("") {
+        value = withContext(Dispatchers.IO) { context.asset("licenses/IBMPlexSansArabic-OFL.txt") }
+    }
     val open: (String) -> Unit = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) }
     ScreenScaffold(R.string.sources_and_licenses, modifier, onBack) { padding ->
         LazyColumn(contentPadding = padding) {
@@ -89,6 +92,12 @@ fun CreditsScreen(
             }
             item { SectionHeader(stringResource(R.string.adhan_sounds)) }
             item { Text(sounds, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp)) }
+            item { SectionHeader(stringResource(R.string.fonts)) }
+            item {
+                ListItem(headlineContent = {
+                    Text("IBM Plex Sans Arabic")
+                }, supportingContent = { Text(plex, style = MaterialTheme.typography.bodySmall) })
+            }
         }
     }
 }

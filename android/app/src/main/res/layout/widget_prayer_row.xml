@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- An upcoming prayer in the prayer widget: name at the start, time at the end. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/widget_prayer_name"
+        style="@style/Widget.Muntathir.Text"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:maxLines="1"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/widget_prayer_time"
+        style="@style/Widget.Muntathir.Text"
+        android:fontFeatureSettings="tnum"
+        android:maxLines="1"
+        android:textSize="13sp" />
+</LinearLayout>

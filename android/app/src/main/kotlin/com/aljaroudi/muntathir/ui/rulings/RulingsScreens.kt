@@ -85,6 +85,7 @@ import com.aljaroudi.muntathir.ui.reader.ReadingTextStyle
 import com.aljaroudi.muntathir.ui.search.SmartSearchRunner
 import com.aljaroudi.muntathir.ui.search.smartSearchSection
 import com.aljaroudi.muntathir.ui.theme.HadithFont
+import com.aljaroudi.muntathir.ui.theme.ReaderBodyFont
 
 /** Swift `RulingsIntroSection`: the disclaimer and the Saved link. */
 private fun LazyListScope.intro(onSaved: () -> Unit) {
@@ -448,7 +449,7 @@ private fun RulingContent(
                         detail.ruling.question,
                         style =
                             MaterialTheme.typography.titleLarge.copy(
-                                fontFamily = if (arabic) HadithFont else null,
+                                fontFamily = if (arabic) HadithFont else ReaderBodyFont,
                                 fontSize = (size * 1.15f).sp,
                                 lineHeight = (size * 1.6f).sp,
                                 fontWeight = FontWeight.SemiBold,

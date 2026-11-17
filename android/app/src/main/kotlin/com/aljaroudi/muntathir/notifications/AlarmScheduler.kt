@@ -12,6 +12,7 @@ import com.aljaroudi.muntathir.core.calendar.EventLibrary
 import com.aljaroudi.muntathir.core.prayer.NotificationPlan
 import com.aljaroudi.muntathir.core.prayer.ScheduledAlert
 import com.aljaroudi.muntathir.data.AppScope
+import com.aljaroudi.muntathir.widgets.WidgetUpdater
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -125,10 +126,15 @@ class AlarmReceiver : BroadcastReceiver() {
     }
 }
 
-/** Boot, clock, zone, locale, update and exact-alarm permission changes: rebuild the chain (Swift `reschedule()`). */
+/**
+ * Boot, clock, zone, locale, update and exact-alarm permission changes: rebuild the chain (Swift `reschedule()`),
+ * and re-render widgets, whose times, dates and language depend on the same things.
+ */
 @AndroidEntryPoint
 class RescheduleReceiver : BroadcastReceiver() {
     @Inject lateinit var model: AppModel
+
+    @Inject lateinit var widgets: WidgetUpdater
 
     @Inject lateinit var scheduler: AlarmScheduler
 
@@ -142,6 +148,7 @@ class RescheduleReceiver : BroadcastReceiver() {
         // Locale changes rename the channels.
         notifier.ensureChannels(state.preferences)
         scheduler.schedule(state)
+        widgets.refresh(goAsync()::finish)
     }
 }
 

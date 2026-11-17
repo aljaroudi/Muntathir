@@ -45,7 +45,7 @@ Schema checks match iOS: Hadith `application_id` 1230262606, `user_version` 7–
 
 `dataExtractionRules` (API 31+) and `fullBackupContent` (≤30):
 - Include the Room DB and the preferences DataStore.
-- Exclude the device-local DataStore, `noBackupFilesDir`, and PAD content.
+- Exclude the device-local DataStore, `noBackupFilesDir`, PAD content, and Glance's `GlanceAppWidgetManager` file (which describes this device's home screen).
 
 ## Asset packs
 
@@ -64,7 +64,9 @@ One `AssetPackBackend` interface over `AssetPackManager`, mirroring `AssetPackBa
 - **Location:** GPS only, with no city search and no reverse geocoding. `SavedLocation` is just coordinates and a time zone, and the UI calls it "Device location". There's no saved city in the preferences. Prayer times use a coarse Fused fix: a cached fix up to 10 minutes old, else a new one, else any cached fix. It's zoned with the offline `timezonemap`, stored device-local, and refreshed on start when the device moved more than 5 km. Qibla runs its own precise, high-accuracy session (`DeviceQiblaSensors`) that is never stored.
 - **Notifications:** one chained alarm. `AlarmScheduler` sets an alarm for the next alert (exact when `SCHEDULE_EXACT_ALARM` is granted, otherwise a 10-minute window). `AlarmReceiver` posts what's due from current settings and sets the next one. `Rescheduler` follows settings, and `RescheduleReceiver` handles boot, time, zone, locale, update and permission changes. One channel per category; prayer channels are versioned by sound (`prayers.chime.v1`). The adhan clips play fully as channel sounds, so there's no foreground service.
 - **Feed:** WorkManager periodic 12 h with a network constraint, plus a refresh on every `ON_START`. Ktor (OkHttp) transport, ETag + last-good cache in `cacheDir`. The host is stored in punycode.
-- **Widgets:** Glance in `app`, reading DataStore/Room directly.
+- **Widgets:** Glance in `app/widgets` (prayer, daily ayah, Hijri date). They read `AppModel`, `QuranDatabase` and `QuranTranslations` through `WidgetEntryPoint`. Text is RemoteViews XML so it can use the app font and Hafs. `WidgetUpdater` re-renders on settings, location, corrections or translation changes, after time, zone or locale changes (`RescheduleReceiver`, `onConfigurationChanged`), and at one alarm for the next prayer, sunset or midnight. With no widgets placed it does nothing.
+- **Quick Settings and shortcuts:** `NextPrayerTileService` reads the next prayer when the panel opens. Static launcher shortcuts (Quran, Qibla, Tasbih, Calendar), widgets and the tile open the app with an `OpenRequest` extra. `MainActivity` is `singleTop`, and `AppNavigator.open` selects the tool's tab, or pushes the tool onto Tools.
+- **Fonts:** IBM Plex Sans Arabic (bundled) for the UI, through `Typography` and the View theme. Reader bodies keep Hafs, Lateef or the system font.
 
 ## Testing
 

@@ -2,4 +2,5 @@
 <!-- Android 11 and lower; mirrors data_extraction_rules.xml. -->
 <full-backup-content>
     <exclude domain="file" path="assetpacks/" />
+    <exclude domain="file" path="datastore/GlanceAppWidgetManager-com.aljaroudi.muntathir.preferences_pb" />
 </full-backup-content>

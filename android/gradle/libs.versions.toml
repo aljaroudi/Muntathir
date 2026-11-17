@@ -37,6 +37,7 @@ playServicesMaps = "20.1.0"
 timezonemap = "4.5"
 materialIcons = "1.7.8"
 camerax = "1.6.2"
+glance = "1.2.0"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
@@ -74,6 +75,7 @@ androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
 androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
 androidx-camera-compose = { module = "androidx.camera:camera-compose", version.ref = "camerax" }
+androidx-glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "testRunner" }
 # Compose's ui-test pulls Espresso 3.5, which crashes on API 36+ (InputManager.getInstance); pin current versions.
 androidx-test-core = { module = "androidx.test:core", version.ref = "testCore" }

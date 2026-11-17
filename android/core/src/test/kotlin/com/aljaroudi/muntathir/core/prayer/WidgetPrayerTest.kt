@@ -83,4 +83,29 @@ class WidgetPrayerTest {
         assertEquals(PrayerName.Fajr, settings.nextPrayer(fajr.time.minusSeconds(1))?.name)
         assertEquals(PrayerName.Dhuhr, settings.nextPrayer(fajr.time)?.name)
     }
+
+    @Test
+    fun nextChangeIsTheEarliestOfPrayerSunsetAndMidnight() {
+        val settings = WidgetPrayerSettings(mecca, PrayerMethod.Tehran, setOf(PrayerName.Asr, PrayerName.Isha))
+        val day = LocalDate.of(2026, 10, 18)
+        val prayers = settings.prayers(day)
+        val dhuhr = prayers.first { it.name == PrayerName.Dhuhr }.time
+        val sunset = settings.sunset(day)!!
+        val maghrib = prayers.first { it.name == PrayerName.Maghrib }.time
+        // Morning: the next prayer (Dhuhr) comes first.
+        assertEquals(dhuhr, settings.nextChange(dhuhr.minusSeconds(3600), mecca.zone))
+        // After Dhuhr (Asr hidden), sunset turns the daily ayah over before Tehran's Maghrib.
+        assertTrue(sunset < maghrib)
+        assertEquals(sunset, settings.nextChange(dhuhr, mecca.zone))
+        assertEquals(maghrib, settings.nextChange(sunset, mecca.zone))
+        // After Maghrib (Isha hidden), the date changes at midnight before Fajr.
+        assertEquals(midnight(day.plusDays(1)), settings.nextChange(maghrib, mecca.zone))
+    }
+
+    @Test
+    fun nextChangeWithoutLocationIsMidnight() {
+        val settings = WidgetPrayerSettings(null, PrayerMethod.Tehran)
+        val day = LocalDate.of(2026, 10, 18)
+        assertEquals(midnight(day.plusDays(1)), settings.nextChange(midnight(day).plusSeconds(60), mecca.zone))
+    }
 }

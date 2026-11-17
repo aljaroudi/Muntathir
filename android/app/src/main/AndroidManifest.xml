@@ -36,14 +36,68 @@
         android:theme="@style/Theme.Muntathir"
         tools:targetApi="37">
 
+        <!-- singleTop: launcher shortcuts, widgets and the tile reach the running activity (onNewIntent). -->
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
+
+        <!-- Home screen widgets; WidgetUpdater keeps them current. -->
+        <receiver
+            android:name=".widgets.PrayerWidgetReceiver"
+            android:exported="true"
+            android:label="@string/prayer_times">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_prayer_info" />
+        </receiver>
+        <receiver
+            android:name=".widgets.AyahWidgetReceiver"
+            android:exported="true"
+            android:label="@string/daily_ayah">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_ayah_info" />
+        </receiver>
+        <receiver
+            android:name=".widgets.HijriWidgetReceiver"
+            android:exported="true"
+            android:label="@string/islamic_calendar">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_hijri_info" />
+        </receiver>
+        <receiver
+            android:name=".widgets.WidgetRefreshReceiver"
+            android:exported="false" />
+
+        <service
+            android:name=".widgets.NextPrayerTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_notification"
+            android:label="@string/next_prayer"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
 
         <receiver
             android:name=".notifications.AlarmReceiver"
