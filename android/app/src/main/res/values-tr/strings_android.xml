@@ -19,4 +19,6 @@
     <string name="adhan_sounds">Ezan sesleri</string>
     <string name="duas_org_credit">Duas.org serbest yeniden kullanıma izin verir; kaynak belirtilmesi rica edilir.</string>
     <string name="clear_search">Aramayı temizle</string>
+    <string name="search">Ara</string>
+    <string name="close_search">Aramayı kapat</string>
 </resources>

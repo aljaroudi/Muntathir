@@ -18,6 +18,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -50,15 +53,30 @@ fun QuranScreen(
     onBack: (() -> Unit)?,
 ) {
     val catalog by viewModel.catalog.collectAsStateWithLifecycle()
-    val query by viewModel.query.collectAsStateWithLifecycle()
+    val search = viewModel.search
+    val query by search.query.collectAsStateWithLifecycle()
+    val submitted by search.submitted.collectAsStateWithLifecycle()
+    val results by search.results.collectAsStateWithLifecycle()
+    val smart by search.smart.collectAsStateWithLifecycle()
+    val recent by search.recent.collectAsStateWithLifecycle()
+    var focused by remember { mutableStateOf(false) }
     ScreenScaffold(stringResource(R.string.holy_quran), onBack = onBack) { padding ->
         LazyColumn(Modifier.fillMaxSize().testTag("quran-list"), contentPadding = padding) {
             item(key = "search") {
                 SearchField(
                     query = query,
-                    onQuery = { viewModel.query.value = it },
-                    onSubmit = {},
+                    onQuery = search::setQuery,
+                    onSubmit = search::submit,
                     placeholder = stringResource(R.string.surah_2_255_or_quran_text),
+                    onFocusChange = { focused = it },
+                )
+            }
+            if (focused && query.isBlank()) {
+                recentSearches(
+                    recent,
+                    onSelect = search::search,
+                    onRemove = search::removeRecent,
+                    onClear = search::clearRecent,
                 )
             }
             when (val state = catalog) {
@@ -76,22 +94,43 @@ fun QuranScreen(
                 }
 
                 is CatalogState.Loaded -> {
-                    surahs(state.catalog, query, onOpen)
+                    val shown =
+                        surahs(state.catalog, query) { route ->
+                            search.record()
+                            onOpen(route)
+                        }
+                    quranSearchResults(
+                        query = query,
+                        submitted = submitted,
+                        results = results,
+                        smart = smart,
+                        smartAvailable = search.smartSearchAvailable,
+                        hasSurahs = shown,
+                        scoped = false,
+                        surahNames = state.catalog.surahs.associate { it.id to it.arabic },
+                        onOpen = { ayah ->
+                            search.record()
+                            onOpen(QuranReaderRoute(ayah.surah, ayah.number, query = submitted.trim()))
+                        },
+                        onLoadMore = search::loadMore,
+                        onRetry = search::retry,
+                        onSmartSearch = search::smartSearch,
+                    )
                 }
             }
         }
     }
 }
 
-/** Swift "Surahs" section: every surah, or those matching the live query. */
+/** Swift "Surahs" section: every surah, or those matching the live query. Returns whether any are shown. */
 fun LazyListScope.surahs(
     catalog: QuranCatalog,
     query: String,
     onOpen: (QuranReaderRoute) -> Unit,
-) {
+): Boolean {
     val trimmed = query.trim()
     val shown = if (trimmed.isEmpty()) catalog.surahs else catalog.surahs.filter { it.matches(trimmed) }
-    if (shown.isEmpty()) return
+    if (shown.isEmpty()) return false
     item(key = "surahs-header") { SectionHeader(stringResource(R.string.surahs)) }
     items(shown, key = { "surah-${it.id}" }) { surah ->
         SurahRow(
@@ -102,6 +141,7 @@ fun LazyListScope.surahs(
             onClick = { onOpen(QuranReaderRoute(surah.id)) },
         )
     }
+    return true
 }
 
 @Composable

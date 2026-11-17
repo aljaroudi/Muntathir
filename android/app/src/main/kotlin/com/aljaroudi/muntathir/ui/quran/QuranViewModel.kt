@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.aljaroudi.muntathir.core.quran.QuranCatalog
 import com.aljaroudi.muntathir.data.QuranDatabase
 import com.aljaroudi.muntathir.data.QuranTranslationStore
+import com.aljaroudi.muntathir.data.SearchHistoryStore
 import com.aljaroudi.muntathir.data.TranslationState
+import com.aljaroudi.muntathir.search.SmartSearch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,21 +26,22 @@ sealed interface CatalogState {
     ) : CatalogState
 }
 
-/** Swift `QuranView`: the surah list with live filtering. */
+/** Swift `QuranView`: the surah list with live filtering, and search across the Quran. */
 @HiltViewModel
 class QuranViewModel
     @Inject
     constructor(
         private val quran: QuranDatabase,
         private val translations: QuranTranslationStore,
+        history: SearchHistoryStore,
+        smartSearch: SmartSearch,
     ) : ViewModel() {
         private val mutableCatalog = MutableStateFlow<CatalogState>(CatalogState.Loading)
         val catalog: StateFlow<CatalogState> = mutableCatalog.asStateFlow()
 
         val translation: StateFlow<TranslationState> = translations.state
 
-        /** The search field's text. */
-        val query = MutableStateFlow("")
+        val search = QuranSearchModel(viewModelScope, quran, translations, history, smartSearch, surah = null)
 
         init {
             load()

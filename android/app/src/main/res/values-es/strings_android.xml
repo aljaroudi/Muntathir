@@ -19,4 +19,6 @@
     <string name="adhan_sounds">Sonidos del adhan</string>
     <string name="duas_org_credit">Duas.org permite su libre reutilización; se solicita citar la fuente.</string>
     <string name="clear_search">Borrar búsqueda</string>
+    <string name="search">Buscar</string>
+    <string name="close_search">Cerrar búsqueda</string>
 </resources>

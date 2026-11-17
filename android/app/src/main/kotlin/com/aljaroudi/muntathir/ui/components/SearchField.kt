@@ -14,9 +14,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
@@ -34,7 +36,8 @@ fun SearchField(
     onSubmit: () -> Unit,
     placeholder: String,
     modifier: Modifier = Modifier,
-    focusRequester: FocusRequester = FocusRequester(),
+    focusRequester: FocusRequester = remember { FocusRequester() },
+    onFocusChange: (Boolean) -> Unit = {},
 ) {
     val focus = LocalFocusManager.current
     TextField(
@@ -73,6 +76,7 @@ fun SearchField(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
                 .focusRequester(focusRequester)
+                .onFocusChanged { onFocusChange(it.isFocused) }
                 .testTag("search-field"),
     )
 }

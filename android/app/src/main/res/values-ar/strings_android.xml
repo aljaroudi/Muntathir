@@ -19,4 +19,6 @@
     <string name="adhan_sounds">أصوات الأذان</string>
     <string name="duas_org_credit">يسمح موقع Duas.org بإعادة الاستخدام مع طلب ذكر المصدر.</string>
     <string name="clear_search">مسح البحث</string>
+    <string name="search">بحث</string>
+    <string name="close_search">إغلاق البحث</string>
 </resources>

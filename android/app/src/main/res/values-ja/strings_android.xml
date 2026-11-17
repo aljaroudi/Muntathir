@@ -19,4 +19,6 @@
     <string name="adhan_sounds">アザーンの音声</string>
     <string name="duas_org_credit">Duas.orgにより自由な再利用が許可されています。出典の明記をお願いします。</string>
     <string name="clear_search">検索をクリア</string>
+    <string name="search">検索</string>
+    <string name="close_search">検索を閉じる</string>
 </resources>

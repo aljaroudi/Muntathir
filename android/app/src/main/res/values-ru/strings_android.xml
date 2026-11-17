@@ -19,4 +19,6 @@
     <string name="adhan_sounds">Звуки азана</string>
     <string name="duas_org_credit">Duas.org разрешает свободное повторное использование; просим указывать источник.</string>
     <string name="clear_search">Очистить поиск</string>
+    <string name="search">Поиск</string>
+    <string name="close_search">Закрыть поиск</string>
 </resources>

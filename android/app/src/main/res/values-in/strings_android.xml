@@ -19,4 +19,6 @@
     <string name="adhan_sounds">Suara azan</string>
     <string name="duas_org_credit">Duas.org mengizinkan penggunaan ulang secara bebas; mohon cantumkan sumbernya.</string>
     <string name="clear_search">Hapus pencarian</string>
+    <string name="search">Cari</string>
+    <string name="close_search">Tutup pencarian</string>
 </resources>

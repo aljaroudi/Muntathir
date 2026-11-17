@@ -17,6 +17,10 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "com.aljaroudi.muntathir.HiltTestRunner"
+        // Smart search (`/v1/search`), as in apple/Muntathir/Resources/SemanticSearchConfiguration.plist.
+        val semanticSearchUrl =
+            providers.gradleProperty("semanticSearchUrl").orElse("https://search.xn--pgbou4cf.com/v1/search").get()
+        buildConfigField("String", "SEMANTIC_SEARCH_URL", "\"$semanticSearchUrl\"")
     }
 
     buildTypes {
@@ -33,6 +37,7 @@ android {
     }
 
     buildFeatures.compose = true
+    buildFeatures.buildConfig = true
 
     // Generates the per-app language list from res/values-* (see res/resources.properties).
     androidResources.generateLocaleConfig = true

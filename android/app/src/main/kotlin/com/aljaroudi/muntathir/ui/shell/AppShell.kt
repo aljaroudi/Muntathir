@@ -120,6 +120,7 @@ fun AppShell(
                                     hiltViewModel<QuranReaderViewModel, QuranReaderViewModel.Factory>(
                                         creationCallback = { it.create(route) },
                                     ),
+                                    openReader,
                                     detailBack,
                                 )
                             }

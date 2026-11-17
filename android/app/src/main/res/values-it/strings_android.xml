@@ -19,4 +19,6 @@
     <string name="adhan_sounds">Suoni dell\'adhan</string>
     <string name="duas_org_credit">Riutilizzo libero consentito da Duas.org; si chiede di citare la fonte.</string>
     <string name="clear_search">Cancella ricerca</string>
+    <string name="search">Cerca</string>
+    <string name="close_search">Chiudi ricerca</string>
 </resources>

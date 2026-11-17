@@ -20,4 +20,6 @@
     <string name="adhan_sounds">Adhan sounds</string>
     <string name="duas_org_credit">Free reuse permitted by Duas.org; source credit requested.</string>
     <string name="clear_search">Clear search</string>
+    <string name="search">Search</string>
+    <string name="close_search">Close search</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.aljaroudi.muntathir.ui.quran
 
 import android.icu.text.NumberFormat
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,8 +17,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FormatSize
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,8 +45,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -60,8 +66,10 @@ import com.aljaroudi.muntathir.core.text.SearchMatch
 import com.aljaroudi.muntathir.ui.components.EmptyState
 import com.aljaroudi.muntathir.ui.components.LoadingState
 import com.aljaroudi.muntathir.ui.components.ScreenScaffold
+import com.aljaroudi.muntathir.ui.components.SearchField
 import com.aljaroudi.muntathir.ui.components.currentLocale
 import com.aljaroudi.muntathir.ui.components.plus
+import com.aljaroudi.muntathir.ui.navigation.QuranReaderRoute
 import com.aljaroudi.muntathir.ui.reader.ReaderText
 import com.aljaroudi.muntathir.ui.reader.ReadingTextStyle
 import com.aljaroudi.muntathir.ui.reader.quranTypeface
@@ -71,8 +79,10 @@ import java.util.Locale
 @Composable
 fun QuranReaderScreen(
     viewModel: QuranReaderViewModel,
+    onOpen: (QuranReaderRoute) -> Unit,
     onBack: (() -> Unit)?,
 ) {
+    val search by viewModel.search.collectAsStateWithLifecycle()
     val reading by viewModel.reading.collectAsStateWithLifecycle()
     val catalog by viewModel.catalog.collectAsStateWithLifecycle()
     val chapter by viewModel.chapter.collectAsStateWithLifecycle()
@@ -95,6 +105,16 @@ fun QuranReaderScreen(
         title = title,
         onBack = onBack,
         actions = {
+            IconButton(
+                onClick = { if (search == null) viewModel.openSearch() else viewModel.closeSearch() },
+                modifier = Modifier.testTag("quran-reader-search"),
+            ) {
+                if (search == null) {
+                    Icon(Icons.Outlined.Search, stringResource(R.string.search))
+                } else {
+                    Icon(Icons.Outlined.Close, stringResource(R.string.close_search))
+                }
+            }
             ReaderMenu(
                 mode = mode,
                 onMode = { viewModel.setMode(it) },
@@ -102,6 +122,50 @@ fun QuranReaderScreen(
             )
         },
     ) { padding ->
+        val model = search
+        val covered =
+            model
+                ?.query
+                ?.collectAsStateWithLifecycle()
+                ?.value
+                ?.isNotBlank() == true
+        // Search results cover the reader without rebuilding it, so its place and layout survive.
+        Box(
+            Modifier.fillMaxSize().then(
+                if (covered) Modifier.alpha(0f).clearAndSetSemantics {} else Modifier,
+            ),
+        ) {
+            ReaderContent(viewModel, mode, chapter, position, reading.readingSizePercent, surahs, padding) { juz = it }
+        }
+        if (model != null) {
+            ReaderSearch(
+                model = model,
+                surahNames = surahs.associate { it.id to it.arabic },
+                padding = padding,
+                onOpen = { route ->
+                    viewModel.closeSearch()
+                    onOpen(route)
+                },
+            )
+        }
+    }
+    if (sizing) {
+        ReadingSizeSheet(reading.readingSizePercent, locale, viewModel::setSize) { sizing = false }
+    }
+}
+
+@Composable
+private fun ReaderContent(
+    viewModel: QuranReaderViewModel,
+    mode: QuranReadingMode,
+    chapter: ChapterState,
+    position: ReaderPosition,
+    sizePercent: Int,
+    surahs: List<com.aljaroudi.muntathir.core.quran.QuranSurah>,
+    padding: PaddingValues,
+    onJuz: (Int) -> Unit,
+) {
+    run {
         // Switching modes rebuilds the reader at the current position.
         key(mode) {
             when (mode) {
@@ -110,7 +174,7 @@ fun QuranReaderScreen(
                         chapter = chapter,
                         initialVerse = position.verse,
                         query = viewModel.route.query,
-                        sizePercent = reading.readingSizePercent,
+                        sizePercent = sizePercent,
                         surahNames = surahs.associate { it.id to it.arabic },
                         padding = padding,
                         onPosition = viewModel::setPosition,
@@ -127,7 +191,7 @@ fun QuranReaderScreen(
                             position,
                             surahs,
                             padding,
-                            onPage = { juz = it.juz },
+                            onPage = { onJuz(it.juz) },
                             onPosition = viewModel::setPosition,
                         )
                     }
@@ -135,8 +199,71 @@ fun QuranReaderScreen(
             }
         }
     }
-    if (sizing) {
-        ReadingSizeSheet(reading.readingSizePercent, locale, viewModel::setSize) { sizing = false }
+}
+
+/** Swift in-reader `.searchable`: verse number or text within the surah, over the reader. */
+@Composable
+private fun ReaderSearch(
+    model: QuranSearchModel,
+    surahNames: Map<Int, String>,
+    padding: PaddingValues,
+    onOpen: (QuranReaderRoute) -> Unit,
+) {
+    val query by model.query.collectAsStateWithLifecycle()
+    val submitted by model.submitted.collectAsStateWithLifecycle()
+    val results by model.results.collectAsStateWithLifecycle()
+    val smart by model.smart.collectAsStateWithLifecycle()
+    val recent by model.recent.collectAsStateWithLifecycle()
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(model) { focus.requestFocus() }
+    val showsList = query.isNotBlank() || recent.isNotEmpty()
+    LazyColumn(
+        Modifier
+            .fillMaxWidth()
+            .then(if (query.isNotBlank()) Modifier.fillMaxSize() else Modifier)
+            .background(MaterialTheme.colorScheme.surface)
+            .testTag("quran-reader-search-results"),
+        contentPadding =
+            PaddingValues(
+                top = padding.calculateTopPadding(),
+                bottom = if (showsList) padding.calculateBottomPadding() else 0.dp,
+            ),
+    ) {
+        item(key = "search") {
+            SearchField(
+                query = query,
+                onQuery = model::setQuery,
+                onSubmit = model::submit,
+                placeholder = stringResource(R.string.verse_number_or_quran_text),
+                focusRequester = focus,
+            )
+        }
+        if (query.isBlank()) {
+            recentSearches(
+                recent,
+                onSelect = model::search,
+                onRemove = model::removeRecent,
+                onClear = model::clearRecent,
+            )
+        } else {
+            quranSearchResults(
+                query = query,
+                submitted = submitted,
+                results = results,
+                smart = smart,
+                smartAvailable = model.smartSearchAvailable,
+                hasSurahs = false,
+                scoped = true,
+                surahNames = surahNames,
+                onOpen = { ayah ->
+                    model.record()
+                    onOpen(QuranReaderRoute(ayah.surah, ayah.number, query = submitted.trim()))
+                },
+                onLoadMore = model::loadMore,
+                onRetry = model::retry,
+                onSmartSearch = model::smartSearch,
+            )
+        }
     }
 }
 
