@@ -19,12 +19,17 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.aljaroudi.muntathir.core.app.AppTool
+import com.aljaroudi.muntathir.ui.activity.ActivityScreen
 import com.aljaroudi.muntathir.ui.calendar.CalendarScreen
 import com.aljaroudi.muntathir.ui.calendar.EventsScreen
 import com.aljaroudi.muntathir.ui.calendar.EventsViewModel
 import com.aljaroudi.muntathir.ui.calendar.MonthAdjustmentsScreen
 import com.aljaroudi.muntathir.ui.components.isTwoPane
 import com.aljaroudi.muntathir.ui.downloads.DownloadsScreen
+import com.aljaroudi.muntathir.ui.figures.FigurePickerScreen
+import com.aljaroudi.muntathir.ui.figures.FigureProfileScreen
+import com.aljaroudi.muntathir.ui.figures.FigureTreeScreen
+import com.aljaroudi.muntathir.ui.figures.FiguresScreen
 import com.aljaroudi.muntathir.ui.hadith.HadithBrowseScreen
 import com.aljaroudi.muntathir.ui.hadith.HadithBrowseViewModel
 import com.aljaroudi.muntathir.ui.hadith.HadithDetailScreen
@@ -39,6 +44,9 @@ import com.aljaroudi.muntathir.ui.navigation.AppNavigator
 import com.aljaroudi.muntathir.ui.navigation.CreditsRoute
 import com.aljaroudi.muntathir.ui.navigation.DetailRoute
 import com.aljaroudi.muntathir.ui.navigation.DownloadsRoute
+import com.aljaroudi.muntathir.ui.navigation.FigurePickerRoute
+import com.aljaroudi.muntathir.ui.navigation.FigureProfileRoute
+import com.aljaroudi.muntathir.ui.navigation.FigureTreeRoute
 import com.aljaroudi.muntathir.ui.navigation.HadithBrowseRoute
 import com.aljaroudi.muntathir.ui.navigation.HadithDetailRoute
 import com.aljaroudi.muntathir.ui.navigation.HadithIntroductionRoute
@@ -49,6 +57,7 @@ import com.aljaroudi.muntathir.ui.navigation.LocationRoute
 import com.aljaroudi.muntathir.ui.navigation.MonthAdjustmentsRoute
 import com.aljaroudi.muntathir.ui.navigation.QuranReaderRoute
 import com.aljaroudi.muntathir.ui.navigation.QuranSavedRoute
+import com.aljaroudi.muntathir.ui.navigation.RakaatSessionRoute
 import com.aljaroudi.muntathir.ui.navigation.Route
 import com.aljaroudi.muntathir.ui.navigation.RulingDetailRoute
 import com.aljaroudi.muntathir.ui.navigation.RulingSectionRoute
@@ -63,11 +72,13 @@ import com.aljaroudi.muntathir.ui.navigation.tabIcon
 import com.aljaroudi.muntathir.ui.navigation.tabTitle
 import com.aljaroudi.muntathir.ui.navigation.tabs
 import com.aljaroudi.muntathir.ui.navigation.testTag
-import com.aljaroudi.muntathir.ui.navigation.title
+import com.aljaroudi.muntathir.ui.qibla.QiblaScreen
 import com.aljaroudi.muntathir.ui.quran.QuranReaderScreen
 import com.aljaroudi.muntathir.ui.quran.QuranReaderViewModel
 import com.aljaroudi.muntathir.ui.quran.QuranSavedScreen
 import com.aljaroudi.muntathir.ui.quran.QuranScreen
+import com.aljaroudi.muntathir.ui.rakaat.RakaatScreen
+import com.aljaroudi.muntathir.ui.rakaat.RakaatSessionScreen
 import com.aljaroudi.muntathir.ui.rulings.RulingDetailScreen
 import com.aljaroudi.muntathir.ui.rulings.RulingDetailViewModel
 import com.aljaroudi.muntathir.ui.rulings.RulingSectionScreen
@@ -79,6 +90,7 @@ import com.aljaroudi.muntathir.ui.settings.HighlightPaletteScreen
 import com.aljaroudi.muntathir.ui.settings.SettingsLinks
 import com.aljaroudi.muntathir.ui.settings.SettingsScreen
 import com.aljaroudi.muntathir.ui.supplications.SupplicationsScreen
+import com.aljaroudi.muntathir.ui.tasbih.TasbihScreen
 import com.aljaroudi.muntathir.ui.today.TodayScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -267,6 +279,18 @@ fun AppShell(
                             entry<LocationRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
                                 LocationScreen(onBack = detailBack ?: navigator::back)
                             }
+                            entry<RakaatSessionRoute> { route ->
+                                RakaatSessionScreen(route, open, navigator::back)
+                            }
+                            entry<FigureProfileRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
+                                FigureProfileScreen(route, open, detailBack)
+                            }
+                            entry<FigureTreeRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
+                                FigureTreeScreen(route, open, detailBack)
+                            }
+                            entry<FigurePickerRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
+                                FigurePickerScreen(route, open, detailBack)
+                            }
                         },
                     ),
                 ),
@@ -282,6 +306,7 @@ private val LIST_TOOLS =
         ToolRoute(AppTool.Hadith),
         ToolRoute(AppTool.Supplications),
         ToolRoute(AppTool.Rulings),
+        ToolRoute(AppTool.Figures),
     )
 
 /** Holds app-wide stores the shell needs outside any screen. */
@@ -344,8 +369,24 @@ private fun ToolScreen(
             EventsScreen(hiltViewModel<EventsViewModel>().library, onBack)
         }
 
-        else -> {
-            ComingSoonScreen(stringResource(tool.title), onBack)
+        AppTool.Figures -> {
+            FiguresScreen(open, onBack)
+        }
+
+        AppTool.Tasbih -> {
+            TasbihScreen(onBack)
+        }
+
+        AppTool.Rakaat -> {
+            RakaatScreen(open, onBack)
+        }
+
+        AppTool.PrayerProgress -> {
+            ActivityScreen(onBack)
+        }
+
+        AppTool.Qibla -> {
+            QiblaScreen(onBack)
         }
     }
 }

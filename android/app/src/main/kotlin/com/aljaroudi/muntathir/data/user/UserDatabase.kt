@@ -1,10 +1,13 @@
 package com.aljaroudi.muntathir.data.user
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
 import androidx.room.Index
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
@@ -14,6 +17,7 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.aljaroudi.muntathir.core.highlight.StoredRecord
 import com.aljaroudi.muntathir.core.highlight.UserRecords
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 
 /** Swift `HighlightRecord`: a row per installation and highlight. */
 @Entity(tableName = "highlights", indices = [Index("itemID")])
@@ -44,6 +48,13 @@ data class ActivityEntity(
     val payload: String,
 )
 
+/** Swift `PrayerHistoryRecord`: one prayer counted by the Rakaat tracker, as a `PrayerCompletion` JSON. */
+@Entity(tableName = "prayer_history")
+data class PrayerHistoryEntity(
+    @PrimaryKey val sessionID: String,
+    val payload: String,
+)
+
 @Dao
 interface UserDao {
     @Query("SELECT * FROM highlights")
@@ -67,13 +78,30 @@ interface UserDao {
 
     @Upsert
     suspend fun upsertActivity(row: ActivityEntity)
+
+    @Query("SELECT * FROM activity")
+    fun observeActivities(): Flow<List<ActivityEntity>>
+
+    @Query("SELECT * FROM prayer_history")
+    suspend fun prayerHistory(): List<PrayerHistoryEntity>
+
+    @Query("SELECT * FROM prayer_history")
+    fun observePrayerHistory(): Flow<List<PrayerHistoryEntity>>
+
+    /** A session is saved once; a repeated save keeps the first row. */
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertPrayer(row: PrayerHistoryEntity)
 }
 
 /**
  * Personal data in `databases/user.db`, included in Auto Backup (iOS keeps the same records in iCloud).
  * The bundled SQLite driver, like the content databases.
  */
-@Database(entities = [HighlightEntity::class, BookmarkEntity::class, ActivityEntity::class], version = 1)
+@Database(
+    entities = [HighlightEntity::class, BookmarkEntity::class, ActivityEntity::class, PrayerHistoryEntity::class],
+    version = 2,
+    autoMigrations = [AutoMigration(from = 1, to = 2)],
+)
 abstract class UserDatabase : RoomDatabase() {
     abstract fun dao(): UserDao
 

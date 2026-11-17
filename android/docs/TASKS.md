@@ -102,11 +102,17 @@ Done 2026-11-17. `just android-test` passes, and all 20 instrumented tests pass 
   - In two panes, every detail route (`DetailRoute`) replaces the open detail when another is opened, so the shell has one `open` rule.
 
 ## P5 — Tools (parallelizable)
-- [ ] **P5.1** Qibla. Skill: android-permissions-security.
-- [ ] **P5.2** Rakaat tracker. Skill: camerax.
-- [ ] **P5.3** Tasbih.
-- [ ] **P5.4** Figures + family tree.
-- [ ] **P5.5** Activity screen.
+Groundwork (2026-11-17), so the tools can be built in parallel worktrees:
+- `core/progress/PrayerProgress` ports `PrayerCompletion`, `PrayerTiming`, `PrayerProgress` and `PrayerSessionRecording` (`PrayerProgressTest`).
+- Room v2 adds `prayer_history` (auto-migration from v1). `ProgressStore` gains `save(PrayerCompletion)` (once per id), `prayers()` and the live `activityFlow`/`prayerFlow`.
+- `core/qibla/QiblaSession` holds the `QiblaLocationSession` rules on one monotonic clock (`QiblaSessionTest` ports the platform-free cases of `QiblaLocationTests`, `QiblaAccuracyTests` and `RakaatQiblaTests`). `location/QiblaSensors` is the app interface, bound in `QiblaModule`.
+- The routes (`RakaatSessionRoute`, `FigureProfileRoute`, `FigureTreeRoute`, `FigurePickerRoute`) and the shell entries are wired to placeholder screens in `ui/qibla`, `ui/rakaat`, `ui/tasbih`, `ui/figures` and `ui/activity`. Figures is a list-detail tool.
+
+- [~] **P5.1** Qibla. Skill: android-permissions-security.
+- [~] **P5.2** Rakaat tracker. Skill: camerax.
+- [~] **P5.3** Tasbih.
+- [~] **P5.4** Figures + family tree.
+- [~] **P5.5** Activity screen.
 
 ## P6 — System surfaces
 - [ ] **P6.1** Glance prayer, ayah, and Hijri widgets. Skills: glance-appwidget-updates-and-memory, glance-canonical-layouts.

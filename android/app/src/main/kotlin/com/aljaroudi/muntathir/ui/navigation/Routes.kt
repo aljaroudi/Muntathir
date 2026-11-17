@@ -2,6 +2,7 @@ package com.aljaroudi.muntathir.ui.navigation
 
 import androidx.navigation3.runtime.NavKey
 import com.aljaroudi.muntathir.core.app.AppTool
+import com.aljaroudi.muntathir.core.prayer.PrayerName
 import kotlinx.serialization.Serializable
 
 /** Every destination. Tab roots are [TodayRoute], [ToolsRoute] and [ToolRoute]. */
@@ -116,3 +117,27 @@ data object HighlightPaletteRoute : DetailRoute
 /** Opened from Today's empty state and Settings; a dialog over the current tab. */
 @Serializable
 data object LocationRoute : DetailRoute
+
+/** A Rakaat tracker session counting [target] rakaat; [prayer] is recorded in Activity when chosen. */
+@Serializable
+data class RakaatSessionRoute(
+    val target: Int,
+    val prayer: PrayerName? = null,
+) : Route
+
+@Serializable
+data class FigureProfileRoute(
+    val id: String,
+) : DetailRoute
+
+/** The family tree centered on [id]. */
+@Serializable
+data class FigureTreeRoute(
+    val id: String,
+) : DetailRoute
+
+/** The figures of an observance linked to more than one. */
+@Serializable
+data class FigurePickerRoute(
+    val ids: List<String>,
+) : DetailRoute
