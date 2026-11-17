@@ -1,7 +1,6 @@
 package com.aljaroudi.muntathir.ui.quran
 
 import com.aljaroudi.muntathir.core.quran.Ayah
-import com.aljaroudi.muntathir.core.search.SemanticSearchClient
 import com.aljaroudi.muntathir.core.search.SemanticSearchResult
 import com.aljaroudi.muntathir.core.text.InvalidReferenceException
 import com.aljaroudi.muntathir.core.text.QuranSearchText
@@ -10,10 +9,11 @@ import com.aljaroudi.muntathir.data.QuranDatabase
 import com.aljaroudi.muntathir.data.QuranTranslations
 import com.aljaroudi.muntathir.data.SearchHistoryStore
 import com.aljaroudi.muntathir.search.SmartSearch
+import com.aljaroudi.muntathir.ui.search.SmartSearchRunner
+import com.aljaroudi.muntathir.ui.search.SmartSearchState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,7 +26,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
-import kotlinx.coroutines.launch
 
 /** Verse matches for the submitted query. Swift `QuranSearchContent` state. */
 data class VerseResults(
@@ -40,34 +39,19 @@ data class VerseResults(
     val invalidReference: Boolean = false,
 )
 
-/** Swift `MeaningSearchResults`: nothing until the user asks, then searching, failed or results. */
-sealed interface SmartResults {
-    data object Idle : SmartResults
-
-    data object Loading : SmartResults
-
-    data object Failed : SmartResults
-
-    data class Loaded(
-        val verses: List<Ayah>,
-    ) : SmartResults
-}
-
 /**
  * Search over the Quran, in every surah or only [surah]: a live query that filters surahs, a submitted query
  * that searches verses (50 at a time), recent searches, and opt-in smart search.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class QuranSearchModel(
-    private val scope: CoroutineScope,
+    scope: CoroutineScope,
     private val quran: QuranDatabase,
     private val translations: QuranTranslations,
     private val history: SearchHistoryStore,
     smartSearch: SmartSearch,
     val surah: Int?,
 ) {
-    private val client: SemanticSearchClient? = smartSearch.client
-
     private val mutableQuery = MutableStateFlow("")
     val query: StateFlow<String> = mutableQuery.asStateFlow()
 
@@ -102,12 +86,11 @@ class QuranSearchModel(
             }.onEach { latest = it }
             .stateIn(scope, SharingStarted.Eagerly, VerseResults())
 
-    private val mutableSmart = MutableStateFlow<SmartResults>(SmartResults.Idle)
-    val smart: StateFlow<SmartResults> = mutableSmart.asStateFlow()
-    private var smartJob: Job? = null
+    private val smartRunner = SmartSearchRunner<Ayah>(scope, smartSearch.client)
+    val smart: StateFlow<SmartSearchState<Ayah>> = smartRunner.state
 
     /** Whether smart search may be offered for the submitted query. */
-    val smartSearchAvailable: Boolean get() = client != null
+    val smartSearchAvailable: Boolean get() = smartRunner.available
 
     init {
         // A new search or translation starts again at the first page and withdraws smart-search consent.
@@ -118,8 +101,7 @@ class QuranSearchModel(
             .drop(1)
             .onEach {
                 limit.value = PAGE
-                smartJob?.cancel()
-                mutableSmart.value = SmartResults.Idle
+                smartRunner.reset()
             }.launchIn(scope)
     }
 
@@ -155,32 +137,19 @@ class QuranSearchModel(
 
     /** Swift `MeaningSearchResults`: references from `/v1/search`, read locally, in the API's order. */
     fun smartSearch() {
-        val client = client ?: return
         val query = mutableSubmitted.value.trim()
         val translation = translations.state.value.activeID
-        smartJob?.cancel()
-        mutableSmart.value = SmartResults.Loading
-        smartJob =
-            scope.launch {
-                mutableSmart.value =
-                    try {
-                        val references =
-                            client
-                                .search(query, kind = "quran", chapter = surah?.toString())
-                                .mapNotNull { (it.reference as? SemanticSearchResult.Reference.Quran) }
-                                .filter { surah == null || it.chapter == surah }
-                                .map { "${it.chapter}:${it.verse}" }
-                                .distinct()
-                        val verses = quran.read { verses(references, translation) }.associateBy { it.id }
-                        SmartResults.Loaded(
-                            references.mapNotNull { verses[it] }.filter { QuranSearchText.isSearchableVerse(it.text) },
-                        )
-                    } catch (cancellation: CancellationException) {
-                        throw cancellation
-                    } catch (_: Exception) {
-                        SmartResults.Failed
-                    }
-            }
+        smartRunner.run { client ->
+            val references =
+                client
+                    .search(query, kind = "quran", chapter = surah?.toString())
+                    .mapNotNull { (it.reference as? SemanticSearchResult.Reference.Quran) }
+                    .filter { surah == null || it.chapter == surah }
+                    .map { "${it.chapter}:${it.verse}" }
+                    .distinct()
+            val verses = quran.read { verses(references, translation) }.associateBy { it.id }
+            references.mapNotNull { verses[it] }.filter { QuranSearchText.isSearchableVerse(it.text) }
+        }
     }
 
     private data class Request(
@@ -226,8 +195,7 @@ class QuranSearchModel(
 
         /** Smart search is for meanings, not numbers or references. */
         fun isMeaningQuery(query: String): Boolean =
-            query.isNotEmpty() &&
-                query.length <= SemanticSearchClient.MAX_QUERY_LENGTH &&
+            SmartSearchRunner.accepts(query) &&
                 QuranSearchText.number(query) == null &&
                 runCatching { QuranSearchText.reference(query) }.getOrDefault(Unit) == null
     }

@@ -37,28 +37,28 @@ class HadithReader(
     private var rankedRequest: HadithRequest? = null
     private var rankedMatches: List<Pair<Int, HadithCursor.Phase>> = emptyList()
 
+    /** Whether the open database has supplication translations; looked up once per connection. */
+    private var translationTable: Boolean? = null
+
     /** Switches to [file] once it validates (keeping the current one otherwise), or to none. */
-    @Suppress("UNUSED_PARAMETER")
-    suspend fun install(
-        file: File?,
-        fullValidation: Boolean = true,
-    ) = locked {
-        reset()
-        if (file == null) {
+    suspend fun install(file: File?) =
+        locked {
+            reset()
+            if (file == null) {
+                close()
+                return@locked
+            }
+            val candidate = HadithDatabase.guarded { driver.open(file, writable = false) }
+            try {
+                HadithDatabase.guarded { HadithDatabase.validate(candidate) }
+            } catch (error: Exception) {
+                candidate.close()
+                throw error
+            }
             close()
-            return@locked
+            this.file = file
+            connection = candidate
         }
-        val candidate = HadithDatabase.guarded { driver.open(file, writable = false) }
-        try {
-            HadithDatabase.guarded { HadithDatabase.validate(candidate) }
-        } catch (error: Exception) {
-            candidate.close()
-            throw error
-        }
-        close()
-        this.file = file
-        connection = candidate
-    }
 
     /** Validates [staged], then atomically moves it over [destination] and reads from there. */
     suspend fun commit(
@@ -254,12 +254,31 @@ class HadithReader(
         currentCoroutineContext().ensureActive()
         val visible = selected.take(PAGE_SIZE)
         if (visible.isEmpty()) return HadithPage(emptyList(), hasMore = false)
+        val hasMore = selected.size > PAGE_SIZE
+        val last = visible.last()
+        return HadithPage(
+            rows = previews(sql, visible.map { it.first }, terms),
+            hasMore = hasMore,
+            nextCursor = if (hasMore) HadithCursor(last.second, last.first) else null,
+            relatedIDs = visible.filter { it.second == HadithCursor.Phase.Broader }.map { it.first }.toSet(),
+        )
+    }
+
+    /** Narrations as list rows (short previews styled for [query]), in [ids] order; missing ids are skipped. */
+    suspend fun previews(
+        ids: List<Int>,
+        query: String,
+    ): List<Hadith> = read { previews(it, ids, QuranSearchText.terms(query)) }
+
+    private fun previews(
+        sql: ContentSql,
+        ids: List<Int>,
+        terms: List<String>,
+    ): List<Hadith> {
+        if (ids.isEmpty()) return emptyList()
         val rows =
             sql
-                .query(
-                    "SELECT $COLUMNS $JOINS WHERE h.id IN (${visible.joinToString(",") { "?" }})",
-                    visible.map { it.first },
-                ) { row ->
+                .query("SELECT $COLUMNS $JOINS WHERE h.id IN (${ids.joinToString(",") { "?" }})", ids) { row ->
                     val narration = narration(row)
                     val arabic = HadithText.preview(narration.arabic, terms)
                     val english = HadithText.preview(narration.englishNarrator + " " + narration.english, terms)
@@ -271,14 +290,7 @@ class HadithReader(
                         englishPreview = english,
                     )
                 }.associateBy { it.id }
-        val hasMore = selected.size > PAGE_SIZE
-        val last = visible.last()
-        return HadithPage(
-            rows = visible.mapNotNull { rows[it.first] },
-            hasMore = hasMore,
-            nextCursor = if (hasMore) HadithCursor(last.second, last.first) else null,
-            relatedIDs = visible.filter { it.second == HadithCursor.Phase.Broader }.map { it.first }.toSet(),
-        )
+        return ids.mapNotNull(rows::get)
     }
 
     /** Full text with [query] matches styled; supplications include the chosen translation. */
@@ -363,10 +375,11 @@ class HadithReader(
     suspend fun translations(id: Int): List<SupplicationTranslation> = read { translations(it, id) }
 
     private fun hasTranslations(sql: ContentSql) =
-        sql
+        translationTable ?: sql
             .query("SELECT name FROM sqlite_master WHERE type='table' AND name='supplication_translation'") {
                 it.text(0)
             }.isNotEmpty()
+            .also { translationTable = it }
 
     private fun translations(
         sql: ContentSql,
@@ -396,11 +409,23 @@ class HadithReader(
                     ::narration,
                 )
             if (rows.isEmpty()) throw HadithDatabaseException.Incompatible()
+            // Every translation in one query, rather than one per supplication.
+            val translations =
+                if (!hasTranslations(sql)) {
+                    emptyMap()
+                } else {
+                    sql
+                        .query(
+                            "SELECT hadith_id,language,edition,text FROM supplication_translation ORDER BY language,edition",
+                        ) {
+                            it.int(0) to SupplicationTranslation(it.text(1), it.text(2), it.text(3))
+                        }.groupBy({ it.first }, { it.second })
+                }
             val titled = mutableListOf<Hadith>()
             val content = mutableListOf<Hadith>()
             for (row in rows) {
                 currentCoroutineContext().ensureActive()
-                val variants = translations(sql, row.id)
+                val variants = translations[row.id].orEmpty()
                 val title = QuranSearchText.normalize(row.chapter.arabic + " " + row.chapter.english).lowercase()
 
                 fun matches(text: String): Boolean {
@@ -504,6 +529,7 @@ class HadithReader(
         recentPages.clear()
         rankedRequest = null
         rankedMatches = emptyList()
+        translationTable = null
     }
 
     private fun close() {

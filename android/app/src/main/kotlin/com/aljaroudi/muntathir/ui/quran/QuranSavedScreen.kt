@@ -64,6 +64,7 @@ import com.aljaroudi.muntathir.ui.components.SearchField
 import com.aljaroudi.muntathir.ui.components.SectionHeader
 import com.aljaroudi.muntathir.ui.components.currentLocale
 import com.aljaroudi.muntathir.ui.navigation.QuranReaderRoute
+import com.aljaroudi.muntathir.ui.reader.BookmarkFailedDialog
 import com.aljaroudi.muntathir.ui.reader.HighlightEditorSheet
 import com.aljaroudi.muntathir.ui.reader.highlightSwatch
 import com.aljaroudi.muntathir.ui.reader.title
@@ -219,18 +220,7 @@ fun QuranSavedScreen(
             )
         }
     }
-    if (bookmarkFailed) {
-        AlertDialog(
-            onDismissRequest = viewModel::dismissBookmarkFailure,
-            title = { Text(stringResource(R.string.unable_to_save_bookmark)) },
-            text = { Text(stringResource(R.string.please_try_again)) },
-            confirmButton = {
-                TextButton(
-                    onClick = viewModel::dismissBookmarkFailure,
-                ) { Text(stringResource(R.string.ok)) }
-            },
-        )
-    }
+    if (bookmarkFailed) BookmarkFailedDialog(viewModel::dismissBookmarkFailure)
 }
 
 @Composable

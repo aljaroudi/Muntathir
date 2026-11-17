@@ -19,7 +19,6 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.aljaroudi.muntathir.core.app.AppTool
-import com.aljaroudi.muntathir.data.library.HadithSessionStore
 import com.aljaroudi.muntathir.ui.calendar.CalendarScreen
 import com.aljaroudi.muntathir.ui.calendar.EventsScreen
 import com.aljaroudi.muntathir.ui.calendar.EventsViewModel
@@ -34,9 +33,11 @@ import com.aljaroudi.muntathir.ui.hadith.HadithIntroductionScreen
 import com.aljaroudi.muntathir.ui.hadith.HadithIntroductionViewModel
 import com.aljaroudi.muntathir.ui.hadith.HadithSavedScreen
 import com.aljaroudi.muntathir.ui.hadith.HadithSavedViewModel
+import com.aljaroudi.muntathir.ui.hadith.HadithSessionStore
 import com.aljaroudi.muntathir.ui.location.LocationScreen
 import com.aljaroudi.muntathir.ui.navigation.AppNavigator
 import com.aljaroudi.muntathir.ui.navigation.CreditsRoute
+import com.aljaroudi.muntathir.ui.navigation.DetailRoute
 import com.aljaroudi.muntathir.ui.navigation.DownloadsRoute
 import com.aljaroudi.muntathir.ui.navigation.HadithBrowseRoute
 import com.aljaroudi.muntathir.ui.navigation.HadithDetailRoute
@@ -51,7 +52,6 @@ import com.aljaroudi.muntathir.ui.navigation.QuranSavedRoute
 import com.aljaroudi.muntathir.ui.navigation.Route
 import com.aljaroudi.muntathir.ui.navigation.RulingDetailRoute
 import com.aljaroudi.muntathir.ui.navigation.RulingSectionRoute
-import com.aljaroudi.muntathir.ui.navigation.RulingsRoute
 import com.aljaroudi.muntathir.ui.navigation.RulingsSavedRoute
 import com.aljaroudi.muntathir.ui.navigation.SettingsRoute
 import com.aljaroudi.muntathir.ui.navigation.TabsSettingsRoute
@@ -97,26 +97,10 @@ fun AppShell(
     val twoPane = isTwoPane()
     // Detail panes beside their list have no Up button.
     val detailBack: (() -> Unit)? = if (twoPane) null else navigator::back
-    // Beside the surah list, another surah replaces the open one rather than stacking.
-    val openReader: (Route) -> Unit = { route ->
-        if (twoPane && navigator.current.lastOrNull().let { it is QuranReaderRoute || it == QuranSavedRoute }) {
-            navigator.current.removeAt(navigator.current.lastIndex)
-        }
-        navigator.push(route)
-    }
-    // Beside a hadith list, a narration replaces the open one, and a new list closes it.
-    val openHadith: (Route) -> Unit = { route ->
+    // Beside a list, a detail replaces the one open (and a new list closes it) rather than stacking.
+    val open: (Route) -> Unit = { route ->
         if (twoPane) {
-            while (navigator.current.lastOrNull().let { it is HadithRoute && it !is HadithBrowseRoute }) {
-                navigator.current.removeAt(navigator.current.lastIndex)
-            }
-        }
-        navigator.push(route)
-    }
-    // Beside the Rulings list, a ruling, section or Saved replaces the one open.
-    val openRulings: (Route) -> Unit = { route ->
-        if (twoPane) {
-            while (navigator.current.lastOrNull() is RulingsRoute) {
+            while (navigator.current.lastOrNull() is DetailRoute) {
                 navigator.current.removeAt(
                     navigator.current.lastIndex,
                 )
@@ -174,9 +158,7 @@ fun AppShell(
                                 ToolScreen(
                                     route.tool,
                                     onBack = navigator::back.takeIf { route != navigator.tab },
-                                    openReader,
-                                    openHadith,
-                                    openRulings,
+                                    open,
                                     onRestoreHadith = { routes -> routes.forEach(navigator::push) },
                                 )
                             }
@@ -192,7 +174,7 @@ fun AppShell(
                                     hiltViewModel<QuranReaderViewModel, QuranReaderViewModel.Factory>(
                                         creationCallback = { it.create(route) },
                                     ),
-                                    openReader,
+                                    open,
                                     detailBack,
                                 )
                             }
@@ -201,7 +183,7 @@ fun AppShell(
                                     hiltViewModel<HadithBrowseViewModel, HadithBrowseViewModel.Factory>(
                                         creationCallback = { it.create(route, isRoot = false) },
                                     ),
-                                    onOpen = openHadith,
+                                    onOpen = open,
                                     onRestore = {},
                                     onBack = navigator::back,
                                 )
@@ -257,15 +239,6 @@ fun AppShell(
                                 )
                             }
                             entry<SettingsRoute>(metadata = ListDetailSceneStrategy.listPane()) {
-                                // A detail opened from Settings replaces the one beside it rather than stacking.
-                                val open: (Route) -> Unit = { route ->
-                                    if (navigator.current.lastOrNull() in
-                                        SETTINGS_DETAILS
-                                    ) {
-                                        navigator.current.removeAt(navigator.current.lastIndex)
-                                    }
-                                    navigator.push(route)
-                                }
                                 SettingsScreen(
                                     hiltViewModel(),
                                     SettingsLinks(
@@ -303,9 +276,6 @@ fun AppShell(
     }
 }
 
-private val SETTINGS_DETAILS =
-    setOf(TabsSettingsRoute, HighlightPaletteRoute, DownloadsRoute, LocationRoute, MonthAdjustmentsRoute, CreditsRoute)
-
 private val LIST_TOOLS =
     setOf(
         ToolRoute(AppTool.Quran),
@@ -339,14 +309,12 @@ private fun listPanes(provider: (NavKey) -> NavEntry<NavKey>): (NavKey) -> NavEn
 private fun ToolScreen(
     tool: AppTool,
     onBack: (() -> Unit)?,
-    openReader: (Route) -> Unit,
-    openHadith: (Route) -> Unit,
-    openRulings: (Route) -> Unit,
+    open: (Route) -> Unit,
     onRestoreHadith: (List<HadithRoute>) -> Unit,
 ) {
     when (tool) {
         AppTool.Quran -> {
-            QuranScreen(hiltViewModel(), openReader, onBack)
+            QuranScreen(hiltViewModel(), open, onBack)
         }
 
         AppTool.Hadith -> {
@@ -354,18 +322,18 @@ private fun ToolScreen(
                 hiltViewModel<HadithBrowseViewModel, HadithBrowseViewModel.Factory>(
                     creationCallback = { it.create(HadithBrowseRoute(), isRoot = true) },
                 ),
-                onOpen = openHadith,
+                onOpen = open,
                 onRestore = onRestoreHadith,
                 onBack = onBack,
             )
         }
 
         AppTool.Supplications -> {
-            SupplicationsScreen(hiltViewModel(), openHadith, onBack)
+            SupplicationsScreen(hiltViewModel(), open, onBack)
         }
 
         AppTool.Rulings -> {
-            RulingsScreen(hiltViewModel(), openRulings, onBack)
+            RulingsScreen(hiltViewModel(), open, onBack)
         }
 
         AppTool.Calendar -> {

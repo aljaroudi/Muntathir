@@ -54,4 +54,7 @@ object HadithBlock {
     const val ARABIC = "arabic"
     const val ENGLISH = "english"
     const val NARRATOR = "englishNarrator"
+
+    /** Followed by a translation's `language:edition`. */
+    const val TRANSLATION_PREFIX = "translation:"
 }

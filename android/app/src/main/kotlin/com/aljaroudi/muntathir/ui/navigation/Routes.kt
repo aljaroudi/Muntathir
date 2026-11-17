@@ -8,6 +8,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed interface Route : NavKey
 
+/** Shown beside a list in two panes, where opening another detail replaces it rather than stacking. */
+sealed interface DetailRoute : Route
+
 @Serializable
 data object TodayRoute : Route
 
@@ -23,16 +26,16 @@ data class ToolRoute(
 data object SettingsRoute : Route
 
 @Serializable
-data object TabsSettingsRoute : Route
+data object TabsSettingsRoute : DetailRoute
 
 @Serializable
-data object MonthAdjustmentsRoute : Route
+data object MonthAdjustmentsRoute : DetailRoute
 
 @Serializable
-data object DownloadsRoute : Route
+data object DownloadsRoute : DetailRoute
 
 @Serializable
-data object CreditsRoute : Route
+data object CreditsRoute : DetailRoute
 
 /**
  * A surah in the reader, opened at [verse]. [query] underlines a search match; [highlight] scrolls to and focuses
@@ -44,13 +47,13 @@ data class QuranReaderRoute(
     val verse: Int = 1,
     val query: String? = null,
     val highlight: String? = null,
-) : Route
+) : DetailRoute
 
 /** Saved Quran highlights and bookmarks. */
 @Serializable
-data object QuranSavedRoute : Route
+data object QuranSavedRoute : DetailRoute
 
-/** A hadith or supplications screen; in two panes, lists replace the detail beside them. */
+/** A hadith or supplications screen, as kept in the hadith session. */
 sealed interface HadithRoute : Route
 
 /**
@@ -71,44 +74,45 @@ data class HadithDetailRoute(
     val query: String = "",
     val highlight: String? = null,
     val supplication: Boolean = false,
-) : HadithRoute
+) : HadithRoute,
+    DetailRoute
 
 @Serializable
 data class HadithIntroductionRoute(
     val id: Int,
-) : HadithRoute
+) : HadithRoute,
+    DetailRoute
 
 /** Saved hadith, or saved supplications. */
 @Serializable
 data class HadithSavedRoute(
     val supplications: Boolean = false,
-) : HadithRoute
-
-/** A ruling, or the rulings of one of its sections; in two panes these sit beside the Rulings list. */
-sealed interface RulingsRoute : Route
+) : HadithRoute,
+    DetailRoute
 
 @Serializable
 data class RulingDetailRoute(
     val authority: String,
     val language: String,
     val siteID: String,
-) : RulingsRoute
+) : DetailRoute
 
+/** The rulings of one section, opened from a ruling. */
 @Serializable
 data class RulingSectionRoute(
     val authority: String,
     val language: String,
     val section: Long,
     val title: String,
-) : RulingsRoute
+) : DetailRoute
 
 @Serializable
-data object RulingsSavedRoute : RulingsRoute
+data object RulingsSavedRoute : DetailRoute
 
 /** Settings → Highlight colors. */
 @Serializable
-data object HighlightPaletteRoute : Route
+data object HighlightPaletteRoute : DetailRoute
 
 /** Opened from Today's empty state and Settings; a dialog over the current tab. */
 @Serializable
-data object LocationRoute : Route
+data object LocationRoute : DetailRoute

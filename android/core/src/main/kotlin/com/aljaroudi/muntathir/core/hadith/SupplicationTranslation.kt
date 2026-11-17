@@ -11,7 +11,7 @@ data class SupplicationTranslation(
     val id: String get() = "$language:$edition"
 
     /** The highlight block name. */
-    val block: String get() = "translation:$id"
+    val block: String get() = HadithBlock.TRANSLATION_PREFIX + id
 
     val isRightToLeft: Boolean get() = Locale.forLanguageTag(language).language in RIGHT_TO_LEFT
 

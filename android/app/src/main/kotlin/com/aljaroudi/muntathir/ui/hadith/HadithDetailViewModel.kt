@@ -3,6 +3,7 @@ package com.aljaroudi.muntathir.ui.hadith
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aljaroudi.muntathir.core.app.ReadingPreferences
+import com.aljaroudi.muntathir.core.hadith.HadithBlock
 import com.aljaroudi.muntathir.core.hadith.HadithDetail
 import com.aljaroudi.muntathir.core.hadith.HadithShareContent
 import com.aljaroudi.muntathir.core.hadith.LibraryStatus
@@ -15,7 +16,6 @@ import com.aljaroudi.muntathir.core.text.TextRange
 import com.aljaroudi.muntathir.data.QuranTranslations
 import com.aljaroudi.muntathir.data.ReadingSettings
 import com.aljaroudi.muntathir.data.library.ContentLibraries
-import com.aljaroudi.muntathir.data.library.HadithSessionStore
 import com.aljaroudi.muntathir.data.user.ProgressStore
 import com.aljaroudi.muntathir.ui.navigation.HadithDetailRoute
 import com.aljaroudi.muntathir.ui.reader.HighlightDraft
@@ -145,9 +145,9 @@ class HadithDetailViewModel
                     val highlight = user.highlights.first { list -> list.any { it.id == id } }.first { it.id == id }
                     val block = highlight.block.orEmpty()
                     // Swift: a saved English highlight turns English on; a translation one shows that edition.
-                    if (block == "english" || block == "englishNarrator") setEnglish(true)
-                    if (block.startsWith(TRANSLATION_PREFIX)) {
-                        forcedTranslation.value = block.removePrefix(TRANSLATION_PREFIX)
+                    if (block == HadithBlock.ENGLISH || block == HadithBlock.NARRATOR) setEnglish(true)
+                    if (block.startsWith(HadithBlock.TRANSLATION_PREFIX)) {
+                        forcedTranslation.value = block.removePrefix(HadithBlock.TRANSLATION_PREFIX)
                     }
                 }
             }
@@ -263,8 +263,4 @@ class HadithDetailViewModel
         }
 
         fun record(activity: ProgressActivity) = progress.record(activity)
-
-        companion object {
-            const val TRANSLATION_PREFIX = "translation:"
-        }
     }

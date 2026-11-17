@@ -18,7 +18,6 @@ import com.aljaroudi.muntathir.core.text.SearchArea
 import com.aljaroudi.muntathir.data.ReadingSettings
 import com.aljaroudi.muntathir.data.SearchHistoryStore
 import com.aljaroudi.muntathir.data.library.ContentLibraries
-import com.aljaroudi.muntathir.data.library.HadithSessionStore
 import com.aljaroudi.muntathir.search.SmartSearch
 import com.aljaroudi.muntathir.ui.navigation.HadithBrowseRoute
 import com.aljaroudi.muntathir.ui.navigation.HadithRoute
@@ -217,25 +216,13 @@ class HadithBrowseViewModel
             val request = request(query)
             smart.run { client ->
                 val (sources, chapter) = reader.meaningSearchScope(request)
-                val terms = QuranSearchText.terms(query)
-                val seen = mutableSetOf<Int>()
-                client
-                    .search(query, kind = "hadith", sources = sources, chapter = chapter)
-                    .mapNotNull { it.reference as? SemanticSearchResult.Reference.Hadith }
-                    .mapNotNull { reference ->
-                        val id = reader.resolveSearch(reference.book, reference.chapter, reference.number)
-                        if (id == null || !seen.add(id)) return@mapNotNull null
-                        val narration = reader.detail(id, query).narration
-                        if (narration.isSupplication) return@mapNotNull null
-                        narration.copy(
-                            arabicPreview = HadithText.preview(narration.arabic, terms),
-                            englishPreview =
-                                HadithText.preview(
-                                    narration.englishNarrator + " " + narration.english,
-                                    terms,
-                                ),
-                        )
-                    }
+                val ids =
+                    client
+                        .search(query, kind = "hadith", sources = sources, chapter = chapter)
+                        .mapNotNull { it.reference as? SemanticSearchResult.Reference.Hadith }
+                        .mapNotNull { reader.resolveSearch(it.book, it.chapter, it.number) }
+                        .distinct()
+                reader.previews(ids, query).filterNot { it.isSupplication }
             }
         }
 

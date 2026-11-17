@@ -2,6 +2,7 @@ package com.aljaroudi.muntathir.data.library
 
 import com.aljaroudi.muntathir.core.hadith.PackFlagStore
 import com.aljaroudi.muntathir.core.hadith.PackFlags
+import com.aljaroudi.muntathir.core.io.writeTextAtomically
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,22 +21,17 @@ class FilePackFlags(
     @OptIn(ExperimentalCoroutinesApi::class)
     private val writes = CoroutineScope(scope.coroutineContext + Dispatchers.IO.limitedParallelism(1))
 
-    private val value by lazy {
-        runCatching { json.decodeFromString<PackFlags>(file.readText()) }.getOrDefault(PackFlags())
-    }
     private var current: PackFlags? = null
 
-    override fun read(): PackFlags = current ?: value.also { current = it }
+    override fun read(): PackFlags =
+        current ?: runCatching { json.decodeFromString<PackFlags>(file.readText()) }
+            .getOrDefault(PackFlags())
+            .also { current = it }
 
     override fun write(flags: PackFlags) {
         current = flags
         val text = json.encodeToString(PackFlags.serializer(), flags)
-        writes.launch {
-            file.parentFile?.mkdirs()
-            val temporary = File(file.path + ".tmp")
-            temporary.writeText(text)
-            temporary.renameTo(file)
-        }
+        writes.launch { file.writeTextAtomically(text) }
     }
 
     private companion object {

@@ -1,8 +1,10 @@
 package com.aljaroudi.muntathir.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,6 +36,12 @@ fun LoadingState(
         CircularProgressIndicator()
         Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
+}
+
+/** A spinner on its own row, e.g. while a list section loads. */
+@Composable
+fun InlineProgress(modifier: Modifier = Modifier) {
+    Box(modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
 }
 
 /** Swift `ContentUnavailableView`: a title, an optional message and an optional action (Try again by default). */

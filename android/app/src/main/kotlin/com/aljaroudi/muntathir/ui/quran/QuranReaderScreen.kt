@@ -81,8 +81,7 @@ import com.aljaroudi.muntathir.ui.components.SearchField
 import com.aljaroudi.muntathir.ui.components.currentLocale
 import com.aljaroudi.muntathir.ui.components.plus
 import com.aljaroudi.muntathir.ui.navigation.QuranReaderRoute
-import com.aljaroudi.muntathir.ui.reader.HighlightEditorSheet
-import com.aljaroudi.muntathir.ui.reader.HighlightSwatch
+import com.aljaroudi.muntathir.ui.reader.ReaderDialogs
 import com.aljaroudi.muntathir.ui.reader.ReaderText
 import com.aljaroudi.muntathir.ui.reader.ReadingTextStyle
 import com.aljaroudi.muntathir.ui.reader.quranTypeface
@@ -184,41 +183,17 @@ private fun HighlightDialogs(
     val editing by viewModel.editing.collectAsStateWithLifecycle()
     val choosing by viewModel.choosing.collectAsStateWithLifecycle()
     val bookmarkFailed by viewModel.bookmarkFailed.collectAsStateWithLifecycle()
-    editing?.let { draft ->
-        key(draft) {
-            HighlightEditorSheet(draft, colors, viewModel::save, viewModel::delete, viewModel::closeEditor)
-        }
-    }
-    if (choosing.isNotEmpty()) {
-        AlertDialog(
-            onDismissRequest = viewModel::closeEditor,
-            title = { Text(stringResource(R.string.highlights)) },
-            text = {
-                Column {
-                    for (highlight in choosing) {
-                        ListItem(
-                            headlineContent = { Text(highlight.note.ifBlank { highlight.excerpt }.take(60)) },
-                            leadingContent = { HighlightSwatch(highlight.color, selected = false, size = 20) },
-                            modifier = Modifier.clickable { viewModel.edit(highlight) },
-                        )
-                    }
-                }
-            },
-            confirmButton = { TextButton(onClick = viewModel::closeEditor) { Text(stringResource(R.string.cancel)) } },
-        )
-    }
-    if (bookmarkFailed) {
-        AlertDialog(
-            onDismissRequest = viewModel::dismissBookmarkFailure,
-            title = { Text(stringResource(R.string.unable_to_save_bookmark)) },
-            text = { Text(stringResource(R.string.please_try_again)) },
-            confirmButton = {
-                TextButton(
-                    onClick = viewModel::dismissBookmarkFailure,
-                ) { Text(stringResource(R.string.ok)) }
-            },
-        )
-    }
+    ReaderDialogs(
+        editing,
+        choosing,
+        bookmarkFailed,
+        colors,
+        onSave = viewModel::save,
+        onDelete = viewModel::delete,
+        onEdit = viewModel::edit,
+        onClose = viewModel::closeEditor,
+        onDismissBookmarkFailure = viewModel::dismissBookmarkFailure,
+    )
 }
 
 /** Swift `BookmarkButton` as a verse-menu item. */

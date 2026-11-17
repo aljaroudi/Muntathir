@@ -61,6 +61,7 @@ import com.aljaroudi.muntathir.data.ReadingSettings
 import com.aljaroudi.muntathir.data.SearchHistoryStore
 import com.aljaroudi.muntathir.data.library.ContentLibraries
 import com.aljaroudi.muntathir.ui.components.EmptyState
+import com.aljaroudi.muntathir.ui.components.Formats
 import com.aljaroudi.muntathir.ui.components.LoadingState
 import com.aljaroudi.muntathir.ui.components.ScreenScaffold
 import com.aljaroudi.muntathir.ui.components.SearchField
@@ -168,10 +169,13 @@ class HadithSavedViewModel
         ): SavedNarrations.Loaded {
             val ids = mutableMapOf<String, Int>()
             val available = mutableSetOf<String>()
+            val highlighted = highlights.groupBy { it.source }
             for (key in (highlights.map { it.source } + bookmarks.map { it.source }).distinct()) {
                 val source = HadithSource.fromKey(key) ?: continue
                 val id = reader.resolve(source) ?: continue
                 ids[key] = id
+                // Only highlights need the text, to check they still match it.
+                val saved = highlighted[key] ?: continue
                 val detail = reader.detail(id)
                 val blocks = detail.highlightBlocks.toMutableMap()
                 if (detail.narration.isSupplication) {
@@ -179,7 +183,7 @@ class HadithSavedViewModel
                         blocks[translation.block] = HadithText.canonical(HadithText.markdown(translation.text)).text
                     }
                 }
-                highlights.filter { it.source == key && it.isAvailable(blocks) }.forEach { available += it.id }
+                saved.filter { it.isAvailable(blocks) }.forEach { available += it.id }
             }
             return SavedNarrations.Loaded(ids, available)
         }
@@ -322,8 +326,7 @@ fun HadithSavedScreen(
                                                         if (related) R.string.related_matches else R.string.matches,
                                                     )
                                                 } else {
-                                                    com.aljaroudi.muntathir.ui.components.Formats
-                                                        .date(section.date!!, "yMMMMd", locale)
+                                                    Formats.date(section.date!!, "yMMMMd", locale)
                                                 },
                                             )
                                         }

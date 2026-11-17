@@ -1,12 +1,12 @@
 package com.aljaroudi.muntathir.ui.search
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -16,7 +16,6 @@ import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.search.SemanticSearchClient
 import com.aljaroudi.muntathir.ui.components.EmptyState
 import com.aljaroudi.muntathir.ui.components.LoadingState
-import com.aljaroudi.muntathir.ui.components.SectionHeader
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -80,19 +79,18 @@ class SmartSearchRunner<T>(
 
 /**
  * The smart-search part of a results list: "No Results" and the Smart search button before consent, then
- * searching, "Search unavailable" with Try again, or [rows] under [header] (no header when `null`).
+ * searching, "Search unavailable" with Try again, "No Results", or the caller's [rows].
  */
 fun <T> LazyListScope.smartSearchSection(
     state: SmartSearchState<T>,
     available: Boolean,
     hasLocalResults: Boolean,
     onSearch: () -> Unit,
-    @StringRes header: Int? = R.string.smart_search,
     rows: LazyListScope.(List<T>) -> Unit,
 ) {
     when (state) {
         SmartSearchState.Idle -> {
-            if (!hasLocalResults) item(key = "smart-empty") { EmptyState(stringResource(R.string.no_results)) }
+            if (!hasLocalResults) item(key = "smart-empty") { NoResults() }
             if (available) {
                 item(key = "smart-button") {
                     Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
@@ -119,12 +117,10 @@ fun <T> LazyListScope.smartSearchSection(
         }
 
         is SmartSearchState.Loaded -> {
-            if (state.items.isEmpty()) {
-                if (!hasLocalResults) item(key = "smart-empty") { EmptyState(stringResource(R.string.no_results)) }
-            } else {
-                header?.let { item(key = "smart-header") { SectionHeader(stringResource(it)) } }
-                rows(state.items)
-            }
+            if (state.items.isEmpty()) item(key = "smart-empty") { NoResults() } else rows(state.items)
         }
     }
 }
+
+@Composable
+private fun NoResults() = EmptyState(stringResource(R.string.no_results), Modifier.testTag("local-search-empty"))

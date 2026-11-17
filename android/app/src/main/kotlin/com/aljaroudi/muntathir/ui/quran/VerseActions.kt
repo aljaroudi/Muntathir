@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.quran.Ayah
+import com.aljaroudi.muntathir.ui.reader.rememberTextActions
 import com.aljaroudi.muntathir.ui.today.AyahShareArtwork
 import com.aljaroudi.muntathir.ui.today.ShareImage
 import kotlinx.coroutines.launch
@@ -45,10 +46,7 @@ fun VerseActions(
 ) {
     var open by remember { mutableStateOf(false) }
     var sharing by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    val clipboard = LocalClipboard.current
-    val scope = rememberCoroutineScope()
-    val copied = stringResource(R.string.text_copied)
+    val actions = rememberTextActions()
     val text = listOfNotNull(ayah.text, translation, reference).joinToString("\n\n")
     Box {
         IconButton(onClick = { open = true }, modifier) {
@@ -60,11 +58,7 @@ fun VerseActions(
                 leadingIcon = { Icon(Icons.Outlined.ContentCopy, null) },
                 onClick = {
                     open = false
-                    scope.launch { clipboard.setClipEntry(ClipEntry(ClipData.newPlainText(reference, text))) }
-                    // Android 13+ confirms copies itself.
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                        Toast.makeText(context, copied, Toast.LENGTH_SHORT).show()
-                    }
+                    actions.copy(reference, text)
                 },
             )
             DropdownMenuItem(

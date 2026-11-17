@@ -2,6 +2,8 @@ package com.aljaroudi.muntathir.assets
 
 import android.app.Activity
 import android.content.Context
+import androidx.annotation.StringRes
+import com.aljaroudi.muntathir.R
 import com.google.android.play.core.assetpacks.AssetPackManager
 import com.google.android.play.core.assetpacks.AssetPackManagerFactory
 import com.google.android.play.core.assetpacks.AssetPackState
@@ -27,13 +29,14 @@ enum class ContentPack(
     val packName: String,
     /** Database path inside the pack's assets folder. */
     val database: String,
+    @param:StringRes val title: Int,
 ) {
-    Hadith("hadith", "Hadith/hadith.db"),
-    Supplications("supplications", "Supplications/supplications.db"),
-    Rulings("rulings", "Rulings/rulings.db"),
+    Hadith("hadith", "Hadith/hadith.db", R.string.hadith),
+    Supplications("supplications", "Supplications/supplications.db", R.string.supplications),
+    Rulings("rulings", "Rulings/rulings.db", R.string.rulings),
 
     /** Every Quran translation but the bundled English, as `Quran/<id>.db`. */
-    QuranTranslations("quran_translations", "Quran/de.bubenheim.db"),
+    QuranTranslations("quran_translations", "Quran/de.bubenheim.db", R.string.quran_translations),
 }
 
 sealed interface PackStatus {

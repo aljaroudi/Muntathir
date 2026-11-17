@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -148,15 +149,16 @@ fun HadithBrowseScreen(
             val rows = rows(viewModel, state, query, submitted, locale)
             val list = rememberLazyListState()
             // Swift `HadithListAnchor`: save the first visible row once scrolling settles.
-            val save by rememberUpdatedState(viewModel::saveRow)
-            LaunchedEffect(list, rows) {
+            // Rows that settle while loading or restoring aren't the reader's position.
+            val saving by rememberUpdatedState(!state.loading && restoredRow == null)
+            LaunchedEffect(list) {
                 snapshotFlow {
                     list.layoutInfo.visibleItemsInfo
                         .firstOrNull()
                         ?.key as? String
                 }.distinctUntilChanged()
                     .debounce(200.milliseconds)
-                    .collect { key -> if (!state.loading && restoredRow == null && key != null) save(key) }
+                    .collect { key -> if (saving && key != null) viewModel.saveRow(key) }
             }
             LaunchedEffect(restoredRow, rows, state.loading) {
                 val row = restoredRow ?: return@LaunchedEffect
@@ -165,7 +167,7 @@ fun HadithBrowseScreen(
                 viewModel.rowRestored()
             }
             val end by remember {
-                androidx.compose.runtime.derivedStateOf {
+                derivedStateOf {
                     list.layoutInfo.visibleItemsInfo
                         .lastOrNull()
                         ?.index
@@ -174,6 +176,7 @@ fun HadithBrowseScreen(
             LaunchedEffect(end, state.hasMore) {
                 if (state.hasMore && (end ?: 0) >= list.layoutInfo.totalItemsCount - 5) viewModel.loadMore()
             }
+            val local = remember(rows) { rows.filterIsInstance<BrowseRow.Narration>().map { it.narration.id }.toSet() }
             LazyColumn(Modifier.fillMaxSize().testTag("hadith-list"), state = list, contentPadding = padding) {
                 item(key = "search") {
                     SearchField(
@@ -243,14 +246,17 @@ fun HadithBrowseScreen(
                 }
                 val settled = query.trim() == submitted.trim() && state.completed == submitted && !state.loading
                 if (settled && !state.failed && viewModel.offersSmartSearch(submitted)) {
-                    val local = rows.filterIsInstance<BrowseRow.Narration>().map { it.narration.id }.toSet()
                     smartSearchSection(
                         smart,
                         viewModel.smart.available,
                         hasLocalResults = rows.any { it !is BrowseRow.Saved },
                         onSearch = viewModel::smartSearch,
-                    ) { narrations ->
-                        items(narrations.filter { it.id !in local }, key = { "smart-${it.id}" }) { narration ->
+                    ) { found ->
+                        val narrations = found.filter { it.id !in local }
+                        if (narrations.isNotEmpty()) {
+                            item(key = "smart-header") { SectionHeader(stringResource(R.string.smart_search)) }
+                        }
+                        items(narrations, key = { "smart-${it.id}" }) { narration ->
                             HadithPreviewRow(
                                 narration,
                                 searching = true,

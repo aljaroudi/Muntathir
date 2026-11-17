@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -60,13 +62,16 @@ import com.aljaroudi.muntathir.core.rulings.Ruling
 import com.aljaroudi.muntathir.core.rulings.RulingsLanguage
 import com.aljaroudi.muntathir.core.rulings.RulingsState
 import com.aljaroudi.muntathir.core.rulings.RulingsStatus
+import com.aljaroudi.muntathir.core.text.StyledText
 import com.aljaroudi.muntathir.data.library.RulingsLibrary
 import com.aljaroudi.muntathir.ui.components.EmptyState
+import com.aljaroudi.muntathir.ui.components.InlineProgress
 import com.aljaroudi.muntathir.ui.components.ScreenScaffold
 import com.aljaroudi.muntathir.ui.components.SearchField
 import com.aljaroudi.muntathir.ui.components.currentLocale
 import com.aljaroudi.muntathir.ui.downloads.AssetDownloadButton
 import com.aljaroudi.muntathir.ui.downloads.AssetDownloadProgress
+import com.aljaroudi.muntathir.ui.downloads.formatBytes
 import com.aljaroudi.muntathir.ui.navigation.Route
 import com.aljaroudi.muntathir.ui.navigation.RulingDetailRoute
 import com.aljaroudi.muntathir.ui.navigation.RulingSectionRoute
@@ -74,6 +79,7 @@ import com.aljaroudi.muntathir.ui.navigation.RulingsSavedRoute
 import com.aljaroudi.muntathir.ui.quran.ConfirmationPrompt
 import com.aljaroudi.muntathir.ui.quran.ReadingSizeSheet
 import com.aljaroudi.muntathir.ui.quran.recentSearches
+import com.aljaroudi.muntathir.ui.reader.BookmarkFailedDialog
 import com.aljaroudi.muntathir.ui.reader.ReaderText
 import com.aljaroudi.muntathir.ui.reader.ReadingTextStyle
 import com.aljaroudi.muntathir.ui.search.SmartSearchRunner
@@ -131,11 +137,8 @@ fun LazyListScope.rulingsDownload(
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.total_size)) },
                         trailingContent = {
-                            androidx.compose.foundation.layout.Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    com.aljaroudi.muntathir.ui.downloads
-                                        .formatBytes(state.installedBytes, locale),
-                                )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(formatBytes(state.installedBytes, locale))
                                 IconButton(onClick = library::remove, Modifier.testTag("downloads-remove-rulings")) {
                                     Icon(Icons.Outlined.Delete, stringResource(R.string.remove_download))
                                 }
@@ -220,11 +223,7 @@ fun RulingsScreen(
             intro { onOpen(RulingsSavedRoute) }
             when (val current = scope) {
                 Loadable.Loading -> {
-                    item(key = "loading") {
-                        Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator()
-                        }
-                    }
+                    item(key = "loading") { InlineProgress() }
                 }
 
                 Loadable.Failed -> {
@@ -269,7 +268,6 @@ fun RulingsScreen(
                                 viewModel.smart.available,
                                 hasLocalResults = local.value.isNotEmpty(),
                                 onSearch = { viewModel.smartSearch(value) },
-                                header = null,
                             ) { found -> rulingItems(found, language, "rulings-smart", open) }
                         }
                     }
@@ -290,11 +288,7 @@ private fun LazyListScope.rulingRows(
 ) {
     when (questions) {
         Loadable.Loading -> {
-            item(key = "questions-loading") {
-                Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            }
+            item(key = "questions-loading") { InlineProgress() }
         }
 
         Loadable.Failed -> {
@@ -425,25 +419,14 @@ fun RulingDetailScreen(
         }
     }
     if (sizing) ReadingSizeSheet(reading.readingSizePercent, locale, viewModel::setSize) { sizing = false }
-    if (bookmarkFailed) {
-        AlertDialog(
-            onDismissRequest = viewModel::dismissBookmarkFailure,
-            title = { Text(stringResource(R.string.unable_to_save_bookmark)) },
-            text = { Text(stringResource(R.string.please_try_again)) },
-            confirmButton = {
-                TextButton(
-                    onClick = viewModel::dismissBookmarkFailure,
-                ) { Text(stringResource(R.string.ok)) }
-            },
-        )
-    }
+    if (bookmarkFailed) BookmarkFailedDialog(viewModel::dismissBookmarkFailure)
 }
 
 @Composable
 private fun RulingContent(
     detail: RulingDetail,
     sizePercent: Int,
-    padding: androidx.compose.foundation.layout.PaddingValues,
+    padding: PaddingValues,
     onOpen: (Route) -> Unit,
 ) {
     val uri = LocalUriHandler.current
@@ -474,8 +457,7 @@ private fun RulingContent(
                     )
                     if (detail.ruling.answer.isNotEmpty()) {
                         ReaderText(
-                            com.aljaroudi.muntathir.core.text
-                                .StyledText(detail.ruling.answer),
+                            StyledText(detail.ruling.answer),
                             block = "answer",
                             sizeSp = size,
                             rightToLeft = rightToLeft,

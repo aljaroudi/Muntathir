@@ -62,6 +62,7 @@ import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.hadith.HadithBlock
 import com.aljaroudi.muntathir.core.hadith.HadithDetail
 import com.aljaroudi.muntathir.core.hadith.SupplicationTranslation
+import com.aljaroudi.muntathir.core.highlight.HighlightColor
 import com.aljaroudi.muntathir.core.highlight.ReadingHighlight
 import com.aljaroudi.muntathir.core.progress.ProgressActivityKind
 import com.aljaroudi.muntathir.core.text.HadithParagraph
@@ -72,10 +73,10 @@ import com.aljaroudi.muntathir.ui.components.LoadingState
 import com.aljaroudi.muntathir.ui.components.ScreenScaffold
 import com.aljaroudi.muntathir.ui.components.currentLocale
 import com.aljaroudi.muntathir.ui.quran.ReadingSizeSheet
-import com.aljaroudi.muntathir.ui.reader.HighlightEditorSheet
-import com.aljaroudi.muntathir.ui.reader.HighlightSwatch
+import com.aljaroudi.muntathir.ui.reader.ReaderDialogs
 import com.aljaroudi.muntathir.ui.reader.ReaderText
 import com.aljaroudi.muntathir.ui.reader.ReadingTextStyle
+import com.aljaroudi.muntathir.ui.reader.rememberTextActions
 import com.aljaroudi.muntathir.ui.reader.trackReading
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
@@ -244,40 +245,35 @@ private fun DetailContent(
             HorizontalDivider()
         }
 
-        fun reader(
+        @Composable
+        fun Block(
             paragraphs: List<HadithParagraph>,
             block: String,
-        ): @Composable () -> Unit =
-            {
-                val text = HadithText.canonical(paragraphs)
-                val arabic = block == HadithBlock.ARABIC
-                val rightToLeft =
-                    arabic ||
-                        (
-                            block.startsWith(HadithDetailViewModel.TRANSLATION_PREFIX) &&
-                                narration.translation?.isRightToLeft == true
+            rightToLeft: Boolean = false,
+        ) {
+            val text = HadithText.canonical(paragraphs)
+            val arabic = block == HadithBlock.ARABIC
+            ReaderText(
+                text = text,
+                block = block,
+                sizeSp =
+                    if (arabic) {
+                        ReadingTextStyle.arabicSize(
+                            sizePercent,
                         )
-                ReaderText(
-                    text = text,
-                    block = block,
-                    sizeSp =
-                        if (arabic) {
-                            ReadingTextStyle.arabicSize(
-                                sizePercent,
-                            )
-                        } else {
-                            ReadingTextStyle.bodySize(sizePercent)
-                        },
-                    typeface = if (arabic) lateef else null,
-                    rightToLeft = rightToLeft,
-                    modifier = Modifier.fillMaxWidth().testTag("hadith-text-$block"),
-                    highlights = highlights,
-                    onHighlight = { viewModel.select(detail, block, text.text, it) },
-                    canHighlight = { narration.source != null },
-                    onOpenHighlights = viewModel::openHighlights,
-                )
-            }
-        if (narration.arabic.isNotEmpty()) reader(detail.arabicText, HadithBlock.ARABIC)()
+                    } else {
+                        ReadingTextStyle.bodySize(sizePercent)
+                    },
+                typeface = if (arabic) lateef else null,
+                rightToLeft = arabic || rightToLeft,
+                modifier = Modifier.fillMaxWidth().testTag("hadith-text-$block"),
+                highlights = highlights,
+                onHighlight = { viewModel.select(detail, block, text.text, it) },
+                canHighlight = { narration.source != null },
+                onOpenHighlights = viewModel::openHighlights,
+            )
+        }
+        if (narration.arabic.isNotEmpty()) Block(detail.arabicText, HadithBlock.ARABIC)
         if (!narration.isSupplication && showEnglish && narration.englishNarrator.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
@@ -285,17 +281,18 @@ private fun DetailContent(
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                reader(detail.narratorText, HadithBlock.NARRATOR)()
+                Block(detail.narratorText, HadithBlock.NARRATOR)
             }
         }
         if (!narration.isSupplication && showEnglish && narration.english.isNotEmpty()) {
-            reader(detail.englishText, HadithBlock.ENGLISH)()
+            Block(detail.englishText, HadithBlock.ENGLISH)
         }
         narration.translation?.let { translation ->
-            reader(
+            Block(
                 HadithText.highlighted(translation.text, QuranSearchText.terms(viewModel.route.query)),
                 translation.block,
-            )()
+                translation.isRightToLeft,
+            )
         }
         val gradings = detail.gradings.filter { it.status == "judgment" && it.judgment(locale).isNotEmpty() }
         if (gradings.isNotEmpty()) {
@@ -357,10 +354,7 @@ private fun DetailMenu(
     onTextSize: () -> Unit,
 ) {
     var open by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    val clipboard = LocalClipboard.current
-    val scope = rememberCoroutineScope()
-    val copied = stringResource(R.string.text_copied)
+    val actions = rememberTextActions()
     val supplication = detail.narration.isSupplication
     val locale = currentLocale()
     Box {
@@ -377,14 +371,7 @@ private fun DetailMenu(
                 leadingIcon = { Icon(Icons.Outlined.ContentCopy, null) },
                 onClick = {
                     open = false
-                    scope.launch {
-                        clipboard.setClipEntry(
-                            ClipEntry(ClipData.newPlainText(content.reference, content.text)),
-                        )
-                    }
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                        Toast.makeText(context, copied, Toast.LENGTH_SHORT).show()
-                    }
+                    actions.copy(content.reference, content.text)
                 },
             )
             DropdownMenuItem(
@@ -392,11 +379,7 @@ private fun DetailMenu(
                 leadingIcon = { Icon(Icons.Outlined.Share, null) },
                 onClick = {
                     open = false
-                    val intent =
-                        Intent(
-                            Intent.ACTION_SEND,
-                        ).setType("text/plain").putExtra(Intent.EXTRA_TEXT, content.text)
-                    context.startActivity(Intent.createChooser(intent, null))
+                    actions.share(content.text)
                 },
             )
             HorizontalDivider()
@@ -470,42 +453,20 @@ fun SupplicationTranslationDialog(
 @Composable
 private fun DetailDialogs(
     viewModel: HadithDetailViewModel,
-    colors: List<com.aljaroudi.muntathir.core.highlight.HighlightColor>,
+    colors: List<HighlightColor>,
 ) {
     val editing by viewModel.editing.collectAsStateWithLifecycle()
     val choosing by viewModel.choosing.collectAsStateWithLifecycle()
     val bookmarkFailed by viewModel.bookmarkFailed.collectAsStateWithLifecycle()
-    editing?.let { draft ->
-        key(draft) { HighlightEditorSheet(draft, colors, viewModel::save, viewModel::delete, viewModel::closeEditor) }
-    }
-    if (choosing.isNotEmpty()) {
-        AlertDialog(
-            onDismissRequest = viewModel::closeEditor,
-            title = { Text(stringResource(R.string.highlights)) },
-            text = {
-                Column {
-                    for (highlight in choosing) {
-                        ListItem(
-                            headlineContent = { Text(highlight.note.ifBlank { highlight.excerpt }.take(60)) },
-                            leadingContent = { HighlightSwatch(highlight.color, selected = false, size = 20) },
-                            modifier = Modifier.clickable { viewModel.edit(highlight) },
-                        )
-                    }
-                }
-            },
-            confirmButton = { TextButton(onClick = viewModel::closeEditor) { Text(stringResource(R.string.cancel)) } },
-        )
-    }
-    if (bookmarkFailed) {
-        AlertDialog(
-            onDismissRequest = viewModel::dismissBookmarkFailure,
-            title = { Text(stringResource(R.string.unable_to_save_bookmark)) },
-            text = { Text(stringResource(R.string.please_try_again)) },
-            confirmButton = {
-                TextButton(
-                    onClick = viewModel::dismissBookmarkFailure,
-                ) { Text(stringResource(R.string.ok)) }
-            },
-        )
-    }
+    ReaderDialogs(
+        editing,
+        choosing,
+        bookmarkFailed,
+        colors,
+        onSave = viewModel::save,
+        onDelete = viewModel::delete,
+        onEdit = viewModel::edit,
+        onClose = viewModel::closeEditor,
+        onDismissBookmarkFailure = viewModel::dismissBookmarkFailure,
+    )
 }

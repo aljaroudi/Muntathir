@@ -123,7 +123,7 @@ class HadithAssetStore(
         forgetValidation()
     }
 
-    fun clearStorageError() = mutable.update { it.copy(storageError = false) }
+    fun clearStorageError() = set { copy(storageError = false) }
 
     suspend fun refresh() {
         if (current.busy) {
@@ -142,27 +142,11 @@ class HadithAssetStore(
         }
         try {
             var local = library?.localFile()
+            // A freshly prepared library passed `integrity_check`, so it needs no background scan.
+            var prepared = false
             if (library == null || local == null || flags.read().restoring != null) {
-                val managed = managedFile()
-                if (managed != null) {
-                    if (library != null) {
-                        set { copy(status = LibraryStatus.Installing, preparing = true) }
-                        try {
-                            val staged = library.prepare(managed, restoring = flags.read().restoring)
-                            try {
-                                updateFlags { copy(cleanup = true) }
-                                reader.commit(staged, library.file)
-                                local = library.file
-                                updateFlags { copy(restoring = null) }
-                            } finally {
-                                staged.delete()
-                            }
-                        } finally {
-                            set { copy(preparing = false) }
-                        }
-                    } else {
-                        local = managed
-                    }
+                managedFile()?.let { managed ->
+                    local = if (library != null) copyIntoLibrary(library, managed).also { prepared = true } else managed
                 }
             }
             if (library != null) {
@@ -208,11 +192,13 @@ class HadithAssetStore(
             if (signature != installedSignature) {
                 integrityCheck?.cancel()
                 set { copy(status = if (isDownloading) LibraryStatus.Installing else LibraryStatus.Checking) }
-                val full = flags.read().validated != signature
-                reader.install(file, fullValidation = false)
+                reader.install(file)
                 installedSignature = signature
                 set { copy(revision = revision + 1) }
-                if (full) startIntegrityCheck(file, signature)
+                when {
+                    prepared -> updateFlags { copy(validated = signature) }
+                    flags.read().validated != signature -> startIntegrityCheck(file, signature)
+                }
             }
             val downloading = pack.isDownloading()
             set {
@@ -234,6 +220,27 @@ class HadithAssetStore(
             if (library != null) storageError(error)
             forgetValidation()
             set { copy(status = LibraryStatus.Failed) }
+        }
+    }
+
+    /** Copies the hosted pack into [library] (keeping removed books removed) and swaps it in. */
+    private suspend fun copyIntoLibrary(
+        library: HadithLocalLibrary,
+        managed: File,
+    ): File {
+        set { copy(status = LibraryStatus.Installing, preparing = true) }
+        try {
+            val staged = library.prepare(managed, restoring = flags.read().restoring)
+            try {
+                updateFlags { copy(cleanup = true) }
+                reader.commit(staged, library.file)
+                updateFlags { copy(restoring = null) }
+                return library.file
+            } finally {
+                staged.delete()
+            }
+        } finally {
+            set { copy(preparing = false) }
         }
     }
 
@@ -379,10 +386,7 @@ class HadithAssetStore(
         if (current.busy) return
         set { copy(busy = true, storageError = false, status = LibraryStatus.Checking, revision = revision + 1) }
         integrityCheck?.cancel()
-        downloadGeneration++
-        pendingDownload = null
-        downloadJob?.cancel()
-        downloadJob = null
+        abandonDownload()
         try {
             forgetValidation()
             reader.install(null)
@@ -481,12 +485,17 @@ class HadithAssetStore(
         if (current.status != LibraryStatus.Downloading || (current.progress ?: 0f) < 1f) return
         val since = transferFinishedAt ?: at.also { transferFinishedAt = it }
         if (at - since >= STALL_MILLIS) {
-            downloadGeneration++
-            pendingDownload = null
-            downloadJob?.cancel()
-            downloadJob = null
+            abandonDownload()
             set { copy(status = LibraryStatus.Failed) }
         }
+    }
+
+    /** Ends the current download request: its late result is ignored. */
+    private fun abandonDownload() {
+        downloadGeneration++
+        pendingDownload = null
+        downloadJob?.cancel()
+        downloadJob = null
     }
 
     private suspend fun managedFile(): File? =

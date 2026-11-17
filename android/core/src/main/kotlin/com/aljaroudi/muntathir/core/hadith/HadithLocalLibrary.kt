@@ -38,33 +38,39 @@ class HadithLocalLibrary(
     /** Every title the library has held, with estimated sizes for installed ones. */
     suspend fun books(includeEstimates: Boolean = true): List<DownloadedBook> = locked { booksLocked(includeEstimates) }
 
+    /** Estimates read every row, so they're kept until the file changes. */
+    private var estimated: Pair<String, List<DownloadedBook>>? = null
+
     private fun booksLocked(includeEstimates: Boolean): List<DownloadedBook> {
         if (!file.isFile) return emptyList()
-        return HadithDatabase.guarded {
-            driver.use(file) { sql ->
-                val weights = if (includeEstimates) contentSizes(sql) else emptyMap()
-                val total = weights.values.sum()
-                val bytes = file.length()
-                sql.query(
-                    """
-                    SELECT c.id, c.name_ar, c.name_en, EXISTS(
-                        SELECT 1 FROM hadith h JOIN book b ON b.id=h.book_id WHERE b.collection_id=c.id
-                    ) FROM download_catalog c ORDER BY c.sort_order, c.id
-                    """.trimIndent(),
-                ) {
-                    val installed = it.int(3) != 0
-                    val weight = weights[it.text(0)] ?: 0
-                    DownloadedBook(
-                        id = it.text(0),
-                        arabic = it.text(1),
-                        english = it.text(2),
-                        installed = installed,
-                        estimatedBytes =
-                            if (total > 0 && installed) (bytes.toDouble() * weight / total).toLong() else null,
-                    )
+        val signature = "${file.length()}|${file.lastModified()}"
+        if (includeEstimates) estimated?.takeIf { it.first == signature }?.let { return it.second }
+        return HadithDatabase
+            .guarded {
+                driver.use(file) { sql ->
+                    val weights = if (includeEstimates) contentSizes(sql) else emptyMap()
+                    val total = weights.values.sum()
+                    val bytes = file.length()
+                    sql.query(
+                        """
+                        SELECT c.id, c.name_ar, c.name_en, EXISTS(
+                            SELECT 1 FROM hadith h JOIN book b ON b.id=h.book_id WHERE b.collection_id=c.id
+                        ) FROM download_catalog c ORDER BY c.sort_order, c.id
+                        """.trimIndent(),
+                    ) {
+                        val installed = it.int(3) != 0
+                        val weight = weights[it.text(0)] ?: 0
+                        DownloadedBook(
+                            id = it.text(0),
+                            arabic = it.text(1),
+                            english = it.text(2),
+                            installed = installed,
+                            estimatedBytes =
+                                if (total > 0 && installed) (bytes.toDouble() * weight / total).toLong() else null,
+                        )
+                    }
                 }
-            }
-        }
+            }.also { if (includeEstimates) estimated = signature to it }
     }
 
     /** Books share pages and search indexes, so actual storage is apportioned by each book's content bytes. */

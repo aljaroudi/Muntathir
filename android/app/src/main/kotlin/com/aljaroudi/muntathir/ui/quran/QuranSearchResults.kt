@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.History
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -46,6 +45,8 @@ import com.aljaroudi.muntathir.ui.components.LoadingState
 import com.aljaroudi.muntathir.ui.components.SectionHeader
 import com.aljaroudi.muntathir.ui.components.currentLocale
 import com.aljaroudi.muntathir.ui.reader.toAnnotatedString
+import com.aljaroudi.muntathir.ui.search.SmartSearchState
+import com.aljaroudi.muntathir.ui.search.smartSearchSection
 import com.aljaroudi.muntathir.ui.theme.QuranFont
 
 /** Swift `SearchHistorySuggestions`: recent searches, each removable, and Clear history. */
@@ -84,7 +85,7 @@ fun LazyListScope.quranSearchResults(
     query: String,
     submitted: String,
     results: VerseResults,
-    smart: SmartResults,
+    smart: SmartSearchState<Ayah>,
     smartAvailable: Boolean,
     hasSurahs: Boolean,
     scoped: Boolean,
@@ -143,63 +144,30 @@ fun LazyListScope.quranSearchResults(
         }
 
         current && QuranSearchModel.isMeaningQuery(request) -> {
-            val hasLocal = results.verses.isNotEmpty() || hasSurahs
-            smartSearch(smart, results, smartAvailable, hasLocal, request, surahNames, onOpen, onSmartSearch)
-        }
-
-        current && results.verses.isEmpty() && !hasSurahs -> {
-            item(key = "empty") { NoResults() }
-        }
-    }
-}
-
-private fun LazyListScope.smartSearch(
-    smart: SmartResults,
-    results: VerseResults,
-    available: Boolean,
-    hasLocal: Boolean,
-    query: String,
-    surahNames: Map<Int, String>,
-    onOpen: (Ayah) -> Unit,
-    onSmartSearch: () -> Unit,
-) {
-    when (smart) {
-        SmartResults.Idle -> {
-            if (!hasLocal) item(key = "empty") { NoResults() }
-            if (available) {
-                item(key = "smart-button") {
-                    Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
-                        Button(
-                            onClick = onSmartSearch,
-                            Modifier.testTag("search-by-meaning"),
-                        ) { Text(stringResource(R.string.smart_search)) }
-                    }
+            val local = results.verses.map { it.id }.toSet()
+            smartSearchSection(
+                smart,
+                smartAvailable,
+                results.verses.isNotEmpty() || hasSurahs,
+                onSmartSearch,
+            ) { found ->
+                val verses = found.filter { it.id !in local }
+                if (verses.isNotEmpty()) {
+                    verseSection(
+                        "smart",
+                        R.string.smart_search,
+                        verses,
+                        results.translation,
+                        request,
+                        surahNames,
+                        onOpen,
+                    )
                 }
             }
         }
 
-        SmartResults.Loading -> {
-            item(key = "smart-loading") { LoadingState(stringResource(R.string.searching)) }
-        }
-
-        SmartResults.Failed -> {
-            item(key = "smart-failed") {
-                EmptyState(
-                    stringResource(R.string.search_unavailable),
-                    message = stringResource(R.string.you_can_still_search_downloaded_text_offline),
-                    onAction = onSmartSearch,
-                )
-            }
-        }
-
-        is SmartResults.Loaded -> {
-            val local = results.verses.map { it.id }.toSet()
-            val verses = smart.verses.filter { it.id !in local }
-            if (smart.verses.isEmpty()) {
-                item(key = "empty") { NoResults() }
-            } else if (verses.isNotEmpty()) {
-                verseSection("smart", R.string.smart_search, verses, results.translation, query, surahNames, onOpen)
-            }
+        current && results.verses.isEmpty() && !hasSurahs -> {
+            item(key = "empty") { NoResults() }
         }
     }
 }

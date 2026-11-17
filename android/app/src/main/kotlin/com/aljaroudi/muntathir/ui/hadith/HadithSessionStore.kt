@@ -1,8 +1,10 @@
-package com.aljaroudi.muntathir.data.library
+package com.aljaroudi.muntathir.ui.hadith
 
 import android.content.Context
 import com.aljaroudi.muntathir.core.hadith.HadithSession
+import com.aljaroudi.muntathir.core.io.writeTextAtomically
 import com.aljaroudi.muntathir.data.AppScope
+import com.aljaroudi.muntathir.data.library.ContentLibraries
 import com.aljaroudi.muntathir.ui.navigation.HadithBrowseRoute
 import com.aljaroudi.muntathir.ui.navigation.HadithDetailRoute
 import com.aljaroudi.muntathir.ui.navigation.HadithRoute
@@ -38,14 +40,22 @@ class HadithSessionStore
     ) {
         enum class Level { Results, Contents }
 
+        data class Restored(
+            val routes: List<HadithRoute>,
+            val rootQuery: String,
+        )
+
         private val file = File(context.noBackupFilesDir, "hadith.session.v1.json")
 
         @OptIn(ExperimentalCoroutinesApi::class)
         private val io = Dispatchers.IO.limitedParallelism(1)
+        private val mutex = Mutex()
         private var loaded: HadithSession? = null
         private var restored = false
         private var saving: Job? = null
-        private val mutex = Mutex()
+        private var savedChain: List<HadithRoute>? = null
+        private val pendingRows = mutableMapOf<Level, String?>()
+        private var pendingOffset = 0
 
         private suspend fun session(): HadithSession =
             loaded
@@ -53,7 +63,7 @@ class HadithSessionStore
 
         /**
          * Once per process: the saved screens below the library, resolved against the installed library, and the
-         * library's own search. Empty when nothing was open or the saved sources no longer exist.
+         * library's own search. `null` when the saved sources no longer exist.
          */
         suspend fun restore(): Restored? {
             if (restored) return null
@@ -67,8 +77,10 @@ class HadithSessionStore
                     if (reader.catalog().none { it.id == collection }) return null
                     routes += HadithBrowseRoute(collection, query = session.contentsQuery.orEmpty())
                     session.chapter?.let { chapter ->
-                        val id = reader.chapterID(chapter) ?: return@let
-                        routes += HadithBrowseRoute(collection, id, session.request.query)
+                        reader.chapterID(chapter)?.let {
+                            routes +=
+                                HadithBrowseRoute(collection, it, session.request.query)
+                        }
                     }
                 }
                 session.selection?.let { source ->
@@ -86,14 +98,6 @@ class HadithSessionStore
             }
         }
 
-        data class Restored(
-            val routes: List<HadithRoute>,
-            val rootQuery: String,
-        )
-
-        private val pendingRows = mutableMapOf<Level, String?>()
-        private var pendingOffset = 0
-
         /** The restored first visible row for [level], once. */
         fun takeRow(level: Level): String? = pendingRows.remove(level)
 
@@ -102,67 +106,61 @@ class HadithSessionStore
 
         /** Records the hadith screens open below the library, in stack order. */
         fun save(routes: List<HadithRoute>) {
-            val chain = mutableListOf<HadithRoute>()
-            for (route in routes) {
-                val tracked =
-                    when (route) {
-                        is HadithBrowseRoute -> route.collectionID != null
-                        is HadithDetailRoute -> !route.supplication && route.highlight == null
-                        else -> false
-                    }
-                if (!tracked) break
-                chain += route
-            }
+            val chain = routes.takeWhile(::isTracked)
+            if (chain == savedChain) return
+            savedChain = chain
             saving?.cancel()
-            saving =
-                scope.launch {
-                    val reader = libraries.hadith.reader
-                    val contents = chain.filterIsInstance<HadithBrowseRoute>().firstOrNull { it.chapterID == null }
-                    val chapter = chain.filterIsInstance<HadithBrowseRoute>().firstOrNull { it.chapterID != null }
-                    val detail = chain.filterIsInstance<HadithDetailRoute>().firstOrNull()
-                    val sources =
-                        try {
-                            reader.chapterSource(chapter?.chapterID) to detail?.let { reader.source(it.id) }
-                        } catch (cancellation: CancellationException) {
-                            throw cancellation
-                        } catch (_: Exception) {
-                            // Keep the previous complete session if a query fails.
-                            return@launch
-                        }
-                    update { session ->
-                        val collection = contents?.collectionID ?: chapter?.collectionID
-                        session.copy(
-                            active = chain.isNotEmpty(),
-                            request =
-                                session.request.copy(
-                                    collectionID = collection,
-                                    chapterID = chapter?.chapterID,
-                                    query = chapter?.query ?: if (collection == null) session.request.query else "",
-                                ),
-                            chapter = sources.first,
-                            selection = sources.second,
-                            contentsQuery = contents?.query,
-                            screen =
-                                if (chapter != null) {
-                                    "results"
-                                } else if (contents != null) {
-                                    "contents"
-                                } else {
-                                    null
-                                },
-                            listRow = if (chapter != null || collection == null) session.listRow else null,
-                            contentsRow = if (contents != null) session.contentsRow else null,
-                            detailOffset =
-                                if (detail != null &&
-                                    sources.second == session.selection
-                                ) {
-                                    session.detailOffset
-                                } else {
-                                    0.0
-                                },
-                        )
-                    }
+            saving = scope.launch { saveChain(chain) }
+        }
+
+        private fun isTracked(route: HadithRoute) =
+            when (route) {
+                is HadithBrowseRoute -> route.collectionID != null
+                is HadithDetailRoute -> !route.supplication && route.highlight == null
+                else -> false
+            }
+
+        private suspend fun saveChain(chain: List<HadithRoute>) {
+            val reader = libraries.hadith.reader
+            val browse = chain.filterIsInstance<HadithBrowseRoute>()
+            val contents = browse.firstOrNull { it.chapterID == null }
+            val chapter = browse.firstOrNull { it.chapterID != null }
+            val detail = chain.filterIsInstance<HadithDetailRoute>().firstOrNull()
+            val (chapterSource, selection) =
+                try {
+                    reader.chapterSource(chapter?.chapterID) to detail?.let { reader.source(it.id) }
+                } catch (cancellation: CancellationException) {
+                    throw cancellation
+                } catch (_: Exception) {
+                    // Keep the previous complete session if a query fails.
+                    return
                 }
+            val collection = contents?.collectionID ?: chapter?.collectionID
+            update { session ->
+                session.copy(
+                    active = chain.isNotEmpty(),
+                    request =
+                        session.request.copy(
+                            collectionID = collection,
+                            chapterID = chapter?.chapterID,
+                            query = chapter?.query ?: if (collection == null) session.request.query else "",
+                        ),
+                    chapter = chapterSource,
+                    selection = selection,
+                    contentsQuery = contents?.query,
+                    screen =
+                        if (chapter != null) {
+                            "results"
+                        } else if (contents != null) {
+                            "contents"
+                        } else {
+                            null
+                        },
+                    listRow = if (chapter != null || collection == null) session.listRow else null,
+                    contentsRow = if (contents != null) session.contentsRow else null,
+                    detailOffset = if (detail != null && selection == session.selection) session.detailOffset else 0.0,
+                )
+            }
         }
 
         /** The library's own search, restored when no book is open. */
@@ -200,10 +198,6 @@ class HadithSessionStore
                 val new = change(old)
                 if (new == old) return@withLock
                 loaded = new
-                withContext(io) {
-                    val temporary = File(file.path + ".tmp")
-                    temporary.writeText(new.encode())
-                    temporary.renameTo(file)
-                }
+                withContext(io) { file.writeTextAtomically(new.encode()) }
             }
     }

@@ -53,7 +53,7 @@ class LibraryWorker
                     NotificationManager.IMPORTANCE_LOW,
                 ),
             )
-            val title = if (pack == ContentPack.Supplications) R.string.supplications else R.string.hadith
+            val title = (pack ?: ContentPack.Hadith).title
             val notification =
                 NotificationCompat
                     .Builder(applicationContext, CHANNEL)
