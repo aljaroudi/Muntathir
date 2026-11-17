@@ -28,7 +28,6 @@ import com.aljaroudi.muntathir.ui.components.isTwoPane
 import com.aljaroudi.muntathir.ui.downloads.DownloadsScreen
 import com.aljaroudi.muntathir.ui.figures.FigurePickerScreen
 import com.aljaroudi.muntathir.ui.figures.FigureProfileScreen
-import com.aljaroudi.muntathir.ui.figures.FigureTreeScreen
 import com.aljaroudi.muntathir.ui.figures.FiguresScreen
 import com.aljaroudi.muntathir.ui.hadith.HadithBrowseScreen
 import com.aljaroudi.muntathir.ui.hadith.HadithBrowseViewModel
@@ -46,7 +45,6 @@ import com.aljaroudi.muntathir.ui.navigation.DetailRoute
 import com.aljaroudi.muntathir.ui.navigation.DownloadsRoute
 import com.aljaroudi.muntathir.ui.navigation.FigurePickerRoute
 import com.aljaroudi.muntathir.ui.navigation.FigureProfileRoute
-import com.aljaroudi.muntathir.ui.navigation.FigureTreeRoute
 import com.aljaroudi.muntathir.ui.navigation.HadithBrowseRoute
 import com.aljaroudi.muntathir.ui.navigation.HadithDetailRoute
 import com.aljaroudi.muntathir.ui.navigation.HadithIntroductionRoute
@@ -284,9 +282,6 @@ fun AppShell(
                             }
                             entry<FigureProfileRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
                                 FigureProfileScreen(route, open, detailBack)
-                            }
-                            entry<FigureTreeRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
-                                FigureTreeScreen(route, open, detailBack)
                             }
                             entry<FigurePickerRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
                                 FigurePickerScreen(route, open, detailBack)

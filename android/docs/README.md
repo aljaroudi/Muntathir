@@ -51,3 +51,12 @@ Native Kotlin + Jetpack Compose version of the iOS app in [`apple/`](../../apple
 - **Hadith keeps full parity with iOS.** Each hadith-schema pack (Hadith, Supplications) is copied into an app-owned `no_backup/Libraries/<pack>/library.db`, then the Play pack is removed, so single books can be removed and restored. A long copy or rewrite runs in the process and is kept alive by an expedited WorkManager job. Staging and an atomic rename make an interrupted install resume on the next start.
 - **One SQL and pack interface.** Every content database goes through `core/sql/ContentSql` (bundled driver in the app, sqlite-jdbc in tests), and every download through `core/assets/AssetPack`.
 - **Android packs are always v8**, so the v7-only `hadith_literal_rank` SQL function isn't ported (the bundled driver can't register functions).
+
+## Decisions (2026-11-17, P5)
+
+- **Qibla map needs a key; the compass doesn't.** Maps Compose shows the hybrid map when `mapsApiKey` (Gradle property) or `MAPS_API_KEY` (`local.properties`) is set. Without one, the screen shows a compass dial with the same ring, turn cue and haptics.
+- **Qibla has its own precise session** (`ACCESS_FINE_LOCATION`), separate from the coarse prayer location, and never saves the fix. The Rakaat hint reuses it in optional mode, which never asks for permission.
+- **Drawn instead of 3D:** Canvas bead loop (no RealityKit) and Compose bars (no chart library).
+- **Rakaat light is Y-plane luma** (BT.601). The detector is relative to its own baseline, so iOS's Rec. 709 weights aren't needed.
+- **No family tree yet**, matching iOS, which removed it until the layout handles several spouses.
+- **Parallel worktrees branch from `feat/android-port`**, not `main`; link `web/node_modules` so the pre-commit hook runs.

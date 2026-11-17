@@ -6,7 +6,6 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import com.aljaroudi.muntathir.FakeLocator
@@ -25,7 +24,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
 
-/** Swift `FiguresUITests`: browse, search, profile, relatives, the family tree, and observance links. */
+/** Swift `FiguresUITests`: browse, search, profile, relatives (no family tree), and observance links. */
 @HiltAndroidTest
 @UninstallModules(StorageModule::class, LocationModule::class)
 class FiguresTest {
@@ -48,7 +47,7 @@ class FiguresTest {
     private fun waitFor(tag: String) = waitFor(hasTestTag(tag))
 
     @Test
-    fun browseSearchProfileRelativeAndTree() {
+    fun browseSearchProfileAndRelative() {
         compose.onNodeWithTag("tab-tools").performClick()
         compose.onNodeWithTag("figures").performClick()
         waitFor("figure-prophet-muhammad")
@@ -63,15 +62,8 @@ class FiguresTest {
         profile.performScrollToNode(hasTestTag("figure-relative-ali-ibn-abi-talib"))
         compose.onNodeWithTag("figure-relative-ali-ibn-abi-talib").performClick()
         waitFor("figure-profile-ali-ibn-abi-talib")
-
-        // Family tree centered on Ali; tapping a child refocuses it.
-        compose.onNodeWithTag("figure-family-tree").performClick()
-        waitFor("family-node-hasan-ibn-ali")
-        compose.onNodeWithTag("family-node-hasan-ibn-ali").performScrollTo().performClick()
-        waitFor("family-back-to-original")
-        waitFor("family-node-ali-ibn-abi-talib")
-        compose.onNodeWithTag("family-view-profile").performClick()
-        waitFor("figure-profile-hasan-ibn-ali")
+        // Like iOS, there is no family tree for now.
+        compose.onNodeWithTag("figure-family-tree").assertDoesNotExist()
     }
 
     @Test

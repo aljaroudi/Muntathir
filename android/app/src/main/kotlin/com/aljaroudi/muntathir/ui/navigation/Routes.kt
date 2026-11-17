@@ -130,12 +130,6 @@ data class FigureProfileRoute(
     val id: String,
 ) : DetailRoute
 
-/** The family tree centered on [id]. */
-@Serializable
-data class FigureTreeRoute(
-    val id: String,
-) : DetailRoute
-
 /** The figures of an observance linked to more than one. */
 @Serializable
 data class FigurePickerRoute(

@@ -45,7 +45,7 @@ class FiguresViewModel
         fun clearRecent() = history.clear(SearchArea.Figures)
     }
 
-/** Swift `FigureDestination`: the shared library for profiles, trees and observance pickers. */
+/** Swift `FigureDestination`: the shared library for profiles and observance pickers. */
 @HiltViewModel
 class FigureLibraryViewModel
     @Inject

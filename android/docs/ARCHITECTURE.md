@@ -2,7 +2,7 @@
 
 ## Stack
 
-Kotlin 2.x · AGP 9 · Compose BOM + Material 3 Expressive (dynamic color, emerald fallback) · Navigation 3 · Hilt · Coroutines/Flow · kotlinx.serialization · Room · DataStore · WorkManager · Glance · CameraX · Play Asset Delivery (`asset-delivery-ktx`) · Ktor client · Adhan Swift 1.5.0 ported into `core/prayer/adhan`.
+Kotlin 2.x · AGP 9 · Compose BOM + Material 3 Expressive (dynamic color, emerald fallback) · Navigation 3 · Hilt · Coroutines/Flow · kotlinx.serialization · Room · DataStore · WorkManager · Glance · CameraX · Maps Compose (optional key) · Play Asset Delivery (`asset-delivery-ktx`) · Ktor client · Adhan Swift 1.5.0 ported into `core/prayer/adhan`.
 
 minSdk 26, compile/target latest. Edge-to-edge, predictive back, per-app language (AppCompat `setApplicationLocales` + `locales_config.xml`). No AGSL; the Today sky uses an animated gradient `Brush`.
 
@@ -37,7 +37,7 @@ android/
 | Rulings | Read in place from the `rulings` pack (`core/rulings/RulingsAssetStore`) |
 | Hadith reading position | `no_backup/hadith.session.v1.json` (`ui/hadith/HadithSessionStore`) |
 | Downloaded Quran translations | `no_backup/QuranTranslations/<generation>/<id>.db` + atomic `index.json` (`core/quran/QuranTranslationFiles`) |
-| Highlights, bookmarks, activity (later: prayer history) | Room `databases/user.db` (bundled driver, schemas in `app/schemas`), stores in `core` behind small interfaces; installation id in `no_backup/QuranIdentity` |
+| Highlights, bookmarks, activity, prayer history (`prayer_history`, v2) | Room `databases/user.db` (bundled driver, schemas in `app/schemas`), stores in `core` behind small interfaces; installation id in `no_backup/QuranIdentity` |
 
 Schema checks match iOS: Hadith `application_id` 1230262606, `user_version` 7–8; Rulings 1179809601 v1. Keep the iOS record design (stable IDs, `modifiedAt`, tombstones) so that restore and merge logic stays identical.
 

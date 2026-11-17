@@ -102,17 +102,29 @@ Done 2026-11-17. `just android-test` passes, and all 20 instrumented tests pass 
   - In two panes, every detail route (`DetailRoute`) replaces the open detail when another is opened, so the shell has one `open` rule.
 
 ## P5 — Tools (parallelizable)
-Groundwork (2026-11-17), so the tools can be built in parallel worktrees:
+Done 2026-11-17. `just android-test` passes, and all 29 instrumented tests pass on the API 37 emulator. Camera counting, compass heading, Qibla permissions, map imagery and haptics still need a physical device.
+
+Groundwork, so the tools could be built in parallel worktrees:
 - `core/progress/PrayerProgress` ports `PrayerCompletion`, `PrayerTiming`, `PrayerProgress` and `PrayerSessionRecording` (`PrayerProgressTest`).
 - Room v2 adds `prayer_history` (auto-migration from v1). `ProgressStore` gains `save(PrayerCompletion)` (once per id), `prayers()` and the live `activityFlow`/`prayerFlow`.
 - `core/qibla/QiblaSession` holds the `QiblaLocationSession` rules on one monotonic clock (`QiblaSessionTest` ports the platform-free cases of `QiblaLocationTests`, `QiblaAccuracyTests` and `RakaatQiblaTests`). `location/QiblaSensors` is the app interface, bound in `QiblaModule`.
 - The routes (`RakaatSessionRoute`, `FigureProfileRoute`, `FigureTreeRoute`, `FigurePickerRoute`) and the shell entries are wired to placeholder screens in `ui/qibla`, `ui/rakaat`, `ui/tasbih`, `ui/figures` and `ui/activity`. Figures is a list-detail tool.
 
-- [~] **P5.1** Qibla. Skill: android-permissions-security.
-- [~] **P5.2** Rakaat tracker. Skill: camerax.
-- [~] **P5.3** Tasbih.
-- [~] **P5.4** Figures + family tree.
-- [~] **P5.5** Activity screen.
+- [x] **P5.1** Qibla. Skill: android-permissions-security.
+  - `location/DeviceQiblaSensors` drives `QiblaSession`: Fused high accuracy every second, and a rotation-vector heading with `GeomagneticField` declination, remapped for the display rotation. `core/qibla/QiblaGeometry` has the heading, accuracy and zoom math (`QiblaGeometryTest`).
+  - The screen asks for fine + coarse location once per visit. With only approximate location it shows "Allow precise location" and Open Settings.
+  - Map: Maps Compose hybrid, north-up, a geodesic line, and our own marker (no Maps location layer). The key comes from the `mapsApiKey` Gradle property or `MAPS_API_KEY` in `local.properties`. Without a key, a compass dial is shown instead (`QiblaMapModule`). `QiblaTest` fakes `QiblaModule`.
+- [x] **P5.2** Rakaat tracker. Skill: camerax.
+  - `core/rakaat/RakaatCapture` ports `RakaatCamera.process` (`RakaatCaptureTest`). `camera/DeviceSujoodCamera` (CameraX 1.6.2, `CameraModule`) reads front-camera Y-plane luma (BT.601, not Rec. 709) at about 320×240 and 10 fps. Once AE, AWB and AF converge it locks them through Camera2 interop, and only frames captured under the lock count.
+  - The session keeps the screen on and locks orientation. It ends on `ON_STOP` or on leaving the screen, but not on a configuration change. It saves one `PrayerCompletion`, with retry. The preview is a blurred, dimmed `CameraXViewfinder` (TextureView). Any camera error ends the session, as an interruption does on iOS. `RakaatTest` fakes the camera and the Qibla sensors.
+- [x] **P5.3** Tasbih.
+  - `core/tasbih/TasbihBeadLoop` ports the `TasbihBeadScene` geometry (`TasbihBeadLoopTest`). `ui/tasbih` draws the loop in perspective on two Canvas layers around the count, with radial-gradient beads instead of RealityKit; the rear layer is blurred on API 31+.
+  - A visit resets when the screen leaves composition (including switching away from a Tasbih tab), but not on a configuration change. Each bead records the visit's total. Reduced motion is an animator duration scale of 0. `TasbihTest` drives pulls and the accessibility action.
+- [x] **P5.4** Figures.
+  - `core/figures/FigureLibrary` ports the Swift library: validation, verified-only pruning, siblings, child groups, age, and search that folds diacritics and tatweel. `FigureLibraryTest` runs every Swift case and loads `shared/figures/figures.json`. `data/FigureStore` parses the bundled asset once, off the main thread.
+  - `ui/figures` has the browser (recent searches, area `Figures`), the profile and the observance picker. Event and Calendar observance rows link to figures, which closes the P2.5 note.
+  - Like iOS, there's no family tree for now (its layout is hard to read with several spouses). The tree screen is in this task's history (`c307b57`).
+- [x] **P5.5** Activity screen. `ui/activity` is Swift `ActivityProgressView`: on-time prayers as Compose bars (rows at ≥1.5× font), reader time, bookmarks, highlights and beads, all live from `ProgressStore` and `QuranUserStore`. `Formats.readDuration` matches the Swift units. Tested by `ActivityTest`.
 
 ## P6 — System surfaces
 - [ ] **P6.1** Glance prayer, ayah, and Hijri widgets. Skills: glance-appwidget-updates-and-memory, glance-canonical-layouts.

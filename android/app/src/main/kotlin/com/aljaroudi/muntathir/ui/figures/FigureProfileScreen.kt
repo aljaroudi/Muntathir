@@ -5,8 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AccountTree
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -33,7 +31,6 @@ import com.aljaroudi.muntathir.ui.components.ScreenScaffold
 import com.aljaroudi.muntathir.ui.components.SectionHeader
 import com.aljaroudi.muntathir.ui.components.currentLocale
 import com.aljaroudi.muntathir.ui.navigation.FigureProfileRoute
-import com.aljaroudi.muntathir.ui.navigation.FigureTreeRoute
 import com.aljaroudi.muntathir.ui.navigation.Route
 import java.util.Locale
 
@@ -73,17 +70,8 @@ fun FigureProfileScreen(
     val load by viewModel.library.collectAsStateWithLifecycle()
     val locale = currentLocale()
     val figure = load.library?.byID?.get(route.id)
-    ScreenScaffold(
-        figure?.title(locale) ?: stringResource(R.string.figures),
-        onBack = onBack,
-        actions = {
-            if (figure != null) {
-                IconButton(onClick = { open(FigureTreeRoute(figure.id)) }, Modifier.testTag("figure-family-tree")) {
-                    Icon(Icons.Outlined.AccountTree, stringResource(R.string.family_tree))
-                }
-            }
-        },
-    ) { padding ->
+    // Like iOS, the profile has no family tree for now (hard to read with several spouses).
+    ScreenScaffold(figure?.title(locale) ?: stringResource(R.string.figures), onBack = onBack) { padding ->
         FigureGate(load, padding) { library ->
             if (figure == null) {
                 FiguresUnavailable(padding)
