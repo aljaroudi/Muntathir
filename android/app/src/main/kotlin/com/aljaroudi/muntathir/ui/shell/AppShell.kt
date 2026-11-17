@@ -8,25 +8,41 @@ import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneSt
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.aljaroudi.muntathir.core.app.AppTool
+import com.aljaroudi.muntathir.data.library.HadithSessionStore
 import com.aljaroudi.muntathir.ui.calendar.CalendarScreen
 import com.aljaroudi.muntathir.ui.calendar.EventsScreen
 import com.aljaroudi.muntathir.ui.calendar.EventsViewModel
 import com.aljaroudi.muntathir.ui.calendar.MonthAdjustmentsScreen
 import com.aljaroudi.muntathir.ui.components.isTwoPane
 import com.aljaroudi.muntathir.ui.downloads.DownloadsScreen
+import com.aljaroudi.muntathir.ui.hadith.HadithBrowseScreen
+import com.aljaroudi.muntathir.ui.hadith.HadithBrowseViewModel
+import com.aljaroudi.muntathir.ui.hadith.HadithDetailScreen
+import com.aljaroudi.muntathir.ui.hadith.HadithDetailViewModel
+import com.aljaroudi.muntathir.ui.hadith.HadithIntroductionScreen
+import com.aljaroudi.muntathir.ui.hadith.HadithIntroductionViewModel
+import com.aljaroudi.muntathir.ui.hadith.HadithSavedScreen
+import com.aljaroudi.muntathir.ui.hadith.HadithSavedViewModel
 import com.aljaroudi.muntathir.ui.location.LocationScreen
 import com.aljaroudi.muntathir.ui.navigation.AppNavigator
 import com.aljaroudi.muntathir.ui.navigation.CreditsRoute
 import com.aljaroudi.muntathir.ui.navigation.DownloadsRoute
+import com.aljaroudi.muntathir.ui.navigation.HadithBrowseRoute
+import com.aljaroudi.muntathir.ui.navigation.HadithDetailRoute
+import com.aljaroudi.muntathir.ui.navigation.HadithIntroductionRoute
+import com.aljaroudi.muntathir.ui.navigation.HadithRoute
+import com.aljaroudi.muntathir.ui.navigation.HadithSavedRoute
 import com.aljaroudi.muntathir.ui.navigation.HighlightPaletteRoute
 import com.aljaroudi.muntathir.ui.navigation.LocationRoute
 import com.aljaroudi.muntathir.ui.navigation.MonthAdjustmentsRoute
@@ -53,6 +69,8 @@ import com.aljaroudi.muntathir.ui.settings.HighlightPaletteScreen
 import com.aljaroudi.muntathir.ui.settings.SettingsLinks
 import com.aljaroudi.muntathir.ui.settings.SettingsScreen
 import com.aljaroudi.muntathir.ui.today.TodayScreen
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 /** Today, up to three tool shortcuts and Tools; a bar on phones, a rail on larger windows. */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
@@ -74,6 +92,23 @@ fun AppShell(
             navigator.current.removeAt(navigator.current.lastIndex)
         }
         navigator.push(route)
+    }
+    // Beside a hadith list, a narration replaces the open one, and a new list closes it.
+    val openHadith: (Route) -> Unit = { route ->
+        if (twoPane) {
+            while (navigator.current.lastOrNull().let { it is HadithRoute && it !is HadithBrowseRoute }) {
+                navigator.current.removeAt(navigator.current.lastIndex)
+            }
+        }
+        navigator.push(route)
+    }
+    val hadithSession = hiltViewModel<HadithShellViewModel>().session
+    // Swift `HadithSession`: remember the hadith screens below the library for the next launch.
+    LaunchedEffect(navigator) {
+        snapshotFlow { navigator.current.toList() }.collect { stack ->
+            val root = stack.indexOf(ToolRoute(AppTool.Hadith))
+            if (root >= 0) hadithSession.save(stack.drop(root + 1).filterIsInstance<HadithRoute>())
+        }
     }
 
     NavigationSuiteScaffold(
@@ -118,6 +153,8 @@ fun AppShell(
                                     route.tool,
                                     onBack = navigator::back.takeIf { route != navigator.tab },
                                     openReader,
+                                    openHadith,
+                                    onRestoreHadith = { routes -> routes.forEach(navigator::push) },
                                 )
                             }
                             entry<QuranSavedRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
@@ -134,6 +171,41 @@ fun AppShell(
                                     ),
                                     openReader,
                                     detailBack,
+                                )
+                            }
+                            entry<HadithBrowseRoute> { route ->
+                                HadithBrowseScreen(
+                                    hiltViewModel<HadithBrowseViewModel, HadithBrowseViewModel.Factory>(
+                                        creationCallback = { it.create(route, isRoot = false) },
+                                    ),
+                                    onOpen = openHadith,
+                                    onRestore = {},
+                                    onBack = navigator::back,
+                                )
+                            }
+                            entry<HadithDetailRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
+                                HadithDetailScreen(
+                                    hiltViewModel<HadithDetailViewModel, HadithDetailViewModel.Factory>(
+                                        creationCallback = { it.create(route) },
+                                    ),
+                                    detailBack,
+                                )
+                            }
+                            entry<HadithIntroductionRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
+                                HadithIntroductionScreen(
+                                    hiltViewModel<HadithIntroductionViewModel, HadithIntroductionViewModel.Factory>(
+                                        creationCallback = { it.create(route) },
+                                    ),
+                                    detailBack,
+                                )
+                            }
+                            entry<HadithSavedRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
+                                HadithSavedScreen(
+                                    hiltViewModel<HadithSavedViewModel, HadithSavedViewModel.Factory>(
+                                        creationCallback = { it.create(route) },
+                                    ),
+                                    onOpen = { navigator.push(it) },
+                                    onBack = detailBack,
                                 )
                             }
                             entry<SettingsRoute>(metadata = ListDetailSceneStrategy.listPane()) {
@@ -186,12 +258,22 @@ fun AppShell(
 private val SETTINGS_DETAILS =
     setOf(TabsSettingsRoute, HighlightPaletteRoute, DownloadsRoute, LocationRoute, MonthAdjustmentsRoute, CreditsRoute)
 
+private val LIST_TOOLS = setOf(ToolRoute(AppTool.Quran), ToolRoute(AppTool.Hadith))
+
+/** Holds app-wide stores the shell needs outside any screen. */
+@HiltViewModel
+class HadithShellViewModel
+    @Inject
+    constructor(
+        val session: HadithSessionStore,
+    ) : ViewModel()
+
 /** Tools whose root lists items for a detail pane beside it. */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 private fun listPanes(provider: (NavKey) -> NavEntry<NavKey>): (NavKey) -> NavEntry<NavKey> =
     { key ->
         val entry = provider(key)
-        if (key == ToolRoute(AppTool.Quran)) {
+        if (key in LIST_TOOLS || key is HadithBrowseRoute) {
             NavEntry(key, entry.contentKey, ListDetailSceneStrategy.listPane()) { entry.Content() }
         } else {
             entry
@@ -204,11 +286,35 @@ private fun ToolScreen(
     tool: AppTool,
     onBack: (() -> Unit)?,
     openReader: (Route) -> Unit,
+    openHadith: (Route) -> Unit,
+    onRestoreHadith: (List<HadithRoute>) -> Unit,
 ) {
     when (tool) {
-        AppTool.Quran -> QuranScreen(hiltViewModel(), openReader, onBack)
-        AppTool.Calendar -> CalendarScreen(hiltViewModel(), onBack)
-        AppTool.Events -> EventsScreen(hiltViewModel<EventsViewModel>().library, onBack)
-        else -> ComingSoonScreen(stringResource(tool.title), onBack)
+        AppTool.Quran -> {
+            QuranScreen(hiltViewModel(), openReader, onBack)
+        }
+
+        AppTool.Hadith -> {
+            HadithBrowseScreen(
+                hiltViewModel<HadithBrowseViewModel, HadithBrowseViewModel.Factory>(
+                    creationCallback = { it.create(HadithBrowseRoute(), isRoot = true) },
+                ),
+                onOpen = openHadith,
+                onRestore = onRestoreHadith,
+                onBack = onBack,
+            )
+        }
+
+        AppTool.Calendar -> {
+            CalendarScreen(hiltViewModel(), onBack)
+        }
+
+        AppTool.Events -> {
+            EventsScreen(hiltViewModel<EventsViewModel>().library, onBack)
+        }
+
+        else -> {
+            ComingSoonScreen(stringResource(tool.title), onBack)
+        }
     }
 }

@@ -1,10 +1,13 @@
 package com.aljaroudi.muntathir.ui.downloads
 
 import androidx.activity.compose.LocalActivity
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -12,8 +15,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -35,10 +41,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aljaroudi.muntathir.R
+import com.aljaroudi.muntathir.core.hadith.LibraryState
+import com.aljaroudi.muntathir.core.hadith.LibraryStatus
 import com.aljaroudi.muntathir.core.quran.DownloadState
 import com.aljaroudi.muntathir.core.quran.QuranTranslation
 import com.aljaroudi.muntathir.core.quran.TranslationState
 import com.aljaroudi.muntathir.data.QuranTranslations
+import com.aljaroudi.muntathir.data.library.ContentLibraries
+import com.aljaroudi.muntathir.data.library.ContentLibrary
 import com.aljaroudi.muntathir.ui.components.ScreenScaffold
 import com.aljaroudi.muntathir.ui.components.SectionHeader
 import com.aljaroudi.muntathir.ui.components.currentLocale
@@ -53,9 +63,10 @@ class DownloadsViewModel
     @Inject
     constructor(
         val translations: QuranTranslations,
+        val libraries: ContentLibraries,
     ) : ViewModel()
 
-/** Swift `DownloadsSettingsView`: Quran translations (Hadith, Supplications and Rulings arrive with P4). */
+/** Swift `DownloadsSettingsView`: Hadith (with its books), Supplications and Quran translations. */
 @Composable
 fun DownloadsScreen(
     viewModel: DownloadsViewModel,
@@ -71,8 +82,44 @@ fun DownloadsScreen(
         if (state.downloadState != previous && state.downloadState == DownloadState.Idle) requested = null
         previous = state.downloadState
     }
+    val hadith = viewModel.libraries.hadith
+    val supplications = viewModel.libraries.supplications
+    val hadithState by hadith.state.collectAsStateWithLifecycle()
+    val supplicationsState by supplications.state.collectAsStateWithLifecycle()
+    var booksExpanded by rememberSaveable { mutableStateOf(false) }
+    var requestedBook by rememberSaveable { mutableStateOf<String?>(null) }
+    LaunchedEffect(hadithState.status) {
+        if (hadithState.status == LibraryStatus.Ready ||
+            hadithState.status == LibraryStatus.Missing
+        ) {
+            requestedBook = null
+        }
+    }
     ScreenScaffold(stringResource(R.string.downloads), onBack = onBack) { padding ->
         LazyColumn(Modifier.fillMaxSize().testTag("downloads"), contentPadding = padding) {
+            libraryPack(
+                library = hadith,
+                state = hadithState,
+                title = R.string.hadith,
+                booksExpanded = booksExpanded,
+                onExpand = { booksExpanded = !booksExpanded },
+                requestedBook = requestedBook,
+                onRestoreBook = { book ->
+                    requestedBook = book
+                    hadith.download(book)
+                },
+                onConfirm = { activity?.let(hadith::confirm) },
+            )
+            libraryPack(
+                library = supplications,
+                state = supplicationsState,
+                title = R.string.supplications,
+                booksExpanded = false,
+                onExpand = null,
+                requestedBook = null,
+                onRestoreBook = {},
+                onConfirm = { activity?.let(supplications::confirm) },
+            )
             quranTranslations(
                 state = state,
                 requested = requested,
@@ -102,6 +149,170 @@ fun DownloadsScreen(
                 ) { Text(stringResource(R.string.cancel)) }
             },
         )
+    }
+}
+
+/** Swift `HadithDownloadsSection`: the whole pack, then (for Hadith) each book with remove and restore. */
+private fun LazyListScope.libraryPack(
+    library: ContentLibrary,
+    state: LibraryState,
+    @androidx.annotation.StringRes title: Int,
+    booksExpanded: Boolean,
+    onExpand: (() -> Unit)?,
+    requestedBook: String?,
+    onRestoreBook: (String) -> Unit,
+    onConfirm: () -> Unit,
+) {
+    val pack = library.pack.packName
+    val idle = !state.busy && !state.isDownloading
+    val failed = state.status == LibraryStatus.Failed || state.status == LibraryStatus.Incompatible
+    item(key = "$pack-header") { SectionHeader(stringResource(title)) }
+    if (!booksExpanded || requestedBook == null) item(key = "$pack-status") { LibraryStatusRow(state, onConfirm) }
+    if (state.hasLocalAsset) {
+        item(key = "$pack-size") {
+            val locale = currentLocale()
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.total_size)) },
+                trailingContent = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(formatBytes(state.installedBytes, locale))
+                        IconButton(
+                            onClick = library::removeAll,
+                            enabled = idle,
+                            modifier = Modifier.testTag("downloads-remove-$pack"),
+                        ) { Icon(Icons.Outlined.Delete, stringResource(R.string.remove_download)) }
+                    }
+                },
+                modifier = Modifier.testTag("downloads-size-$pack"),
+            )
+        }
+    }
+    item(key = "$pack-action") {
+        when {
+            !state.isDownloading && (state.status == LibraryStatus.Checking || state.busy) -> {
+                Box(
+                    Modifier.fillMaxWidth().padding(16.dp),
+                    contentAlignment = Alignment.Center,
+                ) { CircularProgressIndicator() }
+            }
+
+            requestedBook == null && failed -> {
+                Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                    AssetDownloadButton(pack, retry = true, onClick = { library.download() })
+                }
+            }
+
+            !state.isDownloading && !state.hasLocalAsset -> {
+                Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                    AssetDownloadButton(
+                        pack,
+                        retry = false,
+                        onClick = { library.download() },
+                        modifier = Modifier.testTag("downloads-get-$pack"),
+                    )
+                }
+            }
+        }
+    }
+    if (onExpand == null || state.books.isEmpty()) return
+    item(key = "$pack-books") {
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.books)) },
+            trailingContent = {
+                Icon(if (booksExpanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore, null)
+            },
+            modifier = Modifier.clickable(onClick = onExpand).testTag("downloads-books-$pack"),
+        )
+    }
+    if (!booksExpanded) return
+    items(state.books, key = { "$pack-book-${it.id}" }) { book ->
+        val locale = currentLocale()
+        val requested = requestedBook == book.id
+        Column {
+            ListItem(
+                headlineContent = { Text(book.title(locale)) },
+                trailingContent = {
+                    when {
+                        book.installed -> {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                book.estimatedBytes?.let {
+                                    Text(
+                                        "≈ " + formatBytes(it, locale),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                IconButton(
+                                    onClick = { library.remove(book.id) },
+                                    enabled = idle,
+                                    modifier = Modifier.testTag("downloads-remove-book-${book.id}"),
+                                ) { Icon(Icons.Outlined.Delete, stringResource(R.string.remove_download)) }
+                            }
+                        }
+
+                        requested && state.isDownloading -> {}
+
+                        else -> {
+                            val retry = requested && failed
+                            IconButton(
+                                onClick = { onRestoreBook(book.id) },
+                                enabled = idle,
+                                modifier = Modifier.testTag("downloads-get-book-${book.id}"),
+                            ) {
+                                Icon(
+                                    if (retry) Icons.Outlined.Refresh else Icons.Outlined.Download,
+                                    if (retry) {
+                                        stringResource(
+                                            R.string.try_again,
+                                        )
+                                    } else {
+                                        stringResource(R.string.download_x, book.title(locale))
+                                    },
+                                )
+                            }
+                        }
+                    }
+                },
+            )
+            if (requested) LibraryStatusRow(state, onConfirm)
+        }
+    }
+    if (state.books.any { !it.installed }) {
+        item(key = "$pack-restore-note") {
+            Text(
+                stringResource(R.string.restoring_a_book_downloads_the_full_library_temp),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun LibraryStatusRow(
+    state: LibraryState,
+    onConfirm: () -> Unit,
+) {
+    when {
+        state.isDownloading -> {
+            Column(
+                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                AssetDownloadProgress(state.progress, state.status == LibraryStatus.Installing, state.preparingDownload)
+                ConfirmationPrompt(state.needsConfirmation, onConfirm)
+            }
+        }
+
+        state.status == LibraryStatus.Failed || state.status == LibraryStatus.Incompatible -> {
+            Text(
+                stringResource(R.string.unable_to_download_please_try_again),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            )
+        }
     }
 }
 

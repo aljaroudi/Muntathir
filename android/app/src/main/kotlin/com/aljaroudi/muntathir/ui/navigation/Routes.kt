@@ -50,6 +50,40 @@ data class QuranReaderRoute(
 @Serializable
 data object QuranSavedRoute : Route
 
+/** A hadith or supplications screen; in two panes, lists replace the detail beside them. */
+sealed interface HadithRoute : Route
+
+/**
+ * Swift `HadithView` with an initial request: a book's contents ([collectionID]), a chapter's narrations
+ * ([chapterID]), or a search across every book ([query] alone). The library itself is `ToolRoute(Hadith)`.
+ */
+@Serializable
+data class HadithBrowseRoute(
+    val collectionID: String? = null,
+    val chapterID: Int? = null,
+    val query: String = "",
+) : HadithRoute
+
+/** One narration or supplication. [highlight] focuses a saved highlight; [query] underlines a search match. */
+@Serializable
+data class HadithDetailRoute(
+    val id: Int,
+    val query: String = "",
+    val highlight: String? = null,
+    val supplication: Boolean = false,
+) : HadithRoute
+
+@Serializable
+data class HadithIntroductionRoute(
+    val id: Int,
+) : HadithRoute
+
+/** Saved hadith, or saved supplications. */
+@Serializable
+data class HadithSavedRoute(
+    val supplications: Boolean = false,
+) : HadithRoute
+
 /** Settings → Highlight colors. */
 @Serializable
 data object HighlightPaletteRoute : Route

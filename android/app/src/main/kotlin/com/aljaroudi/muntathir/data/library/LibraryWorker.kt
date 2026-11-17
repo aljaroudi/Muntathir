@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.ServiceInfo
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
@@ -76,6 +77,7 @@ class LibraryWorker
             private const val CHANNEL = "downloads.v1"
             private const val NOTIFICATION = 7_000
 
+            /** Best effort: the work runs either way, this only keeps the process alive meanwhile. */
             fun keepAlive(
                 context: Context,
                 pack: ContentPack,
@@ -85,9 +87,12 @@ class LibraryWorker
                         .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                         .setInputData(workDataOf(PACK to pack.packName))
                         .build()
-                WorkManager
-                    .getInstance(context)
-                    .enqueueUniqueWork("content-library-${pack.packName}", ExistingWorkPolicy.KEEP, request)
+                // Instrumented tests run without the app's WorkManager configuration.
+                runCatching {
+                    WorkManager
+                        .getInstance(context)
+                        .enqueueUniqueWork("content-library-${pack.packName}", ExistingWorkPolicy.KEEP, request)
+                }.onFailure { Log.w("LibraryWorker", "Couldn't keep the process alive for ${pack.packName}", it) }
             }
         }
     }
