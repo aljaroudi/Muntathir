@@ -22,4 +22,6 @@
     <string name="search">Поиск</string>
     <string name="close_search">Закрыть поиск</string>
     <string name="download_waiting_for_confirmation">Ожидание Wi-Fi. Продолжите, чтобы скачать через мобильный интернет.</string>
+    <string name="allow_precise_location">Разрешить точную геопозицию</string>
+    <string name="compass_north">С</string>
 </resources>

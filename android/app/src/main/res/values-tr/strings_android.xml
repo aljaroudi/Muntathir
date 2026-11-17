@@ -22,4 +22,6 @@
     <string name="search">Ara</string>
     <string name="close_search">Aramayı kapat</string>
     <string name="download_waiting_for_confirmation">Wi-Fi bekleniyor. Mobil veriyle indirmek için devam edin.</string>
+    <string name="allow_precise_location">Tam konuma izin ver</string>
+    <string name="compass_north">K</string>
 </resources>

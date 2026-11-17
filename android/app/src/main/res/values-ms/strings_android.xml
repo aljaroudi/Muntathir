@@ -22,4 +22,6 @@
     <string name="search">Cari</string>
     <string name="close_search">Tutup carian</string>
     <string name="download_waiting_for_confirmation">Menunggu Wi-Fi. Teruskan untuk memuat turun menggunakan data mudah alih.</string>
+    <string name="allow_precise_location">Benarkan lokasi tepat</string>
+    <string name="compass_north">U</string>
 </resources>

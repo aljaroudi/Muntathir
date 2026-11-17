@@ -22,4 +22,6 @@
     <string name="search">搜尋</string>
     <string name="close_search">關閉搜尋</string>
     <string name="download_waiting_for_confirmation">正在等待 Wi-Fi。繼續即可使用行動數據下載。</string>
+    <string name="allow_precise_location">允許使用精確位置</string>
+    <string name="compass_north">北</string>
 </resources>

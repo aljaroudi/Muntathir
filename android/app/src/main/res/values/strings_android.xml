@@ -23,4 +23,7 @@
     <string name="search">Search</string>
     <string name="close_search">Close search</string>
     <string name="download_waiting_for_confirmation">Waiting for Wi-Fi. Continue to download over mobile data.</string>
+    <string name="allow_precise_location">Allow precise location</string>
+    <!-- The north mark on Qibla's compass dial. -->
+    <string name="compass_north">N</string>
 </resources>

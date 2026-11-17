@@ -22,4 +22,6 @@
     <string name="search">Cari</string>
     <string name="close_search">Tutup pencarian</string>
     <string name="download_waiting_for_confirmation">Menunggu Wi-Fi. Lanjutkan untuk mengunduh dengan data seluler.</string>
+    <string name="allow_precise_location">Izinkan lokasi akurat</string>
+    <string name="compass_north">U</string>
 </resources>

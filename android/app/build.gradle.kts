@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -34,6 +36,20 @@ android {
                     ?.let { Regex("<key>url</key>\\s*<string>([^<]*)</string>").find(it)?.groupValues?.get(1) }
                 ?: ""
         buildConfigField("String", "SEMANTIC_SEARCH_URL", "\"$semanticSearchUrl\"")
+        // Qibla's hybrid map: the `mapsApiKey` Gradle property, else `MAPS_API_KEY` in the git-ignored
+        // local.properties. Without a key, Qibla shows a compass dial instead of the map.
+        val localProperties =
+            rootProject
+                .file("local.properties")
+                .takeIf { it.isFile }
+                ?.reader()
+                ?.use { reader -> Properties().apply { load(reader) } }
+        val mapsApiKey =
+            providers.gradleProperty("mapsApiKey").orNull
+                ?: localProperties?.getProperty("MAPS_API_KEY")
+                ?: ""
+        manifestPlaceholders["mapsApiKey"] = mapsApiKey
+        buildConfigField("boolean", "MAPS_API_KEY_SET", mapsApiKey.isNotBlank().toString())
     }
 
     buildTypes {
@@ -146,6 +162,9 @@ dependencies {
     ksp(libs.androidx.hilt.compiler)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.play.services.location)
+    // Qibla's map (only drawn when a Maps API key is configured).
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.maps)
     // Offline time-zone boundaries for GPS fixes (city names come from Geocoder).
     implementation(libs.timezonemap)
 

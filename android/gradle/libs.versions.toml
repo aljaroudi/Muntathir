@@ -32,6 +32,8 @@ work = "2.12.0"
 hiltWork = "1.4.0"
 ktor = "3.6.1"
 playServicesLocation = "21.4.0"
+mapsCompose = "9.0.1"
+playServicesMaps = "20.1.0"
 timezonemap = "4.5"
 materialIcons = "1.7.8"
 
@@ -64,6 +66,8 @@ androidx-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hiltWo
 androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltWork" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
+maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
+play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 timezonemap = { module = "us.dustinj.timezonemap:timezonemap", version.ref = "timezonemap" }
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "testRunner" }
 # Compose's ui-test pulls Espresso 3.5, which crashes on API 36+ (InputManager.getInstance); pin current versions.

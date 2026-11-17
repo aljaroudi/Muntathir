@@ -4,6 +4,10 @@
 
     <!-- Prayer times need about a kilometre; the fix stays on this device. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Qibla only, while its screen is open: a fix within 20 m. Never saved or backed up. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Qibla's alignment pulses. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Prayer alerts at the minute; falls back to a 10-minute window when not granted. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
@@ -77,6 +81,11 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- Qibla's map; empty without a key, in which case Qibla shows a compass dial. -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${mapsApiKey}" />
 
         <!-- Persists the per-app language below API 33. -->
         <service

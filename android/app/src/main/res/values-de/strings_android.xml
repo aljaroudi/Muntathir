@@ -22,4 +22,6 @@
     <string name="search">Suchen</string>
     <string name="close_search">Suche schließen</string>
     <string name="download_waiting_for_confirmation">Warten auf WLAN. Fortfahren, um über mobile Daten herunterzuladen.</string>
+    <string name="allow_precise_location">Genauen Standort erlauben</string>
+    <string name="compass_north">N</string>
 </resources>

@@ -22,4 +22,6 @@
     <string name="search">検索</string>
     <string name="close_search">検索を閉じる</string>
     <string name="download_waiting_for_confirmation">Wi-Fiを待っています。続行するとモバイルデータでダウンロードします。</string>
+    <string name="allow_precise_location">正確な位置情報を許可</string>
+    <string name="compass_north">北</string>
 </resources>

@@ -22,4 +22,6 @@
     <string name="search">جستجو</string>
     <string name="close_search">بستن جستجو</string>
     <string name="download_waiting_for_confirmation">در انتظار Wi-Fi. برای دانلود با داده تلفن همراه ادامه دهید.</string>
+    <string name="allow_precise_location">اجازه دادن به مکان دقیق</string>
+    <string name="compass_north">ش</string>
 </resources>
