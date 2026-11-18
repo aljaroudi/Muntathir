@@ -106,7 +106,7 @@ private struct RulingsBrowser: View {
         .navigationTitle("Rulings")
         .readingBackground()
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always))
-        .searchHistory(query, area: .rulings)
+        .searchHistory($query, area: .rulings)
         .autocorrectionDisabled()
         .scrollDismissesKeyboard(.interactively)
         .task(id: [authority, language, query, String(results.retry)]) {

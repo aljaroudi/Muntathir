@@ -7,7 +7,7 @@ final class TipsUITests: XCTestCase {
         let message = "Press and hold a prayer time to mute its alert. Optional times can also be hidden."
         app.launchArguments = arguments + ["--ui-testing-tips"]
         app.launch()
-        XCTAssertTrue(app.staticTexts[message].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts[message].waitForExistence(timeout: 10), app.debugDescription)
         XCTAssertFalse(app.staticTexts["Choose a translation to read alongside Arabic."].exists)
         app.terminate()
         app.launchArguments = arguments

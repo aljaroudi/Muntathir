@@ -256,7 +256,7 @@ struct HadithView: View {
         .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search Hadith")
-        .searchHistory(searchText, area: .hadith)
+        .searchHistory($searchText, area: .hadith)
         .onChange(of: searchText) { _, value in
             guard value.isEmpty, request.query != value else { return }
             update { $0.query = value; $0.number = nil }

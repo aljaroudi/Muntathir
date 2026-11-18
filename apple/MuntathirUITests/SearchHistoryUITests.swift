@@ -31,8 +31,7 @@ final class SearchHistoryUITests: XCTestCase {
 
     @MainActor private func clearField(_ app: XCUIApplication) {
         let field = focus(app)
-        let count = (field.value as? String)?.count ?? 0
-        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: count))
+        field.buttons["Clear text"].tap()
     }
 
     @MainActor func testSubmitReuseRemoveAndClearHistory() {
@@ -46,7 +45,7 @@ final class SearchHistoryUITests: XCTestCase {
         XCTAssertTrue(app.buttons["quran-result-2:255"].waitForExistence(timeout: 5))
         clearField(app)
         let recent = app.descendants(matching: .any)["search-history-2:255"].firstMatch
-        XCTAssertTrue(recent.waitForExistence(timeout: 5))
+        XCTAssertTrue(recent.waitForExistence(timeout: 5), app.debugDescription)
         recent.tap()
         XCTAssertTrue(app.buttons["quran-result-2:255"].waitForExistence(timeout: 5))
         XCTAssertEqual(field.value as? String, "2:255")
@@ -67,7 +66,7 @@ final class SearchHistoryUITests: XCTestCase {
         if app.buttons["search-history-clear"].exists {
             app.buttons["search-history-clear"].tap()
         }
-        field.typeText("2:255\n")
+        field.typeText("2:255")
         let result = app.buttons["quran-result-2:255"]
         XCTAssertTrue(result.waitForExistence(timeout: 5))
         result.tap()

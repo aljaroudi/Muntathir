@@ -1,7 +1,1 @@
-Prova il download dei singoli libri di hadith, la pausa, il nuovo tentativo, la rimozione e la lettura offline. Prova il download separato delle suppliche e le traduzioni, la lettura e la ricerca del Corano, i segnalibri e le evidenziazioni. Verifica il conteggio della preghiera e la posizione della fotocamera.
-
-Trova versetti del Corano e hadith per significato. Se la ricerca locale non trova nulla, prova la ricerca online dalla stessa barra. Il libro e il capitolo selezionati restano invariati. La ricerca testuale locale rimane disponibile offline.
-
-Evidenzia brani del Corano e degli hadith e ritrovali nella sezione Evidenziazioni.
-
-Prova download degli hadith, interruzione e nuovo tentativo, lettura offline, rimozione e nuovo download. Esplora raccolte e capitoli; cerca in arabo e inglese. Controlla preferiti, note e condivisione di testo e immagini. Verifica anche orari e promemoria di preghiera, modifiche al calendario, ricerca e lettura del Corano, Qibla, widget e sincronizzazione Watch. Segnala dispositivo, versione iOS, lingua e passaggi per riprodurre il problema.
+Cerca versetti del Corano e hadith mentre digiti. Prova a lasciare incompleta l’ultima parola. Nascondi e mostra di nuovo i segni diacritici arabi, poi riapri un passaggio evidenziato. Verifica di poter sfogliare il mushaf dopo aver evidenziato il testo.

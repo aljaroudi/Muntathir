@@ -78,7 +78,7 @@ struct SavedList<Destination: View>: View {
         .listStyle(.insetGrouped)
         .navigationTitle("Saved")
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: (bookmarksOnly || showingBookmarks) ? "Search bookmarks" : "Search highlights")
-        .searchHistory(query, area: .saved)
+        .searchHistory($query, area: .saved)
         .autocorrectionDisabled()
         .scrollDismissesKeyboard(.interactively)
         .toolbar {

@@ -266,10 +266,15 @@ private struct CalendarMonthSection: View {
                     .padding().frame(maxWidth: .infinity, alignment: .leading)
             } else {
                 ForEach(dates) { entry in
-                    eventRow(entry.date, day: entry.day, engine: engine, nextEvent: nextEvent, expected: expected)
+                    let events = model.content.events(on: entry.day)
+                    eventRow(entry.date, day: entry.day, firstEvent: events.first, engine: engine, nextEvent: nextEvent, expected: expected)
                         .listRowInsets(EdgeInsets(top: 16, leading: 20, bottom: 16, trailing: 20))
                         .listRowBackground(entry.date == nextEvent ? Color.accentColor.opacity(0.06) : Color(.secondarySystemGroupedBackground))
                         .id(entry.id)
+                    ForEach(events.dropFirst()) { event in
+                        FigureObservanceRow(event: event)
+                            .listRowBackground(entry.date == nextEvent ? Color.accentColor.opacity(0.06) : Color(.secondarySystemGroupedBackground))
+                    }
                 }
             }
         } header: {
@@ -291,7 +296,7 @@ private struct CalendarMonthSection: View {
         .id(CalendarScreen.monthID(month))
     }
 
-    private func eventRow(_ date: Date, day: ResolvedDay, engine: CalendarEngine, nextEvent: Date?, expected: Bool) -> some View {
+    private func eventRow(_ date: Date, day: ResolvedDay, firstEvent: IslamicEvent?, engine: CalendarEngine, nextEvent: Date?, expected: Bool) -> some View {
         let isToday = engine.gregorian.isDate(date, inSameDayAs: now)
         let isNext = date == nextEvent
         let dateText = date.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).locale(locale).inZone(model.zone))
@@ -337,8 +342,8 @@ private struct CalendarMonthSection: View {
                 }.font(.caption.weight(.semibold)).foregroundStyle(Color.accentColor)
                     .accessibilityIdentifier("calendar-countdown")
             }
-            ForEach(model.content.events(on: day)) { event in
-                FigureObservanceRow(event: event)
+            if let firstEvent {
+                FigureObservanceRow(event: firstEvent)
             }
         }
         .fixedSize(horizontal: false, vertical: true)

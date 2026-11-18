@@ -328,7 +328,7 @@ extension HadithUITests {
         editor.tap()
         editor.typeText("Saved Hadith note")
         yellow.tap()
-        XCTAssertTrue(editor.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(editor.waitForNonExistence(timeout: 5), app.debugDescription)
         app.swipeUp()
         app.swipeUp()
         let before = app.descendants(matching: .any)["hadith-full-arabic"].firstMatch.frame.minY
@@ -505,10 +505,10 @@ extension HadithUITests {
         globalSearch.tap()
         globalSearch.typeText("intentions\n")
         XCTAssertTrue(app.buttons["hadith-result-105"].waitForExistence(timeout: 10), app.debugDescription)
-        globalSearch.buttons.firstMatch.tap()
+        app.buttons["Close"].tap()
         app.buttons["hadith-book-bukhari"].tap()
         let chapter = app.buttons["hadith-chapter-1"]
-        XCTAssertTrue(chapter.waitForExistence(timeout: 10))
+        XCTAssertTrue(chapter.waitForExistence(timeout: 10), app.debugDescription)
         XCTAssertFalse(app.buttons["hadith-result-1"].exists)
         let contents = app.searchFields.firstMatch
         contents.tap()
