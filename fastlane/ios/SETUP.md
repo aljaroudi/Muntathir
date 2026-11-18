@@ -30,7 +30,7 @@ Manage localized names, descriptions, keywords, promotional text, support/privac
 
 - `check` validates localization, metadata, screenshot configuration, and lane behavior offline.
 - `tests` runs the local unit/UI regressions on one iPhone. Both release lanes run screenshot capture separately.
-- `screenshots`, `watch_screenshots`, and `style` capture and compose the iOS screens and Watch prayer screen in all 14 store locales. Use `just lane ios screenshots languages:ar,en` and `just lane ios style languages:ar,en`. Canonical locale IDs remain supported. Screenshot workers default to 2 (override with `workers:N`, max 8); they share one simulator lock.
+- `screenshots`, `watch_screenshots`, and `style` capture and compose the iOS screens and Watch prayer screen in all 15 app locales. The App Store upload selects the locales supported by App Store Connect. Use `just lane ios screenshots languages:ar,en,fa` and `just lane ios style languages:ar,en,fa`. Canonical locale IDs remain supported. Screenshot workers default to 2 (override with `workers:N`, max 8); they share one simulator lock.
 - `previews` generates optional videos. `previews devices:"iPhone Duo"` generates Duo videos for manual upload.
 - `marketing` refreshes screenshots and generates the standard previews locally.
 

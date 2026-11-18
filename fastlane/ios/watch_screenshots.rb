@@ -35,7 +35,7 @@ begin
   File.write(preferences, %(<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>watchSettings.v1</key><data>#{payload}</data></dict></plist>))
   MuntathirRelease.run!("xcrun", "simctl", "boot", id)
   MuntathirRelease.run!("xcrun", "simctl", "bootstatus", id, "-b")
-  MuntathirRelease::LOCALES.each do |locale|
+  MuntathirRelease.capture_locales(ARGV[0]).each do |locale|
     MuntathirRelease.run!("xcrun", "simctl", "launch", "--terminate-running-process", id, bundle,
                          "-AppleLanguages", "(#{locale})", "-AppleLocale", locale.tr("-", "_"))
     sleep(5)

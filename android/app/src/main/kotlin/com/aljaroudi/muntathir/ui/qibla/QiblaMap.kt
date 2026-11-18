@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,7 +78,8 @@ fun QiblaGoogleMap(
     aligned: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    BoxWithConstraints(modifier) {
+    val tilesLoaded = remember(fix.latitude, fix.longitude) { mutableStateOf(false) }
+    BoxWithConstraints(modifier.then(if (tilesLoaded.value) Modifier.testTag("qibla-map-loaded") else Modifier)) {
         val width = maxWidth.value.toDouble()
         val target = LatLng(fix.latitude, fix.longitude)
 
@@ -90,6 +92,7 @@ fun QiblaGoogleMap(
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = camera,
+            onMapLoaded = { tilesLoaded.value = true },
             contentPadding = PaddingValues(vertical = inset),
             properties =
                 remember {

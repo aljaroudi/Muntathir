@@ -1,3 +1,4 @@
+require "tmpdir"
 require "dotenv"
 require "plist"
 require "spaceship"
@@ -48,8 +49,8 @@ platform :ios do
   end
 
   desc "Capture required localized Apple Watch store screenshots"
-  lane :watch_screenshots do
-    sh("bundle", "exec", "ruby", File.join(__dir__, "ios/watch_screenshots.rb"))
+  lane :watch_screenshots do |options|
+    sh("bundle", "exec", "ruby", File.join(__dir__, "ios/watch_screenshots.rb"), options[:languages].to_s)
   end
 
   desc "Export Arabic/English website screenshots as WebP and previews as WebM"
@@ -241,9 +242,14 @@ platform :ios do
                         reject_if_possible: false, run_precheck_before_submit: false }
       config = context.fetch(:config)
       metadata = config.slice("app_review_information", "support_url", "privacy_url", "copyright").reject { |_, value| value.nil? || value.empty? }.transform_keys(&:to_sym)
-      upload_to_app_store(**store_options, **metadata, metadata_path: File.expand_path("ios/metadata", __dir__),
-                          screenshots_path: File.join(MuntathirRelease::ROOT, "build/marketing/store"), overwrite_screenshots: true,
-                          automatic_release: draft.release_type == "AFTER_APPROVAL" ? nil : true, submit_for_review: false)
+      Dir.mktmpdir("app-store-screenshots-") do |upload_gallery|
+        MuntathirRelease::LOCALES.each do |locale|
+          File.symlink(File.join(MuntathirRelease::ROOT, "build/marketing/store", locale), File.join(upload_gallery, locale))
+        end
+        upload_to_app_store(**store_options, **metadata, metadata_path: File.expand_path("ios/metadata", __dir__),
+                            screenshots_path: upload_gallery, overwrite_screenshots: true,
+                            automatic_release: draft.release_type == "AFTER_APPROVAL" ? nil : true, submit_for_review: false)
+      end
 
       draft = assert_current_draft(context)
       MuntathirRelease.sync_creative_assets!(draft.get_app_store_version_localizations)
@@ -265,6 +271,12 @@ platform :ios do
 end
 
 platform :android do
+  %i[screenshots style].each do |operation|
+    lane operation do |options|
+      sh("bundle", "exec", "ruby", File.join(__dir__, "android/gallery.rb"), operation.to_s, options[:languages].to_s)
+    end
+  end
+
   desc "Validate a signed AAB on Google Play or save it as an internal draft"
   lane :internal do |options|
     root = File.expand_path("..", __dir__)

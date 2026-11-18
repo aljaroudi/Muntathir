@@ -48,10 +48,6 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun clock(): Clock = Clock.systemDefaultZone()
-
-    @Provides
-    @Singleton
     fun readingSettings(
         @ApplicationContext context: Context,
         @AppScope scope: CoroutineScope,
@@ -84,4 +80,12 @@ object DataModule {
         runBlocking(Dispatchers.IO) {
             AppModel.load(storage, feedClient, announcer, clock = clock::instant)
         }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object ClockModule {
+    @Provides
+    @Singleton
+    fun clock(): Clock = Clock.systemDefaultZone()
 }

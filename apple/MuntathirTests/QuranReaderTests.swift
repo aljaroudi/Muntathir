@@ -114,7 +114,7 @@ struct QuranReaderTests {
         let reader = QuranReader(database: database)
         let prefix = try await reader.search("الرحم", translationID: nil, limit: 400)
         #expect(prefix.contains { $0.id == "1:1" })
-        #expect(prefix.count > (try await reader.search("الرحمن", translationID: nil, limit: 400)).count)
+        #expect(try await prefix.count > (reader.search("الرحمن", translationID: nil, limit: 400)).count)
         // A larger limit extends the same ranked list instead of reordering it.
         let first = try await reader.search("الله", translationID: "en.qarai", limit: 50)
         let more = try await reader.search("الله", translationID: "en.qarai", limit: 100)

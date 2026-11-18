@@ -44,7 +44,8 @@ struct AppTip: Tip {
             if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
                 let directory = URL.applicationSupportDirectory.appending(path: "TipsUITests", directoryHint: .isDirectory)
                 if !ProcessInfo.processInfo.arguments.contains("--ui-testing-preserve-state"),
-                   FileManager.default.fileExists(atPath: directory.path) {
+                   FileManager.default.fileExists(atPath: directory.path)
+                {
                     try FileManager.default.removeItem(at: directory)
                 }
                 try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

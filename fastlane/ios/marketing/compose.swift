@@ -15,6 +15,7 @@ let framePath = arguments[1], output = arguments[2]
 let width = CGFloat(Int(arguments[3])!), height = CGFloat(Int(arguments[4])!)
 let rightToLeft = Locale.Language(identifier: arguments[5]).characterDirection == .rightToLeft
 guard let headline = config.headlines[arguments[5]]?[arguments[6]],
+      !headline.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
       config.background.count == 2, config.background.allSatisfy({ $0.count == 3 })
 else {
     fatalError("Invalid screenshot headline or gradient configuration")

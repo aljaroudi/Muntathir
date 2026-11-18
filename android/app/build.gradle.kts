@@ -39,7 +39,7 @@ android {
         applicationId = "com.aljaroudi.muntathir"
         minSdk = 26
         targetSdk = 37
-        versionCode = 2
+        versionCode = 3
         versionName = providers.fileContents(rootProject.layout.projectDirectory.file("../Version.xcconfig"))
             .asText.map { it.trim().removePrefix("MARKETING_VERSION = ") }.get()
         testInstrumentationRunner = "com.aljaroudi.muntathir.HiltTestRunner"

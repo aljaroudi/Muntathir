@@ -6,7 +6,7 @@ struct HadithPreviewRow: View {
     @AppStorage("hadithEnglishEnabled.v2") private var showEnglish = SupplicationTranslation.prefersEnglish()
     @Environment(\.locale) private var locale
 
-    // Displays arrive as reader-prepared previews, so rendering never trims or searches text again.
+    /// Displays arrive as reader-prepared previews, so rendering never trims or searches text again.
     var body: some View {
         let blocks = [narration.arabicDisplay, showEnglish ? narration.englishDisplay : AttributedString()]
         let visible = SearchMatch.visibleBlocks(blocks, preferred: locale.language.languageCode?.identifier == "ar" || !showEnglish ? 0 : 1)

@@ -105,7 +105,7 @@ struct HighlightText: View {
         let size = (arabic ? arabicSize : bodySize) * CGFloat(min(160, max(80, percent))) / 100
         let highlights = store?.highlights(for: source, isHadith: isHadith) ?? []
         let passage = HighlightTextContent.attributed(text: text, markdown: markdown, arabic: arabic, hadith: isHadith,
-                                                    size: size, alignment: centered ? .center : .natural)
+                                                      size: size, alignment: centered ? .center : .natural)
         let display = ArabicDisplay(SearchMatch.applying(to: passage, query: searchQuery), showMarks: showMarks)
         SelectableHighlightText(
             attributed: display.attributed,

@@ -1,4 +1,5 @@
 require_relative "support"
+require_relative "../gallery"
 require "tmpdir"
 require "spaceship"
 Dir.chdir(MuntathirRelease::ROOT)
@@ -41,17 +42,36 @@ if check_media
   assert(Frameit::Devices.const_defined?(:IPHONE_DUO_OUTER) && Frameit::Devices.const_defined?(:IPHONE_DUO_INNER), "Pinned Fastlane lacks native Duo frames")
   snapshot_config = FastlaneCore::Configuration.create(Snapshot::Options.available_options, {})
   snapshot_options = FastlaneCore::ConfigurationFile.new(snapshot_config, File.join(__dir__, "../Snapfile"), nil, true).options
-  assert(snapshot_options[:languages] == MuntathirRelease::LOCALES, "Screenshot locales must match metadata")
+  assert(snapshot_options[:languages] == MuntathirRelease::SCREENSHOT_LOCALES, "Screenshot locales must match metadata")
   screenshot_config = MuntathirRelease::SCREENSHOTS
   screens = screenshot_config.fetch("screens")
   assert(screens.length <= 10, "Store screenshot limit exceeded")
   headlines = screenshot_config.fetch("headlines")
-  assert(headlines.keys.sort == MuntathirRelease::LOCALES.sort, "Store headline locale mismatch")
   assert(screens == screens.uniq.sort && screens.each_with_index.all? { |screen, i| screen.start_with?(format("%02d-", i + 1)) }, "Screens must use ordered, unique upload filenames")
   marketing_tests = File.read("MuntathirUITests/MarketingScreenshotTests.swift")
   assert(marketing_tests.scan(/snapshot\("([^"]+)"/).flatten.uniq.sort == screens, "Capture and screenshot config disagree")
   assert(headlines.values.all? { |entries| entries.keys.sort == screens && entries.values.all? { |text| !text.strip.empty? } }, "Missing localized screenshot headline")
   assert(!screenshot_config.fetch("brand").strip.empty?, "Screenshot brand is empty")
+  store = screenshot_config.fetch("storeScreens")
+  assert(store == %w[01-Today 02-Quran 03-Hadith 05-Supplications 06-Tasbih 07-Rakaat 09-Calendar 10-Qibla], "Store scene order changed")
+  play = screenshot_config.fetch("playLocales")
+  listings = Dir.glob(File.join(__dir__, "../android/metadata/*/title.txt")).map { |path| File.basename(File.dirname(path)) }
+  assert(play.keys.sort == listings.sort && play.values.sort == headlines.keys.sort, "Play locales must map every listing to its headlines")
+  android_test = File.read(File.join(__dir__, "../../android/app/src/androidTest/kotlin/com/aljaroudi/muntathir/ui/MarketingScreenshotTest.kt"))
+  assert(android_test.scan(/capture\("([^"]+)"/).flatten.sort == store, "Android capture and store gallery disagree")
+  Dir.mktmpdir do |root|
+    gallery = File.join(root, "gallery")
+    replace_gallery(gallery) { |stage| File.write(File.join(stage, "retired.png"), "previous") }
+    rejects("Partial gallery accepted") do
+      replace_gallery(gallery) do |stage|
+        File.write(File.join(stage, "01-Today.png"), "partial")
+        raise "Missing capture"
+      end
+    end
+    assert(Dir.children(gallery) == ["retired.png"], "Failed render replaced the prior gallery")
+    replace_gallery(gallery) { |stage| File.write(File.join(stage, "01-Today.png"), "complete") }
+    assert(Dir.children(gallery) == ["01-Today.png"], "Retired screenshot survived a successful render")
+  end
   colors = screenshot_config.fetch("background")
   assert(colors.size == 2 && colors.all? { |rgb| rgb.size == 3 && rgb.all? { |value| (0..1).cover?(value) } }, "Invalid screenshot gradient")
   creative = screenshot_config.fetch("creative")
@@ -146,10 +166,10 @@ if check_media
   Dir.mktmpdir do |root|
     started = Time.now
     size = MuntathirRelease::CREATIVE_SIZE.join("x")
-    MuntathirRelease::LOCALES.each do |locale|
+    MuntathirRelease::SCREENSHOT_LOCALES.each do |locale|
       directory = File.join(root, "build/marketing/store", locale)
       FileUtils.mkdir_p(directory)
-      MuntathirRelease::DEVICES.product(screens).each do |device, screen|
+      MuntathirRelease::DEVICES.product(store).each do |device, screen|
         File.write(File.join(directory, "#{device}-#{screen}.png"), "PNG")
       end
       File.write(File.join(directory, MuntathirRelease::WATCH_SCREENSHOT), "PNG")
@@ -158,7 +178,7 @@ if check_media
       MuntathirRelease.run!("magick", "-size", size, "xc:#10263f", "-alpha", "off", creative)
     end
     MuntathirRelease.validate_media!(root, since: started)
-    foreign = File.join(root, "build/marketing/store/fa")
+    foreign = File.join(root, "build/marketing/store/unknown")
     FileUtils.mkdir_p(foreign)
     rejects("Unexpected locale accepted") { MuntathirRelease.validate_media!(root) }
     Dir.rmdir(foreign)
@@ -217,8 +237,14 @@ class LaneCheck
   def default_platform(*) = nil
   def desc(*) = nil
   def sh(*args) = @calls << [:sh, args]
-  def platform(*) = yield
-  def lane(name, &block) = define_singleton_method(name) { |options = {}| instance_exec(options, &block) }
+  def platform(name)
+    @platform = name
+    yield
+  end
+  def lane(name, &block)
+    name = :"android_#{name}" if @platform == :android
+    define_singleton_method(name) { |options = {}| instance_exec(options, &block) }
+  end
   alias private_lane lane
   def method_missing(name, *args, **options)
     @calls << [name, options]
@@ -238,19 +264,24 @@ Dir.mktmpdir do |dir|
   previous_key = ENV["SUPPLY_JSON_KEY"]
   begin
     ENV["SUPPLY_JSON_KEY"] = key
-    rejects("Missing AAB accepted") { check.internal }
-    check.internal(aab: bundle)
+    rejects("Missing AAB accepted") { check.android_internal }
+    check.android_internal(aab: bundle)
     action, upload = check.calls.pop
     assert(action == :upload_to_play_store && upload[:aab] == bundle && upload[:json_key] == key &&
            upload[:track] == "internal" && upload[:release_status] == "draft" && upload[:validate_only],
            "Android internal lane must validate by default")
-    check.internal(aab: bundle, draft: true)
+    check.android_internal(aab: bundle, draft: true)
     assert(check.calls.pop.last[:validate_only] == false, "Explicit Android draft must enable upload")
   ensure
     ENV["SUPPLY_JSON_KEY"] = previous_key
   end
 end
 
+%i[screenshots style].each do |operation|
+  check.public_send(:"android_#{operation}", languages: "ar,en,fa")
+  _, args = check.calls.pop
+  assert(args.last(2) == [operation.to_s, "ar,en,fa"], "Android #{operation} arguments changed")
+end
 check.screenshots(languages: "ar,en", workers: 1)
 screenshot_command = check.calls.assoc(:sh).last
 assert(screenshot_command.last(3) == ["", "ar,en", "1"], "Screenshot lane options changed")
@@ -423,6 +454,9 @@ synced_creatives = 0
 check.calls.clear
 draft_version.release_type = "MANUAL"
 check.define_singleton_method(:upload_to_app_store) do |**options|
+  if options[:screenshots_path]
+    assert(Dir.children(options[:screenshots_path]).sort == MuntathirRelease::LOCALES.sort, "Unexpected upload locales")
+  end
   calls << [:upload_to_app_store, options]
   draft_version.release_type = "AFTER_APPROVAL" if options[:automatic_release]
 end
@@ -435,7 +469,7 @@ assert(MuntathirRelease.review_pack_versions == ["pack-v2"], "App Store review m
 assert(check.calls.assoc(:run_tests).last[:destination] == [iphone, ipad], "App Store must test on both devices")
 listing, review = check.calls.filter_map { |name, options| options if name == :upload_to_app_store }
 assert(listing[:metadata_path] == File.join(__dir__, "metadata") &&
-       listing[:screenshots_path] == File.join(MuntathirRelease::ROOT, "build/marketing/store"),
+       File.basename(listing[:screenshots_path]).start_with?("app-store-screenshots-"),
        "App Store listing must use the platform metadata and Apple build output")
 assert(listing[:automatic_release] && listing[:overwrite_screenshots] && !listing[:submit_for_review] && !listing.key?(:app_previews_path), "App Store listing upload must replace screenshots and preserve videos")
 assert(review[:submit_for_review] && review[:build_number] == build.version && review[:app_version] == build.app_version, "App Store review must use the processed build")

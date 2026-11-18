@@ -23,7 +23,9 @@ final class ReadingAppearanceUITests: XCTestCase {
         app.terminate()
         app.launchArguments.append("--ui-testing-preserve-state")
         app.launch()
-        if !marks.exists { app.openSettingsFromTools() }
+        if !marks.exists {
+            app.openSettingsFromTools()
+        }
         XCTAssertTrue(marks.waitForExistence(timeout: 10))
         XCTAssertEqual(marks.value as? String, "0")
         XCTAssertEqual(preview.label, "بسم الله")

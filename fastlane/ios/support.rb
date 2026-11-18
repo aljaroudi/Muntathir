@@ -31,15 +31,17 @@ module MuntathirRelease
   WATCH_SCREENSHOT = "Apple Watch Series 12 (46mm)-01-PrayerTimes.png".freeze
   SCREENSHOTS = JSON.parse(File.read(File.join(__dir__, "marketing/screenshots.json"))).freeze
 
+  SCREENSHOT_LOCALES = SCREENSHOTS.fetch("headlines").keys.freeze
+
   def self.capture_runtime(device)
     device == "iPhone Duo" ? ENV.fetch("SCREENSHOT_DUO_IOS_VERSION", "27.2") : ENV.fetch("SCREENSHOT_IOS_VERSION", "27.0")
   end
 
   def self.capture_locales(value)
-    return LOCALES if value.to_s.strip.empty?
+    return SCREENSHOT_LOCALES if value.to_s.strip.empty?
 
     locales = value.split(",").map(&:strip).map { |locale| LANGUAGE_ALIASES.fetch(locale, locale) }
-    raise "Unknown or duplicate screenshot locale" if locales.empty? || locales.uniq != locales || (locales - LOCALES).any?
+    raise "Unknown or duplicate screenshot locale" if locales.empty? || locales.uniq != locales || (locales - SCREENSHOT_LOCALES).any?
 
     locales
   end
@@ -174,12 +176,12 @@ module MuntathirRelease
   end
 
   def self.validate_media!(root = ROOT, since: nil)
-    expected = DEVICES.product(SCREENSHOTS.fetch("screens")).map { |device, screen| "#{device}-#{screen}.png" } << WATCH_SCREENSHOT
+    expected = DEVICES.product(SCREENSHOTS.fetch("storeScreens")).map { |device, screen| "#{device}-#{screen}.png" } << WATCH_SCREENSHOT
     directory = File.join(root, "build/marketing/store")
     locales = Dir.children(directory).select { |entry| File.directory?(File.join(directory, entry)) }
-    raise "Unexpected screenshot locale directories" unless (locales - LOCALES).empty?
+    raise "Unexpected screenshot locale directories" unless (locales - SCREENSHOT_LOCALES).empty?
 
-    LOCALES.each do |locale|
+    SCREENSHOT_LOCALES.each do |locale|
       images = Dir.glob(File.join(directory, locale, "*.{png,jpg,jpeg}"), File::FNM_CASEFOLD)
       unless images.map { |image| File.basename(image) }.sort == expected.sort &&
              images.all? { |image| File.size?(image) && (!since || File.mtime(image) >= since) }
