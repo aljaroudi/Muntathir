@@ -1,0 +1,1 @@
+Busca aleyas y hadices mientras escribes. Prueba con la última palabra incompleta. Oculta y vuelve a mostrar los signos diacríticos árabes en el lector y abre un pasaje resaltado. Comprueba que puedes pasar las páginas del mushaf después de resaltar texto.

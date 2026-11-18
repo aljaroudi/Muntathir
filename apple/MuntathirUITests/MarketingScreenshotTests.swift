@@ -7,6 +7,7 @@ import XCTest
     return try XCTUnwrap([
         "en": ["Calendar", "Next month", "Tools", "None", "Highlight"],
         "ar": ["التقويم", "الشهر التالي", "الأدوات", "بدون ترجمة", "تظليل"],
+        "fa": ["تقویم", "ماه بعد", "ابزارها", "هیچ‌کدام", "برجسته‌سازی"],
         "fr": ["Calendrier", "Mois suivant", "Outils", "Aucune", "Surligner"],
         "de": ["Kalender", "Nächster Monat", "Werkzeuge", "Keine", "Markieren"],
         "id": ["Kalender", "Bulan berikutnya", "Alat", "Tidak ada", "Sorot"],
@@ -26,7 +27,7 @@ import XCTest
     let locale = Locale(identifier: Snapshot.deviceLanguage.isEmpty ? "en-US" : Snapshot.deviceLanguage)
     let language = locale.language.languageCode?.identifier ?? "en"
     let translationLanguage = switch language {
-    case "de", "ru", "es": language
+    case "de", "ru", "es", "fa": language
     case "zh": locale.language.script?.identifier == "Hant" ? "zh-Hant" : "zh-Hans"
     default: "en"
     }
@@ -39,6 +40,9 @@ import XCTest
 final class MarketingScreenshotTests: XCTestCase {
     @MainActor func testStoreScreenshots() throws {
         continueAfterFailure = false
+        let appearance = XCUIDevice.shared.appearance
+        XCUIDevice.shared.appearance = .light
+        defer { XCUIDevice.shared.appearance = appearance }
         let app = XCUIApplication()
         setupSnapshot(app)
         let labels = try marketingLabels()

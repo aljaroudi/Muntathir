@@ -36,6 +36,7 @@ class ReadingPreferencesTest {
                 highlightColorCount = 12,
                 highlightColorOrder = HighlightPalette.order(HighlightColor.entries.reversed()),
                 savedGroupByDate = true,
+                showArabicDiacritics = false,
             )
         assertEquals(custom, ReadingPreferences.decode(custom.encode()))
         val invalid =

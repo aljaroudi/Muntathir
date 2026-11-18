@@ -1,6 +1,36 @@
 import XCTest
 
 final class ReadingAppearanceUITests: XCTestCase {
+    @MainActor func testDiacriticsPreviewAndRelaunch() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.openSettingsFromTools()
+        let marks = app.switches["reading-diacritics"]
+        let preview = app.staticTexts["reading-preview"]
+        XCTAssertTrue(marks.waitForExistence(timeout: 10))
+        XCTAssertEqual(preview.label, "بِسْمِ اللَّهِ")
+        for name in ["Diacritics on", "Diacritics off"] {
+            if name == "Diacritics off" {
+                marks.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+                XCTAssertEqual(preview.label, "بسم الله")
+            }
+            let image = XCTAttachment(screenshot: app.screenshot())
+            image.name = name
+            image.lifetime = .keepAlways
+            add(image)
+        }
+        app.terminate()
+        app.launchArguments.append("--ui-testing-preserve-state")
+        app.launch()
+        if !marks.exists {
+            app.openSettingsFromTools()
+        }
+        XCTAssertTrue(marks.waitForExistence(timeout: 10))
+        XCTAssertEqual(marks.value as? String, "0")
+        XCTAssertEqual(preview.label, "بسم الله")
+    }
+
     @MainActor func testSharedSizeBookmarksAndTranslationMenuPersist() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
@@ -31,6 +61,8 @@ final class ReadingAppearanceUITests: XCTestCase {
         app.terminate()
         app.launchArguments.append("--ui-testing-preserve-state")
         app.launch()
+        app.buttons["Tools"].firstMatch.tap()
+        app.buttons["hadith"].tap()
         XCTAssertTrue(bookmark.waitForExistence(timeout: 15))
         XCTAssertEqual(bookmark.label, "Remove Bookmark")
         app.buttons["hadith-actions"].tap()

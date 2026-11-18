@@ -93,6 +93,7 @@ struct HighlightText: View {
     @Environment(\.quranUserStore) private var store
     @Environment(\.focusedHighlight) private var focused
     @Environment(\.searchMatchQuery) private var searchQuery
+    @AppStorage("showArabicDiacritics") private var showMarks = true
     @AppStorage("readingSizePercent") private var percent = 100
     @ScaledMetric(relativeTo: .body) private var bodySize = 17
     @ScaledMetric(relativeTo: .title2) private var arabicSize = 28
@@ -103,11 +104,14 @@ struct HighlightText: View {
     var body: some View {
         let size = (arabic ? arabicSize : bodySize) * CGFloat(min(160, max(80, percent))) / 100
         let highlights = store?.highlights(for: source, isHadith: isHadith) ?? []
+        let passage = HighlightTextContent.attributed(text: text, markdown: markdown, arabic: arabic, hadith: isHadith,
+                                                      size: size, alignment: centered ? .center : .natural)
+        let display = ArabicDisplay(SearchMatch.applying(to: passage, query: searchQuery), showMarks: showMarks)
         SelectableHighlightText(
-            attributed: SearchMatch.applying(to: HighlightTextContent.attributed(text: text, markdown: markdown, arabic: arabic, hadith: isHadith, size: size, alignment: centered ? .center : .natural), query: searchQuery),
+            attributed: display.attributed,
             highlights: highlights, block: block, focused: focused?.source == source && focused?.isHadith == isHadith && (focused?.block != nil || block == "arabic" || focusWholeItem) ? focused : nil,
             differentiate: differentiate, select: { ranges in
-                let saved = ranges.compactMap { HighlightRange($0, in: text) }
+                let saved = ranges.compactMap { HighlightRange(display.sourceRange($0), in: text) }
                 guard !saved.isEmpty, !source.isEmpty else { return }
                 editing = ReadingHighlight(source: source, isHadith: isHadith, block: block, ranges: saved,
                                            excerpt: saved.map(\.quote).joined(separator: " … "), reference: reference.isEmpty ? source : reference)
@@ -118,7 +122,9 @@ struct HighlightText: View {
                     tappedHighlights = matches
                     choosingHighlight = true
                 }
-            }
+            }, mappedRanges: showMarks ? nil : Dictionary(uniqueKeysWithValues: highlights.map {
+                ($0.id, $0.ranges(in: text, block: block).map(display.displayRange))
+            })
         )
         .frame(maxWidth: .infinity)
         .fixedSize(horizontal: false, vertical: true)

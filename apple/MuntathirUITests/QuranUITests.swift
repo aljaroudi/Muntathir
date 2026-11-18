@@ -32,7 +32,7 @@ final class QuranUITests: XCTestCase {
         }
     }
 
-    @MainActor func testPassageSearchWaitsForSubmit() {
+    @MainActor func testPassageSearchUpdatesWhileTyping() {
         let app = openQuran()
         let field = app.searchFields.firstMatch
         if !field.exists {
@@ -41,9 +41,38 @@ final class QuranUITests: XCTestCase {
         XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
         field.typeText("2:255")
-        XCTAssertFalse(app.buttons["quran-result-2:255"].waitForExistence(timeout: 1))
-        field.typeText("\n")
         XCTAssertTrue(app.buttons["quran-result-2:255"].waitForExistence(timeout: 5))
+        field.buttons["Clear text"].tap()
+        field.tap()
+        field.typeText("الرحم")
+        XCTAssertTrue(app.buttons["quran-result-1:1"].waitForExistence(timeout: 5))
+    }
+
+    @MainActor func testShorteningAndClearingLiveSearch() {
+        let app = openQuran()
+        search("الرحمن", in: app)
+        let row = app.buttons["quran-result-1:1"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        let field = app.searchFields.firstMatch
+        field.tap()
+        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 5))
+        XCTAssertTrue(row.waitForNonExistence(timeout: 5))
+        field.buttons["Clear text"].tap()
+        XCTAssertTrue(app.buttons["quran-surah-1"].waitForExistence(timeout: 5))
+        XCTAssertFalse(row.exists)
+    }
+
+    @MainActor func testInvalidReferenceClearsPreviousResults() {
+        let app = openQuran()
+        search("2:255", in: app)
+        let row = app.buttons["quran-result-2:255"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        let field = app.searchFields.firstMatch
+        field.tap()
+        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 3) + "999\n")
+        XCTAssertTrue(app.staticTexts["Invalid verse reference"].waitForExistence(timeout: 5))
+        XCTAssertFalse(row.exists)
+        XCTAssertFalse(app.buttons["Load more"].exists)
     }
 
     @MainActor func testQuranListShowsDistinctReadingTime() {

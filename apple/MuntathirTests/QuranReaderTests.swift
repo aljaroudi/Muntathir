@@ -1,6 +1,7 @@
 import Foundation
 @testable import Muntathir
 import SQLite3
+import SwiftUI
 import Testing
 
 struct QuranReaderTests {
@@ -97,15 +98,37 @@ struct QuranReaderTests {
             }
         }
         let reader = QuranReader(database: QuranDatabase(url: arabicURL, translationURLs: { ["en.qarai": englishURL] }))
-        #expect(try await reader.search("merciful", translationID: "en.qarai").map(\.id) == ["1:3"])
+        // The last word matches as a prefix, ranked after whole-word matches.
+        #expect(try await reader.search("merciful", translationID: "en.qarai").map(\.id) == ["1:3", "1:2"])
         #expect(try await reader.search("merciful", translationID: "en.qarai", limit: 1).map(\.id) == ["1:3"])
         #expect(try await reader.search("merciful", translationID: nil).isEmpty)
         let write = try QuranConnection(path: englishURL.path, flags: SQLITE_OPEN_READWRITE)
         try write.execute("UPDATE quran SET text='kindness'")
         try write.execute("DELETE FROM quran_words")
         try write.execute("INSERT INTO quran_words(rowid,text) SELECT \"index\",text FROM quran")
-        #expect(try await reader.search("merciful", translationID: "en.qarai").map(\.id) == ["1:3"])
+        #expect(try await reader.search("merciful", translationID: "en.qarai").map(\.id) == ["1:3", "1:2"])
         #expect(try await reader.search("merciful", translationID: "en.qarai", revision: 1).isEmpty)
+    }
+
+    @Test func arabicPrefixSearchAndLoadMoreKeepOneRanking() async throws {
+        let reader = QuranReader(database: database)
+        let prefix = try await reader.search("الرحم", translationID: nil, limit: 400)
+        #expect(prefix.contains { $0.id == "1:1" })
+        #expect(try await prefix.count > (reader.search("الرحمن", translationID: nil, limit: 400)).count)
+        // A larger limit extends the same ranked list instead of reordering it.
+        let first = try await reader.search("الله", translationID: "en.qarai", limit: 50)
+        let more = try await reader.search("الله", translationID: "en.qarai", limit: 100)
+        #expect(first.map(\.id) == Array(more.prefix(50)).map(\.id))
+        #expect(more.count == 100)
+        let highlights = try await reader.highlights(first, query: "الله", translationID: "en.qarai")
+        #expect(highlights.count == first.count)
+        #expect(highlights.values.allSatisfy { $0.arabic.runs.contains { $0.underlineStyle != nil } })
+    }
+
+    @Test func batchedReferencesKeepCanonicalOrder() async throws {
+        let reader = QuranReader(database: database)
+        #expect(try await reader.verses(references: ["2:255", "1:1", "114:6", "1:7"]).map(\.id) == ["1:1", "1:7", "2:255", "114:6"])
+        #expect(try await reader.verses(references: []).isEmpty)
     }
 
     @Test func literalRanksRequireEveryTermAndRespectWordBoundaries() {

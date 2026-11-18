@@ -40,12 +40,12 @@ interface LocationModule {
 interface DeviceLocator {
     fun hasPermission(): Boolean
 
-    /** One coarse fix with its time zone, or `null` when no fix arrives. */
+    /** One recent coarse fix within 5 km, with its time zone, or `null` when none arrives. */
     suspend fun locate(): SavedLocation?
 }
 
 /**
- * A coarse Fused fix (prayer times only need about a kilometre), zoned with an offline time-zone map so a fix
+ * A fresh coarse Fused fix within 5 km (prayer times shift about a minute per 15–20 km), zoned with an offline time-zone map so a fix
  * taken while travelling gets the place's zone rather than the phone's. There's no reverse geocoding, so the
  * coordinates never leave the device. Qibla has its own precise session
  * ([DeviceQiblaSensors]).
@@ -64,26 +64,34 @@ class FusedDeviceLocator
 
         override suspend fun locate(): SavedLocation? {
             if (!hasPermission()) return null
-            // A recent cached fix answers at once; otherwise wait for a new one, falling back to any cached fix
-            // (e.g. indoors).
-            val last = lastLocation()
+            // Only a fix within 5 km that is at most a minute old counts: a just-taken cached fix answers at once,
+            // otherwise ask for a new one (Wi-Fi/cell first, then GPS when that isn't close enough). Never fall
+            // back to an old or vague fix; a failure lets the user retry instead of saving the wrong place.
             val fix =
-                last?.takeIf { it.ageMillis <= MAX_AGE_MS }
-                    ?: withTimeoutOrNull(FIX_TIMEOUT_MS) { currentLocation() }
-                    ?: last
+                lastLocation()?.takeIf { it.isUsable }
+                    ?: currentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY)?.takeIf { it.isUsable }
+                    ?: currentLocation(Priority.PRIORITY_HIGH_ACCURACY)?.takeIf { it.isUsable }
                     ?: return null
             return SavedLocation(fix.latitude, fix.longitude, zone(fix.latitude, fix.longitude)).takeIf { it.isValid }
         }
 
+        private val Location.isUsable: Boolean
+            get() = hasAccuracy() && accuracy in 0f..MAX_ACCURACY_M && ageMillis in 0..MAX_AGE_MS
+
         @SuppressLint("MissingPermission")
-        private suspend fun currentLocation(): Location? {
+        private suspend fun currentLocation(priority: Int): Location? =
+            withTimeoutOrNull(FIX_TIMEOUT_MS) { requestCurrentLocation(priority) }
+
+        @SuppressLint("MissingPermission")
+        private suspend fun requestCurrentLocation(priority: Int): Location? {
             val request =
                 CurrentLocationRequest
                     .Builder()
-                    .setPriority(Priority.PRIORITY_BALANCED_POWER_ACCURACY)
-                    // Coarse even when Qibla has been granted precise access.
+                    .setPriority(priority)
+                    // Coarse even when Qibla has been granted precise access; its error stays well under 5 km.
                     .setGranularity(Granularity.GRANULARITY_COARSE)
                     .setMaxUpdateAgeMillis(MAX_AGE_MS)
+                    .setDurationMillis(FIX_TIMEOUT_MS)
                     .build()
             val cancellation = CancellationTokenSource()
             return suspendCancellableCoroutine { continuation ->
@@ -134,7 +142,13 @@ class FusedDeviceLocator
             }
 
         private companion object {
-            const val FIX_TIMEOUT_MS = 20_000L
-            const val MAX_AGE_MS = 10 * 60_000L
+            /** Per attempt; Wi-Fi/cell then GPS, so a failure takes at most twice this. */
+            const val FIX_TIMEOUT_MS = 15_000L
+
+            /** Even driving fast, a minute-old fix is within the 5 km tolerance. */
+            const val MAX_AGE_MS = 60_000L
+
+            /** Prayer-time tolerance: Fused's reported (68%) horizontal accuracy radius. */
+            const val MAX_ACCURACY_M = 5_000f
         }
     }

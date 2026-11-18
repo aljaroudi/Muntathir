@@ -1,0 +1,1 @@
+Cari ayat Al-Quran dan hadis sambil mengetik. Coba ketik sebagian kata terakhir. Sembunyikan lalu tampilkan kembali harakat Arab di pembaca dan buka sorotan tersimpan. Periksa apakah halaman mushaf dapat digeser setelah menyoroti teks.

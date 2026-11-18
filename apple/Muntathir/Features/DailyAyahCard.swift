@@ -55,10 +55,11 @@ struct DailyAyahCard: View {
 
 struct AyahText: View {
     let ayah: Ayah
+    @AppStorage("showArabicDiacritics") private var showMarks = true
     var alignment: TextAlignment = .leading
     var adjustable = true
     var body: some View {
-        Text(ayah.text)
+        Text(showMarks ? ayah.text : ArabicDisplay.plain(ayah.text))
             .readingText(arabic: true, adjustable: adjustable)
             .multilineTextAlignment(alignment)
             .frame(maxWidth: .infinity, alignment: alignment == .center ? .center : .leading)

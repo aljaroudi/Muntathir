@@ -1,0 +1,1 @@
+Search Quran verses and Hadith as you type. Try a partial final word. Switch Arabic diacritics off and on in the reader, then reopen a saved highlight. Check that swiping through Mushaf pages works after highlighting.

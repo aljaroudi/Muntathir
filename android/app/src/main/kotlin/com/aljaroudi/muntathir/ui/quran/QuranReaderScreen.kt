@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.outlined.BookmarkBorder
@@ -61,6 +63,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.app.QuranReadingMode
@@ -85,7 +88,11 @@ import com.aljaroudi.muntathir.ui.reader.ReaderDialogs
 import com.aljaroudi.muntathir.ui.reader.ReaderText
 import com.aljaroudi.muntathir.ui.reader.ReadingTextStyle
 import com.aljaroudi.muntathir.ui.reader.quranTypeface
+import com.aljaroudi.muntathir.ui.reader.readingDisplay
 import com.aljaroudi.muntathir.ui.reader.trackReading
+import com.aljaroudi.muntathir.ui.settings.ArabicDiacriticsRow
+import com.aljaroudi.muntathir.ui.settings.ReadingSettingsViewModel
+import com.aljaroudi.muntathir.ui.theme.QuranFont
 import java.util.Locale
 
 /** Swift `QuranReadingView`: one surah as verses, or the mushaf, keeping the position across modes. */
@@ -558,12 +565,18 @@ fun ReadingSizeSheet(
     onChange: (Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val settings: ReadingSettingsViewModel = hiltViewModel()
     val sizes = ReadingPreferences.SIZES
     val step = ReadingPreferences.SIZE_STEP
     val value = remember(percent, locale) { NumberFormat.getPercentInstance(locale).format(percent / 100.0) }
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(onDismissRequest = onDismiss, modifier = Modifier.testTag("reading-size-sheet")) {
         Column(
-            Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 24.dp),
+            Modifier
+                .fillMaxWidth()
+                .verticalScroll(
+                    rememberScrollState(),
+                ).padding(horizontal = 24.dp)
+                .padding(bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -591,6 +604,12 @@ fun ReadingSizeSheet(
                         },
                 ) { Text("A", fontSize = 30.sp) }
             }
+            ArabicDiacriticsRow(settings)
+            Text(
+                "بِسْمِ اللَّهِ".readingDisplay(),
+                fontSize = ReadingTextStyle.arabicSize(percent).sp,
+                fontFamily = QuranFont,
+            )
             TextButton(
                 onClick = { onChange(ReadingPreferences.DEFAULT_SIZE) },
                 enabled = percent != ReadingPreferences.DEFAULT_SIZE,

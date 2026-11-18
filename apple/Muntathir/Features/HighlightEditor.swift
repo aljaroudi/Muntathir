@@ -80,7 +80,6 @@ struct HighlightEditor: View {
     @State private var selectedColor: HighlightColor?
     @State private var lastSaved: ReadingHighlight?
     @State private var pendingRetry: SaveAction?
-    @State private var failed = false
     @State private var paletteHeight: CGFloat = 136
 
     private enum SaveAction {
@@ -102,6 +101,11 @@ struct HighlightEditor: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                if let pendingRetry {
+                    Text("Unable to save").font(.headline)
+                    Button("Retry") { save(pendingRetry) }
+                    Button("Discard changes", role: .destructive) { dismiss() }
+                }
                 palette
                 if existing {
                     ZStack(alignment: .topLeading) {
@@ -136,15 +140,7 @@ struct HighlightEditor: View {
             Button("Delete highlight", role: .destructive) { save(.delete) }
             Button("Cancel", role: .cancel) {}
         }
-        .alert("Unable to save", isPresented: $failed) {
-            Button("Retry") {
-                if let pendingRetry {
-                    save(pendingRetry)
-                }
-            }
-            Button("Discard changes", role: .destructive) { dismiss() }
-        }
-        .presentationDetents(existing ? [.medium, .large] : [.height(paletteHeight + 24)])
+        .presentationDetents(existing || pendingRetry != nil ? [.large] : [.height(paletteHeight + 24)])
         .presentationDragIndicator(.visible)
     }
 
@@ -158,6 +154,7 @@ struct HighlightEditor: View {
                 } label: {
                     HighlightSwatch(color: color, size: 36, isSelected: selectedColor == color)
                         .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(.rect)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(color.title)
@@ -191,12 +188,12 @@ struct HighlightEditor: View {
             }
         } catch {
             pendingRetry = action
-            failed = true
         }
     }
 }
 
 struct HighlightSummary: View {
+    @AppStorage("showArabicDiacritics") private var showMarks = true
     @Environment(\.locale) private var locale
 
     private var reference: String {
@@ -231,7 +228,7 @@ struct HighlightSummary: View {
                             .lineLimit(2)
                     }
                 } else {
-                    Text(highlight.excerpt)
+                    Text(showMarks ? highlight.excerpt : ArabicDisplay.plain(highlight.excerpt))
                         .accessibilityLabel(showReference ? highlight.excerpt : reference + ", " + highlight.color.title + ", " + highlight.excerpt)
                         .font(.body)
                         .foregroundStyle(.primary)

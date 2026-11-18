@@ -321,6 +321,7 @@
     <string name="settings_sync_through_icloud_when_available_live">Settings sync through iCloud when available. Live GPS and notification permissions stay on this device.</string>
     <string name="share">Share</string>
     <string name="share_as_image">Share as image</string>
+    <string name="show_arabic_diacritics">Show Arabic diacritics</string>
     <string name="show_feels_like_temperature">Show feels-like temperature</string>
     <string name="show_fewer_laqabs">Show fewer laqabs</string>
     <string name="show_more_laqabs">Show more laqabs</string>

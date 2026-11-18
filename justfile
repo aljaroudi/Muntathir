@@ -38,52 +38,26 @@ apple-test: apple-localizations
     xcodebuild test -project apple/Muntathir.xcodeproj -scheme Muntathir \
         -destination "$destination" -only-testing:MuntathirTests
 
-[arg("args", help="Fastlane lane + key:value options: check | tests | cleanup | screenshots languages:ar,en workers:2 | style | previews | watch_screenshots | web_media | marketing | testflight_public | app_store")]
-[doc("Run a Fastlane lane from apple/ (Homebrew Ruby + vendor/bundle; see apple/fastlane/SETUP.md)")]
-apple-lane *args:
-    #!/usr/bin/env sh
-    set -eu
-    export PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/bin:${PATH:-}"
-    export BUNDLE_PATH=vendor/bundle
-    cd apple
-    bundle exec fastlane {{ args }}
+[positional-arguments]
+[arg("platform", help="ios or android")]
+[arg("args", help="Fastlane key:value options")]
+[doc("Run a Fastlane lane from the repository root")]
+lane platform name *args:
+    PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/bin:${PATH:-}" BUNDLE_PATH="${BUNDLE_PATH:-vendor/bundle}" bundle exec fastlane "$@"
 
-[arg("args", help="languages=ar,en workers=2 → apple/build/marketing/raw/ (default workers 2)")]
-[doc("Capture raw Apple screenshots into apple/build/marketing/raw")]
-apple-screenshots *args:
-    #!/usr/bin/env sh
-    set -eu
-    languages=""
-    workers=""
-    set -- {{ args }}
-    for argument in "$@"; do
-        case "$argument" in
-            languages=*) languages=${argument#languages=} ;;
-            workers=*) workers=${argument#workers=} ;;
-            *) echo "Unknown option: $argument (use languages=ar,en workers=2)" >&2; exit 2 ;;
-        esac
-    done
-    set -- screenshots
-    [ -n "$languages" ] && set -- "$@" "languages:$languages"
-    [ -n "$workers" ] && set -- "$@" "workers:$workers"
-    just apple-lane "$@"
-
-[arg("args", help="languages=ar,en → apple/build/marketing/store/")]
-[doc("Style raw screenshots into apple/build/marketing/store")]
-apple-style *args:
-    #!/usr/bin/env sh
-    set -eu
-    languages=""
-    set -- {{ args }}
-    for argument in "$@"; do
-        case "$argument" in
-            languages=*) languages=${argument#languages=} ;;
-            *) echo "Unknown option: $argument (use languages=ar,en)" >&2; exit 2 ;;
-        esac
-    done
-    set -- style
-    [ -n "$languages" ] && set -- "$@" "languages:$languages"
-    just apple-lane "$@"
+[positional-arguments]
+[doc("Set the release version for Apple and Android (X.Y.Z)")]
+version number:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [[ ! "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "Expected a release version in X.Y.Z format." >&2
+        exit 2
+    fi
+    temp=$(mktemp Version.xcconfig.XXXXXX)
+    trap 'rm -f "$temp"' EXIT
+    printf 'MARKETING_VERSION = %s\n' "$1" > "$temp"
+    mv "$temp" Version.xcconfig
 
 # Android Gradle; JAVA_HOME defaults to Android Studio's bundled JDK
 android_gradle := 'cd android && JAVA_HOME="${JAVA_HOME:-/Applications/Android Studio.app/Contents/jbr/Contents/Home}" ./gradlew'

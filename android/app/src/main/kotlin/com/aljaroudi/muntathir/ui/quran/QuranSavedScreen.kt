@@ -67,6 +67,7 @@ import com.aljaroudi.muntathir.ui.navigation.QuranReaderRoute
 import com.aljaroudi.muntathir.ui.reader.BookmarkFailedDialog
 import com.aljaroudi.muntathir.ui.reader.HighlightEditorSheet
 import com.aljaroudi.muntathir.ui.reader.highlightSwatch
+import com.aljaroudi.muntathir.ui.reader.readingDisplay
 import com.aljaroudi.muntathir.ui.reader.title
 import com.aljaroudi.muntathir.ui.reader.toAnnotatedString
 import com.aljaroudi.muntathir.ui.theme.QuranFont
@@ -337,7 +338,7 @@ private fun SavedRow(
             }
             if (query.isBlank()) {
                 Text(
-                    entry.excerpt,
+                    entry.excerpt.readingDisplay(),
                     maxLines = 4,
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.bodyLarge,

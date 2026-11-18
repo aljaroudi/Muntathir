@@ -28,6 +28,8 @@ struct HadithView: View {
     @State private var retry = 0
     @State private var selected: Hadith?
     @State private var route: SearchRoute?
+    @State private var matchingBooks: [HadithCollection] = []
+    @State private var matchingChapters: [HadithChapter] = []
 
     private struct SearchRoute: Identifiable, Hashable {
         let id = UUID()
@@ -48,29 +50,35 @@ struct HadithView: View {
         HadithSearch.chapter(query) == nil && (!query.isEmpty || request.chapterID != nil)
     }
 
-    private var matchingBooks: [HadithCollection] {
-        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard request.collectionID == nil, HadithSearch.number(query) == nil,
-              HadithSearch.chapter(query) == nil else { return [] }
-        return catalog.filter { query.isEmpty || $0.matches(query) }.sorted {
-            guard !query.isEmpty else { return false }
-            let terms = QuranSearchText.terms(query)
-            let lhs = SearchRelevance.score($0.arabic + " " + $0.english, terms: terms)
-            let rhs = SearchRelevance.score($1.arabic + " " + $1.english, terms: terms)
-            return lhs == rhs ? $0.id < $1.id : lhs! < rhs!
-        }
+    /// Inputs to title filtering; it reruns once per debounced query, never per keystroke or render.
+    private struct TitleInputs: Equatable {
+        let query: String
+        let collectionID: String?
+        let chapterID: Int?
+        let books: Int
+        let chapters: Int
     }
 
-    private var matchingChapters: [HadithChapter] {
-        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard HadithSearch.number(query) == nil else { return [] }
-        if let number = HadithSearch.chapter(query) {
-            return chapters.filter { $0.index == number - 1 && (request.chapterID == nil || $0.id == request.chapterID) }
+    private var titleInputs: TitleInputs {
+        TitleInputs(query: query, collectionID: request.collectionID, chapterID: request.chapterID, books: catalog.count, chapters: chapters.count)
+    }
+
+    private func refreshTitleMatches() {
+        let terms = QuranSearchText.terms(query)
+        if request.collectionID == nil, HadithSearch.number(query) == nil, HadithSearch.chapter(query) == nil {
+            matchingBooks = catalog.filter { query.isEmpty || $0.matches(terms: terms) }
+        } else {
+            matchingBooks = []
         }
-        if query.isEmpty, request.collectionID == nil || request.chapterID != nil {
-            return []
+        if HadithSearch.number(query) != nil {
+            matchingChapters = []
+        } else if let number = HadithSearch.chapter(query) {
+            matchingChapters = chapters.filter { $0.index == number - 1 && (request.chapterID == nil || $0.id == request.chapterID) }
+        } else if query.isEmpty, request.collectionID == nil || request.chapterID != nil {
+            matchingChapters = []
+        } else {
+            matchingChapters = chapters.filter { (request.chapterID == nil || $0.id == request.chapterID) && (query.isEmpty || $0.matches(terms: terms)) }
         }
-        return chapters.filter { (request.chapterID == nil || $0.id == request.chapterID) && $0.matches(query) }
     }
 
     private var selectedBook: HadithCollection? {
@@ -97,8 +105,9 @@ struct HadithView: View {
                     }
                 }
                 if !matchingBooks.isEmpty {
+                    let grouped = Dictionary(grouping: matchingBooks, by: \.group)
                     ForEach(HadithBookGroup.allCases) { group in
-                        let books = matchingBooks.filter { $0.group == group }.sorted {
+                        let books = (grouped[group] ?? []).sorted {
                             $0.title(locale: locale).compare($1.title(locale: locale), options: .numeric, locale: locale) == .orderedAscending
                         }
                         if !books.isEmpty {
@@ -135,32 +144,28 @@ struct HadithView: View {
                     }
                 }
                 chapterResults
-                if showsNarrations, searchText.trimmingCharacters(in: .whitespacesAndNewlines) == query, !page.rows.isEmpty {
+                if showsNarrations, !page.rows.isEmpty {
                     narrationResults(page.rows, orderedFallback: page.usedOrderedFallback)
                 }
-                if loading {
+                // Earlier results stay visible while a new query loads; the spinner row only fills an empty list.
+                if loading, page.rows.isEmpty {
                     ProgressView("Loading Hadith…").frame(maxWidth: .infinity)
                 } else if failed {
                     HadithLoadError { Task { await assets?.refresh(); retry += 1 } }
-                } else if searchText.trimmingCharacters(in: .whitespacesAndNewlines) == query, !query.isEmpty, completedRequest == request, HadithSearch.number(query) == nil, HadithSearch.chapter(query) == nil {
+                } else if loading {
+                    EmptyView()
+                } else if !query.isEmpty, completedRequest == request, HadithSearch.number(query) == nil, HadithSearch.chapter(query) == nil {
                     Group {
                         MeaningSearchResults(query: query, hasLocalResults: !page.rows.isEmpty || !matchingBooks.isEmpty || !matchingChapters.isEmpty, emptyIdentifier: "hadith-empty-results") {
                             guard let client = SemanticSearchClient.configured else { throw URLError(.unsupportedURL) }
                             let scope = try await reader.meaningSearchScope(request)
                             let matches = try await client.search(query, kind: "hadith", sources: scope.sources, chapter: scope.chapter)
-                            var narrations: [Hadith] = []
-                            var seen = Set<Int>()
-                            for match in matches {
-                                guard case let .hadith(book, chapter, number) = match.reference,
-                                      let id = try await reader.resolveSearch(book: book, chapter: chapter, number: number),
-                                      seen.insert(id).inserted else { continue }
-                                try Task.checkCancellation()
-                                let narration = try await reader.detail(id: id, query: query).narration
-                                if !narration.isSupplication {
-                                    narrations.append(narration)
-                                }
+                            let references = matches.compactMap { match -> (book: String, chapter: String, number: Int)? in
+                                guard case let .hadith(book, chapter, number) = match.reference else { return nil }
+                                return (book, chapter, number)
                             }
-                            return narrations
+                            try Task.checkCancellation()
+                            return try await reader.searchPreviews(references, query: query)
                         } resultsContent: { narrations in
                             narrationResults(narrations.filter { narration in !page.rows.contains { $0.id == narration.id } }, online: true)
                         }
@@ -173,12 +178,22 @@ struct HadithView: View {
                             .accessibilityIdentifier("hadith-search-all")
                         }
                     }
-                } else if searchText.trimmingCharacters(in: .whitespacesAndNewlines) == query, !query.isEmpty, completedRequest == request, page.rows.isEmpty, matchingBooks.isEmpty, matchingChapters.isEmpty {
+                } else if !query.isEmpty, completedRequest == request, page.rows.isEmpty, matchingBooks.isEmpty, matchingChapters.isEmpty {
                     ContentUnavailableView.search(text: query)
                         .accessibilityIdentifier("hadith-empty-results")
                 }
             }
+            // A new request starts at the top; earlier rows stay visible until its results arrive.
             .id(request)
+            .overlay(alignment: .top) {
+                if loading, !page.rows.isEmpty {
+                    ProgressView()
+                        .padding(8)
+                        .background(.regularMaterial, in: .circle)
+                        .padding(.top, 8)
+                        .accessibilityLabel("Loading Hadith…")
+                }
+            }
             .coordinateSpace(name: "hadith-list")
             .onScrollGeometryChange(for: Double.self) { max(0, $0.contentOffset.y + $0.contentInsets.top) } action: { _, offset in
                 if !loading {
@@ -241,13 +256,28 @@ struct HadithView: View {
         .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search Hadith")
-        .searchHistory(searchText, area: .hadith)
+        .searchHistory($searchText, area: .hadith)
         .onChange(of: searchText) { _, value in
             guard value.isEmpty, request.query != value else { return }
             update { $0.query = value; $0.number = nil }
         }
+        .task(id: searchText) {
+            // Live search: wait for a pause in typing, then search; Submit still applies immediately.
+            let text = searchText
+            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard restored, !trimmed.isEmpty, trimmed != query else { return }
+            try? await Task.sleep(for: .milliseconds(250))
+            guard !Task.isCancelled, searchText == text, trimmed != query else { return }
+            update { $0.query = text; $0.number = nil }
+        }
+        .onChange(of: titleInputs, initial: true) { refreshTitleMatches() }
         .searchFocused($searchFocused)
-        .onSubmit(of: .search) { update { $0.query = searchText; $0.number = nil }; searchFocused = false }
+        .onSubmit(of: .search) {
+            if searchText.trimmingCharacters(in: .whitespacesAndNewlines) != query {
+                update { $0.query = searchText; $0.number = nil }
+            }
+            searchFocused = false
+        }
         .scrollDismissesKeyboard(.interactively)
         .autocorrectionDisabled()
         .toolbar {
@@ -530,9 +560,6 @@ struct HadithView: View {
         let current = request
         loading = completedRequest != current
         failed = false
-        if completedRequest != current {
-            page = HadithPage(rows: [], hasMore: false)
-        }
         do {
             if catalog.isEmpty {
                 let books = try await reader.catalog()
@@ -561,18 +588,21 @@ struct HadithView: View {
                 try Task.checkCancellation()
                 guard current == request else { return }
                 page = result
+            } else {
+                page = HadithPage(rows: [], hasMore: false)
             }
             try Task.checkCancellation()
             guard current == request else { return }
-            await saveSession(current)
-            guard !Task.isCancelled else { return }
             completedRequest = current
             loading = false
+            // Persisting the session needs extra lookups; results are already visible.
+            await saveSession(current)
         } catch is CancellationError {
             // The replacement request owns the UI state.
         } catch {
             guard !Task.isCancelled, current == request else { return }
             assets?.invalidateValidation()
+            page = HadithPage(rows: [], hasMore: false)
             failed = true
             loading = false
         }

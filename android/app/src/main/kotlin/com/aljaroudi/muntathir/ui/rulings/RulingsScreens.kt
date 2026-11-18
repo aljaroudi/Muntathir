@@ -82,6 +82,7 @@ import com.aljaroudi.muntathir.ui.quran.recentSearches
 import com.aljaroudi.muntathir.ui.reader.BookmarkFailedDialog
 import com.aljaroudi.muntathir.ui.reader.ReaderText
 import com.aljaroudi.muntathir.ui.reader.ReadingTextStyle
+import com.aljaroudi.muntathir.ui.reader.readingDisplay
 import com.aljaroudi.muntathir.ui.search.SmartSearchRunner
 import com.aljaroudi.muntathir.ui.search.smartSearchSection
 import com.aljaroudi.muntathir.ui.theme.HadithFont
@@ -316,7 +317,9 @@ private fun LazyListScope.rulingItems(
     items(rulings, key = { "$tag-${it.id.siteID}" }) { ruling ->
         CompositionLocalProvider(LocalLayoutDirection provides direction) {
             ListItem(
-                headlineContent = { Text(ruling.question, style = MaterialTheme.typography.titleMedium, maxLines = 3) },
+                headlineContent = {
+                    Text(ruling.question.readingDisplay(), style = MaterialTheme.typography.titleMedium, maxLines = 3)
+                },
                 modifier = Modifier.clickable { onOpen(ruling) }.testTag("$tag-${ruling.id.siteID}"),
             )
         }
@@ -446,7 +449,7 @@ private fun RulingContent(
             CompositionLocalProvider(LocalLayoutDirection provides direction) {
                 Column(Modifier.padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     Text(
-                        detail.ruling.question,
+                        detail.ruling.question.readingDisplay(),
                         style =
                             MaterialTheme.typography.titleLarge.copy(
                                 fontFamily = if (arabic) HadithFont else ReaderBodyFont,
@@ -564,7 +567,7 @@ fun RulingsSavedScreen(
                         val ruling = bookmark.ruling ?: return@items
                         ListItem(
                             overlineContent = { Text(bookmark.reference) },
-                            headlineContent = { Text(bookmark.excerpt, maxLines = 4) },
+                            headlineContent = { Text(bookmark.excerpt.readingDisplay(), maxLines = 4) },
                             trailingContent = {
                                 IconButton(onClick = { viewModel.remove(bookmark) }) {
                                     Icon(Icons.Outlined.BookmarkRemove, stringResource(R.string.remove_bookmark))

@@ -1,7 +1,7 @@
 import SwiftUI
 
 private struct SearchHistorySuggestions: ViewModifier {
-    let query: String
+    @Binding var query: String
     let area: SearchHistory.Area
     @State private var history = SearchHistory.shared
 
@@ -38,7 +38,7 @@ private struct SearchHistorySuggestions: ViewModifier {
 }
 
 extension View {
-    func searchHistory(_ query: String, area: SearchHistory.Area) -> some View {
+    func searchHistory(_ query: Binding<String>, area: SearchHistory.Area) -> some View {
         modifier(SearchHistorySuggestions(query: query, area: area))
     }
 

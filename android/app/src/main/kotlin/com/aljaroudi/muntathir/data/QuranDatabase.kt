@@ -22,7 +22,7 @@ import javax.inject.Singleton
  * Connections stay open and are confined to one thread; [read] runs the core [QuranReader] there.
  */
 @Singleton
-class QuranDatabase
+open class QuranDatabase
     @Inject
     constructor(
         @param:ApplicationContext private val context: Context,
@@ -80,7 +80,7 @@ class QuranDatabase
             ) { runCatching { surahList.associate { it.id to it.arabic } }.getOrDefault(emptyMap()) }
 
         /** The 360-day schedule, or an empty one when the bundled data is incomplete. */
-        suspend fun dailyAyah(translation: String?): DailyAyah {
+        open suspend fun dailyAyah(translation: String?): DailyAyah {
             val json = withContext(Dispatchers.IO) { runCatching { asset(DAILY_IDS) }.getOrNull() }
             val ids = DailyAyah.ids(json)
             val records = if (ids.size == DailyAyah.COUNT) read { verses(ids.toSet(), translation) } else emptyMap()

@@ -240,7 +240,7 @@ struct LocationPicker: View {
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: "Search for a city"
         )
-        .searchHistory(query, area: .locations)
+        .searchHistory($query, area: .locations)
         .task(id: query) {
             do {
                 try await Task.sleep(for: .milliseconds(350))

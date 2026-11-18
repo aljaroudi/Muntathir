@@ -27,6 +27,7 @@ struct SavedList<Destination: View>: View {
         return result
     }
 
+    @AppStorage("showArabicDiacritics") private var showMarks = true
     var body: some View {
         let savedEntries = entries
         List {
@@ -77,7 +78,7 @@ struct SavedList<Destination: View>: View {
         .listStyle(.insetGrouped)
         .navigationTitle("Saved")
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: (bookmarksOnly || showingBookmarks) ? "Search bookmarks" : "Search highlights")
-        .searchHistory(query, area: .saved)
+        .searchHistory($query, area: .saved)
         .autocorrectionDisabled()
         .scrollDismissesKeyboard(.interactively)
         .toolbar {
@@ -116,7 +117,7 @@ struct SavedList<Destination: View>: View {
                     Text(entry.title(locale: locale)).font(.subheadline).foregroundStyle(.secondary)
                 }
                 if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    Text(entry.excerpt).font(.body).lineLimit(4)
+                    Text(showMarks ? entry.excerpt : ArabicDisplay.plain(entry.excerpt)).font(.body).lineLimit(4)
                 } else {
                     SearchMatchText(SearchMatch.preview(SearchMatch.text(entry.excerpt, query: query), compact: true))
                         .font(.body).lineLimit(2)

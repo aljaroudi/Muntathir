@@ -147,7 +147,7 @@ Done 2026-11-17. `just android-test` passes (with new screenshot references for 
   - Device-to-device transfer uses the same rules but wasn't run.
 
 ## P7 — Release
-Order: P7.3 → P7.1 → P7.2 → P7.4. P7.5 waits for the app to exist in Play Console.
+Order: P7.3 → P7.1 → P7.2 → P7.4. The first internal release is active in Play Console.
 
 - [x] **P7.1** TalkBack, RTL, 200% font, tablets/foldables. Skill: adaptive.
   - `ReleaseLayoutTest` ports Swift `ReleaseLayoutUITests`: English in light mode, and Arabic in dark mode at 200% font, through Today, Tools, Settings, Calendar, the Quran list and reader, Tasbih and Activity. The Accessibility Test Framework (`ui-test-junit4-accessibility`) checks each screen, and each is saved to `/data/local/tmp/release-layout` for review (`adb pull`). It passes at phone size and as a 2560×1600 tablet (`wm size`/`wm density`), where the whole instrumented suite passes too.
@@ -169,8 +169,8 @@ Order: P7.3 → P7.1 → P7.2 → P7.4. P7.5 waits for the app to exist in Play 
   - Copy: a location shows its zone's localized city (ICU exemplar name, else rounded coordinates) instead of "Device location". The "stays on this device" footers, the Location screen's intro and the Settings backup footer are gone, along with the unused `ComingSoonScreen`.
   - Search: `QuranReader` reads the Arabic verses, their surahs and searchability once, plus the last searched translation's texts (dropped on a new revision), instead of rereading whole tables up to three times per search; JVM warm search went from 23.5 to 10.8 ms (`warmSearchesStayFast`). Supplications build a normalized index once per database, so a keystroke only filters. Figures fold names once per locale. Hadith books and chapters normalize their titles once. Rulings were already FTS with bm25 and a limit.
   - Lint: language splits are off (`bundle.language.enableSplit = false`), since the in-app picker can choose a language the system lacks; `RescheduleReceiver` ignores actions outside its filter; Credits opens links with `LocalUriHandler`. What's left is expected: the shared catalog's iOS-only strings (removed by `shrinkResources`), API 31 widget attributes, and catalog plurals.
-- [ ] **P7.4** fastlane `supply` metadata (reuse 15-locale listings, add Persian) + store screenshots, release signing and versioning, all local.
-- [ ] **P7.5** Upload with `supply`, internal app sharing PAD check on a physical device (plus the P5 device-only checks). *Blocked:* the app isn't in Play Console yet.
+- [x] **P7.4** Local [Fastlane setup](../../fastlane/SETUP.md#android), 15 Play listings including Persian, Arabic and English phone screenshots, release signing and versioning.
+- [~] **P7.5** Version 0.1.0 (1) was uploaded in Play Console. Fastlane has an internal lane with validation by default and an explicit draft upload option. Fastlane authenticated and successfully validated the signed 1.1.0 (2) upload through the Google Play API. A committed Fastlane draft is pending. Physical-device testing was reported. Coverage of Internal app sharing, Play Asset Delivery and the P5 hardware checks has not been specified.
 
 ## P8 — Wear OS (later)
 - [ ] **P8.1** Wear app, tiles/widgets, complications, Data Layer snapshot. Skills: wear-compose-m3, wear-widgets.

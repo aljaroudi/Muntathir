@@ -108,7 +108,7 @@ final class FiguresUITests: XCTestCase {
         jump.tap()
         app.buttons["calendar-day-1448-3-17"].tap()
         app.buttons["observance-prophet-birth"].tap()
-        XCTAssertTrue(app.descendants(matching: .any)["figure-profile-prophet-muhammad"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["figure-profile-prophet-muhammad"].firstMatch.waitForExistence(timeout: 5), app.debugDescription)
     }
 
     @MainActor private func launchWithFigures(_ app: XCUIApplication) throws {

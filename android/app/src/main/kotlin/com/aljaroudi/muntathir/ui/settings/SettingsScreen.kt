@@ -186,6 +186,7 @@ fun SettingsScreen(
             item { AppLanguageRow() }
             item { LinkRow(stringResource(R.string.tabs), links.onTabs, "settings-tabs") }
             item { ReadingSizeRow() }
+            item { ArabicDiacriticsRow() }
             item { HighlightColorsRow(links.onHighlightColors) }
             item { LinkRow(stringResource(R.string.downloads), links.onDownloads, "settings-downloads") }
 

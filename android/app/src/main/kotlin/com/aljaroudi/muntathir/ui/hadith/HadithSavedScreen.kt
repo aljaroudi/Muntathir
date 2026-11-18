@@ -72,6 +72,7 @@ import com.aljaroudi.muntathir.ui.navigation.HadithSavedRoute
 import com.aljaroudi.muntathir.ui.reader.HighlightDraft
 import com.aljaroudi.muntathir.ui.reader.HighlightEditorSheet
 import com.aljaroudi.muntathir.ui.reader.highlightSwatch
+import com.aljaroudi.muntathir.ui.reader.readingDisplay
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -416,7 +417,7 @@ private fun SavedNarrationRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                entry.excerpt,
+                entry.excerpt.readingDisplay(),
                 maxLines = 4,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.bodyLarge,

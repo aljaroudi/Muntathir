@@ -33,6 +33,7 @@ data class ReadingPreferences(
     val quranTranslationSelection: String = QuranTranslation.AUTO,
     val highlightColorCount: Int = HighlightPalette.DEFAULT_COUNT,
     val highlightColorOrder: String = HighlightPalette.defaultOrder,
+    val showArabicDiacritics: Boolean = true,
     val savedGroupByDate: Boolean = false,
     /** Shows English with hadith; `null` until chosen, which follows the device languages. */
     val hadithEnglishEnabled: Boolean? = null,
@@ -72,6 +73,7 @@ data class ReadingPreferences(
             put(TRANSLATION, quranTranslationSelection)
             put(COLOR_COUNT, highlightColorCount)
             put(COLOR_ORDER, highlightColorOrder)
+            put("showArabicDiacritics", showArabicDiacritics)
             put(GROUP_BY_DATE, savedGroupByDate)
             hadithEnglishEnabled?.let { put(HADITH_ENGLISH, it) }
             put(SUPPLICATION_TRANSLATION, supplicationTranslation)
@@ -122,6 +124,7 @@ data class ReadingPreferences(
                 highlightColorCount = json.integer(COLOR_COUNT)?.takeIf { it in 1..12 } ?: defaults.highlightColorCount,
                 highlightColorOrder =
                     json.string(COLOR_ORDER)?.takeIf(HighlightPalette::validOrder) ?: defaults.highlightColorOrder,
+                showArabicDiacritics = json.boolean("showArabicDiacritics") ?: true,
                 savedGroupByDate = json.boolean(GROUP_BY_DATE) ?: defaults.savedGroupByDate,
                 hadithEnglishEnabled = json.boolean(HADITH_ENGLISH),
                 supplicationTranslation =

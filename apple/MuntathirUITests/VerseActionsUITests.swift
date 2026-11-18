@@ -53,10 +53,10 @@ final class VerseActionsUITests: XCTestCase {
     }
 
     @MainActor private func dismissHighlightSheet(_ app: XCUIApplication) {
-        let swatch = app.buttons["highlight-color-green"]
-        let top = swatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0))
-            .withOffset(CGVector(dx: 0, dy: -6))
-        top.press(forDuration: 0.1, thenDragTo: top.withOffset(CGVector(dx: 0, dy: 280)))
+        let grabber = app.buttons["Sheet Grabber"]
+        grabber.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            .press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.99)))
+        XCTAssertTrue(grabber.waitForNonExistence(timeout: 5))
     }
 
     @MainActor private func editHighlight(_ app: XCUIApplication) {
@@ -126,10 +126,10 @@ final class VerseActionsUITests: XCTestCase {
         XCTAssertTrue(editor.waitForNonExistence(timeout: 5))
         editHighlight(app)
         XCTAssertEqual(app.textViews["highlight-note-editor"].value as? String, editedNote)
-        if let editedNote {
-            let deletion = String(repeating: XCUIKeyboardKey.delete.rawValue, count: editedNote.count)
+        if editedNote != nil {
             editor.tap()
-            editor.typeText(String(repeating: XCUIKeyboardKey.rightArrow.rawValue, count: editedNote.count) + deletion)
+            editor.typeKey("a", modifierFlags: .command)
+            editor.typeText(XCUIKeyboardKey.delete.rawValue)
             dismissHighlightSheet(app)
             editHighlight(app)
             XCTAssertFalse((editor.value as? String ?? "").contains("Keep this"))
@@ -149,10 +149,10 @@ final class VerseActionsUITests: XCTestCase {
         let green = app.buttons["highlight-color-green"]
         XCTAssertTrue(green.waitForExistence(timeout: 5))
         green.tap()
-        XCTAssertTrue(app.alerts["Unable to save"].waitForExistence(timeout: 5))
-        app.alerts.buttons["Retry"].tap()
-        XCTAssertTrue(app.alerts["Unable to save"].waitForExistence(timeout: 5))
-        app.alerts.buttons["Discard changes"].tap()
+        XCTAssertTrue(app.staticTexts["Unable to save"].waitForExistence(timeout: 5))
+        app.buttons["Retry"].tap()
+        XCTAssertTrue(app.staticTexts["Unable to save"].waitForExistence(timeout: 5))
+        app.buttons["Discard changes"].tap()
         XCTAssertTrue(green.waitForNonExistence(timeout: 5))
         openHighlightPicker(app)
         XCTAssertTrue(green.waitForExistence(timeout: 5))

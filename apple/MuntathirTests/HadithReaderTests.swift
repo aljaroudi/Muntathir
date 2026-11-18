@@ -296,9 +296,26 @@ struct HadithReaderTests {
         #expect(try await reader.page(HadithRequest(query: "صلاة")).rows.map(\.id) == [200_001])
         #expect(try await reader.page(HadithRequest(query: "صل")).rows.isEmpty)
         #expect(try await reader.page(HadithRequest(query: "pryaer")).rows.isEmpty)
-        #expect(try await reader.page(HadithRequest(query: "prayer")).rows.map(\.id) == [200_001])
+        // "prayers" starts with the query, so it follows the whole-word match.
+        #expect(try await reader.page(HadithRequest(query: "prayer")).rows.map(\.id) == [200_001, 200_002])
         #expect(try await reader.page(HadithRequest(query: "بالصلاه", chapterID: 2)).rows.map(\.id) == [200_003])
         try HadithDatabase(url: fixture.url).validate()
+    }
+
+    @Test func lastWordMatchesAsAPrefixAfterWholeWords() async throws {
+        let fixture = try HadithFixture(count: 0, searchRows: """
+        INSERT INTO hadith VALUES (200001,'v1',1,1,'صلاه الليل','','night prayer');
+        INSERT INTO hadith VALUES (200002,'v1',1,2,'صلا','','pray');
+        INSERT INTO hadith VALUES (200003,'v1',1,3,'بالصلاه','','prayers');
+        """)
+        defer { fixture.remove() }
+        let reader = HadithReader(database: HadithDatabase(url: fixture.url))
+        // Whole word first, then words starting with it; infixes such as "بالصلاه" never match.
+        #expect(try await reader.page(HadithRequest(query: "صلا")).rows.map(\.id) == [200_002, 200_001])
+        #expect(try await reader.page(HadithRequest(query: "صلاه الل")).rows.map(\.id) == [200_001])
+        #expect(try await reader.page(HadithRequest(query: "pray")).rows.map(\.id) == [200_002, 200_001, 200_003])
+        // Two-letter prefixes would match almost everything, so they stay whole-word.
+        #expect(try await reader.page(HadithRequest(query: "صل")).rows.isEmpty)
     }
 
     @Test func literalTiersPaginateWithoutStemmedMatches() async throws {
@@ -327,8 +344,9 @@ struct HadithReaderTests {
                 break
             }
         } while true
-        #expect(ids == Array(400_001 ... 400_055))
-        #expect(phases == [.words])
+        // Whole words first, then words that only start with the query; never stems such as "believers".
+        #expect(ids == Array(400_001 ... 400_055) + Array(300_001 ... 300_055))
+        #expect(phases == [.words, .substring])
         #expect(try await reader.page(HadithRequest(query: "believing", chapterID: 2)).rows.map(\.id) == [500_000])
     }
 

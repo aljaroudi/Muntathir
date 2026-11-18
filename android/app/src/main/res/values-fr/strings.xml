@@ -321,6 +321,7 @@
     <string name="settings_sync_through_icloud_when_available_live">Les réglages se synchronisent via iCloud si disponible. La position GPS et les autorisations de notification restent sur cet appareil.</string>
     <string name="share">Partager</string>
     <string name="share_as_image">Partager en image</string>
+    <string name="show_arabic_diacritics">Afficher les signes diacritiques arabes</string>
     <string name="show_feels_like_temperature">Afficher la température ressentie</string>
     <string name="show_fewer_laqabs">Afficher moins de surnoms</string>
     <string name="show_more_laqabs">Afficher plus de surnoms</string>

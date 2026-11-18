@@ -325,6 +325,7 @@
     <string name="settings_sync_through_icloud_when_available_live">تتزامن الإعدادات عبر iCloud عند توفره. يبقى الموقع المباشر وأذونات التنبيهات على هذا الجهاز.</string>
     <string name="share">مشاركة</string>
     <string name="share_as_image">مشاركة كصورة</string>
+    <string name="show_arabic_diacritics">إظهار التشكيل</string>
     <string name="show_feels_like_temperature">عرض درجة الحرارة المحسوسة</string>
     <string name="show_fewer_laqabs">عرض ألقاب أقل</string>
     <string name="show_more_laqabs">عرض المزيد من الألقاب</string>

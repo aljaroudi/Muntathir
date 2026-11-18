@@ -323,6 +323,7 @@
     <string name="settings_sync_through_icloud_when_available_live">Настройки синхронизируются через iCloud при его доступности. Геопозиция GPS и разрешения на уведомления остаются на этом устройстве.</string>
     <string name="share">Поделиться</string>
     <string name="share_as_image">Поделиться изображением</string>
+    <string name="show_arabic_diacritics">Показывать арабские огласовки</string>
     <string name="show_feels_like_temperature">Показывать ощущаемую температуру</string>
     <string name="show_fewer_laqabs">Показать меньше прозвищ</string>
     <string name="show_more_laqabs">Показать больше прозвищ</string>

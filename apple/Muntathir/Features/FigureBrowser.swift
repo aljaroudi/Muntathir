@@ -36,7 +36,7 @@ struct FigureBrowser: View {
                     }
                 }
                 .searchable(text: $query)
-                .searchHistory(query, area: .figures)
+                .searchHistory($query, area: .figures)
                 .overlay {
                     if sections.isEmpty {
                         ContentUnavailableView("No figures found", systemImage: "person.crop.circle.badge.questionmark")

@@ -80,8 +80,31 @@ enum HadithText {
     }
 
     static func preview(_ source: String, terms: [String] = [], marked: Bool = false) -> AttributedString {
+        let source = marked ? source : previewWindow(source, terms: terms)
         let text = flattened(highlighted(source, terms: terms, marked: marked))
         return SearchMatch.preview(text, compact: !terms.isEmpty || marked)
+    }
+
+    /// Long narrations are cut around the first match before parsing; previews show at most a few hundred characters.
+    /// The margins exceed the preview budget, so trimming still adds the leading and trailing ellipses.
+    static func previewWindow(_ source: String, terms: [String]) -> String {
+        let text = source as NSString
+        guard text.length > 1500 else { return source }
+        let hit = SearchMatch.firstMatch(in: source, terms: terms) ?? 0
+        var start = max(0, hit - 300)
+        var end = min(text.length, hit + 900)
+        let whitespace = CharacterSet.whitespacesAndNewlines
+        if start > 0 {
+            let found = text.rangeOfCharacter(from: whitespace, range: NSRange(location: start, length: hit - start))
+            start = found.location == NSNotFound ? start : NSMaxRange(found)
+        }
+        if end < text.length {
+            let found = text.rangeOfCharacter(from: whitespace, options: .backwards, range: NSRange(location: hit, length: end - hit))
+            end = found.location == NSNotFound ? end : found.location
+        }
+        // Never split a surrogate pair or composed character at either edge.
+        let range = text.rangeOfComposedCharacterSequences(for: NSRange(location: start, length: end - start))
+        return text.substring(with: range)
     }
 
     private static func emphasize(_ text: inout AttributedString, range: Range<AttributedString.Index>) {
@@ -133,16 +156,26 @@ enum SearchMatch {
         guard !terms.isEmpty else { return [] }
         var normalized = ""
         var originalRanges: [NSRange] = []
-        for index in raw.indices {
-            let end = raw.index(after: index)
-            let key = QuranSearchText.normalize(String(raw[index ..< end])).folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "en"))
+        // Folding is per character, so repeated characters reuse one result instead of refolding.
+        var keys: [Character: String] = [:]
+        var offset16 = 0
+        for character in raw {
+            let length = character.utf16.count
+            let key: String
+            if let known = keys[character] {
+                key = known
+            } else {
+                key = character.isASCII ? String(character).lowercased() : QuranSearchText.fold(QuranSearchText.normalize(String(character)))
+                keys[character] = key
+            }
             normalized += key
-            originalRanges.append(contentsOf: repeatElement(NSRange(index ..< end, in: raw), count: key.utf16.count))
+            originalRanges.append(contentsOf: repeatElement(NSRange(location: offset16, length: length), count: key.utf16.count))
+            offset16 += length
         }
         let searchable = normalized as NSString
         var ranges: [NSRange] = []
         for term in terms {
-            let key = QuranSearchText.normalize(term).folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "en"))
+            let key = QuranSearchText.fold(QuranSearchText.normalize(term))
             guard !key.isEmpty else { continue }
             var offset = 0
             while offset < searchable.length {
@@ -153,6 +186,23 @@ enum SearchMatch {
             }
         }
         return ranges
+    }
+
+    /// UTF-16 offset of the earliest match, without folding the entire text when a match appears early.
+    static func firstMatch(in raw: String, terms: [String]) -> Int? {
+        guard !terms.isEmpty else { return nil }
+        let chunk = 4000
+        let text = raw as NSString
+        var location = 0
+        while location < text.length {
+            // Overlap chunks so a match spanning a boundary is still found.
+            let range = text.rangeOfComposedCharacterSequences(for: NSRange(location: location, length: min(chunk + 200, text.length - location)))
+            if let found = ranges(in: text.substring(with: range), terms: terms).map(\.location).min() {
+                return range.location + found
+            }
+            location += chunk
+        }
+        return nil
     }
 
     static func visibleBlocks(_ texts: [AttributedString], preferred: Int) -> [Int] {
@@ -223,6 +273,7 @@ enum SearchMatch {
 
 /// Use the prepared match ranges; scrolling never normalizes or searches the source again.
 struct SearchMatchText: View {
+    @AppStorage("showArabicDiacritics") private var showMarks = true
     let text: AttributedString
 
     init(_ text: AttributedString) {
@@ -238,6 +289,10 @@ struct SearchMatchText: View {
             var segment = AttributedString(text[run.range])
             let matched = segment.underlineStyle != nil
             segment.underlineStyle = nil
+            if !showMarks {
+                segment = AttributedString(ArabicDisplay.plain(String(segment.characters)), attributes: run.attributes)
+                segment.underlineStyle = nil
+            }
             let part = Text(segment)
             if matched {
                 return Text("\(result)\(part.customAttribute(MatchUnderline()))")

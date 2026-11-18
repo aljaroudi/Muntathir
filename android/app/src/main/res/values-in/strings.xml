@@ -320,6 +320,7 @@
     <string name="settings_sync_through_icloud_when_available_live">Pengaturan diselaraskan melalui iCloud jika tersedia. Lokasi GPS dan izin notifikasi tetap di perangkat ini.</string>
     <string name="share">Bagikan</string>
     <string name="share_as_image">Bagikan sebagai gambar</string>
+    <string name="show_arabic_diacritics">Tampilkan harakat Arab</string>
     <string name="show_feels_like_temperature">Tampilkan suhu terasa</string>
     <string name="show_fewer_laqabs">Tampilkan lebih sedikit gelar</string>
     <string name="show_more_laqabs">Tampilkan lebih banyak gelar</string>

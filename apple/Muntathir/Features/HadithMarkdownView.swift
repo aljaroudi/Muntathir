@@ -18,7 +18,7 @@ struct HadithMarkdownView: View {
                         Rectangle().fill(.secondary).frame(width: 3)
                     }
                     Group {
-                        if highlights.isEmpty {
+                        if highlights.isEmpty, adjustable {
                             SearchMatchText(paragraph.text)
                         } else {
                             ShareHighlightText(text: paragraph.text, highlights: highlights, block: block,

@@ -14,10 +14,35 @@ struct HadithCollection: Identifiable, Hashable, Sendable {
         locale.language.languageCode?.identifier == "ar" || english.isEmpty ? arabic : english
     }
 
+    /// Folded once by the reader so live filtering never renormalizes every title.
+    var searchKey = ""
+
     func matches(_ query: String) -> Bool {
-        let terms = QuranSearchText.terms(query)
+        matches(terms: QuranSearchText.terms(query))
+    }
+
+    func matches(terms: [String]) -> Bool {
         let text = QuranSearchText.normalize(arabic + " " + english).lowercased()
-        return SearchRelevance.score(text, terms: terms) != nil
+        return TitleSearchKey.plausible(searchKey, terms: terms) && SearchRelevance.score(text, terms: terms) != nil
+    }
+}
+
+/// Cheap rejection before full relevance scoring: scoring discards text missing more than one folded term.
+enum TitleSearchKey {
+    static func make(_ parts: String...) -> String {
+        QuranSearchText.fold(QuranSearchText.normalize(parts.joined(separator: " ")))
+    }
+
+    static func plausible(_ key: String, terms: [String]) -> Bool {
+        guard !key.isEmpty else { return true }
+        var absent = 0
+        for term in terms where !key.contains(QuranSearchText.fold(term)) {
+            absent += 1
+            if absent > 1 {
+                return false
+            }
+        }
+        return true
     }
 }
 
@@ -34,10 +59,17 @@ struct HadithChapter: Identifiable, Hashable, Sendable {
     var count = 0
     var readingWords = 0
 
+    /// Folded once by the reader so live filtering never renormalizes every title.
+    var searchKey = ""
+
     func matches(_ query: String) -> Bool {
-        let terms = QuranSearchText.terms(query)
+        query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || matches(terms: QuranSearchText.terms(query))
+    }
+
+    func matches(terms: [String]) -> Bool {
+        guard TitleSearchKey.plausible(searchKey, terms: terms) else { return false }
         let text = QuranSearchText.normalize(arabic + " " + english + " " + bookArabic + " " + bookEnglish).lowercased()
-        return query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || SearchRelevance.score(text, terms: terms) != nil
+        return SearchRelevance.score(text, terms: terms) != nil
     }
 
     func title(locale: Locale) -> String {
@@ -191,15 +223,37 @@ struct HadithSource: Codable, Hashable, Sendable {
     let chapterFile: String
     let number: Int
     let sourceID: Int?
+    /// Encoded once; list rows use it as their identity on every render.
+    let key: String
 
-    var key: String {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.sortedKeys]
-        return (try? encoder.encode(self).base64EncodedString()) ?? ""
+    private enum CodingKeys: String, CodingKey { case book, chapterFile, number, sourceID }
+
+    private struct Payload: Encodable {
+        let book: String
+        let chapterFile: String
+        let number: Int
+        let sourceID: Int?
     }
 
     init(book: String, chapterFile: String, number: Int, sourceID: Int?) {
         self.book = book; self.chapterFile = chapterFile; self.number = number; self.sourceID = sourceID
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        key = (try? encoder.encode(Payload(book: book, chapterFile: chapterFile, number: number, sourceID: sourceID)).base64EncodedString()) ?? ""
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        try self.init(book: container.decode(String.self, forKey: .book), chapterFile: container.decode(String.self, forKey: .chapterFile),
+                      number: container.decode(Int.self, forKey: .number), sourceID: container.decodeIfPresent(Int.self, forKey: .sourceID))
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(book, forKey: .book)
+        try container.encode(chapterFile, forKey: .chapterFile)
+        try container.encode(number, forKey: .number)
+        try container.encodeIfPresent(sourceID, forKey: .sourceID)
     }
 
     init?(key: String) {

@@ -93,7 +93,7 @@ struct SupplicationsView: View {
         .readingBackground()
         .navigationTitle("Supplications")
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search supplications")
-        .searchHistory(query, area: .supplications)
+        .searchHistory($query, area: .supplications)
         .autocorrectionDisabled()
         .scrollDismissesKeyboard(.interactively)
         .toolbar {

@@ -321,6 +321,7 @@
     <string name="settings_sync_through_icloud_when_available_live">دستیاب ہونے پر ترتیبات iCloud کے ذریعے ہم وقت ہوتی ہیں۔ GPS مقام اور اطلاعات کی اجازتیں اسی آلے پر رہتی ہیں۔</string>
     <string name="share">شیئر کریں</string>
     <string name="share_as_image">تصویر کے طور پر شیئر کریں</string>
+    <string name="show_arabic_diacritics">عربی اعراب دکھائیں</string>
     <string name="show_feels_like_temperature">محسوس ہونے والا درجہ حرارت دکھائیں</string>
     <string name="show_fewer_laqabs">کم القاب دکھائیں</string>
     <string name="show_more_laqabs">مزید القاب دکھائیں</string>

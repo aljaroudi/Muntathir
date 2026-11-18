@@ -21,6 +21,14 @@ struct MuntathirApp: App {
                 }
                 model = AppModel(defaults: defaults, cloud: nil)
                 if ProcessInfo.processInfo.arguments.contains("--marketing-capture") {
+                    let locale = Locale(identifier: Locale.preferredLanguages.first ?? "en")
+                    let language = locale.language.languageCode?.identifier ?? "en"
+                    let translation = switch language {
+                    case "ar": ""
+                    case "de", "ru", "es", "zh", "fa": QuranTranslation.preferred(in: QuranTranslation.catalog, locale: locale)?.id ?? QuranTranslation.bundledID
+                    default: QuranTranslation.bundledID
+                    }
+                    QuranTranslationStore.shared.select(translation)
                     let visibleOptional: Set<PrayerName> = ProcessInfo.processInfo.arguments.contains("--marketing-compact") ? [] : [.sunset]
                     model.update { $0.hiddenPrayers = Set(PrayerName.optionalTimes).subtracting(visibleOptional) }
                 }

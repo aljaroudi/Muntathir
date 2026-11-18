@@ -6,6 +6,7 @@ struct HadithPreviewRow: View {
     @AppStorage("hadithEnglishEnabled.v2") private var showEnglish = SupplicationTranslation.prefersEnglish()
     @Environment(\.locale) private var locale
 
+    /// Displays arrive as reader-prepared previews, so rendering never trims or searches text again.
     var body: some View {
         let blocks = [narration.arabicDisplay, showEnglish ? narration.englishDisplay : AttributedString()]
         let visible = SearchMatch.visibleBlocks(blocks, preferred: locale.language.languageCode?.identifier == "ar" || !showEnglish ? 0 : 1)
@@ -21,14 +22,14 @@ struct HadithPreviewRow: View {
                     .font(.headline)
             }
             if !narration.arabic.isEmpty, !searching || visible.contains(0) {
-                SearchMatchText(searching ? SearchMatch.preview(narration.arabicDisplay, compact: true) : narration.arabicDisplay)
+                SearchMatchText(narration.arabicDisplay)
                     .readingText(arabic: true, hadith: true)
                     .lineLimit(searching ? 2 : 5)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .environment(\.layoutDirection, .rightToLeft)
             }
             if showEnglish, !narration.english.isEmpty, !searching || visible.contains(1) {
-                SearchMatchText(searching ? SearchMatch.preview(narration.englishDisplay, compact: true) : narration.englishDisplay)
+                SearchMatchText(narration.englishDisplay)
                     .readingText()
                     .lineLimit(searching ? 2 : 5)
                     .accessibilityIdentifier("hadith-preview-english-\(narration.id)")
