@@ -27,6 +27,7 @@ final class ReleaseLayoutUITests: XCTestCase {
         capture(app, "Calendar")
         app.buttons[arabic ? "الأدوات" : "Tools"].firstMatch.tap()
         capture(app, "Tools")
+        app.swipeDown()
         for _ in 0 ..< 5 where !app.buttons["holy-quran"].isHittable {
             app.swipeDown()
         }

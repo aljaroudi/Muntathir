@@ -77,7 +77,10 @@ struct SemanticSearchResult: Decodable, Identifiable, Sendable {
 struct SemanticSearchClient: Sendable {
     let endpoint: URL
 
-    static var configured: Self? {
+    /// Read once; views consult this while rendering.
+    static let configured: Self? = loadConfiguration()
+
+    private static func loadConfiguration() -> Self? {
         #if DEBUG
             if usesTestFixture {
                 return Self(endpoint: URL(string: "https://search.invalid/v1/search")!)

@@ -320,6 +320,7 @@
     <string name="settings_sync_through_icloud_when_available_live">Seting disegerakkan melalui iCloud apabila tersedia. Lokasi GPS dan kebenaran pemberitahuan kekal pada peranti ini.</string>
     <string name="share">Kongsi</string>
     <string name="share_as_image">Kongsi sebagai imej</string>
+    <string name="show_arabic_diacritics">Paparkan baris Arab</string>
     <string name="show_feels_like_temperature">Tunjukkan suhu dirasai</string>
     <string name="show_fewer_laqabs">Tunjukkan lebih sedikit gelaran</string>
     <string name="show_more_laqabs">Tunjukkan lebih banyak gelaran</string>

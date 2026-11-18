@@ -321,6 +321,7 @@
     <string name="settings_sync_through_icloud_when_available_live">در صورت دسترسی، تنظیمات با iCloud همگام می‌شوند. مکان GPS و مجوزهای اعلان روی همین دستگاه می‌مانند.</string>
     <string name="share">اشتراک‌گذاری</string>
     <string name="share_as_image">اشتراک‌گذاری به‌صورت تصویر</string>
+    <string name="show_arabic_diacritics">نمایش اعراب عربی</string>
     <string name="show_feels_like_temperature">نمایش دمای محسوس</string>
     <string name="show_fewer_laqabs">نمایش لقب‌های کمتر</string>
     <string name="show_more_laqabs">نمایش لقب‌های بیشتر</string>

@@ -59,6 +59,7 @@ import com.aljaroudi.muntathir.core.quran.Ayah
 import com.aljaroudi.muntathir.core.quran.QuranReference
 import com.aljaroudi.muntathir.data.QuranDatabase
 import com.aljaroudi.muntathir.ui.quran.VerseActions
+import com.aljaroudi.muntathir.ui.reader.readingDisplay
 import com.aljaroudi.muntathir.ui.theme.QuranFont
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -112,7 +113,7 @@ fun DailyAyahCard(
                 }
                 SelectionContainer {
                     Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                        AyahArabic(ayah.text, Modifier.testTag("daily-ayah-text"))
+                        AyahArabic(ayah.text.readingDisplay(), Modifier.testTag("daily-ayah-text"))
                         translation?.let {
                             Text(
                                 it,

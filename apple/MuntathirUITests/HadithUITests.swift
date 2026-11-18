@@ -20,14 +20,34 @@ final class HadithUITests: XCTestCase {
         return app
     }
 
-    @MainActor func testPassageSearchWaitsForSubmit() throws {
+    @MainActor func testPassageSearchUpdatesWhileTypingPartialWords() throws {
+        let app = try openHadith(fixture: true)
+        let field = app.searchFields.firstMatch
+        field.tap()
+        // The last word matches as a prefix, and results arrive without Submit.
+        field.typeText("Samp")
+        XCTAssertTrue(app.buttons["hadith-result-1"].waitForExistence(timeout: 5))
+        // Results stay on screen while the query is refined.
+        field.typeText("le")
+        XCTAssertTrue(app.buttons["hadith-result-1"].exists)
+        XCTAssertTrue(app.buttons["hadith-result-1"].waitForExistence(timeout: 5))
+    }
+
+    @MainActor func testShorteningAndClearingLiveSearch() throws {
         let app = try openHadith(fixture: true)
         let field = app.searchFields.firstMatch
         field.tap()
         field.typeText("Sample")
-        XCTAssertFalse(app.buttons["hadith-result-1"].waitForExistence(timeout: 1))
-        field.typeText("\n")
-        XCTAssertTrue(app.buttons["hadith-result-1"].waitForExistence(timeout: 5))
+        let row = app.buttons["hadith-result-1"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 5))
+        XCTAssertTrue(row.waitForNonExistence(timeout: 5))
+        field.buttons["Clear text"].tap()
+        XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 5))
+        XCTAssertFalse(row.exists)
+        field.tap()
+        field.typeText("Sample\n")
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
     }
 
     @MainActor func testLargeSearchScrollPerformance() throws {

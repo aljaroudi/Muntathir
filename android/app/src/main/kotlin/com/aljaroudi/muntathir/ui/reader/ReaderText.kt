@@ -28,6 +28,7 @@ fun ReaderText(
     configure: HighlightTextView.() -> Unit = {},
 ) {
     val color = LocalContentColor.current.toArgb()
+    val display = text.readingDisplay()
     AndroidView(
         factory = { context ->
             HighlightTextView(context).apply {
@@ -45,10 +46,13 @@ fun ReaderText(
                 view.setTag(R.id.reading_style, style)
                 view.applyReadingStyle(sizeSp, typeface)
             }
-            view.onHighlight = onHighlight
-            view.canHighlight = canHighlight
+            view.onHighlight = { onHighlight(display?.let { map -> it.map(map::sourceRange) } ?: it) }
+            view.canHighlight = { canHighlight(display?.let { map -> it.map(map::sourceRange) } ?: it) }
             view.onOpenHighlights = onOpenHighlights
-            view.render(text, highlights, block)
+            view.render(display?.text ?: text, highlights, block, layoutKey = display, rangesOf = { highlight ->
+                val ranges = highlight.ranges(text.text, block)
+                display?.let { ranges.map(it::displayRange).filter { range -> range.length > 0 } } ?: ranges
+            })
         },
         modifier = modifier,
     )

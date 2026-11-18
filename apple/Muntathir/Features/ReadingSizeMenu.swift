@@ -10,6 +10,7 @@ struct ReadingSizeMenu: View {
 }
 
 struct ReadingSizeControls: View {
+    @AppStorage("showArabicDiacritics") private var showMarks = true
     @AppStorage("readingSizePercent") private var percent = 100
 
     var body: some View {
@@ -24,7 +25,8 @@ struct ReadingSizeControls: View {
                 .accessibilityLabel("Decrease text size")
                 .accessibilityIdentifier("reading-size-decrease")
                 .accessibilityValue((Double(percent) / 100).formatted(.percent))
-                Divider().frame(height: 28)
+                Text((Double(percent) / 100).formatted(.percent))
+                    .monospacedDigit()
                 Button { percent = min(160, percent + 10) } label: {
                     Text(verbatim: "A").font(.system(size: 30))
                         .frame(maxWidth: .infinity, minHeight: 44)
@@ -40,6 +42,15 @@ struct ReadingSizeControls: View {
             Button("Reset") { percent = 100 }
                 .disabled(percent == 100)
                 .accessibilityIdentifier("reading-size-reset")
+            Toggle(isOn: $showMarks) {
+                Text("Show Arabic diacritics")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(.rect)
+            }
+            .accessibilityIdentifier("reading-diacritics")
+            Text(verbatim: showMarks ? "بِسْمِ اللَّهِ" : ArabicDisplay.plain("بِسْمِ اللَّهِ"))
+                .readingText(arabic: true)
+                .accessibilityIdentifier("reading-preview")
         }
         .padding(.vertical, 8)
     }
@@ -53,7 +64,6 @@ extension View {
 
 private struct ReadingSizePresentation: ViewModifier {
     @Binding var isPresented: Bool
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let compact: Bool
 
     func body(content: Content) -> some View {
@@ -61,8 +71,8 @@ private struct ReadingSizePresentation: ViewModifier {
             content.popover(isPresented: $isPresented) { panel }
         } else {
             content.sheet(isPresented: $isPresented) {
-                panel
-                    .presentationDetents(dynamicTypeSize.isAccessibilitySize ? [.medium, .large] : [.height(220)])
+                ScrollView { panel }
+                    .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
             }
         }

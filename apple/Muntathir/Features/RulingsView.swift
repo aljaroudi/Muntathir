@@ -144,6 +144,7 @@ private struct RulingsBrowser: View {
 }
 
 private struct RulingsResults: View {
+    @AppStorage("showArabicDiacritics") private var showMarks = true
     let reader: RulingsReader
     let authority: String
     let authorityName: String
@@ -190,7 +191,7 @@ private struct RulingsResults: View {
                 RulingsDetailView(reader: reader, rulings: value, authorityName: authorityName, language: language)
                     .recordSearchOnOpen(query, area: .rulings)
             } label: {
-                Text(value.question)
+                Text(showMarks ? value.question : ArabicDisplay.plain(value.question))
                     .font(.headline)
                     .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)
             }
@@ -249,6 +250,7 @@ private struct RulingsSectionView: View {
 }
 
 private struct RulingsDetailView: View {
+    @AppStorage("showArabicDiacritics") private var showMarks = true
     let reader: RulingsReader
     let rulings: Rulings
     let authorityName: String
@@ -261,9 +263,9 @@ private struct RulingsDetailView: View {
     var body: some View {
         List {
             Section {
-                Text(rulings.question).readingText(arabic: language.id == "ar", hadith: true, heading: 2).textSelection(.enabled)
+                Text(showMarks ? rulings.question : ArabicDisplay.plain(rulings.question)).readingText(arabic: language.id == "ar", hadith: true, heading: 2).textSelection(.enabled)
                 if !rulings.answer.isEmpty {
-                    Text(rulings.answer).readingText(arabic: language.id == "ar", hadith: true).textSelection(.enabled)
+                    Text(showMarks ? rulings.answer : ArabicDisplay.plain(rulings.answer)).readingText(arabic: language.id == "ar", hadith: true).textSelection(.enabled)
                 }
             }
             .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)

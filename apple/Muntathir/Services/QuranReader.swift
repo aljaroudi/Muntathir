@@ -13,8 +13,37 @@ actor QuranReader {
         let revision: Int
     }
 
+    private struct RankKey: Equatable {
+        let query: String
+        let translationID: String?
+        let surah: Int?
+        let revision: Int
+    }
+
+    /// Arabic text, chapter and searchability per verse index; read once, since the bundled text never changes.
+    private struct Corpus {
+        let connection: QuranConnection
+        let texts: [Int: String]
+        let surahs: [Int: Int]
+        let searchable: Set<Int>
+        let indexed: Bool
+    }
+
+    /// The active translation's texts, dropped whenever its revision changes.
+    private struct TranslationCorpus {
+        let id: String
+        let revision: Int
+        let connection: QuranConnection
+        let texts: [Int: String]
+        let indexed: Bool
+    }
+
     private var recentSearches: [(SearchKey, [Ayah])] = []
     private var cachedCatalog: Catalog?
+    private var corpus: Corpus?
+    private var translationCorpus: TranslationCorpus?
+    /// "Load more" slices this ranked list instead of searching again.
+    private var ranked: (key: RankKey, ids: [Int])?
     private(set) var relatedIDs: Set<String> = []
 
     init(database: QuranDatabase = QuranDatabase()) {
@@ -60,10 +89,24 @@ actor QuranReader {
     }
 
     func verses(references: [String]) throws -> [Ayah] {
-        try references.compactMap { reference in
-            guard let parsed = try QuranSearchText.reference(reference) else { return nil }
-            return try database.verse(surah: parsed.surah, number: parsed.verse)
-        }.sorted { ($0.surah, $0.number) < ($1.surah, $1.number) }
+        let parsed = try references.compactMap { try QuranSearchText.reference($0) }
+        guard !parsed.isEmpty else { return [] }
+        // One read for every reference instead of a database round trip per verse.
+        let condition = parsed.map { _ in "(sura = ? AND aya = ?)" }.joined(separator: " OR ")
+        return try database.readVerses(where: condition, parameters: parsed.flatMap { [String($0.surah), String($0.verse)] }).map(\.1)
+    }
+
+    /// Compact search previews prepared off the main actor, keyed by verse ID.
+    func highlights(_ verses: [Ayah], query: String, translationID: String?) throws -> [String: QuranSearchHighlight] {
+        var result: [String: QuranSearchHighlight] = [:]
+        for ayah in verses {
+            try Task.checkCancellation()
+            let arabic = SearchMatch.text(ayah.text, query: query)
+            let translation = SearchMatch.text(translationID.flatMap { ayah.translations[$0] } ?? "", query: query)
+            result[ayah.id] = QuranSearchHighlight(arabic: SearchMatch.preview(arabic, compact: true),
+                                                   translation: SearchMatch.preview(translation, compact: true))
+        }
+        return result
     }
 
     /// Exact phrases, then all-word matches; Arabic wins ties between languages.
@@ -76,7 +119,7 @@ actor QuranReader {
             recentSearches.append(entry)
             return entry.1
         }
-        let result = try performSearch(query, translationID: translationID, limit: limit, surah: surah)
+        let result = try performSearch(query, translationID: translationID, limit: limit, surah: surah, revision: revision)
         if limit <= 201 {
             recentSearches.append((key, result))
             if recentSearches.count > 8 {
@@ -86,7 +129,7 @@ actor QuranReader {
         return result
     }
 
-    private func performSearch(_ query: String, translationID: String?, limit: Int, surah: Int?) throws -> [Ayah] {
+    private func performSearch(_ query: String, translationID: String?, limit: Int, surah: Int?, revision: Int) throws -> [Ayah] {
         try Task.checkCancellation()
         relatedIDs = []
         if let surah, let number = QuranSearchText.number(query) {
@@ -104,47 +147,88 @@ actor QuranReader {
         }
         let terms = QuranSearchText.terms(query)
         guard !terms.isEmpty else { return [] }
-        let arabicConnection = try database.connection()
-        let arabic = try ranked(matches(terms, in: arabicConnection), terms: terms, in: arabicConnection)
-        var translated = [[Int]](repeating: [], count: 3)
-        if let translation = try database.availableTranslations().first(where: { $0.id == translationID }) {
+        let key = RankKey(query: query, translationID: translationID, surah: surah, revision: revision)
+        let ids: [Int]
+        if let ranked, ranked.key == key {
+            ids = ranked.ids
+        } else {
+            ids = try rankedIDs(terms, translationID: translationID, surah: surah, revision: revision)
+            ranked = (key, ids)
+        }
+        let page = ids.prefix(max(0, limit)).map(String.init)
+        guard !page.isEmpty else { return [] }
+        let verses = try Dictionary(uniqueKeysWithValues: database.readVerses(where: "\"index\" IN (\(page.map { _ in "?" }.joined(separator: ",")))", parameters: page))
+        return page.compactMap { Int($0).flatMap { verses[$0] } }
+    }
+
+    /// Exact phrases, then all-word matches; Arabic wins ties between languages.
+    private func rankedIDs(_ terms: [String], translationID: String?, surah: Int?, revision: Int) throws -> [Int] {
+        let arabicCorpus = try loadCorpus()
+        let arabic = try rank(matches(terms, in: arabicCorpus.connection, indexed: arabicCorpus.indexed, texts: arabicCorpus.texts), terms: terms, texts: arabicCorpus.texts)
+        var translated = [[Int]](repeating: [], count: 2)
+        if let translationID {
             // Optional assets can disappear or be invalid; Arabic search must still work.
             do {
-                let connection = try database.connection(to: translation)
-                let found = try matches(terms, in: connection)
-                translated = try ranked(found, terms: terms, in: connection)
+                if let translation = try loadTranslation(translationID, revision: revision) {
+                    translated = try rank(matches(terms, in: translation.connection, indexed: translation.indexed, texts: translation.texts), terms: terms, texts: translation.texts)
+                }
             } catch is CancellationError {
                 throw CancellationError()
             } catch {
                 // Keep Arabic results when a translation cannot be read.
             }
         }
-        let relatedIndexes = Set(arabic[2] + translated[2]).subtracting(arabic[0] + arabic[1] + translated[0] + translated[1])
         var seen = Set<Int>()
-        var ids = (0 ... 2).flatMap { arabic[$0] + translated[$0] }.filter { seen.insert($0).inserted }
-        if let surah {
-            let chapterIDs = try Set(database.connection().query("SELECT \"index\" FROM quran WHERE sura = ?", parameters: [String(surah)]) {
-                Int(sqlite3_column_int($0, 0))
-            })
-            ids = ids.filter { chapterIDs.contains($0) }
+        return (0 ... 1).flatMap { arabic[$0] + translated[$0] }.filter { id in
+            arabicCorpus.searchable.contains(id) && (surah == nil || arabicCorpus.surahs[id] == surah) && seen.insert(id).inserted
         }
-        let eligible = try Set(arabicConnection.query("SELECT \"index\", text FROM quran") {
-            QuranSearchText.isSearchableVerse(QuranConnection.text($0, 1)) ? Int(sqlite3_column_int($0, 0)) : -1
-        })
-        ids = ids.filter { eligible.contains($0) }
-        let page = ids.prefix(max(0, limit)).map(String.init)
-        guard !page.isEmpty else { return [] }
-        let verses = try Dictionary(uniqueKeysWithValues: database.readVerses(where: "\"index\" IN (\(page.map { _ in "?" }.joined(separator: ",")))", parameters: page))
-        relatedIDs = Set(relatedIndexes.compactMap { verses[$0]?.id })
-        return page.compactMap { Int($0).flatMap { verses[$0] } }
     }
 
-    private func ranked(_ ids: [Int], terms: [String], in connection: QuranConnection) throws -> [[Int]] {
-        guard !ids.isEmpty else { return [[], [], []] }
-        let texts = try Dictionary(uniqueKeysWithValues: connection.query("SELECT \"index\", text FROM quran") {
+    private func loadCorpus() throws -> Corpus {
+        if let corpus {
+            return corpus
+        }
+        let connection = try database.connection()
+        var texts: [Int: String] = [:]
+        var surahs: [Int: Int] = [:]
+        var searchable = Set<Int>()
+        for (id, surah, text) in try connection.query("SELECT \"index\", sura, text FROM quran", row: {
+            (Int(sqlite3_column_int($0, 0)), Int(sqlite3_column_int($0, 1)), QuranConnection.text($0, 2))
+        }) {
+            try Task.checkCancellation()
+            texts[id] = text
+            surahs[id] = surah
+            if QuranSearchText.isSearchableVerse(text) {
+                searchable.insert(id)
+            }
+        }
+        let value = try Corpus(connection: connection, texts: texts, surahs: surahs, searchable: searchable, indexed: Self.hasIndex(connection))
+        corpus = value
+        return value
+    }
+
+    private func loadTranslation(_ id: String, revision: Int) throws -> TranslationCorpus? {
+        if let translationCorpus, translationCorpus.id == id, translationCorpus.revision == revision {
+            return translationCorpus
+        }
+        translationCorpus = nil
+        guard let translation = try database.availableTranslations().first(where: { $0.id == id }) else { return nil }
+        let connection = try database.connection(to: translation)
+        let texts = try Dictionary(connection.query("SELECT \"index\", text FROM quran") {
             (Int(sqlite3_column_int($0, 0)), QuranConnection.text($0, 1))
-        })
-        var groups = [[(Int, SearchRelevance)]](repeating: [], count: 3)
+        }, uniquingKeysWith: { first, _ in first })
+        let value = try TranslationCorpus(id: id, revision: revision, connection: connection, texts: texts, indexed: Self.hasIndex(connection))
+        translationCorpus = value
+        return value
+    }
+
+    private static func hasIndex(_ connection: QuranConnection) throws -> Bool {
+        try !connection.query("SELECT name FROM sqlite_master WHERE name='quran_words'") { QuranConnection.text($0, 0) }.isEmpty
+    }
+
+    private func rank(_ ids: [Int], terms: [String], texts: [Int: String]) throws -> [[Int]] {
+        guard !ids.isEmpty else { return [[], []] }
+        var groups = [[(Int, SearchRelevance)]](repeating: [], count: 2)
         for id in ids {
             try Task.checkCancellation()
             if let score = SearchRelevance.score(texts[id] ?? "", terms: terms), score.tier < 2 {
@@ -156,18 +240,22 @@ actor QuranReader {
         }
     }
 
-    /// Basic offline retrieval uses one word index, including one- and two-letter words.
-    private func matches(_ terms: [String], in database: QuranConnection) throws -> [Int] {
-        let hasIndex = try !database.query("SELECT name FROM sqlite_master WHERE name='quran_words'") { QuranConnection.text($0, 0) }.isEmpty
-        if hasIndex {
-            let indexed = terms.map { "text : \"" + $0.replacingOccurrences(of: "\"", with: "\"\"") + "\"" }.joined(separator: " AND ")
-            return try database.query("SELECT rowid FROM quran_words WHERE quran_words MATCH ? ORDER BY rowid", parameters: [indexed]) {
+    /// Basic offline retrieval uses one word index, including one- and two-letter words; the last word matches as a prefix.
+    private func matches(_ terms: [String], in database: QuranConnection, indexed: Bool, texts: [Int: String]) throws -> [Int] {
+        if indexed {
+            return try database.query("SELECT rowid FROM quran_words WHERE quran_words MATCH ? ORDER BY rowid", parameters: [QuranSearchText.ftsQuery(terms, column: "text").words]) {
                 Int(sqlite3_column_int($0, 0))
             }
         }
         // Chinese translations have no whitespace word index; their 6,236 rows use literal matching.
-        return try database.query("SELECT \"index\", text FROM quran ORDER BY \"index\"") {
-            (Int(sqlite3_column_int($0, 0)), QuranConnection.text($0, 1))
-        }.filter { QuranSearchText.literalRank($0.1, terms: terms) < 2 }.map(\.0)
+        return try texts.keys.sorted().filter { id in
+            try Task.checkCancellation()
+            return QuranSearchText.literalRank(texts[id] ?? "", terms: terms) < 2
+        }
     }
+}
+
+struct QuranSearchHighlight: Sendable {
+    let arabic: AttributedString
+    let translation: AttributedString
 }

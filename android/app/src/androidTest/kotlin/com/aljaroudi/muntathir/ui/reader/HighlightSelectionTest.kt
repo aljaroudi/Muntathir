@@ -4,8 +4,14 @@ import android.text.Selection
 import android.text.Spannable
 import android.text.Spanned
 import android.text.style.BackgroundColorSpan
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.platform.app.InstrumentationRegistry
+import com.aljaroudi.muntathir.core.highlight.HighlightRange
+import com.aljaroudi.muntathir.core.highlight.ReadingHighlight
+import com.aljaroudi.muntathir.core.text.StyledText
 import com.aljaroudi.muntathir.core.text.TextRange
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -33,6 +39,54 @@ class HighlightSelectionTest {
         val text = reader().text as Spanned
         return text.getSpans(0, text.length, BackgroundColorSpan::class.java).map {
             TextRange.of(text.getSpanStart(it), text.getSpanEnd(it))
+        }
+    }
+
+    @Test
+    fun hiddenMarksKeepSelectionsAndHighlightPositionsWhenRestored() {
+        val source = StyledText("بِسْمِ اللَّهِ")
+        val showMarks = mutableStateOf(false)
+        val saved = mutableStateOf(emptyList<ReadingHighlight>())
+        compose.runOnUiThread {
+            compose.activity.setContent {
+                CompositionLocalProvider(LocalShowArabicDiacritics provides showMarks.value) {
+                    ReaderText(
+                        source,
+                        ReaderSpikeActivity.BLOCK,
+                        28f,
+                        highlights = saved.value,
+                        canHighlight = { true },
+                        onHighlight = { selection ->
+                            val range = requireNotNull(HighlightRange.of(selection.single(), source.text))
+                            saved.value =
+                                listOf(
+                                    ReadingHighlight(
+                                        source = "1:1",
+                                        isHadith = false,
+                                        block = ReaderSpikeActivity.BLOCK,
+                                        ranges = listOf(range),
+                                        excerpt = range.quote,
+                                        reference = "1:1",
+                                    ),
+                                )
+                        },
+                        configure = { tag = ReaderSpikeActivity.VIEW_TAG },
+                    )
+                }
+            }
+        }
+        compose.waitForIdle()
+        val visible = TextRange(4, 4)
+        select(visible)
+        compose.runOnUiThread {
+            assertEquals("اللَّهِ", saved.value.single().excerpt)
+            assertEquals(listOf(visible), backgrounds())
+            showMarks.value = true
+        }
+        compose.waitForIdle()
+        compose.runOnUiThread {
+            assertEquals(source.text, reader().text.toString())
+            assertEquals(listOf(TextRange(source.text.indexOf(' ') + 1, "اللَّهِ".length)), backgrounds())
         }
     }
 

@@ -197,6 +197,7 @@ struct HighlightEditor: View {
 }
 
 struct HighlightSummary: View {
+    @AppStorage("showArabicDiacritics") private var showMarks = true
     @Environment(\.locale) private var locale
 
     private var reference: String {
@@ -231,7 +232,7 @@ struct HighlightSummary: View {
                             .lineLimit(2)
                     }
                 } else {
-                    Text(highlight.excerpt)
+                    Text(showMarks ? highlight.excerpt : ArabicDisplay.plain(highlight.excerpt))
                         .accessibilityLabel(showReference ? highlight.excerpt : reference + ", " + highlight.color.title + ", " + highlight.excerpt)
                         .font(.body)
                         .foregroundStyle(.primary)

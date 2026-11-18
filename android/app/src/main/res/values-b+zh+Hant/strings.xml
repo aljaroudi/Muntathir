@@ -320,6 +320,7 @@
     <string name="settings_sync_through_icloud_when_available_live">設定會在 iCloud 可用時同步。GPS 位置和通知權限僅保留在此裝置上。</string>
     <string name="share">分享</string>
     <string name="share_as_image">分享為影像</string>
+    <string name="show_arabic_diacritics">顯示阿拉伯語音標</string>
     <string name="show_feels_like_temperature">顯示體感溫度</string>
     <string name="show_fewer_laqabs">顯示較少尊稱</string>
     <string name="show_more_laqabs">顯示更多尊稱</string>

@@ -321,6 +321,7 @@
     <string name="settings_sync_through_icloud_when_available_live">Ayarlar, kullanılabildiğinde iCloud üzerinden eşzamanlanır. GPS konumu ve bildirim izinleri bu aygıtta kalır.</string>
     <string name="share">Paylaş</string>
     <string name="share_as_image">Görsel olarak paylaş</string>
+    <string name="show_arabic_diacritics">Arapça harekeleri göster</string>
     <string name="show_feels_like_temperature">Hissedilen sıcaklığı göster</string>
     <string name="show_fewer_laqabs">Daha az lakap göster</string>
     <string name="show_more_laqabs">Daha fazla lakap göster</string>

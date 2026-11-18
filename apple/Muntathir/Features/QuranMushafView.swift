@@ -43,6 +43,8 @@ struct QuranMushafView: View {
                     .scrollTargetBehavior(.viewAligned(limitBehavior: .alwaysByOne))
                     .scrollPosition(id: $current, anchor: .center)
                     .scrollIndicators(.hidden)
+                    // Observe drags on the pager so a child gesture cannot consume the page turn.
+                    .trackReading(.quranReading, enabled: visiblePage != nil && !isSearching)
                     .environment(\.layoutDirection, .leftToRight)
                 }
                 .onGeometryChange(for: CGSize.self) { $0.size } action: { size in
@@ -120,7 +122,6 @@ struct QuranMushafView: View {
 }
 
 private struct QuranPageView: View {
-    @Environment(\.isSearching) private var isSearching
     @Environment(\.locale) private var locale
     let number: Int
     let reader: QuranReader
@@ -139,7 +140,6 @@ private struct QuranPageView: View {
             if let page {
                 VStack(spacing: 0) {
                     QuranPageReader(page: page, surahs: surahs, highlight: highlight, select: select)
-                        .trackReading(.quranReading, enabled: active && !isSearching)
                     footer(page)
                 }
                 .padding(.horizontal, 16)

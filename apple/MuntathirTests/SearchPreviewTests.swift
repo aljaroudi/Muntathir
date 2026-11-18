@@ -3,6 +3,64 @@ import SwiftUI
 import Testing
 
 struct SearchPreviewTests {
+    /// The original per-character implementation, kept as the reference the optimized ranges must match.
+    private func referenceRanges(in raw: String, terms: [String]) -> [NSRange] {
+        var normalized = ""
+        var originalRanges: [NSRange] = []
+        for index in raw.indices {
+            let end = raw.index(after: index)
+            let key = QuranSearchText.normalize(String(raw[index ..< end])).folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "en"))
+            normalized += key
+            originalRanges.append(contentsOf: repeatElement(NSRange(index ..< end, in: raw), count: key.utf16.count))
+        }
+        let searchable = normalized as NSString
+        var ranges: [NSRange] = []
+        for term in terms {
+            let key = QuranSearchText.normalize(term).folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "en"))
+            var offset = 0
+            while !key.isEmpty, offset < searchable.length {
+                let found = searchable.range(of: key, range: NSRange(location: offset, length: searchable.length - offset))
+                guard found.location != NSNotFound, found.length > 0 else { break }
+                ranges.append(NSUnionRange(originalRanges[found.location], originalRanges[NSMaxRange(found) - 1]))
+                offset = NSMaxRange(found)
+            }
+        }
+        return ranges
+    }
+
+    @Test(arguments: [
+        ("إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى", "انما الاعمال"),
+        ("قال رسول الله ﷺ: الصَّلَاةُ عمود الدين 👨‍👩‍👧‍👦 Prayer is the PILLAR\r\nof faith", "الصلاه pillar"),
+        ("Clementísimo, Misericordiosísimo — CAFÉ café", "clementisimo cafe"),
+        ("ٱلرَّحْمَٰنِ عَلَّمَ ٱلْقُرْءَانَ", "الرحمن القران"),
+    ])
+    func fastRangesMatchTheReferenceImplementation(source: String, query: String) {
+        let terms = QuranSearchText.terms(query)
+        #expect(SearchMatch.ranges(in: source, terms: terms) == referenceRanges(in: source, terms: terms))
+        #expect(!SearchMatch.ranges(in: source, terms: terms).isEmpty)
+    }
+
+    @Test func longNarrationPreviewIsWindowedAroundTheFirstMatch() {
+        let source = String(repeating: "**مقدمة** طويلة جدا ", count: 400) + "إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ" + String(repeating: " خاتمة", count: 400)
+        let window = HadithText.previewWindow(source, terms: QuranSearchText.terms("الاعمال"))
+        #expect(window.count < 1300)
+        #expect(window.contains("الْأَعْمَالُ"))
+        let preview = HadithText.preview(source, terms: QuranSearchText.terms("الاعمال"))
+        let text = String(preview.characters)
+        #expect(text.hasPrefix("… "))
+        #expect(text.hasSuffix(" …"))
+        #expect(preview.runs.contains { $0.underlineStyle != nil })
+        // Short texts are never cut.
+        #expect(HadithText.previewWindow("قصير", terms: ["قصير"]) == "قصير")
+    }
+
+    @Test func ftsQueryMatchesTheLastWordAsAPrefixFromThreeLetters() {
+        #expect(QuranSearchText.ftsQuery(["انما", "الاعم"]).words == "\"انما\" AND \"الاعم\"*")
+        #expect(QuranSearchText.ftsQuery(["انما", "الاعم"]).phrase == "\"انما الاعم\"")
+        #expect(QuranSearchText.ftsQuery(["ال"]).words == "\"ال\"")
+        #expect(QuranSearchText.ftsQuery(["a\"b c"], column: "text").words == "text : \"a\"\"b c\"*")
+    }
+
     @Test func lateMatchKeepsWholeWordsAndHighlight() {
         let source = String(repeating: "Introduction passage. ", count: 30) + "nearby kindness " + String(repeating: "following words ", count: 30)
         let excerpt = SearchMatch.preview(SearchMatch.text(source, query: "kindness"), compact: true)

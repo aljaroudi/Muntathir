@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowDownward
@@ -15,6 +16,7 @@ import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -171,3 +174,18 @@ private fun PaletteRow(
 }
 
 private const val MIN_COLORS = 3
+
+@Composable
+fun ArabicDiacriticsRow(settings: ReadingSettingsViewModel = hiltViewModel()) {
+    val preferences by settings.state.collectAsStateWithLifecycle()
+    ListItem(
+        headlineContent = { Text(stringResource(R.string.show_arabic_diacritics)) },
+        trailingContent = { Switch(checked = preferences.showArabicDiacritics, onCheckedChange = null) },
+        modifier =
+            Modifier.testTag("reading-diacritics").toggleable(
+                value = preferences.showArabicDiacritics,
+                role = Role.Switch,
+                onValueChange = { enabled -> settings.update { it.copy(showArabicDiacritics = enabled) } },
+            ),
+    )
+}

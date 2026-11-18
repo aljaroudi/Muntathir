@@ -82,7 +82,7 @@ struct SearchRelevance: Comparable, Sendable {
     }
 
     private static func fold(_ text: String) -> String {
-        text.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "en"))
+        QuranSearchText.fold(text)
     }
 
     /// One edit or adjacent transposition, restricted to words with enough evidence.

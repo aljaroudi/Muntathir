@@ -66,6 +66,26 @@ enum QuranSearchText {
         return String(result)
     }
 
+    /// Case- and diacritic-insensitive key; one shared locale avoids allocating one per call.
+    static func fold(_ text: String) -> String {
+        text.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: foldingLocale)
+    }
+
+    private static let foldingLocale = Locale(identifier: "en")
+
+    /// FTS5 MATCH expressions for already-normalized terms: every word, and the exact contiguous phrase.
+    /// The last word also matches as a prefix once it has three characters, so results follow typing;
+    /// shorter prefixes such as "ال" would match nearly the whole corpus.
+    static func ftsQuery(_ terms: [String], column: String? = nil) -> (words: String, phrase: String) {
+        let escaped = terms.map { $0.replacingOccurrences(of: "\"", with: "\"\"") }
+        let scope = column.map { $0 + " : " } ?? ""
+        var words = escaped.map { scope + "\"" + $0 + "\"" }
+        if let last = terms.last, last.count >= 3 {
+            words[words.count - 1] += "*"
+        }
+        return (words.joined(separator: " AND "), scope + "\"" + escaped.joined(separator: " ") + "\"")
+    }
+
     static func number(_ text: String) -> Int? {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty, trimmed.allSatisfy({ $0.wholeNumberValue != nil }) else { return nil }
@@ -89,7 +109,7 @@ enum QuranSearchText {
 
     /// 0: contiguous whole-word phrase, 1: every term occurs literally, 2: no match.
     static func literalRank(_ text: String, terms: [String]) -> Int {
-        let terms = terms.map { $0.folding(options: .diacriticInsensitive, locale: Locale(identifier: "en")) }
+        let terms = terms.map { $0.folding(options: .diacriticInsensitive, locale: foldingLocale) }
         guard !terms.isEmpty else { return 2 }
         // Latin queries cannot match Arabic-only text; avoid normalizing entire narrations.
         for term in terms.sorted(by: { $0.count > $1.count }) where term.utf8.allSatisfy({ $0 < 128 }) {
@@ -112,7 +132,7 @@ enum QuranSearchText {
             }
             return rank
         }
-        let words = Self.terms(text).map { $0.folding(options: .diacriticInsensitive, locale: Locale(identifier: "en")) }
+        let words = Self.terms(text).map { $0.folding(options: .diacriticInsensitive, locale: foldingLocale) }
         if words.count >= terms.count {
             for start in 0 ... words.count - terms.count {
                 if Array(words[start ..< start + terms.count]) == terms {

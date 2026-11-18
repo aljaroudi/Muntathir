@@ -14,6 +14,20 @@ import kotlin.test.assertTrue
 // Styling is asserted as `TextStyle` spans rather than SwiftUI attributes.
 class TextTest {
     @Test
+    fun hiddenMarksPreserveLettersPauseSignsStylesAndSourceSelections() {
+        val prefix = "🌙 أ آ أ آ ۖ "
+        val marked = "رَّحۡمَٰنࣰ"
+        val original = StyledText(prefix + marked).styled(prefix.length, prefix.length + marked.length, TextStyle.Match)
+        val display = ArabicDisplay(original)
+        assertEquals(prefix + "رحمن", display.text.text)
+        val sourceRange = TextRange(prefix.length, marked.length)
+        val visibleRange = TextRange(prefix.length, 4)
+        assertEquals(visibleRange, display.displayRange(sourceRange))
+        assertEquals(sourceRange, display.sourceRange(visibleRange))
+        assertEquals(listOf(TextSpan(prefix.length, visibleRange.end, TextStyle.Match)), display.text.spans)
+    }
+
+    @Test
     fun exactAndProximityPrecedeBroaderMatches() {
         val terms = QuranSearchText.terms("acts mercy")
         val exact = SearchRelevance.score("acts mercy", terms)!!
@@ -59,7 +73,7 @@ class TextTest {
         assertEquals(2 to 255, QuranSearchText.reference("2:255"))
         assertNull(QuranSearchText.reference("mercy"))
         assertFailsWith<InvalidReferenceException> { QuranSearchText.reference("115:1") }
-        assertTrue(QuranSearchText.isSearchableVerse("بِسْمِ اللَّهِ الرَّحْمَٰنِ"))
+        assertTrue(QuranSearchText.isSearchableVerse("بِسْمِ اللَّهِ الرَّحۡمَٰنࣰ"))
         assertFalse(QuranSearchText.isSearchableVerse("الم"))
     }
 

@@ -19,6 +19,9 @@ struct QuranSearchContent: View {
     @State private var retry = 0
     @State private var resultQuery = ""
     @State private var resultTranslationID = ""
+    /// The search bar text after a pause in typing, or immediately on Submit.
+    @State private var liveQuery = ""
+    @State private var highlights: [String: QuranSearchHighlight] = [:]
 
     private struct Request: Equatable {
         let query: String
@@ -30,7 +33,7 @@ struct QuranSearchContent: View {
     }
 
     private var request: Request {
-        Request(query: submittedQuery.trimmingCharacters(in: .whitespacesAndNewlines), surah: surah?.id, translationID: translationStore.activeID, limit: limit, retry: retry, translationRevision: translationStore.revision)
+        Request(query: liveQuery.trimmingCharacters(in: .whitespacesAndNewlines), surah: surah?.id, translationID: translationStore.activeID, limit: limit, retry: retry, translationRevision: translationStore.revision)
     }
 
     private var matchingSurahs: [QuranSurah] {
@@ -78,10 +81,11 @@ struct QuranSearchContent: View {
                     }
                 }
             }
-            if !results.isEmpty, query.trimmingCharacters(in: .whitespacesAndNewlines) == request.query {
+            // Earlier results stay visible until the next search replaces them.
+            if !results.isEmpty, !request.query.isEmpty {
                 verseResults(results)
             }
-            if loading {
+            if loading, results.isEmpty || request.query.isEmpty {
                 ProgressView("Loading Quran…").frame(maxWidth: .infinity)
             } else if failed {
                 ContentUnavailableView {
@@ -101,7 +105,9 @@ struct QuranSearchContent: View {
                         Text("Enter a valid verse number in this chapter.")
                     }
                 }
-            } else if query.trimmingCharacters(in: .whitespacesAndNewlines) == request.query, !request.query.isEmpty, resultQuery == request.query, QuranSearchText.number(request.query) == nil, (try? QuranSearchText.reference(request.query)) == nil {
+            } else if loading {
+                EmptyView()
+            } else if !request.query.isEmpty, resultQuery == request.query, QuranSearchText.number(request.query) == nil, (try? QuranSearchText.reference(request.query)) == nil {
                 MeaningSearchResults(query: request.query, hasLocalResults: !results.isEmpty || !matchingSurahs.isEmpty) {
                     guard let client = SemanticSearchClient.configured else { throw URLError(.unsupportedURL) }
                     let matches = try await client.search(request.query, kind: "quran", chapter: request.surah.map(String.init))
@@ -118,13 +124,37 @@ struct QuranSearchContent: View {
                     verseResults(verses.filter { verse in !results.contains { $0.id == verse.id } }, online: true)
                 }
                 .id("\(request.surah ?? 0):\(request.query):\(request.translationID):\(request.translationRevision)")
-            } else if query.trimmingCharacters(in: .whitespacesAndNewlines) == request.query, !request.query.isEmpty, resultQuery == request.query, results.isEmpty, matchingSurahs.isEmpty {
+            } else if !request.query.isEmpty, resultQuery == request.query, results.isEmpty, matchingSurahs.isEmpty {
                 ContentUnavailableView.search(text: request.query)
                     .accessibilityIdentifier("local-search-empty")
             }
         }
         .readingBackground()
-        .onChange(of: submittedQuery) { limit = 50 }
+        .overlay(alignment: .top) {
+            if loading, !results.isEmpty, !request.query.isEmpty {
+                ProgressView()
+                    .padding(8)
+                    .background(.regularMaterial, in: .circle)
+                    .padding(.top, 8)
+                    .accessibilityLabel("Loading Quran…")
+            }
+        }
+        .onChange(of: submittedQuery, initial: true) { liveQuery = submittedQuery }
+        .onChange(of: query) { _, value in
+            if value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                liveQuery = ""
+            }
+        }
+        .task(id: query) {
+            // Live search: wait for a pause in typing; Submit still applies immediately.
+            let text = query
+            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty, trimmed != request.query else { return }
+            try? await Task.sleep(for: .milliseconds(250))
+            guard !Task.isCancelled, query == text, trimmed != request.query else { return }
+            liveQuery = text
+        }
+        .onChange(of: liveQuery) { limit = 50 }
         .onChange(of: translationStore.activeID) { limit = 50 }
         .task(id: request) { await load() }
     }
@@ -135,10 +165,11 @@ struct QuranSearchContent: View {
                 if let surah = surahs.first(where: { $0.id == ayah.surah }) {
                     let translation = QuranTranslation.catalog.first { $0.id == translationStore.activeID }
                     NavigationLink {
-                        QuranReadingView(surah: surah, initialVerse: ayah.number, reader: reader, searchQuery: request.query)
+                        QuranReadingView(surah: surah, initialVerse: ayah.number, reader: reader, searchQuery: resultQuery)
                             .recordSearchOnOpen(query, area: .quran)
                     } label: {
-                        QuranVerseRow(ayah: ayah, translation: translation, searchQuery: request.query, preview: true, showsActions: false)
+                        QuranVerseRow(ayah: ayah, translation: translation, searchQuery: resultQuery, preview: true, showsActions: false,
+                                      highlight: online ? nil : highlights[ayah.id])
                             .contentShape(.rect)
                     }
                     .accessibilityIdentifier("quran-result-\(ayah.id)")
@@ -163,10 +194,10 @@ struct QuranSearchContent: View {
         loading = true
         failed = false
         invalidReference = false
-        if resultQuery != request.query || resultTranslationID != request.translationID {
+        if request.query.isEmpty || resultTranslationID != request.translationID {
             results = []
+            hasMore = false
         }
-        hasMore = false
         do {
             if surahs.isEmpty {
                 let catalog = try await reader.catalog()
@@ -179,13 +210,20 @@ struct QuranSearchContent: View {
             if !current.query.isEmpty {
                 if current.surah == nil, let number = QuranSearchText.number(current.query) {
                     invalidReference = counts[number] == nil
+                    highlights = [:]
+                    results = []
+                    hasMore = false
+                    resultQuery = current.query
                 } else {
                     let found = try await reader.search(current.query, translationID: current.translationID, limit: current.limit + 1, surah: current.surah, revision: current.translationRevision)
+                    let visible = Array(found.prefix(current.limit))
+                    let prepared = try await reader.highlights(visible, query: current.query, translationID: current.translationID)
                     try Task.checkCancellation()
                     guard current == request else { return }
                     resultQuery = current.query
                     resultTranslationID = current.translationID
-                    results = Array(found.prefix(current.limit))
+                    highlights = prepared
+                    results = visible
                     hasMore = found.count > current.limit
                 }
             }
@@ -195,10 +233,15 @@ struct QuranSearchContent: View {
             // The replacement task owns the loading state.
         } catch QuranDatabaseError.invalidReference {
             guard !Task.isCancelled else { return }
+            results = []
+            highlights = [:]
+            hasMore = false
             invalidReference = true
             loading = false
         } catch {
             guard !Task.isCancelled else { return }
+            results = []
+            hasMore = false
             failed = true
             loading = false
         }
