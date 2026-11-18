@@ -67,6 +67,9 @@ class ReleaseLayoutTest {
     fun arabicDarkLargeText() = inspect(locale = "ar", night = true, fontScale = 2f)
 
     @Test
+    fun arabicLightStoreScreenshots() = inspect(locale = "ar", night = false, fontScale = 1f)
+
+    @Test
     fun diacriticsPreviewFollowsSettingsAfterRecreation() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             fun openSettings() {
