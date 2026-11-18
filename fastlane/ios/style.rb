@@ -4,13 +4,13 @@ require "frameit"
 Dir.chdir(MuntathirRelease::ROOT)
 root = File.expand_path("build/marketing")
 locales = MuntathirRelease.capture_locales(ARGV[0])
-config_path = File.expand_path("fastlane/marketing/screenshots.json")
+config_path = File.join(__dir__, "marketing/screenshots.json")
 screens = MuntathirRelease::SCREENSHOTS.fetch("screens")
 raw = locales.flat_map { |locale| Dir.glob("#{root}/raw/#{locale}/*.png") }.reject { |p| p.include?("_framed") }
-raise "No raw screenshots. Run bundle exec fastlane screenshots first." if raw.empty?
+raise "No raw screenshots. Run just lane ios screenshots first." if raw.empty?
 FileUtils.mkdir_p("#{root}/tools")
 compositor = "#{root}/tools/compose"
-MuntathirRelease.run!("xcrun", "swiftc", "fastlane/marketing/compose.swift", "-o", compositor,
+MuntathirRelease.run!("xcrun", "swiftc", File.join(__dir__, "marketing/compose.swift"), "-o", compositor,
                       "-module-cache-path", "#{root}/tools/module-cache")
 locales.each do |locale|
   inputs = raw.select { |p| p.include?("/#{locale}/") }

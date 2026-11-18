@@ -107,5 +107,5 @@ unless worker
   puts "CAPTURE COMPLETE"
   puts "Raw screenshots: #{raw}"
   locales.each { |locale| puts "  #{raw}/#{locale}/ (#{devices.length * screens.length} PNGs)" }
-  puts "Styled App Store images: run just apple-style languages=#{locales.map { |locale| MuntathirRelease::LANGUAGE_ALIASES.key(locale) || locale }.join(',')} → apple/build/marketing/store/"
+  puts "Styled App Store images: run just lane ios style languages:#{locales.map { |locale| MuntathirRelease::LANGUAGE_ALIASES.key(locale) || locale }.join(',')} → apple/build/marketing/store/"
 end

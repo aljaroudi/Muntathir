@@ -22,7 +22,7 @@ module MuntathirRelease
     end
   end
 
-  ROOT = File.expand_path("..", __dir__)
+  ROOT = File.expand_path("../../apple", __dir__)
   # Apple does not support Persian store metadata; its copy stays in listing-drafts/fa.
   LOCALES = %w[en-US ar-SA fr-FR de-DE id it ja ms ru es-ES tr ur-PK zh-Hans zh-Hant].freeze
   LANGUAGE_ALIASES = { "ar" => "ar-SA", "en" => "en-US" }.freeze

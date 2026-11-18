@@ -40,7 +40,7 @@ if check_media
   require "frameit"
   assert(Frameit::Devices.const_defined?(:IPHONE_DUO_OUTER) && Frameit::Devices.const_defined?(:IPHONE_DUO_INNER), "Pinned Fastlane lacks native Duo frames")
   snapshot_config = FastlaneCore::Configuration.create(Snapshot::Options.available_options, {})
-  snapshot_options = FastlaneCore::ConfigurationFile.new(snapshot_config, File.join(__dir__, "Snapfile"), nil, true).options
+  snapshot_options = FastlaneCore::ConfigurationFile.new(snapshot_config, File.join(__dir__, "../Snapfile"), nil, true).options
   assert(snapshot_options[:languages] == MuntathirRelease::LOCALES, "Screenshot locales must match metadata")
   screenshot_config = MuntathirRelease::SCREENSHOTS
   screens = screenshot_config.fetch("screens")
@@ -227,7 +227,30 @@ class LaneCheck
   def respond_to_missing?(*) = true
 end
 check = LaneCheck.new
-check.instance_eval(File.read(File.join(__dir__, "Fastfile")), File.join(__dir__, "Fastfile"))
+fastfile = File.expand_path("../Fastfile", __dir__)
+check.instance_eval(File.read(fastfile), fastfile)
+
+Dir.mktmpdir do |dir|
+  bundle = File.join(dir, "app release.aab")
+  key = File.join(dir, "play key.json")
+  File.write(bundle, "")
+  File.write(key, "{}")
+  previous_key = ENV["SUPPLY_JSON_KEY"]
+  begin
+    ENV["SUPPLY_JSON_KEY"] = key
+    rejects("Missing AAB accepted") { check.internal }
+    check.internal(aab: bundle)
+    action, upload = check.calls.pop
+    assert(action == :upload_to_play_store && upload[:aab] == bundle && upload[:json_key] == key &&
+           upload[:track] == "internal" && upload[:release_status] == "draft" && upload[:validate_only],
+           "Android internal lane must validate by default")
+    check.internal(aab: bundle, draft: true)
+    assert(check.calls.pop.last[:validate_only] == false, "Explicit Android draft must enable upload")
+  ensure
+    ENV["SUPPLY_JSON_KEY"] = previous_key
+  end
+end
+
 check.screenshots(languages: "ar,en", workers: 1)
 screenshot_command = check.calls.assoc(:sh).last
 assert(screenshot_command.last(3) == ["", "ar,en", "1"], "Screenshot lane options changed")
@@ -318,7 +341,7 @@ regressions = check.calls.find { |name, _| name == :run_tests }.last
 assert(regressions[:destination] == [iphone], "Local regression lane must run on one iPhone by default")
 assert(regressions[:skip_testing] == ["MuntathirUITests/MarketingScreenshotTests", "MuntathirUITests/QuranScreenshotRefreshTests"], "Regression lane must exclude only marketing captures")
 assert(!regressions[:parallel_testing] && regressions[:disable_concurrent_testing], "Regression lane must serialize UI tests")
-assert(regressions[:derived_data_path] == "./build/DerivedData", "Regression and marketing build caches must stay separate")
+assert(regressions[:derived_data_path] == File.join(MuntathirRelease::ROOT, "build/DerivedData"), "Regression and marketing build caches must stay separate")
 
 MuntathirRelease.define_singleton_method(:validate_media!) { |**_| }
 config = { "submission_information" => { "export_compliance_uses_encryption" => false } }
@@ -411,6 +434,9 @@ assert(check.calls.none? { |name, _| name == :archive_and_upload }, "App Store m
 assert(MuntathirRelease.review_pack_versions == ["pack-v2"], "App Store review must attach only pack versions that differ from the live packs")
 assert(check.calls.assoc(:run_tests).last[:destination] == [iphone, ipad], "App Store must test on both devices")
 listing, review = check.calls.filter_map { |name, options| options if name == :upload_to_app_store }
+assert(listing[:metadata_path] == File.join(__dir__, "metadata") &&
+       listing[:screenshots_path] == File.join(MuntathirRelease::ROOT, "build/marketing/store"),
+       "App Store listing must use the platform metadata and Apple build output")
 assert(listing[:automatic_release] && listing[:overwrite_screenshots] && !listing[:submit_for_review] && !listing.key?(:app_previews_path), "App Store listing upload must replace screenshots and preserve videos")
 assert(review[:submit_for_review] && review[:build_number] == build.version && review[:app_version] == build.app_version, "App Store review must use the processed build")
 assert([listing, review].all? { |options| options[:skip_binary_upload] && options[:skip_app_version_update] }, "Deliver must leave binary upload and version numbering to Xcode and the operator")

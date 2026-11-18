@@ -40,7 +40,8 @@ android {
         minSdk = 26
         targetSdk = 37
         versionCode = 2
-        versionName = "1.1.0"
+        versionName = providers.fileContents(rootProject.layout.projectDirectory.file("../Version.xcconfig"))
+            .asText.map { it.trim().removePrefix("MARKETING_VERSION = ") }.get()
         testInstrumentationRunner = "com.aljaroudi.muntathir.HiltTestRunner"
         // Smart search (`/v1/search`): the `semanticSearchUrl` Gradle property, else the git-ignored iOS
         // SemanticSearchConfiguration.plist, like Swift `SemanticSearchClient.configured`. Empty hides the feature.

@@ -5,8 +5,8 @@ Dotenv.load(ENV.fetch("MUNTATHIR_FASTLANE_ENV_FILE", File.expand_path("~/.config
 mode = ARGV.shift || "--list"
 pack = ARGV.shift
 known = %w[hadith supplications quran-translations rulings]
-abort "Usage: ruby fastlane/asset_pack_delivery.rb [--list|--upload [pack-id]]" unless %w[--list --upload].include?(mode) && ARGV.empty? && (pack.nil? || (mode == "--upload" && known.include?(pack)))
-root = File.expand_path("..", __dir__)
+abort "Usage: ruby fastlane/ios/asset_pack_delivery.rb [--list|--upload [pack-id]]" unless %w[--list --upload].include?(mode) && ARGV.empty? && (pack.nil? || (mode == "--upload" && known.include?(pack)))
+root = File.expand_path("../../apple", __dir__)
 altool = "/Applications/Transporter.app/Contents/Frameworks/ContentDelivery.framework/Versions/A/Resources/altool"
 abort "Install Apple's Transporter app first" unless File.executable?(altool)
 %w[ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_PATH].each { |key| abort "Missing #{key} in release credentials" if ENV[key].to_s.empty? }

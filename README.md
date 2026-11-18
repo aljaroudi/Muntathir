@@ -22,17 +22,18 @@ just apple-format
 just apple-build
 just apple-test
 TEST_DESTINATION='platform=iOS Simulator,id=YOUR-SIMULATOR-UUID' just apple-test
-just apple-lane marketing
-just apple-lane web_media
-just apple-screenshots languages=ar,en
-just apple-screenshots languages=ar,en workers=2
+just lane ios marketing
+just lane ios web_media
+just lane ios screenshots languages:ar,en workers:2
+just lane android internal aab:/absolute/path/app-release.aab
+just version 1.2.0
 just web-dev
 just web-validate
 just backend-start
 just data-build --dry-run
 ```
 
-Fastlane lanes still live under `apple/`. Prefer `just apple-screenshots` / `just apple-style` with `key=value` options; use `just apple-lane` for other lanes with Fastlane’s `key:value` syntax. See [Apple Fastlane setup](apple/fastlane/SETUP.md).
+Run `just lane <platform> <lane>` from the repository root using Fastlane’s `key:value` syntax. See [release setup](fastlane/SETUP.md). Update the shared release version with `just version X.Y.Z`.
 
 
 ## Git hooks

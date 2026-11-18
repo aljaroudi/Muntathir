@@ -35,8 +35,7 @@ vp create astro --package-manager bun --no-git --no-hooks --no-agent --no-editor
 - `public/social/`: localized 1200×630 social images. Browser typography uses Noto Sans Arabic for both languages and Amiri for the Quran verse through Astro’s Google font provider. Astro downloads and self-hosts the font at build time; the first build requires network access.
 
 The phone preview uses `public/marketing/manifest.json` and tracked WebP screenshots
-and WebM video exported by `cd apple && bundle exec fastlane web_media` (run from
-the repository root). Run `fastlane marketing` there to regenerate captures first.
+and WebM video exported by `just lane ios web_media` from the repository root. Run `just lane ios marketing` to regenerate captures first.
 The exporter validates both locales before replacing the web assets; web builds
 need no simulator. Store assets remain PNG/MP4 in `apple/build/marketing`.
 

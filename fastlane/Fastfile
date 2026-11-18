@@ -2,27 +2,27 @@ require "dotenv"
 require "plist"
 require "spaceship"
 Dotenv.load(ENV.fetch("MUNTATHIR_FASTLANE_ENV_FILE", File.expand_path("~/.config/muntathir/fastlane.env")))
-require_relative "support"
+require_relative "ios/support"
 
 default_platform(:ios)
 
 platform :ios do
   desc "Validate local metadata and release lanes without Apple access"
   lane :check do |options|
-    sh("python3", File.join(__dir__, "../scripts/check_localizations.py"))
+    sh("python3", File.join(MuntathirRelease::ROOT, "scripts/check_localizations.py"))
     flags = options[:skip_media] ? ["--skip-media"] : []
-    sh("bundle", "exec", "ruby", File.join(__dir__, "check.rb"), *flags)
+    sh("bundle", "exec", "ruby", File.join(__dir__, "ios/check.rb"), *flags)
   end
 
   desc "Run unit and UI regression tests, excluding marketing captures"
   lane :tests do |options|
-    sh("python3", File.join(__dir__, "../scripts/check_localizations.py"))
-    run_tests(project: "./Muntathir.xcodeproj", scheme: "Muntathir",
+    sh("python3", File.join(MuntathirRelease::ROOT, "scripts/check_localizations.py"))
+    run_tests(project: File.join(MuntathirRelease::ROOT, "Muntathir.xcodeproj"), scheme: "Muntathir",
               destination: MuntathirRelease.test_destinations(include_ipad: options[:include_ipad] == true),
               skip_testing: ["MuntathirUITests/MarketingScreenshotTests", "MuntathirUITests/QuranScreenshotRefreshTests"],
               parallel_testing: false, disable_concurrent_testing: true, skip_detect_devices: true, skip_slack: true, fail_build: true,
-              output_directory: "./build/tests", buildlog_path: "./build/logs/tests",
-              derived_data_path: "./build/DerivedData")
+              output_directory: File.join(MuntathirRelease::ROOT, "build/tests"), buildlog_path: File.join(MuntathirRelease::ROOT, "build/logs/tests"),
+              derived_data_path: File.join(MuntathirRelease::ROOT, "build/DerivedData"))
     MuntathirRelease.cleanup_build_artifacts!(paths: ["build/DerivedData"])
   end
 
@@ -33,28 +33,28 @@ platform :ios do
 
   desc "Capture localized iPhone, iPad and Duo screenshots"
   lane :screenshots do |options|
-    sh("bundle", "exec", "ruby", File.join(__dir__, "screenshots.rb"), options[:devices].to_s, options[:languages].to_s,
+    sh("bundle", "exec", "ruby", File.join(__dir__, "ios/screenshots.rb"), options[:devices].to_s, options[:languages].to_s,
        options.fetch(:workers) { MuntathirRelease.default_screenshot_workers }.to_s)
   end
 
   desc "Style raw screenshots with frames, backgrounds and localized headlines"
   lane :style do |options|
-    sh("bundle", "exec", "ruby", File.join(__dir__, "style.rb"), options[:languages].to_s)
+    sh("bundle", "exec", "ruby", File.join(__dir__, "ios/style.rb"), options[:languages].to_s)
   end
 
   desc "Record continuous sunrise-to-sunset simulator previews in every store locale"
   lane :previews do |options|
-    sh("bundle", "exec", "ruby", File.join(__dir__, "previews.rb"), options[:devices].to_s)
+    sh("bundle", "exec", "ruby", File.join(__dir__, "ios/previews.rb"), options[:devices].to_s)
   end
 
   desc "Capture required localized Apple Watch store screenshots"
   lane :watch_screenshots do
-    sh("bundle", "exec", "ruby", File.join(__dir__, "watch_screenshots.rb"))
+    sh("bundle", "exec", "ruby", File.join(__dir__, "ios/watch_screenshots.rb"))
   end
 
   desc "Export Arabic/English website screenshots as WebP and previews as WebM"
   lane :web_media do
-    sh("bundle", "exec", "ruby", File.join(__dir__, "web_media.rb"))
+    sh("bundle", "exec", "ruby", File.join(__dir__, "ios/web_media.rb"))
   end
 
   desc "Generate all screenshots, App Preview videos and website media locally"
@@ -76,7 +76,7 @@ platform :ios do
 
   private_lane :refresh_screenshots do
     started = Time.now
-    sh("bundle", "exec", "ruby", File.join(__dir__, "refresh_screenshots.rb"))
+    sh("bundle", "exec", "ruby", File.join(__dir__, "ios/refresh_screenshots.rb"))
     style
     MuntathirRelease.validate_media!(since: started)
   end
@@ -159,7 +159,7 @@ platform :ios do
        "-derivedDataPath", File.join(output, "ArchiveDerivedData"),
        "SEMANTIC_SEARCH_URL=https://search.xn--pgbou4cf.com/v1/search", *provisioning, "archive")
     archived_app = File.join(archive, "Products", "Applications", "Muntathir.app")
-    sh("python3", File.join(__dir__, "../AssetPacks/assets.py"), "check-bundle", archived_app)
+    sh("python3", File.join(MuntathirRelease::ROOT, "AssetPacks/assets.py"), "check-bundle", archived_app)
     bundle = Plist.parse_xml(MuntathirRelease.run!("plutil", "-convert", "xml1", "-o", "-", File.join(archived_app, "Info.plist")))
     unless bundle.fetch("CFBundleShortVersionString") == version && bundle.fetch("CFBundleVersion").to_s == "1"
       UI.user_error!("Archive must contain Muntathir version #{version} with the project build number 1")
@@ -188,7 +188,7 @@ platform :ios do
   private_lane :prepare_release do |options|
     check(skip_media: !options.fetch(:app_store))
     context = release_context(app_store: options.fetch(:app_store), force: options[:force].to_s == "true")
-    sh("python3", File.join(__dir__, "../../build/build.py"), "--assets-only")
+    sh("python3", File.join(__dir__, "../build/build.py"), "--assets-only")
     tests(include_ipad: options.fetch(:app_store)) unless options[:skip_tests].to_s == "true"
     if options.fetch(:app_store)
       if options[:skip_screenshots].to_s == "true"
@@ -241,8 +241,8 @@ platform :ios do
                         reject_if_possible: false, run_precheck_before_submit: false }
       config = context.fetch(:config)
       metadata = config.slice("app_review_information", "support_url", "privacy_url", "copyright").reject { |_, value| value.nil? || value.empty? }.transform_keys(&:to_sym)
-      upload_to_app_store(**store_options, **metadata, metadata_path: "./fastlane/metadata",
-                          screenshots_path: "./build/marketing/store", overwrite_screenshots: true,
+      upload_to_app_store(**store_options, **metadata, metadata_path: File.expand_path("ios/metadata", __dir__),
+                          screenshots_path: File.join(MuntathirRelease::ROOT, "build/marketing/store"), overwrite_screenshots: true,
                           automatic_release: draft.release_type == "AFTER_APPROVAL" ? nil : true, submit_for_review: false)
 
       draft = assert_current_draft(context)
@@ -261,5 +261,33 @@ platform :ios do
                           submission_information: config.fetch("submission_information"), submit_for_review: true)
       UI.success("App Review submitted for #{build.app_version} (#{build.version}).")
     end
+  end
+end
+
+platform :android do
+  desc "Validate a signed AAB on Google Play or save it as an internal draft"
+  lane :internal do |options|
+    root = File.expand_path("..", __dir__)
+    bundle = File.expand_path(options[:aab].to_s, root)
+    credentials = File.expand_path(ENV.fetch("SUPPLY_JSON_KEY", ""), root)
+    UI.user_error!("Pass the signed bundle as aab:/absolute/path/app-release.aab") unless
+      File.file?(bundle) && File.extname(bundle) == ".aab"
+    UI.user_error!("Set SUPPLY_JSON_KEY to a readable Google credentials JSON file") unless
+      File.file?(credentials) && File.readable?(credentials)
+
+    upload_to_play_store(
+      package_name: "com.aljaroudi.muntathir",
+      json_key: credentials,
+      aab: bundle,
+      track: "internal",
+      release_status: "draft",
+      validate_only: options[:draft] != true,
+      skip_upload_apk: true,
+      skip_upload_aab: false,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
   end
 end
