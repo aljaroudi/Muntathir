@@ -415,7 +415,7 @@ final class HighlightUITextView: UITextView {
 
 extension SearchMatch {
     static func applying(to text: NSMutableAttributedString, query: String) -> NSMutableAttributedString {
-        for range in ranges(in: text.string, terms: QuranSearchText.terms(query)) {
+        for range in ranges(in: text.string, terms: QuranSearchText.queryTerms(query)) {
             text.addAttributes([.underlineStyle: NSUnderlineStyle.thick.rawValue, .underlineColor: UIColor(Color.accentColor)], range: range)
         }
         return text

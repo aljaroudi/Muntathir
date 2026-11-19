@@ -63,7 +63,6 @@ fun QuranScreen(
     val query by search.query.collectAsStateWithLifecycle()
     val submitted by search.submitted.collectAsStateWithLifecycle()
     val results by search.results.collectAsStateWithLifecycle()
-    val smart by search.smart.collectAsStateWithLifecycle()
     val recent by search.recent.collectAsStateWithLifecycle()
     var focused by remember { mutableStateOf(false) }
     var picking by rememberSaveable { mutableStateOf(false) }
@@ -129,8 +128,6 @@ fun QuranScreen(
                         query = query,
                         submitted = submitted,
                         results = results,
-                        smart = smart,
-                        smartAvailable = search.smartSearchAvailable,
                         hasSurahs = shown,
                         scoped = false,
                         surahNames = state.catalog.surahs.associate { it.id to it.arabic },
@@ -140,7 +137,6 @@ fun QuranScreen(
                         },
                         onLoadMore = search::loadMore,
                         onRetry = search::retry,
-                        onSmartSearch = search::smartSearch,
                     )
                 }
             }

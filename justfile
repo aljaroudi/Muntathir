@@ -142,6 +142,10 @@ backend-test:
 backend-check:
     cd backend/api && bun run check
 
+[doc("Check and restart the search API on the hosting Mac")]
+backend-deploy: backend-check backend-test
+    launchctl kickstart -k "gui/$(id -u)/com.muntathir.search"
+
 [arg("args", help="flags for build/build.py: --dry-run | --assets-only | --max-budget USD")]
 [doc("Rebuild reader databases, package assets, and refresh search")]
 data-build *args:

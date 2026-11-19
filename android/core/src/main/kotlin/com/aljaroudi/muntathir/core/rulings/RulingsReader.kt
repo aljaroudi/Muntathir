@@ -1,5 +1,6 @@
 package com.aljaroudi.muntathir.core.rulings
 
+import com.aljaroudi.muntathir.core.text.QuranSearchText
 import com.aljaroudi.muntathir.core.hadith.HadithDatabaseException
 import com.aljaroudi.muntathir.core.highlight.RulingID
 import com.aljaroudi.muntathir.core.sql.ContentSql
@@ -166,7 +167,7 @@ class RulingsReader(
         query: String = "",
     ): List<Ruling> =
         read { sql ->
-            val words = query.split(Regex("\\s+")).filter { it.isNotEmpty() }
+            val words = QuranSearchText.searchQuery(query).split(Regex("\\s+")).filter { it.isNotEmpty() }
             val terms = words.map { "\"" + it.replace("\"", "\"\"") + "\"" }
             val select = "SELECT $QUESTION_COLUMNS FROM question q"
             if (terms.isEmpty()) {

@@ -30,7 +30,7 @@ data class HadithCollection(
     /** Normalized once: browse filters every book on each keystroke. */
     private val searchText by lazy { QuranSearchText.normalize("$arabic $english").lowercase() }
 
-    fun matches(query: String): Boolean = matches(QuranSearchText.terms(query))
+    fun matches(query: String): Boolean = matches(QuranSearchText.queryTerms(query))
 
     fun matches(terms: List<String>): Boolean = SearchRelevance.score(searchText, terms) != null
 }
@@ -53,7 +53,7 @@ data class HadithChapter(
         QuranSearchText.normalize("$arabic $english $bookArabic $bookEnglish").lowercase()
     }
 
-    fun matches(query: String): Boolean = query.isBlank() || matches(QuranSearchText.terms(query))
+    fun matches(query: String): Boolean = query.isBlank() || matches(QuranSearchText.queryTerms(query))
 
     fun matches(terms: List<String>): Boolean = SearchRelevance.score(searchText, terms) != null
 

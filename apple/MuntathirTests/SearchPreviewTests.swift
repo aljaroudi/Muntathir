@@ -3,6 +3,17 @@ import SwiftUI
 import Testing
 
 struct SearchPreviewTests {
+    @Test func previewPrefersTheFullArabicPhrase() {
+        let phrase = "من كنت مولاه فعلي"
+        let source = String(repeating: "من قبل ", count: 250) + phrase
+        let result = HadithText.preview(source, terms: QuranSearchText.terms(phrase))
+        #expect(String(result.characters).contains(phrase))
+        let filteredTerms = QuranSearchText.queryTerms(phrase)
+        #expect(filteredTerms == ["كنت", "مولاه", "فعلي"])
+        let filteredResult = HadithText.preview(source, terms: filteredTerms)
+        #expect(String(filteredResult.characters).contains(phrase))
+    }
+
     /// The original per-character implementation, kept as the reference the optimized ranges must match.
     private func referenceRanges(in raw: String, terms: [String]) -> [NSRange] {
         var normalized = ""

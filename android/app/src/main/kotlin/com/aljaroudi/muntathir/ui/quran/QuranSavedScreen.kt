@@ -356,7 +356,7 @@ private fun SavedRow(
             } else {
                 for (text in listOf(entry.excerpt, entry.note).filter { it.isNotEmpty() }) {
                     val match = SearchMatch.text(text, query)
-                    if (text == entry.excerpt || match.spans.isNotEmpty() || QuranSearchText.terms(query).isEmpty()) {
+                    if (text == entry.excerpt || match.spans.isNotEmpty() || QuranSearchText.queryTerms(query).isEmpty()) {
                         Text(
                             SearchMatch.preview(match, compact = true).toAnnotatedString(),
                             maxLines = 2,

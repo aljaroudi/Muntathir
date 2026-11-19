@@ -33,7 +33,7 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import java.io.File
 
-/** Swift `SemanticSearchUITests` for Hadith and Rulings: consent first, then results resolved locally. */
+/** Swift `SemanticSearchUITests` for Hadith and Rulings: submissions resolve results locally. */
 @HiltAndroidTest
 @UninstallModules(StorageModule::class, LocationModule::class, AssetPackModule::class, SearchModule::class)
 class SmartSearchTest {
@@ -62,6 +62,7 @@ class SmartSearchTest {
         FakeAssetPackBackend(
             File(context.cacheDir, "packs").apply { deleteRecursively() },
             mapOf(
+                ContentPack.Supplications to FakeAssetPackBackend::hadith,
                 ContentPack.Hadith to FakeAssetPackBackend::hadith,
                 ContentPack.Rulings to FakeAssetPackBackend::rulings,
             ),
@@ -75,7 +76,11 @@ class SmartSearchTest {
         SmartSearch(
             SemanticSearchClient("https://search.invalid/v1/search") { _, body ->
                 requests += body
-                if ("\"rulings\"" in body) {
+                if ("\"figure\"" in body) {
+                    200 to """{"results":[{"kind":"figure","id":"prophet-muhammad","score":null}]}"""
+                } else if ("\"dua\"" in body) {
+                    200 to """{"results":[{"kind":"dua","id":"fixture","locator":"openiti-Sahifa-Sajjadiyya:2.json:2","score":null}]}"""
+                } else if ("\"rulings\"" in body) {
                     200 to
                         """{"results":[{"kind":"rulings","authority":"sistani","language":"en","id":"43","score":0.7}]}"""
                 } else {
@@ -96,13 +101,11 @@ class SmartSearchTest {
         compose.onNodeWithTag("hadith-download").performClick()
         waitFor("hadith-book-bukhari")
         compose.onNodeWithTag("search-field").performTextInput("kindness to neighbours")
-        compose.onNodeWithTag("search-field").performImeAction()
-        waitFor("search-by-meaning")
-        // Nothing is sent before consent.
         assertTrue(requests.isEmpty())
-        compose.onNodeWithTag("search-by-meaning").performClick()
-        compose.onNodeWithTag("hadith-list").performScrollToNode(hasTestTag("hadith-smart-105"))
-        compose.onNodeWithTag("hadith-smart-105").performClick()
+        compose.onNodeWithTag("search-field").performImeAction()
+        compose.waitUntil(10_000) { requests.isNotEmpty() }
+        compose.onNodeWithTag("hadith-list").performScrollToNode(hasTestTag("hadith-result-105"))
+        compose.onNodeWithTag("hadith-result-105").performClick()
         waitFor("hadith-detail-book")
         assertTrue("\"hadith\"" in requests.single())
     }
@@ -113,13 +116,42 @@ class SmartSearchTest {
         compose.onNodeWithTag("rulings").performClick()
         waitFor("downloads-get-rulings")
         compose.onNodeWithTag("downloads-get-rulings").performClick()
-        waitFor("rulings-question-42")
+        waitFor("rulings-language")
+        compose.onNodeWithTag("rulings-language").performClick()
+        compose.onNodeWithTag("rulings-language-en").performClick()
+        compose.onNodeWithTag("rulings-list").performScrollToNode(hasTestTag("search-field"))
         compose.onNodeWithTag("search-field").performTextInput("zakat on savings")
-        waitFor("search-by-meaning")
-        compose.onNodeWithTag("search-by-meaning").performClick()
+        compose.onNodeWithTag("search-field").performImeAction()
         compose.waitUntil(10_000) { requests.isNotEmpty() }
-        compose.onNodeWithTag("rulings-list").performScrollToNode(hasTestTag("rulings-smart-43"))
+        compose.onNodeWithTag("rulings-list").performScrollToNode(hasTestTag("rulings-question-43"))
         val body = requests.single()
         assertTrue("\"sistani\"" in body && "\"en\"" in body)
+    }
+
+    @Test
+    fun rankedFigureOpensProfile() {
+        compose.onNodeWithTag("tab-tools").performClick()
+        compose.onNodeWithTag("figures").performClick()
+        waitFor("search-field")
+        compose.onNodeWithTag("search-field").performTextInput("zzmeaningquery")
+        compose.onNodeWithTag("search-field").performImeAction()
+        waitFor("figure-prophet-muhammad")
+        compose.onNodeWithTag("figure-prophet-muhammad").performClick()
+        waitFor("figure-profile-prophet-muhammad")
+        assertTrue("\"figure\"" in requests.single())
+    }
+
+    @Test
+    fun rankedSupplicationOpensReader() {
+        compose.onNodeWithTag("tab-tools").performClick()
+        compose.onNodeWithTag("supplications").performClick()
+        waitFor("supplication-1")
+        compose.onNodeWithTag("search-field").performTextInput("zzmeaningquery")
+        compose.onNodeWithTag("search-field").performImeAction()
+        compose.waitUntil(10_000) { requests.isNotEmpty() }
+        waitFor("supplication-1")
+        compose.onNodeWithTag("supplication-1").performClick()
+        waitFor("supplication-title")
+        assertTrue("\"dua\"" in requests.single())
     }
 }

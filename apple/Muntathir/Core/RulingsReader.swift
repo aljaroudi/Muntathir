@@ -119,7 +119,7 @@ actor RulingsReader {
     }
 
     func questions(authority: String, language: String, query: String = "") throws -> [Rulings] {
-        let terms = query.split(whereSeparator: { $0.isWhitespace }).map { "\"" + $0.replacingOccurrences(of: "\"", with: "\"\"") + "\"" }
+        let terms = QuranSearchText.searchQuery(query).split(whereSeparator: { $0.isWhitespace }).map { "\"" + $0.replacingOccurrences(of: "\"", with: "\"\"") + "\"" }
         var sql = "SELECT q.authority_code, q.language_code, q.site_id, q.question, q.answer, q.url FROM question q"
         var parameters: [String] = []
         if !terms.isEmpty {

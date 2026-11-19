@@ -83,8 +83,6 @@ import com.aljaroudi.muntathir.ui.reader.BookmarkFailedDialog
 import com.aljaroudi.muntathir.ui.reader.ReaderText
 import com.aljaroudi.muntathir.ui.reader.ReadingTextStyle
 import com.aljaroudi.muntathir.ui.reader.readingDisplay
-import com.aljaroudi.muntathir.ui.search.SmartSearchRunner
-import com.aljaroudi.muntathir.ui.search.smartSearchSection
 import com.aljaroudi.muntathir.ui.theme.HadithFont
 import com.aljaroudi.muntathir.ui.theme.ReaderBodyFont
 
@@ -200,7 +198,6 @@ fun RulingsScreen(
     val questions by viewModel.questions.collectAsStateWithLifecycle()
     val query by viewModel.query.collectAsStateWithLifecycle()
     val recent by viewModel.recent.collectAsStateWithLifecycle()
-    val smart by viewModel.smart.state.collectAsStateWithLifecycle()
     var focused by remember { mutableStateOf(false) }
     val locale = currentLocale()
     ScreenScaffold(stringResource(R.string.rulings), onBack = onBack) { padding ->
@@ -214,13 +211,13 @@ fun RulingsScreen(
                 SearchField(
                     query = query,
                     onQuery = viewModel::search,
-                    onSubmit = viewModel::record,
+                    onSubmit = viewModel::submit,
                     placeholder = stringResource(R.string.search),
                     onFocusChange = { focused = it },
                 )
             }
             if (focused && query.isBlank()) {
-                recentSearches(recent, viewModel::search, viewModel::removeRecent, viewModel::clearRecent)
+                recentSearches(recent, { viewModel.search(it); viewModel.submit() }, viewModel::removeRecent, viewModel::clearRecent)
             }
             intro { onOpen(RulingsSavedRoute) }
             when (val current = scope) {
@@ -260,18 +257,7 @@ fun RulingsScreen(
                             viewModel.record()
                             onOpen(RulingDetailRoute(ruling.id.authority, ruling.id.language, ruling.id.siteID))
                         }
-                        val searching = query.isNotBlank()
-                        rulingRows(questions, language, emptyMessage = !searching, viewModel::retry, open)
-                        val local = questions as? Loadable.Loaded
-                        if (searching && local != null && SmartSearchRunner.accepts(query.trim())) {
-                            // Swift: the same rows, not filtered against local results and without a header.
-                            smartSearchSection(
-                                smart,
-                                viewModel.smart.available,
-                                hasLocalResults = local.value.isNotEmpty(),
-                                onSearch = { viewModel.smartSearch(value) },
-                            ) { found -> rulingItems(found, language, "rulings-smart", open) }
-                        }
+                        rulingRows(questions, language, true, viewModel::retry, open)
                     }
                 }
             }

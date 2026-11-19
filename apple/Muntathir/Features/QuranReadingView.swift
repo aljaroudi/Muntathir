@@ -42,7 +42,7 @@ struct QuranReadingView: View {
         .searchHistory($query, area: .quran)
         .onSubmit(of: .search) { submittedQuery = query; searchFocused = false }
         .onChange(of: query) {
-            _, value in if value.isEmpty {
+            _, value in if value != submittedQuery {
                 submittedQuery = ""
             }
         }

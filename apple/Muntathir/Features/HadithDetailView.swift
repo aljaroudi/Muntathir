@@ -87,7 +87,7 @@ struct HadithDetailView: View {
                                 .accessibilityIdentifier("hadith-full-english")
                         }
                         if let translation = narration.translation {
-                            highlighted(HadithText.highlighted(translation.text, terms: QuranSearchText.terms(query)), block: translation.block, narration: narration)
+                            highlighted(HadithText.highlighted(translation.text, terms: QuranSearchText.queryTerms(query)), block: translation.block, narration: narration)
                                 .environment(\.layoutDirection, translation.isRightToLeft ? .rightToLeft : .leftToRight)
                                 .accessibilityIdentifier("supplication-full-translation")
                         }

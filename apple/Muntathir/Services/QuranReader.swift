@@ -145,7 +145,7 @@ actor QuranReader {
             }
             return [verse]
         }
-        let terms = QuranSearchText.terms(query)
+        let terms = QuranSearchText.queryTerms(query)
         guard !terms.isEmpty else { return [] }
         let key = RankKey(query: query, translationID: translationID, surah: surah, revision: revision)
         let ids: [Int]

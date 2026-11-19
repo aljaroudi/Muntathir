@@ -38,7 +38,7 @@ export function parseRequest(value: unknown): SearchRequest {
     return [...new Set(a as string[])].sort()
   }
   const kinds = arrays('kinds')
-  if (kinds?.some((x) => !['quran', 'hadith', 'dua', 'rulings'].includes(x))) {
+  if (kinds?.some((x) => !['quran', 'hadith', 'dua', 'rulings', 'figure'].includes(x))) {
     throw new Error('Invalid kinds')
   }
   const sources = arrays('sources')
@@ -57,7 +57,7 @@ export function parseRequest(value: unknown): SearchRequest {
   if (!Number.isInteger(limit) || (limit as number) < 1 || (limit as number) > 50)
     throw new Error('Invalid limit')
   return {
-    query,
+    query: searchQuery(query),
     kinds,
     sources,
     ...(v.chapter === undefined ? {} : { chapter: v.chapter as string }),
@@ -73,6 +73,19 @@ export function normalize(text: string): string {
     .replace(/[أإآٱ]/gu, 'ا')
     .replace(/ى/gu, 'ي')
     .toLowerCase()
+}
+
+// Keep lineage markers between Arabic words. Allow vocalization after each Arabic letter.
+const commonPhrase = new RegExp("(?<![\\p{L}\\p{M}\\p{N}])(?:صلي\\s+الله\\s+عليه\\s+(?:واله\\s+)?وسلم|عز\\s+وجل|جل\\s+جلاله|عليه\\s+السلام|قال|من|(?!(?<=[\\p{sc=Arabic}\\p{M}]\\s)(?:ابن|بن)\\s+\\p{sc=Arabic})(?:ابن|بن))(?![\\p{L}\\p{M}\\p{N}])".replace(/[ء-ي]/gu, letter =>
+  (letter === 'ا' ? '[اأإآٱ]' : letter === 'ي' ? '[يى]' : letter) + "[\\p{M}ـ]*"
+), 'gu')
+
+function searchQuery(raw: string): string {
+  if (raw.length >= 2 && raw.startsWith('"') && raw.endsWith('"')) return raw.slice(1, -1) || raw
+  const stripped = raw.replace(commonPhrase, ' ')
+  return stripped !== raw && /[\p{L}\p{N}]/u.test(stripped)
+    ? stripped.trim().replace(/\s+/gu, ' ')
+    : raw
 }
 
 export function reference(query: string): Record<string, unknown> | null {

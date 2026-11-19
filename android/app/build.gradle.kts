@@ -39,12 +39,12 @@ android {
         applicationId = "com.aljaroudi.muntathir"
         minSdk = 26
         targetSdk = 37
-        versionCode = 3
+        versionCode = 5
         versionName = providers.fileContents(rootProject.layout.projectDirectory.file("../Version.xcconfig"))
             .asText.map { it.trim().removePrefix("MARKETING_VERSION = ") }.get()
         testInstrumentationRunner = "com.aljaroudi.muntathir.HiltTestRunner"
         // Smart search (`/v1/search`): the `semanticSearchUrl` Gradle property, else the git-ignored iOS
-        // SemanticSearchConfiguration.plist, like Swift `SemanticSearchClient.configured`. Empty hides the feature.
+        // SemanticSearchConfiguration.plist, then the public search endpoint.
         val semanticSearchPlist = rootProject.file("../apple/Muntathir/Resources/SemanticSearchConfiguration.plist")
         val semanticSearchUrl =
             providers.gradleProperty("semanticSearchUrl").orNull
@@ -52,7 +52,7 @@ android {
                     .takeIf { it.isFile }
                     ?.readText()
                     ?.let { Regex("<key>url</key>\\s*<string>([^<]*)</string>").find(it)?.groupValues?.get(1) }
-                ?: ""
+                ?: "https://search.xn--pgbou4cf.com/v1/search"
         buildConfigField("String", "SEMANTIC_SEARCH_URL", "\"$semanticSearchUrl\"")
         // Qibla's hybrid map: the `mapsApiKey` Gradle property, else `MAPS_API_KEY` in the git-ignored
         // local.properties. Without a key, Qibla shows a compass dial instead of the map.

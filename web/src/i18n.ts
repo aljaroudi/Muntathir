@@ -23,7 +23,7 @@ const en = {
       },
       {
         title: "Build your reading library",
-        text: "Choose which Hadith books to keep, explore supplications and rulings, and read downloaded content offline. Search text locally or try online smart search when no text matches are found.",
+        text: "Choose which Hadith books to keep, explore supplications and rulings, and read downloaded content offline. Search online, with on-device search when the service is unavailable.",
       },
       {
         title: "Keep what matters",
@@ -112,7 +112,7 @@ const ar: typeof en = {
       },
       {
         title: "مكتبتك للقراءة",
-        text: "اختر كتب الحديث التي تريد الاحتفاظ بها، وتصفّح الأدعية والأحكام، واقرأ المحتوى المنزّل دون اتصال. ابحث في النصوص محليًا، أو جرّب البحث الذكي عبر الإنترنت عندما لا تجد نتائج نصية.",
+        text: "اختر كتب الحديث التي تريد الاحتفاظ بها، وتصفّح الأدعية والأحكام، واقرأ المحتوى المنزّل دون اتصال. ابحث عبر الإنترنت، أو على جهازك تلقائيًا عند تعذّر الاتصال بالخدمة.",
       },
       {
         title: "احتفظ بما يهمّك",

@@ -178,6 +178,17 @@ class TextTest {
     }
 
     @Test
+    fun previewPrefersTheFullArabicPhrase() {
+        val phrase = "من كنت مولاه فعلي"
+        val source = "من قبل ".repeat(250) + phrase
+        val preview = HadithText.preview(source, phrase.split(" "))
+        assertTrue(phrase in preview.text)
+        val filteredTerms = QuranSearchText.queryTerms(phrase)
+        assertEquals(listOf("كنت", "مولاه", "فعلي"), filteredTerms)
+        assertTrue(phrase in HadithText.preview(source, filteredTerms).text)
+    }
+
+    @Test
     fun previewBoundsAndUnmatchedTextAreSafe() {
         assertEquals("", HadithText.preview("").text)
         val snippet = HadithText.preview("**Hello**\n\nworld", listOf("absent"))

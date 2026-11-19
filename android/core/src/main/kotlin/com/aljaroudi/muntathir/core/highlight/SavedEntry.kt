@@ -68,7 +68,7 @@ data class SavedEntry(
                 excerpt,
                 note,
             ).joinToString(" "),
-            QuranSearchText.terms(query),
+            QuranSearchText.queryTerms(query),
         )
 
     /** A Saved section: search matches ("matches"/"related"), a day (`date`), or a source. */

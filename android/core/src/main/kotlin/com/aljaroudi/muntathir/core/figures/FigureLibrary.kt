@@ -1,5 +1,6 @@
 package com.aljaroudi.muntathir.core.figures
 
+import com.aljaroudi.muntathir.core.text.QuranSearchText
 import com.aljaroudi.muntathir.core.calendar.IslamicEvent
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
@@ -410,7 +411,7 @@ class FigureLibrary(
         query: String,
         locale: Locale,
     ): List<Figure> {
-        val trimmed = query.trim()
+        val trimmed = QuranSearchText.searchQuery(query)
         if (trimmed.isEmpty()) return people
         val needle = fold(trimmed, locale)
         val folded =

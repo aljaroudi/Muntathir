@@ -15,11 +15,14 @@ struct FigureBrowser: View {
     @State private var library: Result<FigureLibrary, any Error>?
     @State private var query = ""
 
+    @State private var submitted = ""
+    @State private var remote: [FigureLibrary.BrowserSection]?
+
     var body: some View {
         Group {
             switch library {
             case let .success(library):
-                let sections = library.browserSections(matching: query, locale: locale)
+                let sections = remote ?? library.browserSections(matching: query, locale: locale)
                 List {
                     ForEach(sections) { section in
                         Section {
@@ -35,8 +38,21 @@ struct FigureBrowser: View {
                         }
                     }
                 }
-                .searchable(text: $query)
-                .searchHistory($query, area: .figures)
+                .task(id: submitted) {
+                    guard !submitted.isEmpty, let client = SemanticSearchClient.configured else { return }
+                    do {
+                        let hits = try await client.search(submitted, kind: "figure")
+                        let figures = hits.compactMap { hit -> Figure? in
+                            guard case let .figure(id) = hit.reference else { return nil }
+                            return library.byID[id]
+                        }
+                        try Task.checkCancellation()
+                        if hits.isEmpty { remote = [] }
+                        else if !figures.isEmpty { remote = [.init(id: "results", figures: figures)] }
+                    } catch {
+                        if !Task.isCancelled { remote = nil }
+                    }
+                }
                 .overlay {
                     if sections.isEmpty {
                         ContentUnavailableView("No figures found", systemImage: "person.crop.circle.badge.questionmark")
@@ -47,6 +63,12 @@ struct FigureBrowser: View {
             case nil:
                 ProgressView()
             }
+        }
+        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always))
+        .searchHistory($query, area: .figures)
+        .onSubmit(of: .search) { submitted = query }
+        .onChange(of: query) { _, value in
+            if value != submitted { submitted = ""; remote = nil }
         }
         .navigationTitle("Figures")
         .task {

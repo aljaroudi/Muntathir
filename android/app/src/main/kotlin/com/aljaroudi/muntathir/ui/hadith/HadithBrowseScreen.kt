@@ -59,7 +59,6 @@ import com.aljaroudi.muntathir.ui.navigation.HadithIntroductionRoute
 import com.aljaroudi.muntathir.ui.navigation.HadithRoute
 import com.aljaroudi.muntathir.ui.navigation.HadithSavedRoute
 import com.aljaroudi.muntathir.ui.quran.recentSearches
-import com.aljaroudi.muntathir.ui.search.smartSearchSection
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -121,7 +120,6 @@ fun HadithBrowseScreen(
     val reading by viewModel.reading.collectAsStateWithLifecycle()
     val restore by viewModel.restore.collectAsStateWithLifecycle()
     val restoredRow by viewModel.restoredRow.collectAsStateWithLifecycle()
-    val smart by viewModel.smart.state.collectAsStateWithLifecycle()
     val locale = currentLocale()
     val showEnglish = reading.showsHadithEnglish(listOf(locale))
     var focused by remember { mutableStateOf(false) }
@@ -176,7 +174,6 @@ fun HadithBrowseScreen(
             LaunchedEffect(end, state.hasMore) {
                 if (state.hasMore && (end ?: 0) >= list.layoutInfo.totalItemsCount - 5) viewModel.loadMore()
             }
-            val local = remember(rows) { rows.filterIsInstance<BrowseRow.Narration>().map { it.narration.id }.toSet() }
             LazyColumn(Modifier.fillMaxSize().testTag("hadith-list"), state = list, contentPadding = padding) {
                 item(key = "search") {
                     SearchField(
@@ -240,29 +237,6 @@ fun HadithBrowseScreen(
                                 showEnglish = showEnglish,
                                 onClick = { open(HadithDetailRoute(row.narration.id, submitted.trim())) },
                                 modifier = Modifier.testTag("hadith-result-${row.narration.id}"),
-                            )
-                        }
-                    }
-                }
-                val settled = query.trim() == submitted.trim() && state.completed == submitted && !state.loading
-                if (settled && !state.failed && viewModel.offersSmartSearch(submitted)) {
-                    smartSearchSection(
-                        smart,
-                        viewModel.smart.available,
-                        hasLocalResults = rows.any { it !is BrowseRow.Saved },
-                        onSearch = viewModel::smartSearch,
-                    ) { found ->
-                        val narrations = found.filter { it.id !in local }
-                        if (narrations.isNotEmpty()) {
-                            item(key = "smart-header") { SectionHeader(stringResource(R.string.smart_search)) }
-                        }
-                        items(narrations, key = { "smart-${it.id}" }) { narration ->
-                            HadithPreviewRow(
-                                narration,
-                                searching = true,
-                                showEnglish = showEnglish,
-                                onClick = { open(HadithDetailRoute(narration.id, submitted.trim())) },
-                                modifier = Modifier.testTag("hadith-smart-${narration.id}"),
                             )
                         }
                     }
@@ -404,7 +378,7 @@ private fun Status(
             }
 
             // Otherwise the smart-search section says so.
-            settled && searched.isNotEmpty() && !hasRows && !viewModel.offersSmartSearch(submitted) -> {
+            settled && searched.isNotEmpty() && !hasRows -> {
                 EmptyState(stringResource(R.string.no_results), Modifier.testTag("hadith-empty-results"))
             }
         }

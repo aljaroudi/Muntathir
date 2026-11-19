@@ -33,7 +33,8 @@ def compact(item):
     nav=item['navigation'];kind=item['kind']
     if kind=='quran': return {'kind':kind,'chapter':nav['chapter'],'verse':nav['verse']}
     if kind=='hadith': return {'kind':kind,'book':nav['book'],'chapter':nav['chapterFile'],'number':nav['number']}
-    if kind=='dua': return {'kind':kind,'id':nav['dua_id']}
+    if kind=='figure': return {'kind':kind,'id':nav['id']}
+    if kind=='dua': return {'kind':kind,'id':nav['dua_id'], **({'locator':nav['locator']} if 'locator' in nav else {})}
     if kind=='rulings': return {'kind':kind, 'authority':nav['authority'], 'language':nav['language'], 'id':nav['id']}
     raise ValueError('Unknown content kind')
 

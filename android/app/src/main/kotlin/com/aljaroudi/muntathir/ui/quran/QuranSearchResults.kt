@@ -45,8 +45,6 @@ import com.aljaroudi.muntathir.ui.components.LoadingState
 import com.aljaroudi.muntathir.ui.components.SectionHeader
 import com.aljaroudi.muntathir.ui.components.currentLocale
 import com.aljaroudi.muntathir.ui.reader.toAnnotatedString
-import com.aljaroudi.muntathir.ui.search.SmartSearchState
-import com.aljaroudi.muntathir.ui.search.smartSearchSection
 import com.aljaroudi.muntathir.ui.theme.QuranFont
 
 /** Swift `SearchHistorySuggestions`: recent searches, each removable, and Clear history. */
@@ -85,15 +83,12 @@ fun LazyListScope.quranSearchResults(
     query: String,
     submitted: String,
     results: VerseResults,
-    smart: SmartSearchState<Ayah>,
-    smartAvailable: Boolean,
     hasSurahs: Boolean,
     scoped: Boolean,
     surahNames: Map<Int, String>,
     onOpen: (Ayah) -> Unit,
     onLoadMore: () -> Unit,
     onRetry: () -> Unit,
-    onSmartSearch: () -> Unit,
 ) {
     val live = query.trim()
     val request = submitted.trim()
@@ -140,29 +135,6 @@ fun LazyListScope.quranSearchResults(
                             },
                         ),
                 )
-            }
-        }
-
-        current && QuranSearchModel.isMeaningQuery(request) -> {
-            val local = results.verses.map { it.id }.toSet()
-            smartSearchSection(
-                smart,
-                smartAvailable,
-                results.verses.isNotEmpty() || hasSurahs,
-                onSmartSearch,
-            ) { found ->
-                val verses = found.filter { it.id !in local }
-                if (verses.isNotEmpty()) {
-                    verseSection(
-                        "smart",
-                        R.string.smart_search,
-                        verses,
-                        results.translation,
-                        request,
-                        surahNames,
-                        onOpen,
-                    )
-                }
             }
         }
 

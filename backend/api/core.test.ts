@@ -42,3 +42,13 @@ test('Arabic normalization and vector validation', () => {
   assert(!validVector(Array(1536).fill(0)))
   assert(!validVector(Array(1536).fill(Infinity)))
 })
+
+test('common Arabic phrases yield to topical terms unless sought explicitly', () => {
+  for (const phrase of ['صلى الله عليه وآله وسلم', 'صلى الله عليه وسلم', 'عز وجل', 'جل جلاله', 'عليه السلام', 'قَالَ', 'مِنْ', 'من', 'بن', 'ابن']) {
+    assert(parseRequest({ query: phrase + ' الصبر' }).query === 'الصبر')
+    assert(parseRequest({ query: phrase }).query === phrase)
+  }
+  for (const query of ['علي بن الحسين', 'مقال', 'منزلة الصبر', '2:255']) assert(parseRequest({ query }).query === query)
+  assert(parseRequest({ query: '"قال الصبر"' }).query === 'قال الصبر')
+  assert(parseRequest({ query: '"من كنت مولاه"' }).query === 'من كنت مولاه')
+})

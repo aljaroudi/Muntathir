@@ -49,7 +49,7 @@ struct SavedEntry: Identifiable {
 
     func relevance(_ query: String, locale: Locale) -> SearchRelevance? {
         SearchRelevance.score([isHadith ? "" : source, reference, title(locale: locale), excerpt, note].joined(separator: " "),
-                              terms: QuranSearchText.terms(query))
+                              terms: QuranSearchText.queryTerms(query))
     }
 
     static func sections(_ entries: [Self], byDate: Bool, query: String, calendar: Calendar, locale: Locale) -> [SavedEntrySection] {

@@ -9,8 +9,6 @@ import com.aljaroudi.muntathir.data.QuranDatabase
 import com.aljaroudi.muntathir.data.QuranTranslations
 import com.aljaroudi.muntathir.data.SearchHistoryStore
 import com.aljaroudi.muntathir.search.SmartSearch
-import com.aljaroudi.muntathir.ui.search.SmartSearchRunner
-import com.aljaroudi.muntathir.ui.search.SmartSearchState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -41,7 +39,7 @@ data class VerseResults(
 
 /**
  * Search over the Quran, in every surah or only [surah]: a live query that filters surahs, a submitted query
- * that searches verses (50 at a time), recent searches, and opt-in smart search.
+ * that searches verses (50 at a time), recent searches, and remote-first search.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class QuranSearchModel(
@@ -49,7 +47,7 @@ class QuranSearchModel(
     private val quran: QuranDatabase,
     private val translations: QuranTranslations,
     private val history: SearchHistoryStore,
-    smartSearch: SmartSearch,
+    private val smartSearch: SmartSearch,
     val surah: Int?,
 ) {
     private val mutableQuery = MutableStateFlow("")
@@ -86,14 +84,8 @@ class QuranSearchModel(
             }.onEach { latest = it }
             .stateIn(scope, SharingStarted.Eagerly, VerseResults())
 
-    private val smartRunner = SmartSearchRunner<Ayah>(scope, smartSearch.client)
-    val smart: StateFlow<SmartSearchState<Ayah>> = smartRunner.state
-
-    /** Whether smart search may be offered for the submitted query. */
-    val smartSearchAvailable: Boolean get() = smartRunner.available
-
     init {
-        // A new search or translation starts again at the first page and withdraws smart-search consent.
+        // Start each query or translation at the first page.
         combine(mutableSubmitted, translations.state.map { it.activeID to it.revision }) { query, translation ->
             query to
                 translation
@@ -101,13 +93,12 @@ class QuranSearchModel(
             .drop(1)
             .onEach {
                 limit.value = PAGE
-                smartRunner.reset()
             }.launchIn(scope)
     }
 
     fun setQuery(value: String) {
         mutableQuery.value = value
-        if (value.isEmpty()) mutableSubmitted.value = ""
+        if (value != mutableSubmitted.value) mutableSubmitted.value = ""
     }
 
     fun submit() {
@@ -135,23 +126,6 @@ class QuranSearchModel(
         retry.value++
     }
 
-    /** Swift `MeaningSearchResults`: references from `/v1/search`, read locally, in the API's order. */
-    fun smartSearch() {
-        val query = mutableSubmitted.value.trim()
-        val translation = translations.state.value.activeID
-        smartRunner.run { client ->
-            val references =
-                client
-                    .search(query, kind = "quran", chapter = surah?.toString())
-                    .mapNotNull { (it.reference as? SemanticSearchResult.Reference.Quran) }
-                    .filter { surah == null || it.chapter == surah }
-                    .map { "${it.chapter}:${it.verse}" }
-                    .distinct()
-            val verses = quran.read { verses(references, translation) }.associateBy { it.id }
-            references.mapNotNull { verses[it] }.filter { QuranSearchText.isSearchableVerse(it.text) }
-        }
-    }
-
     private data class Request(
         val query: String,
         val translation: String?,
@@ -171,6 +145,19 @@ class QuranSearchModel(
             }
         }
         return try {
+            if (request.limit == PAGE) {
+                val number = QuranSearchText.number(request.query)
+                val remoteQuery = if (surah != null && number != null) "$surah:$number" else request.query
+                val exact = QuranSearchText.reference(remoteQuery)
+                val remote = smartSearch.results(remoteQuery, "quran", chapter = surah?.toString()) { hits ->
+                    val references = hits.mapNotNull { it.reference as? SemanticSearchResult.Reference.Quran }
+                        .filter { (surah == null || it.chapter == surah) && (exact == null || exact == (it.chapter to it.verse)) }
+                        .map { "${it.chapter}:${it.verse}" }.distinct()
+                    val verses = quran.read { verses(references, request.translation) }.associateBy { it.id }
+                    references.mapNotNull { verses[it] }.filter { exact != null || QuranSearchText.isSearchableVerse(it.text) }
+                }
+                if (remote != null) return VerseResults(request.query, request.translation, remote)
+            }
             val found =
                 quran.read { search(request.query, request.translation, request.limit + 1, surah, request.revision) }
             VerseResults(
@@ -193,10 +180,5 @@ class QuranSearchModel(
         const val PAGE = 50
         private const val SURAHS = 114
 
-        /** Smart search is for meanings, not numbers or references. */
-        fun isMeaningQuery(query: String): Boolean =
-            SmartSearchRunner.accepts(query) &&
-                QuranSearchText.number(query) == null &&
-                runCatching { QuranSearchText.reference(query) }.getOrDefault(Unit) == null
     }
 }

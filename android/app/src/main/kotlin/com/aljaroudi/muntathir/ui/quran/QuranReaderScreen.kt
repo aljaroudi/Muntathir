@@ -304,7 +304,6 @@ private fun ReaderSearch(
     val query by model.query.collectAsStateWithLifecycle()
     val submitted by model.submitted.collectAsStateWithLifecycle()
     val results by model.results.collectAsStateWithLifecycle()
-    val smart by model.smart.collectAsStateWithLifecycle()
     val recent by model.recent.collectAsStateWithLifecycle()
     val focus = remember { FocusRequester() }
     LaunchedEffect(model) { focus.requestFocus() }
@@ -342,8 +341,6 @@ private fun ReaderSearch(
                 query = query,
                 submitted = submitted,
                 results = results,
-                smart = smart,
-                smartAvailable = model.smartSearchAvailable,
                 hasSurahs = false,
                 scoped = true,
                 surahNames = surahNames,
@@ -353,7 +350,6 @@ private fun ReaderSearch(
                 },
                 onLoadMore = model::loadMore,
                 onRetry = model::retry,
-                onSmartSearch = model::smartSearch,
             )
         }
     }

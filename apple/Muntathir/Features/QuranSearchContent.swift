@@ -19,12 +19,13 @@ struct QuranSearchContent: View {
     @State private var retry = 0
     @State private var resultQuery = ""
     @State private var resultTranslationID = ""
-    /// The search bar text after a pause in typing, or immediately on Submit.
-    @State private var liveQuery = ""
     @State private var highlights: [String: QuranSearchHighlight] = [:]
+
+    @State private var liveQuery = ""
 
     private struct Request: Equatable {
         let query: String
+        let online: Bool
         let surah: Int?
         let translationID: String
         let limit: Int
@@ -33,7 +34,7 @@ struct QuranSearchContent: View {
     }
 
     private var request: Request {
-        Request(query: liveQuery.trimmingCharacters(in: .whitespacesAndNewlines), surah: surah?.id, translationID: translationStore.activeID, limit: limit, retry: retry, translationRevision: translationStore.revision)
+        Request(query: liveQuery.trimmingCharacters(in: .whitespacesAndNewlines), online: !submittedQuery.isEmpty && submittedQuery == query && submittedQuery == liveQuery, surah: surah?.id, translationID: translationStore.activeID, limit: limit, retry: retry, translationRevision: translationStore.revision)
     }
 
     private var matchingSurahs: [QuranSurah] {
@@ -107,23 +108,6 @@ struct QuranSearchContent: View {
                 }
             } else if loading {
                 EmptyView()
-            } else if !request.query.isEmpty, resultQuery == request.query, QuranSearchText.number(request.query) == nil, (try? QuranSearchText.reference(request.query)) == nil {
-                MeaningSearchResults(query: request.query, hasLocalResults: !results.isEmpty || !matchingSurahs.isEmpty) {
-                    guard let client = SemanticSearchClient.configured else { throw URLError(.unsupportedURL) }
-                    let matches = try await client.search(request.query, kind: "quran", chapter: request.surah.map(String.init))
-                    var seen = Set<String>()
-                    let references = matches.compactMap { match -> String? in
-                        guard case let .quran(chapter, verse) = match.reference,
-                              request.surah == nil || chapter == request.surah else { return nil }
-                        return "\(chapter):\(verse)"
-                    }.filter { seen.insert($0).inserted }
-                    let verses = try await reader.verses(references: references)
-                    let byID = Dictionary(uniqueKeysWithValues: verses.map { ($0.id, $0) })
-                    return references.compactMap { byID[$0] }.filter { QuranSearchText.isSearchableVerse($0.text) }
-                } resultsContent: { verses in
-                    verseResults(verses.filter { verse in !results.contains { $0.id == verse.id } }, online: true)
-                }
-                .id("\(request.surah ?? 0):\(request.query):\(request.translationID):\(request.translationRevision)")
             } else if !request.query.isEmpty, resultQuery == request.query, results.isEmpty, matchingSurahs.isEmpty {
                 ContentUnavailableView.search(text: request.query)
                     .accessibilityIdentifier("local-search-empty")
@@ -159,8 +143,8 @@ struct QuranSearchContent: View {
         .task(id: request) { await load() }
     }
 
-    private func verseResults(_ verses: [Ayah], online: Bool = false, related: Bool = false) -> some View {
-        Section(online ? LocalizedStringKey("Smart search") : LocalizedStringKey(related ? "Related matches" : "Verses")) {
+    private func verseResults(_ verses: [Ayah]) -> some View {
+        Section("Verses") {
             ForEach(verses) { ayah in
                 if let surah = surahs.first(where: { $0.id == ayah.surah }) {
                     let translation = QuranTranslation.catalog.first { $0.id == translationStore.activeID }
@@ -169,7 +153,7 @@ struct QuranSearchContent: View {
                             .recordSearchOnOpen(query, area: .quran)
                     } label: {
                         QuranVerseRow(ayah: ayah, translation: translation, searchQuery: resultQuery, preview: true, showsActions: false,
-                                      highlight: online ? nil : highlights[ayah.id])
+                                      highlight: highlights[ayah.id])
                             .contentShape(.rect)
                     }
                     .accessibilityIdentifier("quran-result-\(ayah.id)")
@@ -183,11 +167,40 @@ struct QuranSearchContent: View {
                     }
                 }
             }
-            if hasMore, !online {
+            if hasMore {
                 Button("Load more") { limit += 50 }
                     .disabled(loading)
             }
         }
+    }
+
+    private func search(_ current: Request) async throws -> [Ayah] {
+        if current.online, current.limit == 50 {
+            let number = QuranSearchText.number(current.query)
+            let remoteQuery = current.surah.flatMap { chapter in number.map { "\(chapter):\($0)" } } ?? current.query
+            let exact = try QuranSearchText.reference(remoteQuery)
+            if let exact, let count = counts[exact.surah], current.surah == nil || current.surah == exact.surah, exact.verse > count {
+                throw QuranDatabaseError.invalidReference
+            }
+            do {
+                guard let client = SemanticSearchClient.configured else { throw URLError(.unsupportedURL) }
+                let matches = try await client.search(remoteQuery, kind: "quran", chapter: current.surah.map(String.init))
+                var seen = Set<String>()
+                let references = matches.compactMap { match -> String? in
+                    guard case let .quran(chapter, verse) = match.reference,
+                          current.surah == nil || chapter == current.surah,
+                          exact == nil || (chapter == exact?.surah && verse == exact?.verse) else { return nil }
+                    return "\(chapter):\(verse)"
+                }.filter { seen.insert($0).inserted }
+                let verses = try await reader.verses(references: references)
+                let byID = Dictionary(uniqueKeysWithValues: verses.map { ($0.id, $0) })
+                let found = references.compactMap { byID[$0] }.filter { exact != nil || QuranSearchText.isSearchableVerse($0.text) }
+                if matches.isEmpty || !found.isEmpty { return found }
+            } catch {
+                try Task.checkCancellation()
+            }
+        }
+        return try await reader.search(current.query, translationID: current.translationID, limit: current.limit + 1, surah: current.surah, revision: current.translationRevision)
     }
 
     private func load() async {
@@ -215,7 +228,7 @@ struct QuranSearchContent: View {
                     hasMore = false
                     resultQuery = current.query
                 } else {
-                    let found = try await reader.search(current.query, translationID: current.translationID, limit: current.limit + 1, surah: current.surah, revision: current.translationRevision)
+                    let found = try await search(current)
                     let visible = Array(found.prefix(current.limit))
                     let prepared = try await reader.highlights(visible, query: current.query, translationID: current.translationID)
                     try Task.checkCancellation()

@@ -142,7 +142,7 @@ def prepare(args):
                     if row[column].strip() and not any(t["language"] == language and t["text"] == row[column] for t in variants):
                         variants.append({"language": language, "text": row[column], **{
                             k: provenance[book][k] for k in ("edition", "attribution")}})
-                add("dua", book, {"dua_id": dua_id}, {"dua_id": dua_id},
+                add("dua", book, {"dua_id": dua_id}, {"dua_id": dua_id, "locator": f"{book}:{row['file_name']}:{row['id_in_book']}"},
                     row["chapter_en"] or row["chapter_ar"] or row["name_en"] or row["name_ar"], variants)
 
     if args.dua:
@@ -167,6 +167,20 @@ def prepare(args):
                   "text": row["question"] + "\n\n" + row["answer"]}])
         db.close()
 
+    if getattr(args, "figures", None):
+        source("figures", "Muntathir figure library")
+        for person in json.loads(Path(args.figures).read_text())["people"]:
+            variants = []
+            for language in sorted(person["names"].keys() | person["display_names"].keys()):
+                names = person["names"].get(language, {})
+                parts = [person["display_names"].get(language, "")]
+                for value in names.values():
+                    parts.extend(value if isinstance(value, list) else [value])
+                variants.append({"language": language, "edition": "figures", "attribution": "Muntathir figure library",
+                                 "text": " ".join(dict.fromkeys(filter(None, parts)))})
+            ref = {"id": person["id"]}
+            add("figure", "figures", ref, ref, person["display_names"]["en"], variants)
+
     if not records:
         raise ValueError("No content selected")
     if args.pilot:
@@ -174,7 +188,7 @@ def prepare(args):
         required = {key for query in judged for key in query["relevant"]}
         selected = {r["item"]["id"] for r in records if r["item"]["id"] in required}
         # Include both evaluated positives and a deterministic spread of distractors.
-        for kind in ("quran", "hadith", "dua", "rulings"):
+        for kind in ("quran", "hadith", "dua", "rulings", "figure"):
             candidates = [r for r in records if r["item"]["kind"] == kind]
             if candidates:
                 step = max(1, len(candidates) // 100)
@@ -361,6 +375,7 @@ def main():
     parser.add_argument("--quran")
     parser.add_argument("--translation", action="append", default=[], help="language:edition:SQLite path")
     parser.add_argument("--hadith")
+    parser.add_argument("--figures")
     parser.add_argument("--dua")
     parser.add_argument("--supplications", help="Built Supplications SQLite database")
     parser.add_argument("--rulings")

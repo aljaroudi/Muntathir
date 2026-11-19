@@ -327,7 +327,7 @@ struct FigureLibrary: Sendable {
     }
 
     func search(_ query: String, locale: Locale) -> [Figure] {
-        let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        let query = QuranSearchText.searchQuery(query)
         guard !query.isEmpty else { return people }
         return people.filter { person in
             searchTerms[person.id, default: []].contains {

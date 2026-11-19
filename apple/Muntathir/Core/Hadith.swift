@@ -18,7 +18,7 @@ struct HadithCollection: Identifiable, Hashable, Sendable {
     var searchKey = ""
 
     func matches(_ query: String) -> Bool {
-        matches(terms: QuranSearchText.terms(query))
+        matches(terms: QuranSearchText.queryTerms(query))
     }
 
     func matches(terms: [String]) -> Bool {
@@ -63,7 +63,7 @@ struct HadithChapter: Identifiable, Hashable, Sendable {
     var searchKey = ""
 
     func matches(_ query: String) -> Bool {
-        query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || matches(terms: QuranSearchText.terms(query))
+        query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || matches(terms: QuranSearchText.queryTerms(query))
     }
 
     func matches(terms: [String]) -> Bool {

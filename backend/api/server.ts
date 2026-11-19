@@ -24,7 +24,7 @@ export function createHandler(
   }
   const ipLimit = number('SEARCH_IP_PER_MINUTE', 30),
     dailyLimit = number('SEARCH_DAILY_EMBEDDING_LIMIT', 150000)
-  if (!env.SEARCH_RATE_SALT || !env.GEMINI_API_KEY) throw new Error('Missing server credentials')
+  if (!env.SEARCH_RATE_SALT) throw new Error('Missing server credentials')
   const disabled = env.SEARCH_DISABLE_CACHE === 'true'
   return async (request: Request, peer = ''): Promise<Response> => {
     const started = performance.now()
@@ -85,7 +85,7 @@ export function createHandler(
         offset += c.length
       }
       input = parseRequest(JSON.parse(new TextDecoder().decode(body)))
-      direct = input.kinds?.length === 1 && input.kinds[0] === 'rulings' ? null : reference(input.query)
+      direct = input.kinds?.length === 1 && ['rulings', 'figure'].includes(input.kinds[0]) ? null : reference(input.query)
     } catch {
       return reply(400, { error: 'invalid_request' })
     }
@@ -103,7 +103,7 @@ export function createHandler(
         return reply(429, { error: 'rate_limited' })
       stage = 'revision'
       const collection = await db.active()
-      const key = `result:${await hash(JSON.stringify({ input, collection, profile: PROFILE, pipeline: 'literal-eligible-rerank-v3', reranker: direct ? null : reranker.config }))}`
+      const key = `result:${await hash(JSON.stringify({ input, collection, profile: PROFILE, pipeline: 'literal-eligible-rerank-v4', reranker: direct ? null : reranker.config }))}`
       const cached = disabled ? undefined : store.get(key)
       if (cached) {
         console.log(
@@ -128,9 +128,7 @@ export function createHandler(
         } else {
           stage = 'provider'
           let pending = inflight.get(embeddingKey)
-          if (!pending) {
-            if (!store.take('embedding:day', dailyLimit, 86400))
-              return reply(429, { error: 'daily_limit' })
+          if (!pending && env.GEMINI_API_KEY && store.take('embedding:day', dailyLimit, 86400)) {
             const query = input.query
             pending = (async () => {
               const start = performance.now()
@@ -162,7 +160,7 @@ export function createHandler(
             inflight.set(embeddingKey, pending)
             void pending.finally(() => inflight.delete(embeddingKey)).catch(() => {})
           }
-          vector = await pending
+          vector = await pending?.catch(() => null) ?? null
         }
       }
       stage = 'retrieval'
@@ -170,7 +168,7 @@ export function createHandler(
       const retrieved = await retrieve(db, collection, input, vector, direct, !!reranker.config)
       const retrievalMs = performance.now() - start
       const ranked =
-        !direct && retrieved.candidates
+        !direct && retrieved.candidates && !retrieved.missingPassages
           ? await reranker.rank(
               input.query,
               retrieved.candidates,
@@ -178,12 +176,13 @@ export function createHandler(
             )
           : { results: retrieved.results, outcome: 'skipped', cacheable: true }
       const payload = { results: ranked.results }
-      if (!disabled && ranked.cacheable) store.put(key, payload, 300)
+      if (!disabled && !retrieved.degraded && ranked.cacheable) store.put(key, payload, 300)
       console.log(
         JSON.stringify({
           event: 'search',
           cache: embeddingHit ? 'embedding' : 'miss',
           direct: !!direct,
+          degraded: retrieved.degraded ?? false,
           embedding_tokens: tokens,
           provider_ms: providerMs,
           retrieval_ms: retrievalMs,

@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 import urllib.request
 
 import ingest
@@ -73,7 +74,7 @@ def preserve_other_sources(candidate, prior):
 def check_client_references(candidate, prior):
     # Existing production references are the baseline for already installed packs.
     def references(manifest):
-        return {json.dumps(compact(row), sort_keys=True) for row in manifest["items"] if row["kind"] != "dua"}
+        return {json.dumps(compact(row), sort_keys=True) for row in manifest["items"] if row["kind"] not in ("dua", "figure")}
     new = references(candidate) - references(prior)
     if new:
         raise ValueError(f"Activation blocked: {len(new):,} reader references lack installed-pack compatibility evidence")
@@ -84,7 +85,7 @@ def report(manifest, work, prior):
     texts = {row["id"]: row["item_id"] for row in manifest["texts"]}
     kinds = {row["id"]: row["kind"] for row in manifest["items"]}
     missing_by_hash = {p["input_hash"]: p for p in missing}
-    for kind, label in (("quran", "Quran"), ("hadith", "Hadith"), ("dua", "Supplications"), ("rulings", "Rulings")):
+    for kind, label in (("quran", "Quran"), ("hadith", "Hadith"), ("dua", "Supplications"), ("rulings", "Rulings"), ("figure", "Figures")):
         inputs = {p["input_hash"] for p in manifest["passages"] if kinds[texts[p["text_id"]]] == kind}
         cost = ingest.batch_cost(sum(len(missing_by_hash[key]["input"].encode()) for key in inputs & missing_by_hash.keys()))
         print(f"{label}: {len(inputs & reusable):,} reusable, "
@@ -110,19 +111,30 @@ def alias(client, collection):
     ]})
 
 
-def smoke(env):
+def public_results(env, body):
     url = env.get("SEARCH_PUBLIC_URL", "https://search.xn--pgbou4cf.com/v1/search")
+    req = urllib.request.Request(url, json.dumps(body).encode(), {"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=20) as response:
+        return json.load(response)["results"]
+
+
+def smoke(env):
+    # Allow the API's cached collection alias to expire after activation.
+    deadline = time.monotonic() + 35
+    while not public_results(env, {"query": "Prophet Muhammad", "kinds": ["figure"]}):
+        if time.monotonic() >= deadline:
+            raise ValueError("Figure index unavailable after activation")
+        time.sleep(3)
     for kind, query, filters in (
         ("quran", "mercy and forgiveness", {}),
         ("hadith", "honesty in trade", {"sources": ["bukhari"]}),
         ("rulings", "make up missed daily prayers", {"sources": ["sistani"], "languages": ["en"]}),
         ("dua", "supplication for forgiveness", {}),
+        (None, "Prophet Muhammad", {}),
     ):
-        req = urllib.request.Request(url, json.dumps({"query": query, "kinds": [kind], **filters}).encode(),
-                                     {"Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=20) as response:
-            results = json.load(response)["results"]
-        if not results or any(row["kind"] != kind for row in results):
+        results = public_results(env, {"query": query, **({"kinds": [kind]} if kind else {}), **filters})
+        allowed = {kind} if kind else {"quran", "hadith", "rulings", "dua"}
+        if not results or any(row["kind"] not in allowed for row in results):
             raise ValueError(f"Production smoke test failed for {kind}")
 
 
@@ -172,7 +184,7 @@ def refresh(root, quran, hadith, rulings, cap, *, dry_run=False):
         ingest.atomic_json(provenance, {row["id"]: row["provenance"] for row in previous["sources"]})
         ingest.prepare(Namespace(workdir=temp, quran=quran / "quran.db", translation=translations,
                                  hadith=hadith / "hadith.db", supplications=hadith / "supplications.db",
-                                 rulings=rulings, dua=None, provenance=provenance, limit=None, pilot=False))
+                                 rulings=rulings, figures=root / "shared/figures/figures.json", dua=None, provenance=provenance, limit=None, pilot=False))
         candidate = read(Path(temp) / "manifest.json")
         preserve_other_sources(candidate, previous)
         content = keys(candidate)
@@ -226,4 +238,6 @@ def refresh(root, quran, hadith, rulings, cap, *, dry_run=False):
     for name, rate, seconds in (("sustained", "2", "60"), ("burst", "20", "10")):
         run("bun", "backend/api/verify.ts", "load", str(work / f"{name}.json"),
             SEARCH_COLLECTION=target, TEST_RATE=rate, TEST_SECONDS=seconds)
+    # An older API rejects the new kind. Keep its active index intact until the API is upgraded.
+    public_results(env, {"query": "Prophet Muhammad", "kinds": ["figure"]})
     promote(client, collection, target, work, lambda: command("activate"), env)
