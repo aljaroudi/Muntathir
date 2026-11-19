@@ -16,8 +16,8 @@ struct ReleaseNote: Decodable {
             .sorted { $0.version.compare($1.version, options: .numeric) == .orderedDescending }
     }()
 
-    static func pending(since seen: String, installed: String, history: [ReleaseNote]) -> [ReleaseNote] {
-        history.filter { entry in
+    static func hasUnseenNotes(since seen: String, installed: String, history: [ReleaseNote]) -> Bool {
+        history.contains { entry in
             guard entry.version.compare(installed, options: .numeric) != .orderedDescending else { return false }
             return seen.isEmpty ? entry.version == installed : entry.version.compare(seen, options: .numeric) == .orderedDescending
         }
@@ -39,22 +39,16 @@ struct FreshInstallReleaseMarker: ViewModifier {
 struct ReleaseNotesPrompt: ViewModifier {
     @AppStorage(ReleaseNote.seenKey) private var seen = ""
     @State private var showing = false
-    private var pending: [ReleaseNote] {
-        ReleaseNote.pending(since: seen, installed: ReleaseNote.installed, history: ReleaseNote.history)
-    }
 
     func body(content: Content) -> some View {
         content.onAppear {
             guard seen.compare(ReleaseNote.installed, options: .numeric) == .orderedAscending else { return }
-            if pending.isEmpty {
-                seen = ReleaseNote.installed
-            } else {
-                showing = true
-            }
+            showing = ReleaseNote.hasUnseenNotes(since: seen, installed: ReleaseNote.installed, history: ReleaseNote.history)
+            if !showing { seen = ReleaseNote.installed }
         }
         .sheet(isPresented: $showing, onDismiss: { seen = ReleaseNote.installed }) {
             NavigationStack {
-                ReleaseNotesList(entries: pending)
+                ReleaseNotesList(entries: ReleaseNote.history)
                     .toolbar { Button("Done") { showing = false }.accessibilityIdentifier("dismiss-release-notes") }
             }
         }

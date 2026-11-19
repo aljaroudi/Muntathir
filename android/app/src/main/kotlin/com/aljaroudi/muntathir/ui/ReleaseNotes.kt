@@ -62,9 +62,9 @@ internal fun releaseHistory(): List<ReleaseNote> {
     }
 }
 
-internal fun pendingReleaseNotes(history: List<ReleaseNote>, installed: String, seen: String?, onboarded: Boolean): List<ReleaseNote> {
-    if (!onboarded) return emptyList()
-    return history.filter {
+internal fun hasUnseenReleaseNotes(history: List<ReleaseNote>, installed: String, seen: String?, onboarded: Boolean): Boolean {
+    if (!onboarded) return false
+    return history.any {
         compareVersions(it.version, installed) <= 0 &&
             (if (seen == null) it.version == installed else compareVersions(it.version, seen) > 0)
     }
@@ -75,17 +75,17 @@ internal fun ReleaseNotesPrompt(onboarded: Boolean) {
     val preferences = LocalContext.current.getSharedPreferences("release-notes", Context.MODE_PRIVATE)
     val installed = BuildConfig.VERSION_NAME
     val history = releaseHistory()
-    var pending by remember { mutableStateOf(emptyList<ReleaseNote>()) }
+    var showing by remember { mutableStateOf(false) }
     fun markSeen() = preferences.edit().putString("seen", installed).apply()
     LaunchedEffect(onboarded) {
         val seen = preferences.getString("seen", null)
         if (seen != null && compareVersions(seen, installed) >= 0) return@LaunchedEffect
-        pending = pendingReleaseNotes(history, installed, seen, onboarded)
-        if (pending.isEmpty()) markSeen()
+        showing = hasUnseenReleaseNotes(history, installed, seen, onboarded)
+        if (!showing) markSeen()
     }
-    if (pending.isNotEmpty()) ReleaseNotesSheet(pending) {
+    if (showing) ReleaseNotesSheet(history) {
         markSeen()
-        pending = emptyList()
+        showing = false
     }
 }
 

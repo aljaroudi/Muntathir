@@ -6,10 +6,10 @@ struct ReleaseNotesTests {
     @Test func bundledHistoryAndUpdateRange() {
         let history = ReleaseNote.history
         #expect(history.contains { $0.version == "1.0.0" })
-        #expect(ReleaseNote.pending(since: "", installed: "1.1.1", history: history).map(\.version) == ["1.1.1"])
-        #expect(ReleaseNote.pending(since: "1.0.0", installed: "1.1.1", history: history).map(\.version) == ["1.1.1", "1.1.0"])
-        #expect(ReleaseNote.pending(since: "1.1.1", installed: "1.1.1", history: history).isEmpty)
-        #expect(ReleaseNote.pending(since: "", installed: "1.10.0", history: history).isEmpty)
+        #expect(ReleaseNote.hasUnseenNotes(since: "", installed: "1.1.1", history: history))
+        #expect(ReleaseNote.hasUnseenNotes(since: "1.0.0", installed: "1.1.1", history: history))
+        #expect(!ReleaseNote.hasUnseenNotes(since: "1.1.1", installed: "1.1.1", history: history))
+        #expect(!ReleaseNote.hasUnseenNotes(since: "", installed: "1.10.0", history: history))
     }
 
     @Test func resolvesScriptAndEnglishFallback() {
