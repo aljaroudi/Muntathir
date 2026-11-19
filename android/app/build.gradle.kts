@@ -23,6 +23,9 @@ val localProperties =
 val upload: Map<String, String?> =
     listOf("UPLOAD_STORE_FILE", "UPLOAD_STORE_PASSWORD", "UPLOAD_KEY_ALIAS", "UPLOAD_KEY_PASSWORD")
         .associateWith { providers.gradleProperty(it).orNull ?: localProperties?.getProperty(it) }
+if (providers.gradleProperty("requireUploadSigning").orNull == "true") {
+    require(upload.values.all { !it.isNullOrBlank() }) { "Configure the Play upload key in android/local.properties or Gradle properties." }
+}
 
 // The Baseline Profile comes from :baselineprofile (generated on a device and checked in under src/release).
 

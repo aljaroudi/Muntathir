@@ -277,23 +277,30 @@ platform :android do
     end
   end
 
-  desc "Validate a signed AAB on Google Play or save it as an internal draft"
+  desc "Build and publish a signed AAB to Google Play internal testing"
   lane :internal do |options|
     root = File.expand_path("..", __dir__)
-    bundle = File.expand_path(options[:aab].to_s, root)
-    credentials = File.expand_path(ENV.fetch("SUPPLY_JSON_KEY", ""), root)
-    UI.user_error!("Pass the signed bundle as aab:/absolute/path/app-release.aab") unless
-      File.file?(bundle) && File.extname(bundle) == ".aab"
+    credentials = File.expand_path(ENV.fetch("SUPPLY_JSON_KEY", "~/.android/muntathir-upload/play-publisher.json"), root)
     UI.user_error!("Set SUPPLY_JSON_KEY to a readable Google credentials JSON file") unless
       File.file?(credentials) && File.readable?(credentials)
+
+    if options[:aab]
+      bundle = File.expand_path(options[:aab].to_s, root)
+    else
+      android = File.join(root, "android")
+      sh("just", "--justfile", File.join(root, "justfile"), "android-packs")
+      sh(File.join(android, "gradlew"), "-p", android, ":app:bundleRelease", "-PrequireUploadSigning=true")
+      bundle = File.join(android, "app/build/outputs/bundle/release/app-release.aab")
+    end
+    UI.user_error!("Expected a signed AAB at #{bundle}") unless File.file?(bundle) && File.extname(bundle) == ".aab"
 
     upload_to_play_store(
       package_name: "com.aljaroudi.muntathir",
       json_key: credentials,
       aab: bundle,
       track: "internal",
-      release_status: "draft",
-      validate_only: options[:draft] != true,
+      release_status: options[:draft] == true ? "draft" : "completed",
+      validate_only: options[:validate_only] == true,
       skip_upload_apk: true,
       skip_upload_aab: false,
       skip_upload_metadata: true,

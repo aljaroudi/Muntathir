@@ -16,18 +16,25 @@ Run `just lane ios check` for local release checks. See [Apple release and captu
 
 ## Android
 
-Set `SUPPLY_JSON_KEY` to the path of a readable Play service account credentials JSON. Pass a signed AAB to the internal lane.
+Increment `versionCode` in `android/app/build.gradle.kts` and configure the Play
+upload key in `android/local.properties` or Gradle properties. The lane uses the
+Play service account JSON at `~/.android/muntathir-upload/play-publisher.json` by default.
+Set `SUPPLY_JSON_KEY` to override that path.
 
 ```sh
-just lane android internal aab:/absolute/path/app-release.aab
+just lane android internal
+just lane android internal aab:/absolute/path/app-release.aab validate_only:true
 just lane android internal aab:/absolute/path/app-release.aab draft:true
 ```
 
-The first command validates the bundle with Google Play. The second saves it as an internal-track draft. Both commands skip listing metadata and screenshots. Play listing text lives in `fastlane/android/metadata/`.
+The first command stages the asset packs, builds a signed AAB, and publishes it
+to Play internal testing. Pass `aab:` to reuse a signed bundle, `validate_only:true`
+to validate it, or `draft:true` to save it as a draft. The lane skips listing
+metadata and screenshots. Play listing text lives in `fastlane/android/metadata/`.
 
 ### Store screenshots
 
-Start a dedicated Pixel emulator and stage the Android content databases with `just android-packs`. The capture lane installs the debug app and its instrumentation APK, copies the Hadith and Supplications libraries into the emulator, and uses a 1080 × 2160 display for the Pixel frame. Set `ANDROID_SERIAL` when multiple emulators are connected.
+Start a dedicated Pixel 10 emulator at its native 1080 × 2424 resolution and stage the Android content databases with `just android-packs`. The capture lane installs the debug app and its instrumentation APK and copies the Hadith and Supplications libraries into the emulator. The styling lane uses the Pixel 10 skin installed by Android Studio and exports 1080 × 1920 Play images. Recapture screenshots before styling if they were made at the previous resolution. Set `ANDROID_SERIAL` when multiple emulators are connected.
 
 ```sh
 just lane android screenshots languages:ar,en,fa

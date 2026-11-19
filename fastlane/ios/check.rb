@@ -264,14 +264,17 @@ Dir.mktmpdir do |dir|
   previous_key = ENV["SUPPLY_JSON_KEY"]
   begin
     ENV["SUPPLY_JSON_KEY"] = key
-    rejects("Missing AAB accepted") { check.android_internal }
+    rejects("Missing AAB accepted") { check.android_internal(aab: File.join(dir, "missing.aab")) }
     check.android_internal(aab: bundle)
     action, upload = check.calls.pop
     assert(action == :upload_to_play_store && upload[:aab] == bundle && upload[:json_key] == key &&
-           upload[:track] == "internal" && upload[:release_status] == "draft" && upload[:validate_only],
-           "Android internal lane must validate by default")
+           upload[:track] == "internal" && upload[:release_status] == "completed" && !upload[:validate_only],
+           "Android internal lane must publish by default")
+    check.android_internal(aab: bundle, validate_only: true)
+    assert(check.calls.pop.last[:validate_only], "Explicit validation must prevent publishing")
     check.android_internal(aab: bundle, draft: true)
-    assert(check.calls.pop.last[:validate_only] == false, "Explicit Android draft must enable upload")
+    draft = check.calls.pop.last
+    assert(draft[:release_status] == "draft" && !draft[:validate_only], "Explicit Android draft must save a draft")
   ensure
     ENV["SUPPLY_JSON_KEY"] = previous_key
   end
