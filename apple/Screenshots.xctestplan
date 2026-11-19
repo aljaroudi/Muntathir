@@ -1,0 +1,28 @@
+{
+  "configurations" : [
+    {
+      "id" : "A3E8D5B2-7C14-4F96-B0A2-5E9C1D3F7A28",
+      "name" : "Screenshots",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "selectedTests" : [
+        "MarketingScreenshotTests",
+        "QuranScreenshotRefreshTests"
+      ],
+      "target" : {
+        "containerPath" : "container:Muntathir.xcodeproj",
+        "identifier" : "04457E73308394FE00A8887D",
+        "name" : "MuntathirUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

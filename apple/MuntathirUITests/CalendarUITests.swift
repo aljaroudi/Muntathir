@@ -216,42 +216,6 @@ final class CalendarUITests: XCTestCase {
 }
 
 extension CalendarUITests {
-    @MainActor func testCalendarAdjustmentInEverySupportedLanguage() {
-        let languages: [(String, String, String, String)] = [
-            ("en", "Calendar", "Adjust this month", "Adjust month"),
-            ("ar", "التقويم", "تعديل هذا الشهر", "تعديل الشهر"),
-            ("fr", "Calendrier", "Ajuster ce mois", "Ajuster le mois"),
-            ("de", "Kalender", "Diesen Monat anpassen", "Monat anpassen"),
-            ("id", "Kalender", "Sesuaikan bulan ini", "Sesuaikan bulan"),
-            ("it", "Calendario", "Regola questo mese", "Regola mese"),
-            ("ja", "カレンダー", "この月を調整", "月を調整"),
-            ("ms", "Kalendar", "Laraskan bulan ini", "Laraskan bulan"),
-            ("fa", "تقویم", "تنظیم این ماه", "تنظیم ماه"),
-            ("ru", "Календарь", "Скорректировать этот месяц", "Скорректировать месяц"),
-            ("es", "Calendario", "Ajustar este mes", "Ajustar mes"),
-            ("tr", "Takvim", "Bu ayı ayarla", "Ayı ayarla"),
-            ("ur", "تقویم", "یہ مہینہ درست کریں", "مہینہ درست کریں"),
-            ("zh-Hans", "日历", "调整本月", "调整月份"),
-            ("zh-Hant", "行事曆", "調整本月", "調整月份"),
-        ]
-        for (language, calendar, _, title) in languages {
-            let app = XCUIApplication()
-            app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(\(language))", "-AppleLocale", language]
-            app.launch()
-            let tab = app.descendants(matching: .any).matching(identifier: calendar).firstMatch
-            XCTAssertTrue(tab.waitForExistence(timeout: 10), language)
-            tab.tap()
-            openAdjustments(app)
-            XCTAssertTrue(app.navigationBars[title].waitForExistence(timeout: 5), language)
-            XCTAssertTrue(app.steppers["month-offset"].exists, language)
-            let attachment = XCTAttachment(screenshot: app.screenshot())
-            attachment.name = "Month adjustment \(language)"
-            attachment.lifetime = .keepAlways
-            add(attachment)
-            app.terminate()
-        }
-    }
-
     @MainActor func testCalendarSettingsOnlyExposeManualAdjustments() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]

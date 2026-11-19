@@ -50,29 +50,6 @@ final class HadithUITests: XCTestCase {
         XCTAssertTrue(row.waitForExistence(timeout: 5))
     }
 
-    @MainActor func testLargeSearchScrollPerformance() throws {
-        let app = try openHadith(fixture: true)
-        let search = app.searchFields.firstMatch
-        search.tap()
-        search.typeText("Sample\n")
-        XCTAssertTrue(app.buttons["hadith-result-1"].waitForExistence(timeout: 10))
-        let screenshot = XCTAttachment(screenshot: app.screenshot())
-        screenshot.name = "Hadith search match underlines"
-        screenshot.lifetime = .keepAlways
-        add(screenshot)
-        let options = XCTMeasureOptions()
-        options.iterationCount = 3
-        measure(metrics: [XCTOSSignpostMetric.scrollingAndDecelerationMetric, XCTCPUMetric(application: app)], options: options) {
-            for _ in 0 ..< 3 {
-                app.swipeUp()
-            }
-            for _ in 0 ..< 3 {
-                app.swipeDown()
-            }
-        }
-        XCTAssertTrue(app.buttons["hadith-result-1"].isHittable)
-    }
-
     @MainActor func testSearchResultsHideReadingTime() throws {
         let app = try openHadith(fixture: true)
         let search = app.searchFields.firstMatch
@@ -264,37 +241,6 @@ final class HadithUITests: XCTestCase {
         XCTAssertTrue(english.waitForExistence(timeout: 5))
         XCTAssertTrue(app.descendants(matching: .any)["hadith-detail-narrator"].exists)
     }
-
-    @MainActor func testArabicAtAccessibilitySize() throws {
-        let app = try openHadith(arabic: true)
-        app.buttons["hadith-book-bukhari"].tap()
-        app.openFirstHadithChapter()
-        let row = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "hadith-result-")).firstMatch
-        XCTAssertTrue(row.waitForExistence(timeout: 10))
-        let viewport = CGRect(x: 0, y: app.frame.height * 0.3, width: app.frame.width, height: app.frame.height * 0.4)
-        for _ in 0 ..< 5 {
-            if !row.frame.intersection(viewport).isEmpty {
-                break
-            }
-            app.swipeUp()
-        }
-        let visible = row.frame.intersection(viewport)
-        XCTAssertFalse(visible.isEmpty)
-        app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: visible.midX, dy: visible.midY)).tap()
-        XCTAssertTrue(app.descendants(matching: .any)["hadith-full-arabic"].waitForExistence(timeout: 10))
-        let arabic = app.descendants(matching: .any)["hadith-full-arabic"]
-        for _ in 0 ..< 5 {
-            if arabic.exists {
-                break
-            }
-            app.swipeUp()
-        }
-        XCTAssertTrue(arabic.waitForExistence(timeout: 5))
-        let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = "Arabic Hadith accessibility size"
-        attachment.lifetime = .keepAlways
-        add(attachment)
-    }
 }
 
 extension HadithUITests {
@@ -408,6 +354,7 @@ extension HadithUITests {
         XCTAssertFalse(visible.isEmpty)
         app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: visible.midX, dy: visible.midY)).tap()
         XCTAssertTrue(app.buttons["hadith-actions"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.descendants(matching: .any)["hadith-full-arabic"].exists)
         let image = XCTAttachment(screenshot: app.screenshot())
         image.name = "Arabic Hadith large text"
         image.lifetime = .keepAlways

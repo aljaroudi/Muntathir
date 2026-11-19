@@ -373,7 +373,7 @@ MuntathirRelease.define_singleton_method(:test_destinations) { |include_ipad:| i
 check.tests
 regressions = check.calls.find { |name, _| name == :run_tests }.last
 assert(regressions[:destination] == [iphone], "Local regression lane must run on one iPhone by default")
-assert(regressions[:skip_testing] == ["MuntathirUITests/MarketingScreenshotTests", "MuntathirUITests/QuranScreenshotRefreshTests"], "Regression lane must exclude only marketing captures")
+assert(regressions[:testplan] == "Muntathir" && !regressions.key?(:skip_testing), "Regression lane must use the Muntathir test plan, which excludes marketing captures")
 assert(!regressions[:parallel_testing] && regressions[:disable_concurrent_testing], "Regression lane must serialize UI tests")
 assert(regressions[:derived_data_path] == File.join(MuntathirRelease::ROOT, "build/DerivedData"), "Regression and marketing build caches must stay separate")
 

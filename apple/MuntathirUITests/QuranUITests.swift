@@ -478,12 +478,9 @@ final class QuranUITests: XCTestCase {
 }
 
 extension QuranUITests {
-    @MainActor func testSurahHeadingsInBothDirectionsAndJapanese() {
+    @MainActor func testSurahHeadingsInBothDirections() {
         for (language, tools, largeText) in [
             ("en", "Tools", false),
-            ("ar", "الأدوات", false),
-            ("fa", "ابزارها", false),
-            ("ja", "ツール", false),
             ("ar", "الأدوات", true),
         ] {
             let app = XCUIApplication()

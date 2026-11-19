@@ -20,7 +20,7 @@ platform :ios do
     sh("python3", File.join(MuntathirRelease::ROOT, "scripts/check_localizations.py"))
     run_tests(project: File.join(MuntathirRelease::ROOT, "Muntathir.xcodeproj"), scheme: "Muntathir",
               destination: MuntathirRelease.test_destinations(include_ipad: options[:include_ipad] == true),
-              skip_testing: ["MuntathirUITests/MarketingScreenshotTests", "MuntathirUITests/QuranScreenshotRefreshTests"],
+              testplan: "Muntathir",
               parallel_testing: false, disable_concurrent_testing: true, skip_detect_devices: true, skip_slack: true, fail_build: true,
               output_directory: File.join(MuntathirRelease::ROOT, "build/tests"), buildlog_path: File.join(MuntathirRelease::ROOT, "build/logs/tests"),
               derived_data_path: File.join(MuntathirRelease::ROOT, "build/DerivedData"))
