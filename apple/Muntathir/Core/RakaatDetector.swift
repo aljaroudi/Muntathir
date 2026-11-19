@@ -34,11 +34,11 @@ struct RakaatDetector: Sendable {
         lastTime = time
         guard let baseline else {
             samples.append((time, light))
-            samples.removeAll { time - $0.time > 1.2 }
-            guard let first = samples.first, time - first.time >= 1, samples.count >= 8 else { return }
+            samples.removeAll { time - $0.time > 0.7 }
+            guard let first = samples.first, time - first.time >= 0.5, samples.count >= 5 else { return }
             let mean = samples.map(\.light).reduce(0, +) / Double(samples.count)
             let spread = (samples.map(\.light).max() ?? 0) - (samples.map(\.light).min() ?? 0)
-            guard mean >= 0.08, spread <= mean * 0.15 else { return }
+            guard mean >= 0.08, spread <= mean * 0.25 else { return }
             baseline = mean
             samples.removeAll()
             return
@@ -58,7 +58,10 @@ struct RakaatDetector: Sendable {
         } else {
             transitionStart = nil
             if !covered, light >= baseline * 0.7 {
-                self.baseline = baseline * 0.995 + light * 0.005
+                // Rise faster than we fall, so a baseline taken while the user was still over the phone
+                // catches up once they step away, while gradual dimming is still tracked without counting.
+                let rate = light > baseline ? 0.05 : 0.005
+                self.baseline = baseline + (light - baseline) * rate
             }
         }
     }
