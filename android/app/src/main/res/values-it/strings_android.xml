@@ -25,4 +25,6 @@
     <string name="allow_precise_location">Consenti posizione esatta</string>
     <string name="compass_north">N</string>
     <string name="fonts">Caratteri</string>
+    <string name="silence_notifications_while_praying">Silenzia le notifiche durante la preghiera</string>
+    <string name="silence_notifications_footer">Consenti l’accesso a Non disturbare per attivarlo durante il conteggio e disattivarlo alla fine.</string>
 </resources>

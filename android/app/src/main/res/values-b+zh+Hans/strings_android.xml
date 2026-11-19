@@ -25,4 +25,6 @@
     <string name="allow_precise_location">允许使用精确位置</string>
     <string name="compass_north">北</string>
     <string name="fonts">字体</string>
+    <string name="silence_notifications_while_praying">礼拜时静音通知</string>
+    <string name="silence_notifications_footer">允许“勿扰”权限后，计数期间会自动开启勿扰，结束后关闭。</string>
 </resources>

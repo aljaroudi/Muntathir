@@ -25,4 +25,6 @@
     <string name="allow_precise_location">Разрешить точную геопозицию</string>
     <string name="compass_north">С</string>
     <string name="fonts">Шрифты</string>
+    <string name="silence_notifications_while_praying">Без уведомлений во время молитвы</string>
+    <string name="silence_notifications_footer">Разрешите доступ к режиму «Не беспокоить», чтобы он включался на время подсчёта и выключался после.</string>
 </resources>

@@ -387,7 +387,9 @@ import OSLog
             guard let remote = try await backend.remoteVersion() else { return }
             policy.markChecked(now)
             guard policy.accepts(remote, over: installedVersion) else { return }
-            log.notice("Updating \(packID, privacy: .public) from \(self.installedVersion ?? 0) to \(remote).")
+            if let installedVersion {
+                log.notice("Updating \(packID, privacy: .public) from \(installedVersion) to \(remote).")
+            }
             if await backend.localVersion().map({ $0 < remote }) ?? true {
                 try await backend.download()
             }

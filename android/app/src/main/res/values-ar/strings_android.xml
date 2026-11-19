@@ -25,4 +25,6 @@
     <string name="allow_precise_location">السماح بالموقع الدقيق</string>
     <string name="compass_north">ش</string>
     <string name="fonts">الخطوط</string>
+    <string name="silence_notifications_while_praying">إسكات الإشعارات أثناء الصلاة</string>
+    <string name="silence_notifications_footer">اسمح بالوصول إلى «عدم الإزعاج» ليُفعَّل أثناء العدّ ويُوقَف عند الانتهاء.</string>
 </resources>

@@ -25,4 +25,6 @@
     <string name="allow_precise_location">Tam konuma izin ver</string>
     <string name="compass_north">K</string>
     <string name="fonts">Yazı tipleri</string>
+    <string name="silence_notifications_while_praying">Namaz sırasında bildirimleri sessize al</string>
+    <string name="silence_notifications_footer">Rahatsız Etmeyin erişimine izin verin; sayım sırasında açılır, bitince kapanır.</string>
 </resources>

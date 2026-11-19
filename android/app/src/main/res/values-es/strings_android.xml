@@ -25,4 +25,6 @@
     <string name="allow_precise_location">Permitir ubicación exacta</string>
     <string name="compass_north">N</string>
     <string name="fonts">Fuentes</string>
+    <string name="silence_notifications_while_praying">Silenciar notificaciones al rezar</string>
+    <string name="silence_notifications_footer">Permite el acceso a No molestar para activarlo durante el conteo y desactivarlo al terminar.</string>
 </resources>

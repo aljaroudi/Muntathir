@@ -55,8 +55,10 @@ import OSLog
             guard let remote = try await backend.remoteVersion() else { return }
             policy.markChecked(now)
             guard policy.accepts(remote, over: installedVersion) else { return }
-            Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
-                .notice("Updating rulings from \(self.installedVersion ?? 0) to \(remote).")
+            if let installedVersion {
+                Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
+                    .notice("Updating rulings from \(installedVersion) to \(remote).")
+            }
             if await backend.localVersion().map({ $0 < remote }) ?? true {
                 try await backend.download()
             }
@@ -112,7 +114,7 @@ import OSLog
     }
 
     /// Readers of the previous file keep it open until they reinstall; the swap itself is atomic.
-    @concurrent nonisolated private static func copy(_ source: URL, to destination: URL) async throws {
+    @concurrent private nonisolated static func copy(_ source: URL, to destination: URL) async throws {
         let fm = FileManager.default
         var directory = destination.deletingLastPathComponent()
         try fm.createDirectory(at: directory, withIntermediateDirectories: true)

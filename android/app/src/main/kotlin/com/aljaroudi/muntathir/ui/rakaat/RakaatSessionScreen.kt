@@ -77,6 +77,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -142,14 +144,26 @@ fun RakaatSessionScreen(
     if (!state.ended) {
         // The phone lies flat, so keep the screen on and don't let it rotate under the count. Android 16+ ignores
         // the lock on large screens; a rotation there is a configuration change, which keeps the session.
+        // Dim from the start, before the camera measures its baseline: changing screen light after calibration
+        // would shift the measured light. Hiding the system bars keeps notification icons out of sight.
         DisposableEffect(Unit) {
+            val window = activity?.window
             val keepOn = view.keepScreenOn
             val orientation = activity?.requestedOrientation
+            val brightness = window?.attributes?.screenBrightness
+            val controller = window?.let { WindowCompat.getInsetsController(it, view) }
+            val barsBehavior = controller?.systemBarsBehavior
             view.keepScreenOn = true
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
+            window?.attributes = window.attributes.apply { screenBrightness = SESSION_BRIGHTNESS }
+            controller?.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller?.hide(WindowInsetsCompat.Type.systemBars())
             onDispose {
                 view.keepScreenOn = keepOn
                 if (orientation != null) activity?.requestedOrientation = orientation
+                if (brightness != null) window.attributes = window.attributes.apply { screenBrightness = brightness }
+                controller?.show(WindowInsetsCompat.Type.systemBars())
+                if (barsBehavior != null) controller.systemBarsBehavior = barsBehavior
             }
         }
     }
@@ -385,3 +399,6 @@ private fun SessionBackground(
 
 /** Apple's system green. */
 private val GREEN = Color(0xFF34C759)
+
+/** The window brightness during a session; matches iOS's 20% cap. */
+internal const val SESSION_BRIGHTNESS = 0.2f

@@ -44,7 +44,9 @@ struct ReleaseNotesPrompt: ViewModifier {
         content.onAppear {
             guard seen.compare(ReleaseNote.installed, options: .numeric) == .orderedAscending else { return }
             showing = ReleaseNote.hasUnseenNotes(since: seen, installed: ReleaseNote.installed, history: ReleaseNote.history)
-            if !showing { seen = ReleaseNote.installed }
+            if !showing {
+                seen = ReleaseNote.installed
+            }
         }
         .sheet(isPresented: $showing, onDismiss: { seen = ReleaseNote.installed }) {
             NavigationStack {

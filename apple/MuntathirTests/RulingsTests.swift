@@ -161,7 +161,6 @@ private actor RulingsTestBackend: AssetPackBackend {
         installed = false
     }
 
-
     nonisolated func updates() -> AsyncStream<AssetPackEvent> {
         AsyncStream { $0.finish() }
     }
