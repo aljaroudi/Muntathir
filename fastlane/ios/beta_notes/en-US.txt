@@ -1,2 +1,3 @@
+Update from an earlier version and open the app. Check that the release notes appear, dismiss them, then reopen the app and confirm they stay dismissed.
 Submit a search in Quran, Hadith, Rulings, Supplications, and Figures. Open a result, then try the same search offline with the relevant library installed.
 In Hadith, search for من كنت مولاه فعلي and check that the result preview shows the matching phrase.

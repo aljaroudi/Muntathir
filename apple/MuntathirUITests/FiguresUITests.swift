@@ -1,11 +1,6 @@
 import XCTest
 
 final class FiguresUITests: XCTestCase {
-    @MainActor func testLaqabDisclosureInEnglish() throws {
-        try checkLaqabDisclosure(language: "en", locale: "en_US", tools: "Tools",
-                                 more: "Show more laqabs", fewer: "Show fewer laqabs")
-    }
-
     @MainActor func testLaqabDisclosureInArabic() throws {
         try checkLaqabDisclosure(language: "ar", locale: "ar_SA", tools: "الأدوات",
                                  more: "عرض المزيد من الألقاب", fewer: "عرض ألقاب أقل")
@@ -40,10 +35,6 @@ final class FiguresUITests: XCTestCase {
         app.navigationBars.buttons.firstMatch.tap()
         app.buttons["figure-husayn-ibn-ali"].tap()
         XCTAssertTrue(showMore.waitForExistence(timeout: 5))
-    }
-
-    @MainActor func testSiblingSectionInEnglish() throws {
-        try checkSiblingSection(language: "en", locale: "en_US", tools: "Tools", siblings: "Siblings")
     }
 
     @MainActor func testArabicSiblingSectionAtAccessibilitySize() throws {

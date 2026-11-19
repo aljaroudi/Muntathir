@@ -322,13 +322,13 @@ module MuntathirRelease
 
     if build_number && !build_number.to_s.strip.empty?
       selected = builds.find { |build| build.version.to_s == build_number.to_s }
-      raise "No valid iOS build #{version} (#{build_number}) found in App Store Connect. Run testflight_public first." unless selected
+      raise "No valid iOS build #{version} (#{build_number}) found in App Store Connect. Run just lane ios beta first." unless selected
 
       return selected
     end
 
     selected = builds.max_by { |build| [build.respond_to?(:uploaded_date) ? build.uploaded_date.to_s : "", build.version.to_i] }
-    raise "No valid iOS build for version #{version} found in App Store Connect. Run testflight_public first." unless selected
+    raise "No valid iOS build for version #{version} found in App Store Connect. Run just lane ios beta first." unless selected
 
     selected
   end

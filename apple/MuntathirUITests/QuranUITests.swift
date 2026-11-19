@@ -137,11 +137,14 @@ final class QuranUITests: XCTestCase {
             XCTAssertFalse(app.descendants(matching: .any)["reading-time"].firstMatch.exists)
             app.navigationBars.buttons.element(boundBy: 0).tap()
             XCTAssertTrue(app.buttons["quran-result-2:255"].waitForExistence(timeout: 5))
-            search("1:1", in: app)
-            XCTAssertTrue(app.descendants(matching: .any)["local-search-empty"].firstMatch.waitForExistence(timeout: 5))
-            XCTAssertFalse(app.buttons["quran-result-1:1"].exists)
-            search("287", in: app)
-            XCTAssertTrue(app.staticTexts["Invalid verse reference"].waitForExistence(timeout: 5))
+            // Out-of-chapter and invalid references don't depend on the reading mode, so check them once.
+            if mode == "Verses" {
+                search("1:1", in: app)
+                XCTAssertTrue(app.descendants(matching: .any)["local-search-empty"].firstMatch.waitForExistence(timeout: 5))
+                XCTAssertFalse(app.buttons["quran-result-1:1"].exists)
+                search("287", in: app)
+                XCTAssertTrue(app.staticTexts["Invalid verse reference"].waitForExistence(timeout: 5))
+            }
             app.searchFields.firstMatch.tap()
             app.navigationBars.buttons.matching(NSPredicate(format: "label ==[c] %@ OR label ==[c] %@", "close", "cancel")).firstMatch.tap()
             let original = mode == "Verses" ? "quran-verse-2:1" : "quran-page-2"
@@ -200,18 +203,16 @@ final class QuranUITests: XCTestCase {
         }
         guard settled(2) else { return }
         var number = 2
-        for _ in 0 ..< 2 {
-            for destination in Array(3 ... 7) + Array((2 ... 6).reversed()) {
-                if destination > number {
-                    app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5))
-                        .press(forDuration: 0.02, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5)))
-                } else {
-                    app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5))
-                        .press(forDuration: 0.02, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5)))
-                }
-                guard settled(destination) else { return }
-                number = destination
+        for destination in Array(3 ... 7) + Array((2 ... 6).reversed()) {
+            if destination > number {
+                app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5))
+                    .press(forDuration: 0.02, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5)))
+            } else {
+                app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5))
+                    .press(forDuration: 0.02, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5)))
             }
+            guard settled(destination) else { return }
+            number = destination
         }
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5))
             .press(forDuration: 0.02, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5)))

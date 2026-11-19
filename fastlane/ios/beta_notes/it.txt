@@ -1,1 +1,2 @@
+Aggiorna l’app da una versione precedente e aprila. Verifica che appaiano le note di rilascio. Chiudile e riapri l’app per verificare che non compaiano di nuovo.
 Cerca versetti del Corano e hadith mentre digiti. Prova a lasciare incompleta l’ultima parola. Nascondi e mostra di nuovo i segni diacritici arabi, poi riapri un passaggio evidenziato. Verifica di poter sfogliare il mushaf dopo aver evidenziato il testo.

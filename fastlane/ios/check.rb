@@ -233,16 +233,17 @@ module UI
 end
 class LaneCheck
   attr_reader :calls
-  def initialize = @calls = []
+  def initialize(platform = :ios)
+    @platform = platform
+    @calls = []
+  end
   def default_platform(*) = nil
   def desc(*) = nil
   def sh(*args) = @calls << [:sh, args]
   def platform(name)
-    @platform = name
-    yield
+    yield if @platform == name
   end
   def lane(name, &block)
-    name = :"android_#{name}" if @platform == :android
     define_singleton_method(name) { |options = {}| instance_exec(options, &block) }
   end
   alias private_lane lane
@@ -254,7 +255,8 @@ class LaneCheck
 end
 check = LaneCheck.new
 fastfile = File.expand_path("../Fastfile", __dir__)
-check.instance_eval(File.read(fastfile), fastfile)
+android = LaneCheck.new(:android)
+[check, android].each { |runner| runner.instance_eval(File.read(fastfile), fastfile) }
 
 Dir.mktmpdir do |dir|
   bundle = File.join(dir, "app release.aab")
@@ -264,16 +266,27 @@ Dir.mktmpdir do |dir|
   previous_key = ENV["SUPPLY_JSON_KEY"]
   begin
     ENV["SUPPLY_JSON_KEY"] = key
-    rejects("Missing AAB accepted") { check.android_internal(aab: File.join(dir, "missing.aab")) }
-    check.android_internal(aab: bundle)
-    action, upload = check.calls.pop
+    tracks = { "internal" => [5], "alpha" => [], "beta" => [2], "production" => [3, 4] }
+    android.define_singleton_method(:google_play_track_version_codes) do |track:, json_key:, package_name:|
+      raise "Wrong Play app or credentials" unless package_name == "com.aljaroudi.muntathir" && json_key == key
+      tracks.fetch(track)
+    end
+    play = { package_name: "com.aljaroudi.muntathir", json_key: key }
+    assert(android.next_play_version_code(play) == 6, "Play build 5 must advance to 6")
+    tracks["production"] = [9]
+    assert(android.next_play_version_code(play) == 10, "Use the highest version code across tracks")
+    tracks.each_key { |track| tracks[track] = [] }
+    assert(android.next_play_version_code(play) == 1, "Start an empty Play app at 1")
+    rejects("Missing AAB accepted") { android.beta(aab: File.join(dir, "missing.aab")) }
+    android.beta(aab: bundle)
+    action, upload = android.calls.pop
     assert(action == :upload_to_play_store && upload[:aab] == bundle && upload[:json_key] == key &&
            upload[:track] == "internal" && upload[:release_status] == "completed" && !upload[:validate_only],
            "Android internal lane must publish by default")
-    check.android_internal(aab: bundle, validate_only: true)
-    assert(check.calls.pop.last[:validate_only], "Explicit validation must prevent publishing")
-    check.android_internal(aab: bundle, draft: true)
-    draft = check.calls.pop.last
+    android.internal(aab: bundle, validate_only: true)
+    assert(android.calls.pop.last[:validate_only], "Explicit validation must prevent publishing")
+    android.beta(aab: bundle, draft: true)
+    draft = android.calls.pop.last
     assert(draft[:release_status] == "draft" && !draft[:validate_only], "Explicit Android draft must save a draft")
   ensure
     ENV["SUPPLY_JSON_KEY"] = previous_key
@@ -281,8 +294,8 @@ Dir.mktmpdir do |dir|
 end
 
 %i[screenshots style].each do |operation|
-  check.public_send(:"android_#{operation}", languages: "ar,en,fa")
-  _, args = check.calls.pop
+  android.public_send(operation, languages: "ar,en,fa")
+  _, args = android.calls.pop
   assert(args.last(2) == [operation.to_s, "ar,en,fa"], "Android #{operation} arguments changed")
 end
 check.screenshots(languages: "ar,en", workers: 1)
@@ -376,6 +389,11 @@ assert(regressions[:destination] == [iphone], "Local regression lane must run on
 assert(regressions[:testplan] == "Muntathir" && !regressions.key?(:skip_testing), "Regression lane must use the Muntathir test plan, which excludes marketing captures")
 assert(!regressions[:parallel_testing] && regressions[:disable_concurrent_testing], "Regression lane must serialize UI tests")
 assert(regressions[:derived_data_path] == File.join(MuntathirRelease::ROOT, "build/DerivedData"), "Regression and marketing build caches must stay separate")
+assert(!regressions.key?(:only_testing), "Full regression lane must include UI tests")
+check.calls.clear
+check.tests(unit_only: true)
+unit = check.calls.find { |name, _| name == :run_tests }.last
+assert(unit[:testplan] == "Muntathir" && unit[:only_testing] == ["MuntathirTests"], "unit_only must run only MuntathirTests")
 
 MuntathirRelease.define_singleton_method(:validate_media!) { |**_| }
 config = { "submission_information" => { "export_compliance_uses_encryption" => false } }
@@ -440,7 +458,7 @@ check.define_singleton_method(:archive_and_upload) { |_| calls << [:archive_and_
 
 synced_packs = 0
 check.calls.clear
-check.testflight_public(force: "true")
+check.beta(force: "true")
 assert(synced_packs == 1, "TestFlight must sync Asset Packs")
 assert(check.calls.assoc(:release_context).last == { app_store: false, force: true }, "TestFlight force did not reach the freshness check")
 assert(check.calls.assoc(:run_tests).last[:destination] == [iphone], "TestFlight ran on multiple devices")
@@ -451,6 +469,10 @@ assert(beta[:groups] == ["Public"] && beta[:distribute_external] && beta[:submit
 assert(beta[:distribute_only] && beta[:app_version] == build.app_version && beta[:build_number] == build.version, "Public beta must distribute only the processed build")
 assert(!beta[:skip_waiting_for_build_processing] && beta[:wait_processing_timeout_duration].positive?, "Pilot must wait for beta details before distributing the processed build")
 assert(beta[:localized_build_info] == notes.transform_values { |text| { whats_new: text } }, "Beta localization missing")
+
+check.calls.clear
+check.testflight_public(skip_tests: true, force: true)
+assert(!check.calls.assoc(:run_tests) && check.calls.assoc(:upload_to_testflight).last == beta, "TestFlight alias must forward options to beta")
 
 synced_packs = 0
 synced_creatives = 0
@@ -483,7 +505,7 @@ assert(check.calls.index { |name, _| name == :upload_to_app_store } < check.call
 %i[tests refresh_screenshots].each do |step|
   original = check.method(step)
   check.define_singleton_method(step) { |**_| raise "#{step} failed" }
-  lanes = step == :tests ? %i[testflight_public app_store] : [:app_store]
+  lanes = step == :tests ? %i[beta app_store] : [:app_store]
   lanes.each do |lane|
     check.calls.clear
     synced_creatives = 0

@@ -5,12 +5,12 @@ Use the [shared Fastlane setup](../SETUP.md) on the signing Mac. Run lane comman
 ## Release commands
 
 ```sh
-just lane ios testflight_public
+just lane ios beta
 just lane ios app_store
 ```
 
 - **TestFlight Public** runs the unit/UI regression suite on the newest compatible installed iPhone simulator and submits the build to the external `Public` group with localized What to Test. TestFlight invitations pull screenshots from the latest App Store version ready for distribution. Screenshot capture and upload run in the App Store lane. [Apple’s TestFlight screenshot rules](https://developer.apple.com/help/app-store-connect/test-a-beta-version/provide-test-information)
-- **App Store** runs the suite on that iPhone and the configured iPad Pro. It uploads fresh screenshots and listing metadata, syncs Asset Packs, uploads composed header/search creatives to the App Asset Library, and submits the existing `testflight_public` build for automatic publication after approval (without uploading a new binary). Keep existing preview videos intact.
+- **App Store** runs the suite on that iPhone and the configured iPad Pro. It uploads fresh screenshots and listing metadata, syncs Asset Packs, uploads composed header/search creatives to the App Asset Library, and submits the existing TestFlight beta build for automatic publication after approval (without uploading a new binary). Keep existing preview videos intact.
 - Both commands are local and manual. The GitHub Actions deployment workflow is removed. Wait for one release to finish before starting another checkout or uploading the same version elsewhere. A checkout lock prevents overlapping release commands in the same working directory.
 
 The workflow deletion takes effect on GitHub once it reaches the default branch. Until then, disable the old **Local Apple deployment** workflow in Actions before opening or merging a PR that would trigger it.

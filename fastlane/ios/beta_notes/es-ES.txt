@@ -1,1 +1,2 @@
+Actualiza la aplicación desde una versión anterior y ábrela. Comprueba que aparecen las notas de la versión. Ciérralas y vuelve a abrir la aplicación para comprobar que no se muestran de nuevo.
 Busca aleyas y hadices mientras escribes. Prueba con la última palabra incompleta. Oculta y vuelve a mostrar los signos diacríticos árabes en el lector y abre un pasaje resaltado. Comprueba que puedes pasar las páginas del mushaf después de resaltar texto.

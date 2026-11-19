@@ -1,1 +1,2 @@
+Uygulamayı önceki bir sürümden güncelleyip açın. Sürüm notlarının göründüğünü kontrol edin. Notları kapatın ve uygulamayı yeniden açtığınızda tekrar görünmediklerini doğrulayın.
 Yazarken Kur’an ayetlerini ve hadisleri arayın. Son kelimeyi tamamlamadan deneyin. Okuma ekranında harekeleri gizleyip yeniden gösterin ve kaydedilmiş bir vurguyu açın. Metni vurguladıktan sonra mushaf sayfalarını kaydırarak çevirmeyi deneyin.

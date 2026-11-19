@@ -25,7 +25,8 @@ TEST_DESTINATION='platform=iOS Simulator,id=YOUR-SIMULATOR-UUID' just apple-test
 just lane ios marketing
 just lane ios web_media
 just lane ios screenshots languages:ar,en workers:2
-just lane android internal
+just lane ios beta
+just lane android beta
 just version 1.2.0
 just web-dev
 just web-validate

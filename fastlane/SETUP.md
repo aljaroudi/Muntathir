@@ -16,18 +16,19 @@ Run `just lane ios check` for local release checks. See [Apple release and captu
 
 ## Android
 
-Increment `versionCode` in `android/app/build.gradle.kts` and configure the Play
-upload key in `android/local.properties` or Gradle properties. The lane uses the
+Configure the Play upload key in `android/local.properties` or Gradle properties. The lane uses the
 Play service account JSON at `~/.android/muntathir-upload/play-publisher.json` by default.
 Set `SUPPLY_JSON_KEY` to override that path.
 
 ```sh
-just lane android internal
-just lane android internal aab:/absolute/path/app-release.aab validate_only:true
-just lane android internal aab:/absolute/path/app-release.aab draft:true
+just lane android beta
+just lane android beta aab:/absolute/path/app-release.aab validate_only:true
+just lane android beta aab:/absolute/path/app-release.aab draft:true
 ```
 
-The first command stages the asset packs, builds a signed AAB, and publishes it
+The first command reads version codes from the internal, alpha, beta, and production tracks and builds with the highest code plus one (1 for an empty app). Run one Android publisher at a time. A supplied `aab:` keeps its embedded version code.
+
+The lane stages the asset packs, builds a signed AAB, and publishes it
 to Play internal testing. Pass `aab:` to reuse a signed bundle, `validate_only:true`
 to validate it, or `draft:true` to save it as a draft. The lane skips listing
 metadata and screenshots. Play listing text lives in `fastlane/android/metadata/`.

@@ -15,12 +15,14 @@ platform :ios do
     sh("bundle", "exec", "ruby", File.join(__dir__, "ios/check.rb"), *flags)
   end
 
-  desc "Run unit and UI regression tests, excluding marketing captures"
+  desc "Run unit and UI regression tests, excluding marketing captures. Pass unit_only:true to skip UI tests"
   lane :tests do |options|
     sh("python3", File.join(MuntathirRelease::ROOT, "scripts/check_localizations.py"))
+    # UI tests take over an hour serially, so betas run unit tests only and App Store releases run everything.
+    selection = options[:unit_only].to_s == "true" ? { only_testing: ["MuntathirTests"] } : {}
     run_tests(project: File.join(MuntathirRelease::ROOT, "Muntathir.xcodeproj"), scheme: "Muntathir",
               destination: MuntathirRelease.test_destinations(include_ipad: options[:include_ipad] == true),
-              testplan: "Muntathir",
+              testplan: "Muntathir", **selection,
               parallel_testing: false, disable_concurrent_testing: true, skip_detect_devices: true, skip_slack: true, fail_build: true,
               output_directory: File.join(MuntathirRelease::ROOT, "build/tests"), buildlog_path: File.join(MuntathirRelease::ROOT, "build/logs/tests"),
               derived_data_path: File.join(MuntathirRelease::ROOT, "build/DerivedData"))
@@ -191,7 +193,9 @@ platform :ios do
     check(skip_media: !options.fetch(:app_store))
     context = release_context(app_store: options.fetch(:app_store), force: options[:force].to_s == "true")
     sh("python3", File.join(__dir__, "../build/build.py"), "--assets-only")
-    tests(include_ipad: options.fetch(:app_store)) unless options[:skip_tests].to_s == "true"
+    unless options[:skip_tests].to_s == "true"
+      tests(include_ipad: options.fetch(:app_store), unit_only: !options.fetch(:app_store))
+    end
     if options.fetch(:app_store)
       if options[:skip_screenshots].to_s == "true"
         MuntathirRelease.validate_media!
@@ -203,8 +207,13 @@ platform :ios do
     context
   end
 
-  desc "Test on iPhone and submit a new build to TestFlight Public"
+  desc "Compatibility alias for beta"
   lane :testflight_public do |options|
+    beta(options)
+  end
+
+  desc "Run unit tests on iPhone and submit a new build to TestFlight Public"
+  lane :beta do |options|
     MuntathirRelease.with_release_lock do
       context = prepare_release(app_store: false, force: options[:force], skip_tests: options[:skip_tests])
       build = archive_and_upload(context)
@@ -278,25 +287,40 @@ platform :android do
     end
   end
 
-  desc "Build and publish a signed AAB to Google Play internal testing"
+  private_lane :next_play_version_code do |options|
+    codes = %w[internal alpha beta production].flat_map do |track|
+      google_play_track_version_codes(package_name: options.fetch(:package_name), json_key: options.fetch(:json_key), track: track)
+    end
+    (codes.max || 0) + 1
+  end
+
+  desc "Compatibility alias for beta"
   lane :internal do |options|
+    beta(options)
+  end
+
+  desc "Build and publish a signed AAB to Google Play internal testing"
+  lane :beta do |options|
     root = File.expand_path("..", __dir__)
     credentials = File.expand_path(ENV.fetch("SUPPLY_JSON_KEY", "~/.android/muntathir-upload/play-publisher.json"), root)
     UI.user_error!("Set SUPPLY_JSON_KEY to a readable Google credentials JSON file") unless
       File.file?(credentials) && File.readable?(credentials)
 
+    package_name = "com.aljaroudi.muntathir"
     if options[:aab]
       bundle = File.expand_path(options[:aab].to_s, root)
     else
       android = File.join(root, "android")
+      version_code = next_play_version_code(package_name: package_name, json_key: credentials)
       sh("just", "--justfile", File.join(root, "justfile"), "android-packs")
-      sh(File.join(android, "gradlew"), "-p", android, ":app:bundleRelease", "-PrequireUploadSigning=true")
+      sh(File.join(android, "gradlew"), "-p", android, ":app:bundleRelease", "-PrequireUploadSigning=true",
+         "-PplayVersionCode=#{version_code}")
       bundle = File.join(android, "app/build/outputs/bundle/release/app-release.aab")
     end
     UI.user_error!("Expected a signed AAB at #{bundle}") unless File.file?(bundle) && File.extname(bundle) == ".aab"
 
     upload_to_play_store(
-      package_name: "com.aljaroudi.muntathir",
+      package_name: package_name,
       json_key: credentials,
       aab: bundle,
       track: "internal",

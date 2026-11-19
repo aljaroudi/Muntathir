@@ -1,1 +1,2 @@
+Perbarui aplikasi dari versi sebelumnya, lalu buka aplikasi. Pastikan catatan rilis muncul. Tutup catatan tersebut, lalu buka kembali aplikasi dan pastikan catatan tidak muncul lagi.
 Cari ayat Al-Quran dan hadis sambil mengetik. Coba ketik sebagian kata terakhir. Sembunyikan lalu tampilkan kembali harakat Arab di pembaca dan buka sorotan tersimpan. Periksa apakah halaman mushaf dapat digeser setelah menyoroti teks.

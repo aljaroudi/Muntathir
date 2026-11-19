@@ -154,43 +154,53 @@ final class PrayerProgressUITests: XCTestCase {
     }
 
     @MainActor func testReadingTimeIsAttributedToEachReader() {
-        for (tool, kind, mode) in [("hadith", "hadithReading", "verses"), ("supplications", "supplicationReading", "verses"), ("holy-quran", "quranReading", "verses"), ("holy-quran", "quranReading", "mushaf")] {
+        // Each reader tracks its own kind, so verse-mode readers share a launch; Mushaf needs its own reading mode.
+        for (mode, readers) in [("verses", [("hadith", "hadithReading"), ("supplications", "supplicationReading"), ("holy-quran", "quranReading")]),
+                                ("mushaf", [("holy-quran", "quranReading")])]
+        {
             let app = launch(["-quranReadingMode", mode])
-            openTool(tool, app: app)
-            if tool == "hadith" {
-                app.buttons["hadith-book-bukhari"].tap()
-                app.openFirstHadithChapter()
-                let row = app.buttons["hadith-result-1"]
-                XCTAssertTrue(row.waitForExistence(timeout: 10))
-                row.tap()
-            } else if tool == "supplications" {
-                let row = app.buttons["supplication-1"]
-                XCTAssertTrue(row.waitForExistence(timeout: 10))
-                row.tap()
-            } else {
-                let row = app.buttons["quran-surah-1"]
-                XCTAssertTrue(row.waitForExistence(timeout: 10))
-                row.tap()
+            for (tool, kind) in readers {
+                checkReadingTime(tool: tool, kind: kind, mode: mode, app: app)
             }
-            let text = app.descendants(matching: .any)[tool == "holy-quran" ? (mode == "mushaf" ? "quran-page-text-1" : "quran-verse-1:1") : "hadith-full-arabic"].firstMatch
-            XCTAssertTrue(text.waitForExistence(timeout: 10))
-            app.swipeUp()
-            app.swipeDown()
-            app.buttons["Today"].firstMatch.tap()
-            app.buttons["Tools"].firstMatch.tap()
-            // Return from the retained reader stack to the Tools root.
-            for _ in 0 ..< 6 where !app.buttons["prayer-progress"].exists {
-                app.navigationBars.buttons.element(boundBy: 0).tap()
-            }
-            openTool("prayer-progress", app: app)
-            let card = app.descendants(matching: .any)["progress-\(kind)"].firstMatch
-            for _ in 0 ..< 4 where !card.isHittable {
-                app.swipeUp()
-            }
-            XCTAssertTrue(card.exists)
-            let duration = card.value as? String ?? ""
-            XCTAssertTrue(duration.contains { ($0.wholeNumberValue ?? 0) > 0 }, "Expected recorded reading time, got \(duration)")
             app.terminate()
         }
+    }
+
+    @MainActor private func checkReadingTime(tool: String, kind: String, mode: String, app: XCUIApplication) {
+        openTool(tool, app: app)
+        if tool == "hadith" {
+            app.buttons["hadith-book-bukhari"].tap()
+            app.openFirstHadithChapter()
+            let row = app.buttons["hadith-result-1"]
+            XCTAssertTrue(row.waitForExistence(timeout: 10))
+            row.tap()
+        } else if tool == "supplications" {
+            let row = app.buttons["supplication-1"]
+            XCTAssertTrue(row.waitForExistence(timeout: 10))
+            row.tap()
+        } else {
+            let row = app.buttons["quran-surah-1"]
+            XCTAssertTrue(row.waitForExistence(timeout: 10))
+            row.tap()
+        }
+        let text = app.descendants(matching: .any)[tool == "holy-quran" ? (mode == "mushaf" ? "quran-page-text-1" : "quran-verse-1:1") : "hadith-full-arabic"].firstMatch
+        XCTAssertTrue(text.waitForExistence(timeout: 10))
+        app.swipeUp()
+        app.swipeDown()
+        app.buttons["Today"].firstMatch.tap()
+        app.buttons["Tools"].firstMatch.tap()
+        // Return from the retained reader stack to the Tools root.
+        for _ in 0 ..< 6 where !app.buttons["prayer-progress"].exists {
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+        openTool("prayer-progress", app: app)
+        let card = app.descendants(matching: .any)["progress-\(kind)"].firstMatch
+        for _ in 0 ..< 4 where !card.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(card.exists)
+        let duration = card.value as? String ?? ""
+        XCTAssertTrue(duration.contains { ($0.wholeNumberValue ?? 0) > 0 }, "Expected recorded reading time, got \(duration)")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
     }
 }
