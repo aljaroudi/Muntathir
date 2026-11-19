@@ -325,7 +325,9 @@ actor HadithReader {
         for row in rows {
             try Task.checkCancellation()
             let locator = row.source.map { "\($0.book):\($0.chapterFile):\($0.number)" }
-            if locators != nil, !requested.contains(locator ?? "") { continue }
+            if locators != nil, !requested.contains(locator ?? "") {
+                continue
+            }
             let variants = try translations(id: row.id)
             let title = QuranSearchText.normalize(row.chapter.arabic + " " + row.chapter.english).lowercased()
             func matches(_ text: String) -> Bool {

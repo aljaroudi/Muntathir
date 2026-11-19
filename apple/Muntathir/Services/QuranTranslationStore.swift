@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import OSLog
 import WidgetKit
 
 @MainActor @Observable final class QuranTranslationStore {
@@ -30,6 +31,10 @@ import WidgetKit
     private var completedTransferAt: Date?
     var isDownloading: Bool {
         downloadState == .downloading || downloadState == .installing
+    }
+
+    private var policy: AssetPackUpdatePolicy {
+        AssetPackUpdatePolicy(packID: "quran-translations", defaults: defaults)
     }
 
     func isInstalled(_ id: String) -> Bool {
@@ -90,10 +95,22 @@ import WidgetKit
                 }
             #endif
             let index = try files.read()
-            if index.pending != nil {
+            if index.pending != nil, index.backgroundUpdate == true {
+                await installUpdate(files)
+            } else if index.pending != nil {
                 if let resource = try await backend.localURL() {
                     downloadState = .installing
-                    try await files.install(from: resource.deletingLastPathComponent())
+                    let directory = resource.deletingLastPathComponent()
+                    let version = await backend.localVersion()
+                    do {
+                        try await files.verify(source: directory, version: version)
+                    } catch {
+                        if let version {
+                            policy.reject(version)
+                        }
+                        throw error
+                    }
+                    try await files.install(from: directory, version: version)
                     downloadState = .idle
                     completedTransferAt = nil
                     finishRequest()
@@ -127,7 +144,100 @@ import WidgetKit
         }
     }
 
+    /// Installs a silent update without download UI. Any failure keeps the current languages: a broken or
+    /// incompatible pack is skipped until a newer one or an app update, and storage failures retry next check.
+    private func installUpdate(_ files: QuranTranslationFiles) async {
+        let log = Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
+        guard let resource = try? await backend.localURL() else {
+            if await !backend.isDownloading(), !requesting {
+                abandonUpdate(files, removingPack: false)
+            }
+            return
+        }
+        let directory = resource.deletingLastPathComponent()
+        let version = await backend.localVersion()
+        do {
+            try await files.verify(source: directory, version: version)
+        } catch {
+            log.error("Rejected Quran translation pack \(version ?? 0): \(String(describing: error), privacy: .public)")
+            if let version {
+                policy.reject(version)
+            }
+            abandonUpdate(files, removingPack: true)
+            return
+        }
+        do {
+            try await files.install(from: directory, version: version)
+            finishRequest()
+            changed()
+            log.notice("Quran translations updated to version \(version ?? 0).")
+        } catch {
+            log.error("Quran translation update could not install: \(String(describing: error), privacy: .public)")
+            abandonUpdate(files, removingPack: true)
+        }
+    }
+
+    private func abandonUpdate(_ files: QuranTranslationFiles, removingPack: Bool) {
+        guard var index = try? files.read(), index.backgroundUpdate == true else { return }
+        index.pending = nil
+        index.backgroundUpdate = nil
+        index.needsPackCleanup = index.needsPackCleanup || removingPack
+        try? files.write(index)
+    }
+
+    /// Whether a user-requested download is waiting to install.
+    private var hasRequestedPending: Bool {
+        guard let index = try? files?.read() else { return false }
+        return index.pending != nil && index.backgroundUpdate != true
+    }
+
+    /// Silently reinstalls outdated languages from the latest hosted pack, at most once per day.
+    func checkForUpdates(now: Date = .now) async {
+        guard let files, !busy, !requesting, !isDownloading, downloadState != .failed, policy.isDue(now),
+              let index = try? files.read(), index.pending == nil, !index.installed.isEmpty else { return }
+        let log = Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
+        let remote: Int
+        do {
+            guard let value = try await backend.remoteVersion() else { return }
+            remote = value
+        } catch {
+            log.error("Quran translation update check failed: \(String(describing: error), privacy: .public)")
+            return
+        }
+        policy.markChecked(now)
+        guard policy.accepts(remote, over: index.packVersion) else { return }
+        // The user may have started a download or deletion during the manifest request.
+        guard !busy, !requesting, !isDownloading, (try? files.read().pending) == nil else { return }
+        do { try files.prepareUpdate() } catch { return }
+        log.notice("Updating Quran translations from \(index.packVersion ?? 0) to \(remote).")
+        requesting = true
+        requestGeneration += 1
+        let generation = requestGeneration
+        let task = Task { [backend] in try await backend.download() }
+        requestTask = task
+        do { try await task.value } catch {
+            log.error("Quran translation update download failed: \(String(describing: error), privacy: .public)")
+        }
+        guard generation == requestGeneration else { return }
+        requesting = false
+        requestTask = nil
+        await refresh()
+        if hasRequestedPending {
+            // A user request joined this transfer and it did not install.
+            downloadState = .failed
+        }
+    }
+
     func download(requested: String? = nil) async {
+        if requesting, !busy, let files, (try? files.read().backgroundUpdate) == true {
+            // Join the in-flight update; its installation also adds the requested language.
+            do { try files.prepare(requested: requested) } catch { return }
+            downloadState = .downloading
+            downloadStarted = false
+            downloadProgress = nil
+            completedTransferAt = nil
+            return
+        }
         guard !busy, !requesting, !isDownloading else { return }
         let retry = downloadState == .failed
         busy = true
@@ -215,7 +325,7 @@ import WidgetKit
     func receive(_ event: AssetPackEvent) async {
         switch event {
         case .began:
-            if downloadState != .installing, (try? files?.read().pending) != nil {
+            if downloadState != .installing, hasRequestedPending {
                 downloadStarted = true
                 downloadState = .downloading
             }
@@ -228,7 +338,7 @@ import WidgetKit
         case .failed:
             finishRequest()
             await refresh()
-            if (try? files?.read().pending) != nil {
+            if hasRequestedPending {
                 downloadState = .failed
             }
         }

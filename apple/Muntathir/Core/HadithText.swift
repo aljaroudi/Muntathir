@@ -188,14 +188,16 @@ enum SearchMatch {
         return ranges
     }
 
-    // Prefer a sequence of distinct nearby matches over an isolated common word.
+    /// Prefer a sequence of distinct nearby matches over an isolated common word.
     static func bestMatch(in text: NSString, hits: [NSRange]) -> Int? {
         var start = 0, end = 0, score = 0, bestScore = 0
         var best: Int?
         var seen = Set<String>()
         for hit in hits.sorted(by: { $0.location < $1.location }) {
             let word = QuranSearchText.fold(QuranSearchText.normalize(text.substring(with: hit)))
-            if hit.location < end { continue }
+            if hit.location < end {
+                continue
+            }
             if hit.location - end > 3 || seen.contains(word) || seen.isEmpty {
                 start = hit.location
                 score = 0
@@ -203,7 +205,9 @@ enum SearchMatch {
             }
             seen.insert(word)
             score += word.utf16.count + 1
-            if score > bestScore { best = start; bestScore = score }
+            if score > bestScore {
+                best = start; bestScore = score
+            }
             end = NSMaxRange(hit)
         }
         return best

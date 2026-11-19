@@ -47,10 +47,15 @@ struct FigureBrowser: View {
                             return library.byID[id]
                         }
                         try Task.checkCancellation()
-                        if hits.isEmpty { remote = [] }
-                        else if !figures.isEmpty { remote = [.init(id: "results", figures: figures)] }
+                        if hits.isEmpty {
+                            remote = []
+                        } else if !figures.isEmpty {
+                            remote = [.init(id: "results", figures: figures)]
+                        }
                     } catch {
-                        if !Task.isCancelled { remote = nil }
+                        if !Task.isCancelled {
+                            remote = nil
+                        }
                     }
                 }
                 .overlay {
@@ -68,7 +73,9 @@ struct FigureBrowser: View {
         .searchHistory($query, area: .figures)
         .onSubmit(of: .search) { submitted = query }
         .onChange(of: query) { _, value in
-            if value != submitted { submitted = ""; remote = nil }
+            if value != submitted {
+                submitted = ""; remote = nil
+            }
         }
         .navigationTitle("Figures")
         .task {

@@ -80,6 +80,8 @@ actor HadithLocalLibrary {
         for stale in try fm.contentsOfDirectory(at: root, includingPropertiesForKeys: nil) where stale.lastPathComponent.hasPrefix("staging-") {
             try fm.removeItem(at: stale)
         }
+        // Staging rewrites the schema version, so the hosted pack's own version is checked first.
+        try HadithDatabase(url: source).validate()
         let stage = root.appending(path: "staging-\(UUID().uuidString).db")
         // The previous database remains usable until this entire replacement is validated.
         do {
@@ -101,6 +103,23 @@ actor HadithLocalLibrary {
         } catch {
             try? fm.removeItem(at: stage)
             throw error
+        }
+    }
+
+    /// Read-only checks that a hosted pack is intact and readable by this app version before it may replace a library.
+    func verify(source: URL, supplications: Bool) async throws {
+        let db = try HadithConnection(url: source)
+        guard try db.query("PRAGMA quick_check", row: { QuranConnection.text($0, 0) }) == ["ok"] else {
+            throw HadithDatabaseError.unavailable
+        }
+        try HadithDatabase(url: source).validate()
+        // Exercise the reader's own queries, not just the schema.
+        let probe = HadithReader(database: HadithDatabase(url: source))
+        if supplications {
+            _ = try await probe.supplications()
+        } else {
+            guard let first = try await probe.catalog().first else { throw HadithDatabaseError.incompatible }
+            _ = try await probe.page(HadithRequest(collectionID: first.id))
         }
     }
 

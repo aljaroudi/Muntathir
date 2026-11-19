@@ -27,6 +27,19 @@ import OSLog
         "\(packID).removed"
     }
 
+    /// The hosted pack version last copied into the local library.
+    private var installedVersionKey: String {
+        "\(packID).installedPackVersion"
+    }
+
+    private var installedVersion: Int? {
+        defaults.object(forKey: installedVersionKey) as? Int
+    }
+
+    private var policy: AssetPackUpdatePolicy {
+        AssetPackUpdatePolicy(packID: packID, defaults: defaults)
+    }
+
     let packID: String
     let reader: HadithReader
     private(set) var state: State = .checking
@@ -61,6 +74,7 @@ import OSLog
     private var downloadTask: Task<Void, Error>?
     private var progressSample: (date: Date, fraction: Double)?
     private var transferFinishedAt: Date?
+    private var checkingForUpdates = false
 
     init(backend: any AssetPackBackend = AppleAssetPackBackend(), packID: String = "hadith", reader: HadithReader = HadithReader(), defaults: UserDefaults = .standard, library: HadithLocalLibrary? = nil,
          validateIntegrity: @escaping @Sendable (URL) async throws -> Void = { try HadithDatabase(url: $0).validate() })
@@ -113,19 +127,33 @@ import OSLog
         do {
             let lookupStarted = ContinuousClock.now
             var localURL = await library?.localURL()
-            if library == nil || localURL == nil || defaults.string(forKey: restorationKey) != nil {
+            let restoring = defaults.string(forKey: restorationKey)
+            var replacedLibrary = false
+            if let library, localURL != nil {
+                // Beside a working library, a managed pack is a requested restore, a newer version, or redundant.
                 if let managed = try await backend.localURL() {
-                    if let library {
-                        state = .installing
-                        let staged = try await library.prepare(source: managed, restoring: defaults.string(forKey: restorationKey))
-                        defer { try? FileManager.default.removeItem(at: staged) }
-                        defaults.set(true, forKey: cleanupKey)
-                        try await reader.commit(staged, to: library.url)
-                        localURL = library.url
-                        defaults.removeObject(forKey: restorationKey)
+                    let version = await backend.localVersion()
+                    if restoring != nil || version.map({ policy.accepts($0, over: installedVersion) }) == true {
+                        replacedLibrary = await replace(library, from: managed, version: version, restoring: restoring)
                     } else {
-                        localURL = managed
+                        defaults.set(true, forKey: cleanupKey)
                     }
+                }
+            } else if let managed = try await backend.localURL() {
+                if let library {
+                    state = .installing
+                    let version = await backend.localVersion()
+                    let staged = try await library.prepare(source: managed, restoring: restoring)
+                    defer { try? FileManager.default.removeItem(at: staged) }
+                    defaults.set(true, forKey: cleanupKey)
+                    try await reader.commit(staged, to: library.url)
+                    localURL = library.url
+                    defaults.removeObject(forKey: restorationKey)
+                    if let version {
+                        defaults.set(version, forKey: installedVersionKey)
+                    }
+                } else {
+                    localURL = managed
                 }
             }
             if let library {
@@ -160,7 +188,10 @@ import OSLog
             let signature = "validation-1|\(url.path)|\(attributes[.systemFileNumber] ?? "")|\(attributes[.size] ?? "")|\(modified)"
             if signature != installedSignature {
                 integrityWorker?.cancel()
-                state = isDownloading ? .installing : .checking
+                // An adopted pack was fully checked before the swap, so reading continues uninterrupted.
+                if !replacedLibrary {
+                    state = isDownloading ? .installing : .checking
+                }
                 Logger(subsystem: "com.aljaroudi.Muntathir", category: "HadithAssets").notice("Validating Hadith database.")
                 let started = Date()
                 let full = defaults.string(forKey: validationKey) != signature
@@ -295,6 +326,77 @@ import OSLog
         }
     }
 
+    /// Replaces a working library only after read-only checks pass, so a broken pack, or one this app
+    /// version cannot read, never displaces readable content. Returns whether the library changed.
+    private func replace(_ library: HadithLocalLibrary, from managed: URL, version: Int?, restoring: String?) async -> Bool {
+        let log = Logger(subsystem: "com.aljaroudi.Muntathir", category: "HadithAssets")
+        let packID = packID
+        do {
+            try await library.verify(source: managed, supplications: packID == "supplications")
+        } catch {
+            log.error("Rejected \(packID, privacy: .public) pack \(version ?? 0): \(String(describing: error), privacy: .public)")
+            if let version {
+                policy.reject(version)
+            }
+            if restoring != nil {
+                defaults.removeObject(forKey: restorationKey)
+                storageErrorMessage = error.localizedDescription
+                storageError = true
+            }
+            defaults.set(true, forKey: cleanupKey)
+            return false
+        }
+        if restoring != nil {
+            state = .installing
+        }
+        do {
+            let staged = try await library.prepare(source: managed, restoring: restoring)
+            defer { try? FileManager.default.removeItem(at: staged) }
+            try await reader.commit(staged, to: library.url)
+        } catch {
+            log.error("Could not install \(packID, privacy: .public) pack \(version ?? 0): \(String(describing: error), privacy: .public)")
+            if restoring != nil {
+                // The restore stays retryable from the downloaded pack.
+                storageErrorMessage = error.localizedDescription
+                storageError = true
+            } else {
+                // Storage failures are transient; the next daily check downloads the update again.
+                defaults.set(true, forKey: cleanupKey)
+            }
+            return false
+        }
+        defaults.set(true, forKey: cleanupKey)
+        defaults.removeObject(forKey: restorationKey)
+        if let version {
+            defaults.set(version, forKey: installedVersionKey)
+        }
+        log.notice("Installed \(packID, privacy: .public) pack \(version ?? 0).")
+        return true
+    }
+
+    /// Downloads a newer hosted pack at most once per day; `resolve()` adopts it only if it passes validation.
+    func checkForUpdates(now: Date = .now) async {
+        // An incompatible library is unreadable anyway, so it may update too.
+        guard library != nil, state == .ready || state == .incompatible, !busy, !checkingForUpdates, pendingDownload == nil,
+              !defaults.bool(forKey: removedKey), defaults.string(forKey: restorationKey) == nil, policy.isDue(now) else { return }
+        let log = Logger(subsystem: "com.aljaroudi.Muntathir", category: "HadithAssets")
+        let packID = packID
+        checkingForUpdates = true
+        defer { checkingForUpdates = false }
+        do {
+            guard let remote = try await backend.remoteVersion() else { return }
+            policy.markChecked(now)
+            guard policy.accepts(remote, over: installedVersion) else { return }
+            log.notice("Updating \(packID, privacy: .public) from \(self.installedVersion ?? 0) to \(remote).")
+            if await backend.localVersion().map({ $0 < remote }) ?? true {
+                try await backend.download()
+            }
+            await refresh()
+        } catch {
+            log.error("Update check failed for \(packID, privacy: .public): \(String(describing: error), privacy: .public)")
+        }
+    }
+
     func remove(title: String) async {
         guard let library, !busy, !isDownloading, books.contains(where: { $0.id == title && $0.installed }) else { return }
         busy = true
@@ -336,6 +438,8 @@ import OSLog
             defaults.set(true, forKey: removedKey)
             defaults.removeObject(forKey: restorationKey)
             defaults.removeObject(forKey: cleanupKey)
+            defaults.removeObject(forKey: installedVersionKey)
+            policy.resetSchedule()
             books = []
             installedSignature = nil
             defaults.removeObject(forKey: validationKey)

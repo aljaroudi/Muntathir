@@ -250,7 +250,9 @@ struct HadithView: View {
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search Hadith")
         .searchHistory($searchText, area: .hadith)
         .onChange(of: searchText) { _, value in
-            if value != submitted { submitted = "" }
+            if value != submitted {
+                submitted = ""
+            }
             guard value.isEmpty, request.query != value else { return }
             update { $0.query = value; $0.number = nil }
         }
@@ -565,7 +567,9 @@ struct HadithView: View {
                 }
                 try Task.checkCancellation()
                 let rows = try await reader.searchPreviews(references, query: query)
-                if matches.isEmpty || !rows.isEmpty { return HadithPage(rows: rows, hasMore: false) }
+                if matches.isEmpty || !rows.isEmpty {
+                    return HadithPage(rows: rows, hasMore: false)
+                }
             } catch {
                 try Task.checkCancellation()
             }

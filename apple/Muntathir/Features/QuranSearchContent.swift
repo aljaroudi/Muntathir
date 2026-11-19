@@ -195,7 +195,9 @@ struct QuranSearchContent: View {
                 let verses = try await reader.verses(references: references)
                 let byID = Dictionary(uniqueKeysWithValues: verses.map { ($0.id, $0) })
                 let found = references.compactMap { byID[$0] }.filter { exact != nil || QuranSearchText.isSearchableVerse($0.text) }
-                if matches.isEmpty || !found.isEmpty { return found }
+                if matches.isEmpty || !found.isEmpty {
+                    return found
+                }
             } catch {
                 try Task.checkCancellation()
             }

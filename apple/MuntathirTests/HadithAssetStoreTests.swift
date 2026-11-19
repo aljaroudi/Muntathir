@@ -224,6 +224,9 @@ private actor TestHadithAssets: AssetPackBackend {
     let url: URL
     var installed = false
     var downloads = 0
+    var version: Int?
+    var remote: Int?
+    var served: URL?
     var failing = false
     var downloading = false
     var suspended = false
@@ -234,7 +237,12 @@ private actor TestHadithAssets: AssetPackBackend {
     }
 
     func localURL() -> URL? {
-        installed ? url : nil
+        installed ? served ?? url : nil
+    }
+
+    /// Serves a different file, such as a broken pack, in place of `url`.
+    func serve(_ value: URL?) {
+        served = value
     }
 
     func isDownloading() -> Bool {
@@ -255,6 +263,22 @@ private actor TestHadithAssets: AssetPackBackend {
 
     func setInstalled(_ value: Bool) {
         installed = value
+    }
+
+    func setVersion(_ value: Int?) {
+        version = value
+    }
+
+    func setRemote(_ value: Int?) {
+        remote = value
+    }
+
+    func localVersion() -> Int? {
+        installed ? version : nil
+    }
+
+    func remoteVersion() -> Int? {
+        remote
     }
 
     func waitForDownload() async {
@@ -280,6 +304,7 @@ private actor TestHadithAssets: AssetPackBackend {
         }
         installed = true
         downloading = false
+        version = remote ?? version
     }
 
     func remove() throws {
@@ -512,5 +537,139 @@ extension HadithAssetStoreTests {
         #expect(relaunched.state == .ready)
         #expect(relaunched.books.filter(\.installed).count == 2)
         #expect(await backend.downloads == 2)
+    }
+}
+
+extension HadithAssetStoreTests {
+    @Test func outdatedLibraryUpdatesSilentlyAndKeepsRemovedBooks() async throws {
+        let fixture = try HadithFixture(count: 3)
+        defer { fixture.remove() }
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let suite = "AssetUpdates.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let backend = TestHadithAssets(url: fixture.url)
+        await backend.setInstalled(true)
+        await backend.setVersion(1)
+        await backend.setRemote(1)
+        let store = HadithAssetStore(backend: backend, defaults: defaults, library: HadithLocalLibrary(root: root))
+        await store.refresh()
+        #expect(store.state == .ready)
+        #expect(defaults.integer(forKey: "hadith.installedPackVersion") == 1)
+        await store.remove(title: "merged")
+        #expect(store.books.filter(\.installed).map(\.id) == ["other"])
+
+        let start = Date()
+        await store.checkForUpdates(now: start)
+        #expect(await backend.downloads == 0)
+
+        // A newer version is ignored until the daily throttle elapses.
+        await backend.setRemote(2)
+        await store.checkForUpdates(now: start.addingTimeInterval(60))
+        #expect(await backend.downloads == 0)
+        await store.checkForUpdates(now: start.addingTimeInterval(86400 * 2))
+        #expect(await backend.downloads == 1)
+        #expect(store.state == .ready)
+        #expect(store.books.filter(\.installed).map(\.id) == ["other"])
+        #expect(defaults.integer(forKey: "hadith.installedPackVersion") == 2)
+        #expect(await backend.localURL() == nil)
+
+        // Libraries copied before versions were recorded update once.
+        defaults.removeObject(forKey: "hadith.installedPackVersion")
+        await store.checkForUpdates(now: start.addingTimeInterval(86400 * 4))
+        #expect(await backend.downloads == 2)
+        #expect(defaults.integer(forKey: "hadith.installedPackVersion") == 2)
+        await store.checkForUpdates(now: start.addingTimeInterval(86400 * 6))
+        #expect(await backend.downloads == 2)
+
+        // A newer managed pack already on the device is imported without a download.
+        await backend.setInstalled(true)
+        await backend.setVersion(3)
+        await store.refresh()
+        #expect(store.state == .ready)
+        #expect(defaults.integer(forKey: "hadith.installedPackVersion") == 3)
+        #expect(store.books.filter(\.installed).map(\.id) == ["other"])
+        #expect(await backend.downloads == 2)
+
+        // A failed update keeps the current library.
+        await backend.setRemote(4)
+        await backend.setFailure(true)
+        await store.checkForUpdates(now: start.addingTimeInterval(86400 * 8))
+        #expect(store.state == .ready)
+        #expect(defaults.integer(forKey: "hadith.installedPackVersion") == 3)
+        #expect(try await store.reader.page(HadithRequest(collectionID: "other")).rows.count == 1)
+
+        // A removed library is never restored by an update.
+        await backend.setFailure(false)
+        await store.remove()
+        await store.checkForUpdates(now: start.addingTimeInterval(86400 * 10))
+        #expect(store.state == .missing)
+        #expect(await backend.downloads == 3)
+    }
+}
+
+extension HadithAssetStoreTests {
+    @Test(arguments: ["corrupt", "schema"]) func brokenOrIncompatibleUpdateIsSkippedAndLibraryKept(kind: String) async throws {
+        let fixture = try HadithFixture(count: 3)
+        defer { fixture.remove() }
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let bad = FileManager.default.temporaryDirectory.appending(path: "\(UUID().uuidString).db")
+        defer { try? FileManager.default.removeItem(at: bad) }
+        if kind == "corrupt" {
+            try Data("invalid".utf8).write(to: bad)
+        } else {
+            // A future schema this app version cannot read.
+            try FileManager.default.copyItem(at: fixture.url, to: bad)
+            try QuranConnection(path: bad.path, flags: 2).execute("PRAGMA user_version = 9")
+        }
+        let suite = "BrokenUpdates.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let backend = TestHadithAssets(url: fixture.url)
+        await backend.setInstalled(true)
+        await backend.setVersion(1)
+        let store = HadithAssetStore(backend: backend, defaults: defaults, library: HadithLocalLibrary(root: root))
+        await store.refresh()
+        // Excluded books make staging rewrite the schema version, so the hosted pack must be checked first.
+        await store.remove(title: "merged")
+        #expect(store.books.filter(\.installed).map(\.id) == ["other"])
+
+        await backend.serve(bad)
+        await backend.setRemote(2)
+        let start = Date()
+        await store.checkForUpdates(now: start)
+        #expect(await backend.downloads == 1)
+        #expect(store.state == .ready)
+        #expect(!store.storageError)
+        #expect(defaults.integer(forKey: "hadith.installedPackVersion") == 1)
+        #expect(store.books.filter(\.installed).map(\.id) == ["other"])
+        #expect(try await store.reader.page(HadithRequest(collectionID: "other")).rows.count == 1)
+        #expect(await backend.localURL() == nil)
+
+        // The rejected version is skipped, including after a relaunch.
+        let relaunched = HadithAssetStore(backend: backend, defaults: defaults, library: HadithLocalLibrary(root: root))
+        await relaunched.refresh()
+        #expect(relaunched.state == .ready)
+        await relaunched.checkForUpdates(now: start.addingTimeInterval(86400 * 2))
+        #expect(await backend.downloads == 1)
+        #expect(AssetPackUpdatePolicy(packID: "hadith", defaults: defaults).isRejected(2))
+        // A newer app build retries it, since it may accept the pack.
+        #expect(AssetPackUpdatePolicy(packID: "hadith", defaults: defaults, build: "next").accepts(2, over: 1))
+
+        // A restore that lands on the broken pack reports the failure and keeps the library.
+        await relaunched.download(title: "merged")
+        #expect(relaunched.state == .ready)
+        #expect(relaunched.storageError)
+        #expect(relaunched.books.filter(\.installed).map(\.id) == ["other"])
+
+        // A fixed, newer pack is adopted.
+        await backend.serve(nil)
+        await backend.setRemote(3)
+        await relaunched.checkForUpdates(now: start.addingTimeInterval(86400 * 4))
+        #expect(relaunched.state == .ready)
+        #expect(defaults.integer(forKey: "hadith.installedPackVersion") == 3)
+        #expect(relaunched.books.filter(\.installed).map(\.id) == ["other"])
     }
 }

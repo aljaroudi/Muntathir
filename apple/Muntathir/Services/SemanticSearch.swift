@@ -91,7 +91,9 @@ struct SemanticSearchClient: Sendable {
             if usesTestFixture {
                 return Self(endpoint: URL(string: "https://search.invalid/v1/search")!)
             }
-            if ProcessInfo.processInfo.arguments.contains("--ui-testing") { return nil }
+            if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+                return nil
+            }
         #endif
         let local: [String: String]? = Bundle.main.url(forResource: "SemanticSearchConfiguration", withExtension: "plist")
             .flatMap { try? Data(contentsOf: $0) }

@@ -109,7 +109,11 @@ private struct RulingsBrowser: View {
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always))
         .searchHistory($query, area: .rulings)
         .onSubmit(of: .search) { submitted = query }
-        .onChange(of: query) { _, value in if value != submitted { submitted = "" } }
+        .onChange(of: query) {
+            _, value in if value != submitted {
+                submitted = ""
+            }
+        }
         .autocorrectionDisabled()
         .scrollDismissesKeyboard(.interactively)
         .task(id: [authority, language, query, submitted, String(results.retry)]) {
@@ -207,7 +211,9 @@ private struct RulingsResults: View {
                         found.append(value)
                     }
                 }
-                if results.isEmpty || !found.isEmpty { return found }
+                if results.isEmpty || !found.isEmpty {
+                    return found
+                }
             } catch {
                 try Task.checkCancellation()
             }

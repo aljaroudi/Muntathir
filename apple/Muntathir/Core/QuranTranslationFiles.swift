@@ -7,6 +7,10 @@ struct QuranTranslationFiles: Sendable {
         var pending: [String]?
         var hasInstalled = false
         var needsPackCleanup = false
+        /// The hosted pack version the installed languages were copied from.
+        var packVersion: Int?
+        /// Pending work is a silent update of already installed languages, not a user request.
+        var backgroundUpdate: Bool?
     }
 
     let root: URL
@@ -51,15 +55,42 @@ struct QuranTranslationFiles: Sendable {
         }
         index.pending = index.hasInstalled ? (requested.map { [$0] } ?? ids) : ids
         index.needsPackCleanup = false
+        index.backgroundUpdate = nil
         try write(index)
     }
 
+    /// Queues reinstallation of the installed languages only; deleted languages stay deleted.
+    func prepareUpdate() throws {
+        var index = try read()
+        guard index.pending == nil, !index.installed.isEmpty else { throw QuranDatabaseError.unavailable }
+        index.pending = index.installed.keys.sorted()
+        index.needsPackCleanup = false
+        index.backgroundUpdate = true
+        try write(index)
+    }
+
+    /// The languages to install from a pack; a different pack version refreshes every installed
+    /// language too, so all of them come from one version.
+    private func targets(_ index: Index, version: Int?) -> [String]? {
+        guard let pending = index.pending else { return nil }
+        guard let version, version != index.packVersion else { return pending }
+        return Set(pending).union(index.installed.keys).sorted()
+    }
+
+    /// Read-only checks that a hosted pack holds a valid file for every language to install.
+    @concurrent func verify(source directory: URL, version: Int?) async throws {
+        for id in try targets(read(), version: version) ?? [] {
+            try Task.checkCancellation()
+            try QuranDatabase.validateTranslation(at: directory.appending(path: "\(id).db"))
+        }
+    }
+
     /// Publish only after every requested file has copied and passed validation.
-    @concurrent func install(from directory: URL,
+    @concurrent func install(from directory: URL, version: Int? = nil,
                              copy: @Sendable (URL, URL) throws -> Void = { try FileManager.default.copyItem(at: $0, to: $1) }) async throws
     {
         var index = try read()
-        guard let pending = index.pending else { return }
+        guard let pending = targets(index, version: version) else { return }
         let generation = UUID().uuidString
         let staging = root.appending(path: generation, directoryHint: .isDirectory)
         try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
@@ -75,6 +106,10 @@ struct QuranTranslationFiles: Sendable {
             index.pending = nil
             index.hasInstalled = true
             index.needsPackCleanup = true
+            index.backgroundUpdate = nil
+            if let version {
+                index.packVersion = version
+            }
             try write(index)
         } catch {
             try? FileManager.default.removeItem(at: staging)

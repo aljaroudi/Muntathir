@@ -9,6 +9,65 @@ protocol AssetPackBackend: Sendable {
     func download() async throws
     func remove() async throws
     func updates() -> AsyncStream<AssetPackEvent>
+    /// The version of the managed pack currently on the device, if any.
+    func localVersion() async -> Int?
+    /// The latest version published on the server.
+    func remoteVersion() async throws -> Int?
+}
+
+extension AssetPackBackend {
+    func localVersion() async -> Int? {
+        nil
+    }
+
+    func remoteVersion() async throws -> Int? {
+        nil
+    }
+}
+
+/// Throttles update checks and remembers hosted versions that failed validation on this device.
+struct AssetPackUpdatePolicy {
+    static let interval: TimeInterval = 86400
+    let packID: String
+    let defaults: UserDefaults?
+    var build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
+
+    private var checkedKey: String {
+        "\(packID).updateCheckedAt"
+    }
+
+    private var rejectedKey: String {
+        "\(packID).rejectedPackVersion"
+    }
+
+    func isDue(_ now: Date) -> Bool {
+        guard let checked = defaults?.object(forKey: checkedKey) as? Date else { return true }
+        return now.timeIntervalSince(checked) >= Self.interval
+    }
+
+    func markChecked(_ now: Date) {
+        defaults?.set(now, forKey: checkedKey)
+    }
+
+    func resetSchedule() {
+        defaults?.removeObject(forKey: checkedKey)
+    }
+
+    /// A rejected version is skipped until a newer one is published or the app updates, since a newer app may accept it.
+    func isRejected(_ version: Int) -> Bool {
+        defaults?.string(forKey: rejectedKey) == "\(version)|\(build)"
+    }
+
+    func reject(_ version: Int) {
+        defaults?.set("\(version)|\(build)", forKey: rejectedKey)
+        Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
+            .error("Skipping \(packID, privacy: .public) version \(version): it failed validation.")
+    }
+
+    /// Copies made before versions were recorded accept any version once.
+    func accepts(_ version: Int, over installed: Int?) -> Bool {
+        (installed.map { $0 < version } ?? true) && !isRejected(version)
+    }
 }
 
 enum AssetPackEvent: Sendable {
@@ -87,22 +146,55 @@ struct AppleAssetPackBackend: AssetPackBackend {
         let log = Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
         let manager = AssetPackManager.shared
         log.notice("Requesting asset manifest: \(identifier, privacy: .public).")
-        let pack: AssetPack
-        if #available(iOS 27, *) {
-            guard let value = try await manager.manifest.assetPack(withID: identifier) else {
-                throw HadithDatabaseError.unavailable
-            }
-            pack = value
-        } else {
-            pack = try await manager.assetPack(withID: identifier)
-        }
+        let pack = try await remotePack()
         log.notice("Manifest resolved; requesting local availability.")
         if #available(iOS 26.4, *) {
             try await manager.ensureLocalAvailability(of: pack, requireLatestVersion: true)
         } else {
             try await manager.ensureLocalAvailability(of: pack)
         }
+        UserDefaults.standard.set(pack.version, forKey: downloadedVersionKey)
         log.notice("Asset local availability confirmed.")
+    }
+
+    private func remotePack() async throws -> AssetPack {
+        let manager = AssetPackManager.shared
+        if #available(iOS 27, *) {
+            guard let value = try await manager.manifest.assetPack(withID: identifier) else {
+                throw HadithDatabaseError.unavailable
+            }
+            return value
+        }
+        return try await manager.assetPack(withID: identifier)
+    }
+
+    @concurrent func localVersion() async -> Int? {
+        #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+                return nil
+            }
+        #endif
+        let manager = AssetPackManager.shared
+        if #available(iOS 27.2, *) {
+            return try? manager.localVersion(ofAssetPackWithID: identifier)
+        }
+        // Earlier systems expose no local version; use the version this app last downloaded.
+        guard await (try? localURL()) != nil else { return nil }
+        return UserDefaults.standard.object(forKey: downloadedVersionKey) as? Int
+    }
+
+    private var downloadedVersionKey: String {
+        "\(identifier).downloadedPackVersion"
+    }
+
+    func remoteVersion() async throws -> Int? {
+        #if DEBUG
+            // Test and capture launches never contact the hosted manifest.
+            if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+                return nil
+            }
+        #endif
+        return try await remotePack().version
     }
 
     func remove() async throws {

@@ -51,6 +51,8 @@ struct QuranDatabase: Sendable {
             (sqlite3_column_int($0, 0), sqlite3_column_int($0, 1), sqlite3_column_int($0, 2))
         }.first
         guard let count, count == (6236, 1, 6236) else { throw QuranDatabaseError.unavailable }
+        // The reader's verse query must also work, not just the row count.
+        _ = try connection.query("SELECT \"index\", sura, aya, text FROM quran LIMIT 1") { sqlite3_column_int($0, 0) }
     }
 
     func verses(ids: Set<Int>) -> [Int: Ayah] {

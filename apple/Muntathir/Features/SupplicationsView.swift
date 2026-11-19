@@ -97,7 +97,11 @@ struct SupplicationsView: View {
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search supplications")
         .searchHistory($query, area: .supplications)
         .onSubmit(of: .search) { submitted = query }
-        .onChange(of: query) { _, value in if value != submitted { submitted = "" } }
+        .onChange(of: query) { _, value in
+            if value != submitted {
+                submitted = ""
+            }
+        }
         .autocorrectionDisabled()
         .scrollDismissesKeyboard(.interactively)
         .toolbar {
@@ -138,13 +142,17 @@ struct SupplicationsView: View {
         if !query.isEmpty, submitted == query, let client = SemanticSearchClient.configured {
             do {
                 let hits = try await client.search(query, kind: "dua")
-                if hits.isEmpty { return [] }
+                if hits.isEmpty {
+                    return []
+                }
                 let locators = hits.compactMap { hit -> String? in
                     guard case .dua = hit.reference else { return nil }
                     return hit.locator
                 }
                 let resolved = try await reader.supplications(query: query, translation: translation, languages: [locale.identifier], locators: locators)
-                if !resolved.isEmpty { return resolved }
+                if !resolved.isEmpty {
+                    return resolved
+                }
             } catch {
                 try Task.checkCancellation()
             }
