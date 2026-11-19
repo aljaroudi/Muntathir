@@ -18,6 +18,9 @@ struct MuntathirApp: App {
                 }
                 if !ProcessInfo.processInfo.arguments.contains("--ui-testing-onboarding") {
                     defaults.set(true, forKey: "onboardingCompleted")
+                    if !ProcessInfo.processInfo.arguments.contains("--ui-testing-release-notes") {
+                        defaults.set(ReleaseNote.installed, forKey: ReleaseNote.seenKey)
+                    }
                 }
                 model = AppModel(defaults: defaults, cloud: nil)
                 if ProcessInfo.processInfo.arguments.contains("--marketing-capture") {
@@ -51,9 +54,9 @@ struct MuntathirApp: App {
             ProgressDataView(store: progressStore) {
                 QuranUserDataView(store: quranStore) {
                     if model.onboardingCompleted {
-                        ContentView()
+                        ContentView().modifier(ReleaseNotesPrompt())
                     } else {
-                        OnboardingView()
+                        OnboardingView().modifier(FreshInstallReleaseMarker())
                     }
                 }
             }

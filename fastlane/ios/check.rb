@@ -384,7 +384,7 @@ rejects("Unconfirmed compliance accepted") { MuntathirRelease.compliance!({}) }
 app = Struct.new(:id, :bundle_id).new(app_id, "com.aljaroudi.Muntathir")
 app.define_singleton_method(:get_edit_app_store_version) { |**_| draft_version }
 context = { app: app, version: version, draft: draft_version, config: config, encryption: false,
-            beta_notes: notes, feedback_email: "review@example.com" }
+            release_notes: MuntathirRelease.release_notes(version).slice(*MuntathirRelease::LOCALES), beta_notes: notes, feedback_email: "review@example.com" }
 synced_packs = 0
 synced_creatives = 0
 draft_localizations = [Struct.new(:locale, :id).new("en-US", "loc-en")]
@@ -471,6 +471,7 @@ assert(check.calls.none? { |name, _| name == :archive_and_upload }, "App Store m
 assert(MuntathirRelease.review_pack_versions == ["pack-v2"], "App Store review must attach only pack versions that differ from the live packs")
 assert(check.calls.assoc(:run_tests).last[:destination] == [iphone, ipad], "App Store must test on both devices")
 listing, review = check.calls.filter_map { |name, options| options if name == :upload_to_app_store }
+assert(listing.fetch(:release_notes) == context.fetch(:release_notes), "App Store listing must use the bundled release notes")
 assert(listing[:metadata_path] == File.join(__dir__, "metadata") &&
        File.basename(listing[:screenshots_path]).start_with?("app-store-screenshots-"),
        "App Store listing must use the platform metadata and Apple build output")

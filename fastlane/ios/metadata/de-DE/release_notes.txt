@@ -1,8 +1,0 @@
-Neu:
-• Erweiterte intelligente Suche in Koran und Hadith
-• Eigene Bereiche für Bittgebete, religiöse Rechtsregeln und islamische Ereignisse
-• Interaktives 3D-Tasbih und Rak'a-Zähler per Frontkamera
-• Aktivitätsverfolgung für tägliches Gebet, Lesen und Gedenken
-
-Aktualisiert:
-• Anzeige der Qibla-Richtung auf der Karte

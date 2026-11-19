@@ -15,6 +15,7 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section { AppLanguageLink() }
+            Section { NavigationLink("What’s New") { ReleaseNotesList(entries: ReleaseNote.history) } }
             Section {
                 NavigationLink {
                     TabsSettingsView()

@@ -162,3 +162,7 @@ pre-commit: apple-format web-check web-lint
 
 [doc("Same checks as .githooks/pre-push: apple-test + web-check + web-build + web-test")]
 pre-push: apple-test web-check web-build web-test
+
+# Generate the English GitHub changelog from the shared release notes
+changelog:
+    python3 shared/scripts/generate-changelog.py

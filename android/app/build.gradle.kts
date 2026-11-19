@@ -35,6 +35,7 @@ room {
 }
 
 android {
+    sourceSets.getByName("main").assets.srcDir("../../shared/release-notes")
     namespace = "com.aljaroudi.muntathir"
     compileSdk = 37
 

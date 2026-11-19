@@ -63,6 +63,8 @@ import com.aljaroudi.muntathir.ui.components.SectionHeader
 import com.aljaroudi.muntathir.ui.components.currentLocale
 import com.aljaroudi.muntathir.ui.components.rememberNotificationPermission
 import com.aljaroudi.muntathir.ui.components.title
+import com.aljaroudi.muntathir.ui.ReleaseNotesSheet
+import com.aljaroudi.muntathir.ui.releaseHistory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -177,6 +179,10 @@ fun SettingsScreen(
     val preferences = state.preferences
     val locale = currentLocale()
 
+    val history = releaseHistory()
+    var showHistory by rememberSaveable { mutableStateOf(false) }
+    if (showHistory) ReleaseNotesSheet(history) { showHistory = false }
+
     ScreenScaffold(R.string.settings, modifier, onBack) { padding ->
         LazyColumn(
             state = rememberLazyListState(),
@@ -184,6 +190,7 @@ fun SettingsScreen(
             modifier = Modifier.testTag("settings-list"),
         ) {
             item { AppLanguageRow() }
+            if (history.isNotEmpty()) item { LinkRow(stringResource(R.string.what_s_new), { showHistory = true }, "settings-release-notes") }
             item { LinkRow(stringResource(R.string.tabs), links.onTabs, "settings-tabs") }
             item { ReadingSizeRow() }
             item { ArabicDiacriticsRow() }

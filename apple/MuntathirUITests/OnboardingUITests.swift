@@ -1,6 +1,22 @@
 import XCTest
 
 final class OnboardingUITests: XCTestCase {
+    @MainActor func testLegacyUpdateDismissalPersistsInArabicAtAccessibilitySize() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--ui-testing-release-notes", "-AppleLanguages", "(ar)", "-AppleLocale", "ar_SA",
+                               "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+        app.launch()
+        let dismiss = app.buttons["dismiss-release-notes"]
+        XCTAssertTrue(dismiss.waitForExistence(timeout: 8))
+        XCTAssertTrue(app.navigationBars["ما الجديد"].exists)
+        dismiss.tap()
+        XCTAssertTrue(dismiss.waitForNonExistence(timeout: 5))
+        app.terminate()
+        app.launchArguments.append("--ui-testing-preserve-state")
+        app.launch()
+        XCTAssertFalse(dismiss.waitForExistence(timeout: 3))
+    }
+
     @MainActor func testLocationRequiredAndPickerAvailable() {
         let app = launch()
         app.buttons["onboarding-continue"].tap()

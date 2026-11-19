@@ -1,8 +1,0 @@
-New:
-• Advanced smart search across Quran and Hadith
-• Dedicated sections for Supplications, Islamic Rulings, and Islamic Events
-• Interactive 3D Tasbih and front-camera Rakaat counter
-• Daily prayer, reading, and remembrance activity tracking
-
-Updated:
-• Qibla direction on the map

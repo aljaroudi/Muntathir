@@ -107,6 +107,7 @@ fun MuntathirApp(
     val openRequest by viewModel.openRequest.collectAsStateWithLifecycle()
     LifecycleEventEffect(Lifecycle.Event.ON_START) { viewModel.onForeground() }
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) { viewModel.onBackground() }
+    ReleaseNotesPrompt(state.device.onboardingCompleted)
     if (state.device.onboardingCompleted) {
         AppShell(state.preferences.tabShortcuts, modifier, openRequest = openRequest, onOpened = viewModel::opened)
     } else {
