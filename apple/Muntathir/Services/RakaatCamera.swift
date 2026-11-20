@@ -79,6 +79,19 @@ actor RakaatCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         return pair.stream
     }
 
+    /// Counts a new prayer with the existing configuration, locked exposure, and baseline, skipping calibration.
+    func resume(target: Int) throws -> AsyncStream<Update> {
+        stop()
+        guard device != nil, exposureLocked, let baseline = detector.baseline else { throw Failure.unavailable }
+        detector = RakaatDetector(target: target, baseline: baseline)
+        firstTime = nil
+        lastTime = -.infinity
+        let pair = AsyncStream<Update>.makeStream(bufferingPolicy: .bufferingNewest(1))
+        continuation = pair.continuation
+        capture.startRunning()
+        return pair.stream
+    }
+
     func stop() {
         preparationTimeout?.cancel()
         preparationTimeout = nil

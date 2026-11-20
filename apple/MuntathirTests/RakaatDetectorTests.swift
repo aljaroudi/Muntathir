@@ -26,6 +26,15 @@ struct RakaatDetectorTests {
         #expect(detector.sujoodCount == target * 2)
     }
 
+    @Test func resumedDetectorCountsWithoutRecalibrating() {
+        var detector = RakaatDetector(target: 4, baseline: 0.8)
+        var time = 0.0
+        #expect(detector.sujoodCount == 0)
+        feed(0.1, seconds: 1, detector: &detector, time: &time)
+        #expect(detector.sujoodCount == 1)
+        #expect(!detector.complete)
+    }
+
     @Test func rejectsBriefShadowsAndRequiresSustainedRecovery() {
         var detector = RakaatDetector(target: 2)
         var time = 0.0

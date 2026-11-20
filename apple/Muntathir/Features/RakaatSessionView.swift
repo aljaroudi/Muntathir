@@ -10,8 +10,11 @@ struct RakaatSessionView: View {
     @State private var qibla = QiblaLocationSession(optional: true)
     @Environment(AppModel.self) private var model
     @Environment(\.progressStore) private var history
-    let target: Int
-    var prayer: PrayerName?
+    @State private var target: Int
+    @State private var prayer: PrayerName?
+    /// Changing the session restarts counting; `resuming` keeps the previous calibration.
+    @State private var session = 0
+    @State private var resuming = false
     @State private var recording = PrayerSessionRecording()
     @State private var update: RakaatCamera.Update?
     @State private var ended = false
@@ -19,6 +22,11 @@ struct RakaatSessionView: View {
     @State private var failed = false
     @State private var oldIdleState: Bool?
     @State private var oldBrightness: CGFloat?
+
+    init(target: Int, prayer: PrayerName?) {
+        _target = State(initialValue: target)
+        _prayer = State(initialValue: prayer)
+    }
 
     private var preparing: Bool {
         !ended && update?.calibrated != true
@@ -35,8 +43,8 @@ struct RakaatSessionView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar(.hidden, for: .tabBar)
-            .task(id: target) {
-                await run(target: target)
+            .task(id: session) {
+                await run(target: target, resuming: resuming)
             }
             .task(id: ended) {
                 if ended {
@@ -108,7 +116,52 @@ struct RakaatSessionView: View {
             .font(.largeTitle.scaled(by: 4)).monospacedDigit()
             .lineLimit(1).minimumScaleFactor(0.3)
             .accessibilityLabel(Text("\(rakaatCount) rakaat"))
+            .accessibilityValue(showsSujoodProgress ? Text("First sujood") : Text(verbatim: ""))
             .accessibilityIdentifier("rakaat-count")
+    }
+
+    /// Half-fills after the first sujood of a rakaah. Thin strokes add little light that could reach the camera.
+    private var sujoodRing: some View {
+        GeometryReader { geometry in
+            let side = max(geometry.size.width, geometry.size.height)
+            ZStack {
+                Circle().stroke(.white.opacity(0.2), lineWidth: 10)
+                Circle()
+                    .trim(from: 0, to: showsSujoodProgress ? 0.5 : 0)
+                    .stroke(.white, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+            }
+            .frame(width: side, height: side)
+            .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+        }
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.7), value: showsSujoodProgress)
+        .accessibilityHidden(true)
+    }
+
+    private var tasbihLink: some View {
+        NavigationLink {
+            TasbihView()
+        } label: {
+            Text("Start Tasbih")
+                .font(.headline)
+        }
+        .accessibilityIdentifier("rakaat-complete")
+    }
+
+    @ViewBuilder private var completionActions: some View {
+        if let next = prayer.flatMap(PrayerProgress.followUp(after:)) {
+            Button { continueWith(next) } label: {
+                Text("Start \(next.title)")
+                    .font(.headline)
+            }
+            .buttonStyle(.borderedProminent)
+            .accessibilityIdentifier("rakaat-next-prayer")
+            tasbihLink
+                .buttonStyle(.bordered)
+        } else {
+            tasbihLink
+                .buttonStyle(.borderedProminent)
+        }
     }
 
     private var prayerView: some View {
@@ -125,24 +178,6 @@ struct RakaatSessionView: View {
             .overlay(.thinMaterial)
             .environment(\.colorScheme, .dark)
             .overlay(.black.opacity(0.3))
-            .overlay {
-                GeometryReader { geometry in
-                    VStack(spacing: 0) {
-                        Spacer(minLength: 0)
-                        LinearGradient(
-                            stops: [
-                                .init(color: .clear, location: 0),
-                                .init(color: .black.opacity(0.45), location: 0.25),
-                                .init(color: .black.opacity(0.45), location: 1),
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                        .frame(height: showsSujoodProgress ? geometry.size.height / 2 : 0)
-                    }
-                    .animation(reduceMotion ? nil : .easeInOut(duration: 0.7), value: showsSujoodProgress)
-                }
-            }
             .overlay {
                 // Darken the preview without adding screen light that can reflect into the camera.
                 Color.green.opacity(showsMilestoneTint ? 0.65 : 0)
@@ -181,15 +216,13 @@ struct RakaatSessionView: View {
                 } else {
                     count
                         .shadow(color: .black.opacity(0.6), radius: 8)
+                        .padding(24)
+                        .background { sujoodRing }
                     if update?.complete == true {
-                        NavigationLink {
-                            TasbihView()
-                        } label: {
-                            Text("Start Tasbih")
-                                .font(.headline)
+                        ViewThatFits {
+                            HStack(spacing: 12) { completionActions }
+                            VStack(spacing: 12) { completionActions }
                         }
-                        .buttonStyle(.borderedProminent)
-                        .accessibilityIdentifier("rakaat-complete")
                     }
                 }
             }
@@ -209,7 +242,19 @@ struct RakaatSessionView: View {
         .accessibilityIdentifier("rakaat-prayer-screen")
     }
 
-    private func run(target: Int) async {
+    private func continueWith(_ next: PrayerName) {
+        prayer = next
+        target = PrayerProgress.rakaat(for: next)
+        recording = PrayerSessionRecording()
+        // Keep showing a calibrated count so the calibration message doesn't flash before the first frame.
+        update = .init(preview: update?.preview, count: 0, calibrated: true, complete: false)
+        failed = false
+        ended = false
+        resuming = true
+        session += 1
+    }
+
+    private func run(target: Int, resuming: Bool) async {
         guard !ended else { return }
         let authorized: Bool
         #if DEBUG
@@ -222,8 +267,10 @@ struct RakaatSessionView: View {
                 return
             }
             if ProcessInfo.processInfo.arguments.contains("--ui-testing"), ProcessInfo.processInfo.arguments.contains("--rakaat-demo") {
-                update = .init(preview: nil, count: 0, calibrated: false, complete: false)
-                do { try await Task.sleep(for: .seconds(2)) } catch { return }
+                if !resuming {
+                    update = .init(preview: nil, count: 0, calibrated: false, complete: false)
+                    do { try await Task.sleep(for: .seconds(2)) } catch { return }
+                }
                 guard !ended else { return }
                 accept(.init(preview: nil, count: 2, calibrated: true, complete: false))
                 do { try await Task.sleep(for: .seconds(3)) } catch { return }
@@ -249,7 +296,12 @@ struct RakaatSessionView: View {
             screen.brightness = min(screen.brightness, 0.2)
         }
         do {
-            let stream = try await camera.start(target: target)
+            // Resuming relies on the screen being dimmed as it was during calibration; fall back to recalibrating.
+            let stream = if resuming, let resumed = try? await camera.resume(target: target) {
+                resumed
+            } else {
+                try await camera.start(target: target)
+            }
             for await value in stream {
                 guard !Task.isCancelled, !ended else { break }
                 accept(value)

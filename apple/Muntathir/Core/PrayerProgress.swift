@@ -45,13 +45,39 @@ enum PrayerTiming: String, Codable, CaseIterable, Sendable {
 enum PrayerProgress {
     static let prayers: [PrayerName] = [.fajr, .dhuhr, .asr, .maghrib, .isha]
 
-    static func choices(for target: Int) -> [PrayerName] {
-        switch target {
-        case 2: [.fajr]
-        case 3: [.maghrib]
-        case 4: [.dhuhr, .asr, .isha]
-        default: []
+    static func rakaat(for prayer: PrayerName) -> Int {
+        switch prayer {
+        case .fajr: 2
+        case .maghrib: 3
+        default: 4
         }
+    }
+
+    /// The prayer commonly combined right after `prayer`, offered without recalibrating.
+    static func followUp(after prayer: PrayerName) -> PrayerName? {
+        switch prayer {
+        case .dhuhr: .asr
+        case .maghrib: .isha
+        default: nil
+        }
+    }
+
+    /// The first prayer that is on time now and not yet recorded for its prayer day; otherwise the next one to begin.
+    static func suggestedPrayer(at date: Date, location: SavedLocation?, method: PrayerMethod, completed: [PrayerCompletion],
+                                calculate: (Date, SavedLocation, PrayerMethod) -> [PrayerMoment] = { PrayerCalculator.times(on: $0, location: $1, method: $2) }) -> PrayerName?
+    {
+        guard let location, location.isValid else { return nil }
+        var upcoming: PrayerName?
+        for prayer in prayers {
+            let record = snapshot(prayer: prayer, at: date, location: location, method: method, calculate: calculate)
+            guard days(for: prayer, in: completed)[record.prayerDay] == nil else { continue }
+            if record.timing == .onTime { return prayer }
+            if upcoming == nil, let athan = record.athan, athan > date {
+                upcoming = prayer
+            }
+        }
+        // Once the evening prayers' day has ended, Fajr is the next prayer to begin.
+        return upcoming ?? .fajr
     }
 
     static func dayKey(_ date: Date, timeZone: TimeZone) -> String {
