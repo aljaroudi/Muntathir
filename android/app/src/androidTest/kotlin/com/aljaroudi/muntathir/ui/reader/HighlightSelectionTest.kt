@@ -2,8 +2,6 @@ package com.aljaroudi.muntathir.ui.reader
 
 import android.text.Selection
 import android.text.Spannable
-import android.text.Spanned
-import android.text.style.BackgroundColorSpan
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
@@ -35,12 +33,7 @@ class HighlightSelectionTest {
         compose.waitForIdle()
     }
 
-    private fun backgrounds(): List<TextRange> {
-        val text = reader().text as Spanned
-        return text.getSpans(0, text.length, BackgroundColorSpan::class.java).map {
-            TextRange.of(text.getSpanStart(it), text.getSpanEnd(it))
-        }
-    }
+    private fun backgrounds(): List<TextRange> = reader().highlightRanges()
 
     @Test
     fun hiddenMarksKeepSelectionsAndHighlightPositionsWhenRestored() {

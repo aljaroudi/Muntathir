@@ -3,12 +3,16 @@ package com.aljaroudi.muntathir.ui.reader
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.RectF
 import android.graphics.Typeface
+import android.text.Layout
 import android.text.Selection
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.Spanned
-import android.text.style.BackgroundColorSpan
 import android.text.style.StrikethroughSpan
 import android.text.style.StyleSpan
 import android.text.style.TypefaceSpan
@@ -51,7 +55,14 @@ class HighlightTextView(
 
     private var rendered: Rendered? = null
     private var drawn: List<Pair<ReadingHighlight, List<TextRange>>> = emptyList()
+    private var colors: List<Int> = emptyList()
     private val actionIDs = mutableListOf<Int>()
+
+    /** Highlight shapes for [shapesLayout], oldest first, paired with their background color. */
+    private var shapes: List<Pair<Int, Path>> = emptyList()
+    private var shapesLayout: Layout? = null
+    private var shapesKey: Triple<Int, Int, Float>? = null
+    private val highlightPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
 
     private val taps =
         GestureDetector(
@@ -70,6 +81,9 @@ class HighlightTextView(
 
     @SuppressLint("ClickableViewAccessibility") // TalkBack users get custom actions instead.
     override fun onTouchEvent(event: MotionEvent): Boolean = taps.onTouchEvent(event) || super.onTouchEvent(event)
+
+    /** Every drawn highlight range, oldest highlight first. */
+    fun highlightRanges(): List<TextRange> = drawn.flatMap { it.second }
 
     /** Highlights covering [offset], newest first (the one drawn on top). */
     fun highlightsAt(offset: Int): List<ReadingHighlight> =
@@ -174,19 +188,79 @@ class HighlightTextView(
                     }, { it.id }),
                 ).map { it to rangesOf(it) }
                 .filter { it.second.isNotEmpty() }
+        colors = drawn.map { (highlight, _) -> highlightBackground(highlight.color, dark) }
         updateAccessibilityActions()
-        for ((highlight, ranges) in drawn) {
-            val background = highlightBackground(highlight.color, dark)
-            for (range in ranges) {
-                spannable.setSpan(
-                    BackgroundColorSpan(background),
-                    range.location,
-                    range.end,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
-                )
+        shapesLayout = null
+        setText(spannable, BufferType.SPANNABLE)
+        invalidate()
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        val layout = layout
+        if (layout != null && drawn.isNotEmpty()) {
+            val key = Triple(layout.width, layout.height, textSize)
+            if (shapesLayout !== layout || shapesKey != key) {
+                shapes = drawn.mapIndexed { index, (_, ranges) -> colors[index] to highlightPath(layout, ranges) }
+                shapesLayout = layout
+                shapesKey = key
+            }
+            canvas.save()
+            canvas.translate(totalPaddingLeft.toFloat(), totalPaddingTop.toFloat())
+            for ((color, path) in shapes) {
+                highlightPaint.color = color
+                canvas.drawPath(path, highlightPaint)
+            }
+            canvas.restore()
+        }
+        super.onDraw(canvas)
+    }
+
+    /**
+     * One band per line a range covers, a little shorter than the glyphs' ascent-to-descent, rounded only where
+     * the range starts and ends so wrapped highlights read as one continuous mark.
+     */
+    private fun highlightPath(
+        layout: Layout,
+        ranges: List<TextRange>,
+    ): Path {
+        val path = Path()
+        val scratch = Path()
+        val bounds = RectF()
+        val metrics = paint.fontMetrics
+        val length = layout.text.length
+        for (range in ranges) {
+            val start = range.location.coerceIn(0, length)
+            val end = range.end.coerceIn(start, length)
+            if (start == end) continue
+            val segments = mutableListOf<RectF>()
+            for (line in layout.getLineForOffset(start)..layout.getLineForOffset(end)) {
+                val segmentStart = maxOf(start, layout.getLineStart(line))
+                val segmentEnd = minOf(end, layout.getLineVisibleEnd(line))
+                if (segmentEnd <= segmentStart) continue
+                scratch.reset()
+                layout.getSelectionPath(segmentStart, segmentEnd, scratch)
+                scratch.computeBounds(bounds, true)
+                if (bounds.width() <= 0f) continue
+                val baseline = layout.getLineBaseline(line).toFloat()
+                val top = maxOf(layout.getLineTop(line).toFloat(), baseline + metrics.ascent)
+                val bottom = minOf(layout.getLineBottom(line).toFloat(), baseline + metrics.descent)
+                val inset = (bottom - top) * BAND_INSET
+                segments += RectF(bounds.left, top + inset, bounds.right, bottom - inset)
+            }
+            val startsRtl = layout.isRtlCharAt(start)
+            val endsRtl = layout.isRtlCharAt(end - 1)
+            segments.forEachIndexed { index, rect ->
+                val radius = rect.height() * CORNER_FRACTION
+                // The start rounds the leading edge (right in RTL), the end the trailing one.
+                val first = index == 0
+                val last = index == segments.lastIndex
+                val left = if ((first && !startsRtl) || (last && endsRtl)) radius else 0f
+                val right = if ((first && startsRtl) || (last && !endsRtl)) radius else 0f
+                val radii = floatArrayOf(left, left, right, right, right, right, left, left)
+                path.addRoundRect(rect, radii, Path.Direction.CW)
             }
         }
-        setText(spannable, BufferType.SPANNABLE)
+        return path
     }
 
     /** Swift: one accessibility action per visible highlight, opening it. */
@@ -203,6 +277,12 @@ class HighlightTextView(
         }
     }
 }
+
+/** Fraction of the glyph band trimmed from both the top and the bottom of a highlight. */
+private const val BAND_INSET = 0.08f
+
+/** Corner radius at a highlight's start and end, as a fraction of its height. */
+private const val CORNER_FRACTION = 0.3f
 
 /** Compose entry point for [HighlightTextView]. */
 @Composable
