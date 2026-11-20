@@ -63,7 +63,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.app.QuranReadingMode
@@ -88,11 +87,8 @@ import com.aljaroudi.muntathir.ui.reader.ReaderDialogs
 import com.aljaroudi.muntathir.ui.reader.ReaderText
 import com.aljaroudi.muntathir.ui.reader.ReadingTextStyle
 import com.aljaroudi.muntathir.ui.reader.quranTypeface
-import com.aljaroudi.muntathir.ui.reader.readingDisplay
 import com.aljaroudi.muntathir.ui.reader.trackReading
-import com.aljaroudi.muntathir.ui.settings.ArabicDiacriticsRow
-import com.aljaroudi.muntathir.ui.settings.ReadingSettingsViewModel
-import com.aljaroudi.muntathir.ui.theme.QuranFont
+import com.aljaroudi.muntathir.ui.settings.ArabicDiacriticsMenuItem
 import java.util.Locale
 
 /** Swift `QuranReadingView`: one surah as verses, or the mushaf, keeping the position across modes. */
@@ -547,12 +543,36 @@ private fun ReaderMenu(
                     },
                     modifier = Modifier.testTag("reading-size"),
                 )
+                ArabicDiacriticsMenuItem()
             }
         }
     }
 }
 
-/** Swift `ReadingSizeMenu`: smaller/larger in 10% steps (80–160%) and Reset. */
+/** Swift `Menu { ReadingSizeMenu; ArabicDiacriticsToggle }` for readers with no other reading options. */
+@Composable
+fun ReadingOptionsMenu(onTextSize: () -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { open = true }, Modifier.testTag("reading-options")) {
+            Icon(Icons.Outlined.FormatSize, stringResource(R.string.reading_options))
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.text_size)) },
+                leadingIcon = { Icon(Icons.Outlined.FormatSize, null) },
+                onClick = {
+                    open = false
+                    onTextSize()
+                },
+                modifier = Modifier.testTag("reading-size"),
+            )
+            ArabicDiacriticsMenuItem()
+        }
+    }
+}
+
+/** Swift `ReadingSizeControls`: smaller/larger in 10% steps (80–160%) and Reset. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReadingSizeSheet(
@@ -561,7 +581,6 @@ fun ReadingSizeSheet(
     onChange: (Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val settings: ReadingSettingsViewModel = hiltViewModel()
     val sizes = ReadingPreferences.SIZES
     val step = ReadingPreferences.SIZE_STEP
     val value = remember(percent, locale) { NumberFormat.getPercentInstance(locale).format(percent / 100.0) }
@@ -600,12 +619,6 @@ fun ReadingSizeSheet(
                         },
                 ) { Text("A", fontSize = 30.sp) }
             }
-            ArabicDiacriticsRow(settings)
-            Text(
-                "بِسْمِ اللَّهِ".readingDisplay(),
-                fontSize = ReadingTextStyle.arabicSize(percent).sp,
-                fontFamily = QuranFont,
-            )
             TextButton(
                 onClick = { onChange(ReadingPreferences.DEFAULT_SIZE) },
                 enabled = percent != ReadingPreferences.DEFAULT_SIZE,

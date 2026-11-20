@@ -1,34 +1,42 @@
 import XCTest
 
 final class ReadingAppearanceUITests: XCTestCase {
-    @MainActor func testDiacriticsPreviewAndRelaunch() {
+    @MainActor func testDiacriticsToggleInReaderMenuPersists() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.openSettingsFromTools()
-        let marks = app.switches["reading-diacritics"]
-        let preview = app.staticTexts["reading-preview"]
-        XCTAssertTrue(marks.waitForExistence(timeout: 10))
-        XCTAssertEqual(preview.label, "بِسْمِ اللَّهِ")
-        for name in ["Diacritics on", "Diacritics off"] {
-            if name == "Diacritics off" {
-                marks.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
-                XCTAssertEqual(preview.label, "بسم الله")
-            }
-            let image = XCTAttachment(screenshot: app.screenshot())
-            image.name = name
-            image.lifetime = .keepAlways
-            add(image)
+        let options = app.buttons["quran-reading-options"]
+        let marks = app.descendants(matching: .any)["reading-diacritics"]
+        func openReaderMenu() {
+            app.buttons["Tools"].firstMatch.tap()
+            app.buttons["holy-quran"].tap()
+            XCTAssertTrue(app.buttons["quran-surah-1"].waitForExistence(timeout: 10))
+            app.buttons["quran-surah-1"].tap()
+            XCTAssertTrue(options.waitForExistence(timeout: 10))
+            options.tap()
+            XCTAssertTrue(marks.waitForExistence(timeout: 5))
         }
+        openReaderMenu()
+        XCTAssertTrue(marks.isSelected)
+        let on = XCTAttachment(screenshot: app.screenshot())
+        on.name = "Diacritics on"
+        on.lifetime = .keepAlways
+        add(on)
+        marks.tap()
+        let off = XCTAttachment(screenshot: app.screenshot())
+        off.name = "Diacritics off"
+        off.lifetime = .keepAlways
+        add(off)
         app.terminate()
         app.launchArguments.append("--ui-testing-preserve-state")
         app.launch()
-        if !marks.exists {
-            app.openSettingsFromTools()
+        if options.waitForExistence(timeout: 5) {
+            options.tap()
+            XCTAssertTrue(marks.waitForExistence(timeout: 5))
+        } else {
+            openReaderMenu()
         }
-        XCTAssertTrue(marks.waitForExistence(timeout: 10))
-        XCTAssertEqual(marks.value as? String, "0")
-        XCTAssertEqual(preview.label, "بسم الله")
+        XCTAssertFalse(marks.isSelected)
     }
 
     @MainActor func testSharedSizeBookmarksAndTranslationMenuPersist() {

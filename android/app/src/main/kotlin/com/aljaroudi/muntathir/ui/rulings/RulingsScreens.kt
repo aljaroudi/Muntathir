@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.BookmarkRemove
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.FormatSize
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -78,6 +77,7 @@ import com.aljaroudi.muntathir.ui.navigation.RulingDetailRoute
 import com.aljaroudi.muntathir.ui.navigation.RulingSectionRoute
 import com.aljaroudi.muntathir.ui.navigation.RulingsSavedRoute
 import com.aljaroudi.muntathir.ui.quran.ConfirmationPrompt
+import com.aljaroudi.muntathir.ui.quran.ReadingOptionsMenu
 import com.aljaroudi.muntathir.ui.quran.ReadingSizeSheet
 import com.aljaroudi.muntathir.ui.quran.recentSearches
 import com.aljaroudi.muntathir.ui.reader.BookmarkFailedDialog
@@ -387,9 +387,7 @@ fun RulingDetailScreen(
         stringResource(R.string.rulings),
         onBack = onBack,
         actions = {
-            IconButton(onClick = { sizing = true }, Modifier.testTag("reading-size")) {
-                Icon(Icons.Outlined.FormatSize, stringResource(R.string.text_size))
-            }
+            ReadingOptionsMenu(onTextSize = { sizing = true })
             if (loaded != null) {
                 IconButton(onClick = { viewModel.toggleBookmark(loaded) }, Modifier.testTag("rulings-bookmark")) {
                     Icon(

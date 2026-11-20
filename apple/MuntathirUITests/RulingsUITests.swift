@@ -30,7 +30,7 @@ final class RulingsUITests: XCTestCase {
         XCTAssertTrue(result.exists)
         XCTAssertFalse(app.buttons["rulings-question-44"].exists)
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        XCTAssertTrue(app.buttons["reading-size"].exists)
+        XCTAssertTrue(app.buttons["reading-options"].exists)
         XCTAssertFalse(app.descendants(matching: .any)["rulings-notice"].firstMatch.exists)
         let bookmark = app.buttons["ruling-bookmark"]
         XCTAssertTrue(bookmark.exists)

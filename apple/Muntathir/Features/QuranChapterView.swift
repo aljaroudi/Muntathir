@@ -77,6 +77,7 @@ struct QuranChapterView: View {
                     QuranReadingModePicker()
                     QuranTranslationPicker()
                     ReadingSizeMenu(isPresented: $textSizePresented)
+                    ArabicDiacriticsToggle()
                 } label: {
                     Label("Reading options", systemImage: "textformat")
                 }.accessibilityIdentifier("quran-reading-options")

@@ -1,35 +1,31 @@
 package com.aljaroudi.muntathir.ui.settings
 
-import android.icu.text.NumberFormat
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
-import androidx.compose.material.icons.outlined.FormatSize
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Remove
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -43,7 +39,6 @@ import com.aljaroudi.muntathir.data.ReadingSettings
 import com.aljaroudi.muntathir.ui.components.Formats
 import com.aljaroudi.muntathir.ui.components.ScreenScaffold
 import com.aljaroudi.muntathir.ui.components.currentLocale
-import com.aljaroudi.muntathir.ui.quran.ReadingSizeSheet
 import com.aljaroudi.muntathir.ui.reader.HighlightSwatch
 import com.aljaroudi.muntathir.ui.reader.title
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -62,30 +57,6 @@ class ReadingSettingsViewModel
         fun update(transform: (ReadingPreferences) -> ReadingPreferences) =
             viewModelScope.launch { settings.update(transform) }
     }
-
-/** Swift `ReadingSizeControls` in Settings: opens the text size sheet. */
-@Composable
-fun ReadingSizeRow(viewModel: ReadingSettingsViewModel = hiltViewModel()) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    var open by rememberSaveable { mutableStateOf(false) }
-    val locale = currentLocale()
-    val value = NumberFormat.getPercentInstance(locale).format(state.readingSizePercent / 100.0)
-    ListItem(
-        headlineContent = { Text(stringResource(R.string.text_size)) },
-        leadingContent = { Icon(Icons.Outlined.FormatSize, null) },
-        trailingContent = { Text(value) },
-        modifier = Modifier.clickable { open = true }.testTag("reading-size"),
-    )
-    if (open) {
-        ReadingSizeSheet(state.readingSizePercent, locale, { size ->
-            viewModel.update {
-                it.copy(readingSizePercent = size)
-            }
-        }) {
-            open = false
-        }
-    }
-}
 
 /** Settings row for [HighlightPaletteScreen]. */
 @Composable
@@ -175,17 +146,17 @@ private fun PaletteRow(
 
 private const val MIN_COLORS = 3
 
+/** Swift `ArabicDiacriticsToggle`: a checkable item in each reader's options menu. */
 @Composable
-fun ArabicDiacriticsRow(settings: ReadingSettingsViewModel = hiltViewModel()) {
+fun ArabicDiacriticsMenuItem(settings: ReadingSettingsViewModel = hiltViewModel()) {
     val preferences by settings.state.collectAsStateWithLifecycle()
-    ListItem(
-        headlineContent = { Text(stringResource(R.string.show_arabic_diacritics)) },
-        trailingContent = { Switch(checked = preferences.showArabicDiacritics, onCheckedChange = null) },
+    DropdownMenuItem(
+        text = { Text(stringResource(R.string.show_arabic_diacritics)) },
+        leadingIcon = { Checkbox(checked = preferences.showArabicDiacritics, onCheckedChange = null) },
+        onClick = { settings.update { it.copy(showArabicDiacritics = !it.showArabicDiacritics) } },
         modifier =
-            Modifier.testTag("reading-diacritics").toggleable(
-                value = preferences.showArabicDiacritics,
-                role = Role.Switch,
-                onValueChange = { enabled -> settings.update { it.copy(showArabicDiacritics = enabled) } },
-            ),
+            Modifier.testTag("reading-diacritics").semantics {
+                toggleableState = ToggleableState(preferences.showArabicDiacritics)
+            },
     )
 }

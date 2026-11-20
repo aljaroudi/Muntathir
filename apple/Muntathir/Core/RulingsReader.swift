@@ -123,13 +123,13 @@ actor RulingsReader {
         let db = try connection()
         guard try !db.query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='footnote'", row: { _ in true }).isEmpty else { return [] }
         return try db.query("""
-            SELECT f.rowid,f.label,f.body,f.entry_id IS NULL FROM entry e
-            JOIN placement p ON p.question_id=e.id JOIN footnote f ON f.topic_id=p.topic_id
-            WHERE e.authority_code=? AND e.language_code=? AND e.site_id=?
-              AND (f.entry_id=e.id OR f.entry_id IS NULL) ORDER BY f.rowid
-            """, parameters: [id.authority, id.language, id.siteID]) {
+        SELECT f.rowid,f.label,f.body,f.entry_id IS NULL FROM entry e
+        JOIN placement p ON p.question_id=e.id JOIN footnote f ON f.topic_id=p.topic_id
+        WHERE e.authority_code=? AND e.language_code=? AND e.site_id=?
+          AND (f.entry_id=e.id OR f.entry_id IS NULL) ORDER BY f.rowid
+        """, parameters: [id.authority, id.language, id.siteID]) {
             RulingFootnote(id: sqlite3_column_int64($0, 0), label: Self.text($0, 1),
-                          body: Self.text($0, 2), chapter: sqlite3_column_int($0, 3) != 0)
+                           body: Self.text($0, 2), chapter: sqlite3_column_int($0, 3) != 0)
         }
     }
 

@@ -25,7 +25,6 @@ struct SettingsView: View {
                 .accessibilityIdentifier("settings-tabs")
             }
             Section {
-                ReadingSizeControls()
                 NavigationLink {
                     HighlightPaletteSettings()
                 } label: {

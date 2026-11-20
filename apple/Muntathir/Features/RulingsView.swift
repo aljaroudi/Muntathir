@@ -331,7 +331,9 @@ private struct RulingsDetailView: View {
                                 .readingText(arabic: language.id == "ar", hadith: true).textSelection(.enabled)
                         } label: {
                             HStack {
-                                if note.chapter { Text("Chapter note") }
+                                if note.chapter {
+                                    Text("Chapter note")
+                                }
                                 Text(verbatim: note.label)
                             }
                         }
@@ -358,7 +360,9 @@ private struct RulingsDetailView: View {
             }
         }
         .task(id: rulings.id) {
-            if let found = try? await reader.footnotes(for: rulings.id), !Task.isCancelled { notes = found }
+            if let found = try? await reader.footnotes(for: rulings.id), !Task.isCancelled {
+                notes = found
+            }
             if let found = try? await reader.sections(for: rulings.id), !Task.isCancelled {
                 sections = found
             }
@@ -366,7 +370,14 @@ private struct RulingsDetailView: View {
         .navigationTitle("Rulings")
         .readingBackground()
         .toolbar {
-            ReadingSizeMenu(isPresented: $textSizePresented)
+            Menu {
+                ReadingSizeMenu(isPresented: $textSizePresented)
+                ArabicDiacriticsToggle()
+            } label: {
+                Label("Reading options", systemImage: "textformat")
+            }
+            .accessibilityIdentifier("reading-options")
+            .readingSizePresentation(isPresented: $textSizePresented, compact: sizeClass != .regular)
             BookmarkButton(source: rulings.id.siteID, isHadith: false, excerpt: rulings.preview,
                            reference: authorityName, ruling: rulings.id, failed: $bookmarkFailed)
                 .appTip(.bookmarks)
@@ -374,7 +385,6 @@ private struct RulingsDetailView: View {
         .alert("Unable to save bookmark", isPresented: $bookmarkFailed) {
             Button("OK", role: .cancel) {}
         } message: { Text("Please try again.") }
-        .readingSizePresentation(isPresented: $textSizePresented, compact: sizeClass != .regular)
     }
 }
 

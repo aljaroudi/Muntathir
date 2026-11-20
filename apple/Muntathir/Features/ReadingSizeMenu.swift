@@ -9,8 +9,17 @@ struct ReadingSizeMenu: View {
     }
 }
 
-struct ReadingSizeControls: View {
+/// A menu toggle, placed next to `ReadingSizeMenu` in each reader's toolbar menu.
+struct ArabicDiacriticsToggle: View {
     @AppStorage("showArabicDiacritics") private var showMarks = true
+
+    var body: some View {
+        Toggle("Show Arabic diacritics", isOn: $showMarks)
+            .accessibilityIdentifier("reading-diacritics")
+    }
+}
+
+struct ReadingSizeControls: View {
     @AppStorage("readingSizePercent") private var percent = 100
 
     var body: some View {
@@ -42,15 +51,6 @@ struct ReadingSizeControls: View {
             Button("Reset") { percent = 100 }
                 .disabled(percent == 100)
                 .accessibilityIdentifier("reading-size-reset")
-            Toggle(isOn: $showMarks) {
-                Text("Show Arabic diacritics")
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .contentShape(.rect)
-            }
-            .accessibilityIdentifier("reading-diacritics")
-            Text(verbatim: showMarks ? "بِسْمِ اللَّهِ" : ArabicDisplay.plain("بِسْمِ اللَّهِ"))
-                .readingText(arabic: true)
-                .accessibilityIdentifier("reading-preview")
         }
         .padding(.vertical, 8)
     }

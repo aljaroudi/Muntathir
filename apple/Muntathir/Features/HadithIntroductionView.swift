@@ -54,6 +54,7 @@ struct HadithIntroductionView: View {
             Menu {
                 HadithTranslationPicker()
                 ReadingSizeMenu(isPresented: $textSizePresented)
+                ArabicDiacriticsToggle()
             } label: {
                 Label("Reading options", systemImage: "textformat")
             }

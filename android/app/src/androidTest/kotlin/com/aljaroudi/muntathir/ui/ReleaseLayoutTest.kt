@@ -3,7 +3,8 @@ package com.aljaroudi.muntathir.ui
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertCountEquals
-import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasTestTag
@@ -12,7 +13,6 @@ import androidx.compose.ui.test.junit4.accessibility.enableAccessibilityChecks
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
@@ -70,31 +70,31 @@ class ReleaseLayoutTest {
     fun arabicLightStoreScreenshots() = inspect(locale = "ar", night = false, fontScale = 1f)
 
     @Test
-    fun diacriticsPreviewFollowsSettingsAfterRecreation() {
+    fun diacriticsFollowReaderToggleAfterRecreation() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            fun openSettings() {
+            fun openReader() {
                 compose.onNodeWithTag("tab-tools").performClick()
-                compose.onNode(hasScrollAction()).performScrollToNode(hasTestTag("settings"))
-                compose.onNodeWithTag("settings").performClick()
-                waitFor("settings-list")
+                compose.onNode(hasScrollAction()).performScrollToNode(hasTestTag("holy-quran"))
+                compose.onNodeWithTag("holy-quran").performSemanticsAction(SemanticsActions.OnClick)
+                waitFor("quran-surah-1")
+                compose.onNodeWithTag("quran-surah-1").performClick()
+                waitFor("quran-arabic-1:1")
             }
-            openSettings()
-            compose.onNodeWithTag("settings-list").performScrollToNode(hasTestTag("reading-size"))
-            compose.onNodeWithTag("reading-size").performClick()
-            val toggle =
-                compose.onNode(hasTestTag("reading-diacritics") and hasAnyAncestor(hasTestTag("reading-size-sheet")))
-            compose.onNodeWithText("بِسْمِ اللَّهِ").assertExists()
-            toggle.performClick()
-            compose.onNodeWithText("بسم الله").assertExists()
+
+            val marks = compose.onNodeWithTag("reading-diacritics")
+            openReader()
+            compose.onNodeWithTag("quran-reading-options").performClick()
+            marks.assertIsOn()
+            marks.performClick()
+            marks.assertIsOff()
             scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
             scenario.recreate()
             compose.waitForIdle()
-            if (compose.onAllNodesWithTag("settings-list").fetchSemanticsNodes().isEmpty()) openSettings()
-            compose.onNodeWithTag("settings-list").performScrollToNode(hasTestTag("reading-size"))
-            compose.onNodeWithTag("reading-size").performClick()
-            compose.onNodeWithText("بسم الله").assertExists()
-            toggle.performClick()
-            compose.onNodeWithText("بِسْمِ اللَّهِ").assertExists()
+            if (compose.onAllNodesWithTag("quran-reading-options").fetchSemanticsNodes().isEmpty()) openReader()
+            compose.onNodeWithTag("quran-reading-options").performClick()
+            marks.assertIsOff()
+            marks.performClick()
+            marks.assertIsOn()
         }
     }
 
