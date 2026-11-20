@@ -20,6 +20,8 @@ The unified build writes to the same `apple/build/AssetPacks/archives` folder us
 
 The folder contains packaged `.aar` files and is ignored by Git. Repackage and restart the debug session after database changes. No separate server, certificates, or manual URL override are needed for this workflow. See [Apple’s Xcode 27 release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-27-release-notes).
 
+If the databases are already built, run `just apple-packs` to package them.
+
 `--four` includes the Four Books, Nahj al-Balagha, al-Sahifa al-Sajjadiyya, Wasa’il al-Shia, and Bihar al-Anwar. The last three are curated additions, not members of the Four Books. Al-Istibsar supplies all four volumes; al-Sahifa supplies 54 prayers in the separate `supplications.db` output. The same asset imports Kumayl, Sabah, and Nudba from `build/hadith/data/supplications.json`, with English translations for all three and Urdu for Kumayl and Nudba. An optional `supplication_translation` table stores language, edition, text, and provenance without changing schema version 7; older assets remain readable. Translation credits are in the app’s system Settings bundle. Source checksums and Duas.org reuse terms accompany the checked-in texts. The OpenITI additions use the pinned OpenITI 2025-01-09 files under `build/library/data/OpenITI_data_2025-1-9`. Their checksums and provenance are recorded in `build/hadith/data/openiti-editions.json`; changed editions require boundary review before import. Reading entries retain author commentary and are not a canonical hadith count. Wasa’il contains 30 volumes. Bihar contains 106 supplied volumes; 103 and 108–110 are missing. See [adding and classifying books](../../build/library/README.md).
 
 Reviewed Arabic chapter mappings live in `build/hadith/data/arabic-chapters.json`. They preserve existing English titles and verify the original narration URLs and text before filling blank Arabic titles. Original headings come from Arabic source indexes; modern summaries without original headings use numbered Arabic section labels. Every build writes a sibling `.chapter-gaps.csv` report. To audit the entire library, build without `--sittah --four`, using `--output` to keep the app's selected database intact.
@@ -42,8 +44,8 @@ New builds use schema v8 (basic word indexes only); the updated reader accepts v
 ## Before release
 
 ```sh
-python3 apple/AssetPacks/assets.py validate --content all
-python3 apple/AssetPacks/assets.py validate --content quran
+just packs-check
+just packs-check quran
 python3 apple/AssetPacks/assets.py check-bundle /path/to/Muntathir.app
 ```
 
@@ -85,9 +87,9 @@ available through that transition. No compact packs have been uploaded.
 The independent on-demand `rulings` pack contains `Rulings/rulings.db`, built from
 `build/rulings/dist/rulings.db`. Rebuild with `python3 build/rulings/build.py`.
 The crawl mirror remains `build/rulings/data/fatwa.sqlite` so existing database
-connections retain their file identity. Package with `--content rulings`; upload only that pack
-with `bundle exec ruby fastlane/asset_pack_delivery.rb --upload rulings` from
-`apple/` using the Ruby environment in `fastlane/SETUP.md`.
+connections retain their file identity. Package with `just apple-packs rulings`. Upload only that pack
+with `bundle exec ruby fastlane/ios/asset_pack_delivery.rb --upload rulings` from
+the repository root using the [Fastlane Ruby environment](../../fastlane/SETUP.md).
 
 The reader validates application ID `1179809601`, schema version 1, SQLite
 integrity, relationships, and FTS availability. Authority, language, and source

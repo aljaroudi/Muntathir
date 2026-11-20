@@ -1,7 +1,7 @@
-import { expect, test } from "bun:test"
-import { nextMediaIndex } from "../src/phone-sequence"
+import { expect, test } from 'bun:test'
+import { nextMediaIndex } from '@/phone-sequence'
 
-test("the tour reaches the video and wraps in both directions", () => {
+test('the tour reaches the video and wraps in both directions', () => {
   const count = 11
   let current = 0
   const seen = [current]
@@ -13,24 +13,24 @@ test("the tour reaches the video and wraps in both directions", () => {
   expect(nextMediaIndex(0, count, new Set(), -1)).toBe(10)
 })
 
-test("failed screenshots or video cannot trap the tour", () => {
+test('failed screenshots or video cannot trap the tour', () => {
   expect(nextMediaIndex(9, 11, new Set([10, 0]))).toBe(1)
   expect(nextMediaIndex(0, 11, new Set([10, 9]), -1)).toBe(8)
   expect(nextMediaIndex(1, 3, new Set([0, 2]))).toBe(1)
   expect(nextMediaIndex(0, 3, new Set([0, 1, 2]))).toBe(-1)
 })
 
-test("mounted tour defers video and pauses for controls, visibility, and reduced motion", async () => {
-  const { jest } = await import("bun:test")
-  const { mountPhoneSequence } = await import("../src/phone-sequence")
+test('mounted tour defers video and pauses for controls, visibility, and reduced motion', async () => {
+  const { jest } = await import('bun:test')
+  const { mountPhoneSequence } = await import('@/phone-sequence')
   class Element extends EventTarget {
     dataset: Record<string, string> = {}
-    textContent = ""
+    textContent = ''
     hidden = false
     disabled = false
     setAttribute() {}
     click() {
-      this.dispatchEvent(new Event("click"))
+      this.dispatchEvent(new Event('click'))
     }
   }
   class Image extends Element {
@@ -39,14 +39,14 @@ test("mounted tour defers video and pauses for controls, visibility, and reduced
   }
   const today = new Image(),
     quran = new Image()
-  today.dataset.caption = "Today"
-  quran.dataset.caption = "Quran"
+  today.dataset.caption = 'Today'
+  quran.dataset.caption = 'Quran'
   const video = Object.assign(new Element(), {
-    src: "",
+    src: '',
     currentTime: 0,
     paused: true,
     hasAttribute() {
-      return this.src !== ""
+      return this.src !== ''
     },
     pause() {
       this.paused = true
@@ -55,26 +55,26 @@ test("mounted tour defers video and pauses for controls, visibility, and reduced
       this.paused = false
     },
   })
-  video.dataset = { caption: "Sky", src: "/sky.webm" }
+  video.dataset = { caption: 'Sky', src: '/sky.webm' }
   const caption = new Element(),
     toggle = new Element(),
     previous = new Element(),
     next = new Element()
-  caption.textContent = "Today"
-  toggle.dataset = { play: "Play", pause: "Pause" }
+  caption.textContent = 'Today'
+  toggle.dataset = { play: 'Play', pause: 'Pause' }
   const controls = Object.assign(new Element(), {
     querySelectorAll: () => [previous, toggle, next],
   })
   const elements: Record<string, Element> = {
     video,
-    "[data-preview-caption]": caption,
-    "[data-preview-controls]": controls,
-    "[data-preview-toggle]": toggle,
+    '[data-preview-caption]': caption,
+    '[data-preview-controls]': controls,
+    '[data-preview-toggle]': toggle,
     '[data-preview-step="-1"]': previous,
     '[data-preview-step="1"]': next,
   }
   const preview = {
-    dataset: { unavailable: "Unavailable" },
+    dataset: { unavailable: 'Unavailable' },
     querySelectorAll: () => [today, quran, video],
     querySelector: (selector: string) => elements[selector],
   }
@@ -101,53 +101,53 @@ test("mounted tour defers video and pauses for controls, visibility, and reduced
       Object.defineProperty(globalThis, key, { configurable: true, value })
     mountPhoneSequence(preview as unknown as HTMLElement)
     jest.advanceTimersByTime(8000)
-    expect(caption.textContent).toBe("Today")
-    expect(video.src).toBe("")
+    expect(caption.textContent).toBe('Today')
+    expect(video.src).toBe('')
     visibility([{ isIntersecting: true }])
     jest.advanceTimersByTime(3999)
-    expect(caption.textContent).toBe("Today")
+    expect(caption.textContent).toBe('Today')
     jest.advanceTimersByTime(1)
-    expect(caption.textContent).toBe("Quran")
+    expect(caption.textContent).toBe('Quran')
     toggle.click()
     jest.advanceTimersByTime(8000)
-    expect(caption.textContent).toBe("Quran")
+    expect(caption.textContent).toBe('Quran')
     toggle.click()
     jest.advanceTimersByTime(4000)
-    expect(video.src).toBe("/sky.webm")
+    expect(video.src).toBe('/sky.webm')
     expect(video.paused).toBe(false)
     document.hidden = true
-    document.dispatchEvent(new Event("visibilitychange"))
+    document.dispatchEvent(new Event('visibilitychange'))
     expect(video.paused).toBe(true)
     jest.advanceTimersByTime(30000)
-    expect(caption.textContent).toBe("Sky")
+    expect(caption.textContent).toBe('Sky')
     document.hidden = false
-    document.dispatchEvent(new Event("visibilitychange"))
+    document.dispatchEvent(new Event('visibilitychange'))
     expect(video.paused).toBe(false)
     visibility([{ isIntersecting: false }])
     expect(video.paused).toBe(true)
     visibility([{ isIntersecting: true }])
     video.currentTime = 15
-    video.dispatchEvent(new Event("ended"))
-    expect(caption.textContent).toBe("Today")
+    video.dispatchEvent(new Event('ended'))
+    expect(caption.textContent).toBe('Today')
     expect(video.currentTime).toBe(15)
     motion.matches = true
-    motion.dispatchEvent(new Event("change"))
+    motion.dispatchEvent(new Event('change'))
     jest.advanceTimersByTime(8000)
-    expect(caption.textContent).toBe("Today")
+    expect(caption.textContent).toBe('Today')
     expect(toggle.disabled).toBe(true)
     next.click()
-    expect(caption.textContent).toBe("Quran")
+    expect(caption.textContent).toBe('Quran')
     next.click()
     expect(video.paused).toBe(true)
     expect(video.currentTime).toBe(0)
     motion.matches = false
-    motion.dispatchEvent(new Event("change"))
+    motion.dispatchEvent(new Event('change'))
     toggle.click()
     jest.advanceTimersByTime(25000)
-    expect(caption.textContent).toBe("Today")
-    quran.dispatchEvent(new Event("error"))
-    today.dispatchEvent(new Event("error"))
-    expect(caption.textContent).toBe("Unavailable")
+    expect(caption.textContent).toBe('Today')
+    quran.dispatchEvent(new Event('error'))
+    today.dispatchEvent(new Event('error'))
+    expect(caption.textContent).toBe('Unavailable')
     expect(next.disabled).toBe(true)
   } finally {
     jest.clearAllTimers()

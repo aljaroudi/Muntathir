@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { phoneTilt } from '../src/phone-motion'
+import { phoneTilt } from '@/phone-motion'
 
 test('phone tilts down as it leaves the viewport and restores on return', () => {
   const rect = { top: 100, left: 100, width: 300, height: 600 }

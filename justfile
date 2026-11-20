@@ -12,6 +12,16 @@ apple-format:
 apple-build:
     xcodebuild -project apple/Muntathir.xcodeproj -scheme Muntathir -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
 
+# Validate and package Apple Background Asset Packs
+[positional-arguments]
+apple-packs content="all":
+    python3 apple/AssetPacks/assets.py package --content "$1"
+
+# Validate content databases for both platforms
+[positional-arguments]
+packs-check content="all":
+    python3 apple/AssetPacks/assets.py validate --content "$1"
+
 # Check translation coverage and placeholders
 apple-localizations:
     python3 apple/scripts/check_localizations.py
@@ -83,12 +93,10 @@ android-screenshots:
 android-format:
     {{ android_gradle }} spotlessApply
 
-# Validate content databases (same checks as iOS) and copy them into the Play asset-pack modules
-android-packs:
-    python3 apple/AssetPacks/assets.py android --content hadith
-    python3 apple/AssetPacks/assets.py android --content supplications
-    python3 apple/AssetPacks/assets.py android --content quran
-    python3 apple/AssetPacks/assets.py android --content rulings
+# Validate and stage Google Play Asset Delivery packs
+[positional-arguments]
+android-packs content="all":
+    python3 apple/AssetPacks/assets.py android --content "$1"
 
 # Install the debug bundle with local Play Asset Delivery testing; set ANDROID_SERIAL to choose a device
 android-local-testing: android-packs
@@ -157,8 +165,29 @@ format: apple-format web-format
 [doc("Run Apple unit tests and web output tests (apple-test + web-test)")]
 test: apple-test web-test
 
-[doc("Same checks as .githooks/pre-commit: apple-format + web-check + web-lint")]
-pre-commit: apple-format web-check web-lint
+[doc("Format platforms with staged changes, then check and lint web sources")]
+pre-commit:
+    #!/usr/bin/env sh
+    set -eu
+    format_staged_platform() {
+        platform="$1"
+        shift
+        staged=$(git diff --cached --name-only -- "$platform/")
+        [ -n "$staged" ] || return 0
+        # Formatters operate on the working tree, while the commit uses the index.
+        if ! git diff --quiet -- "$@"; then
+            echo "Stage or stash unstaged $platform source changes before formatting." >&2
+            exit 1
+        fi
+        just "$platform-format"
+        if ! git diff --quiet -- "$@"; then
+            echo "Review and stage the formatted $platform files, then commit again." >&2
+            exit 1
+        fi
+    }
+    format_staged_platform apple ':(glob)apple/**/*.swift'
+    format_staged_platform android ':(glob)android/**/*.kt' ':(glob)android/**/*.kts'
+    just web-check web-lint
 
 [doc("Same checks as .githooks/pre-push: apple-test + web-check + web-build + web-test")]
 pre-push: apple-test web-check web-build web-test

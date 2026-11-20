@@ -53,18 +53,21 @@ object QuranSearchText {
         return surah to verse
     }
 
-    /** Normalized, lowercased words of a query; never contains FTS syntax characters. */
     // Preserve lineage markers between Arabic words and allow optional vocalization.
-    private val commonPhrase = """(?<![\p{L}\p{M}\p{N}])(?:صلي\s+الله\s+عليه\s+(?:واله\s+)?وسلم|عز\s+وجل|جل\s+جلاله|عليه\s+السلام|قال|من|(?!(?<=[\p{IsArabic}\p{M}]\s)(?:ابن|بن)\s+\p{IsArabic})(?:ابن|بن))(?![\p{L}\p{M}\p{N}])""".map { letter ->
-        when (letter) {
-            'ا' -> """[اأإآٱ][\p{M}ـ]*"""
-            'ي' -> """[يى][\p{M}ـ]*"""
-            in 'ء'..'ي' -> """$letter[\p{M}ـ]*"""
-            else -> letter.toString()
-        }
-    }.joinToString("").toRegex()
+    private val commonPhrase =
+        """(?<![\p{L}\p{M}\p{N}])(?:صلي\s+الله\s+عليه\s+(?:واله\s+)?وسلم|عز\s+وجل|جل\s+جلاله|عليه\s+السلام|قال|من|(?!(?<=[\p{IsArabic}\p{M}]\s)(?:ابن|بن)\s+\p{IsArabic})(?:ابن|بن))(?![\p{L}\p{M}\p{N}])"""
+            .map { letter ->
+                when (letter) {
+                    'ا' -> """[اأإآٱ][\p{M}ـ]*"""
+                    'ي' -> """[يى][\p{M}ـ]*"""
+                    in 'ء'..'ي' -> """$letter[\p{M}ـ]*"""
+                    else -> letter.toString()
+                }
+            }.joinToString("")
+            .toRegex()
     private val whitespace = Regex("""\s+""")
 
+    /** Normalized, lowercased words of a query; never contains FTS syntax characters. */
     fun searchQuery(text: String): String {
         val raw = text.trim()
         if (raw.length >= 2 && raw.startsWith('"') && raw.endsWith('"')) return raw.drop(1).dropLast(1)

@@ -129,17 +129,30 @@ class RulingsViewModel
         val questions: StateFlow<Loadable<List<Ruling>>> =
             combine(scope, query, submitted) { scope, query, submitted ->
                 (scope as? Loadable.Loaded)?.value?.let { Triple(it, query.trim(), submitted == query) }
-            }
-                .distinctUntilChanged()
+            }.distinctUntilChanged()
                 .loading(library, retry, delayFor = { if (it?.second.isNullOrEmpty()) 0 else 150 }) { key ->
                     val (scope, query, online) = key ?: return@loading emptyList()
                     val language = scope.language ?: return@loading emptyList()
                     if (online && query.isNotEmpty()) {
-                        val remote = smartSearch.results(query, "rulings", listOf(scope.authority), languages = listOf(language.id)) { hits ->
-                            hits.mapNotNull { it.reference as? SemanticSearchResult.Reference.Rulings }
-                                .filter { it.authority == scope.authority && it.language == language.id }
-                                .map { RulingID(it.authority, it.language, it.id) }.distinct().mapNotNull { reader.question(it) }
-                        }
+                        val remote =
+                            smartSearch.results(
+                                query,
+                                "rulings",
+                                listOf(scope.authority),
+                                languages = listOf(language.id),
+                            ) { hits ->
+                                hits
+                                    .mapNotNull { it.reference as? SemanticSearchResult.Reference.Rulings }
+                                    .filter { it.authority == scope.authority && it.language == language.id }
+                                    .map {
+                                        RulingID(
+                                            it.authority,
+                                            it.language,
+                                            it.id,
+                                        )
+                                    }.distinct()
+                                    .mapNotNull { reader.question(it) }
+                            }
                         if (remote != null) return@loading remote
                     }
                     reader.questions(scope.authority, language.id, query)

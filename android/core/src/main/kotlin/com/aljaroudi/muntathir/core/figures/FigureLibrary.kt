@@ -1,7 +1,7 @@
 package com.aljaroudi.muntathir.core.figures
 
-import com.aljaroudi.muntathir.core.text.QuranSearchText
 import com.aljaroudi.muntathir.core.calendar.IslamicEvent
+import com.aljaroudi.muntathir.core.text.QuranSearchText
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

@@ -149,13 +149,22 @@ class QuranSearchModel(
                 val number = QuranSearchText.number(request.query)
                 val remoteQuery = if (surah != null && number != null) "$surah:$number" else request.query
                 val exact = QuranSearchText.reference(remoteQuery)
-                val remote = smartSearch.results(remoteQuery, "quran", chapter = surah?.toString()) { hits ->
-                    val references = hits.mapNotNull { it.reference as? SemanticSearchResult.Reference.Quran }
-                        .filter { (surah == null || it.chapter == surah) && (exact == null || exact == (it.chapter to it.verse)) }
-                        .map { "${it.chapter}:${it.verse}" }.distinct()
-                    val verses = quran.read { verses(references, request.translation) }.associateBy { it.id }
-                    references.mapNotNull { verses[it] }.filter { exact != null || QuranSearchText.isSearchableVerse(it.text) }
-                }
+                val remote =
+                    smartSearch.results(remoteQuery, "quran", chapter = surah?.toString()) { hits ->
+                        val references =
+                            hits
+                                .mapNotNull { it.reference as? SemanticSearchResult.Reference.Quran }
+                                .filter {
+                                    (surah == null || it.chapter == surah) &&
+                                        (exact == null || exact == (it.chapter to it.verse))
+                                }.map { "${it.chapter}:${it.verse}" }
+                                .distinct()
+                        val verses = quran.read { verses(references, request.translation) }.associateBy { it.id }
+                        references.mapNotNull { verses[it] }.filter {
+                            exact != null ||
+                                QuranSearchText.isSearchableVerse(it.text)
+                        }
+                    }
                 if (remote != null) return VerseResults(request.query, request.translation, remote)
             }
             val found =
@@ -179,6 +188,5 @@ class QuranSearchModel(
     companion object {
         const val PAGE = 50
         private const val SURAHS = 114
-
     }
 }

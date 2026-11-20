@@ -1,6 +1,5 @@
 package com.aljaroudi.muntathir.ui.hadith
 
-import com.aljaroudi.muntathir.core.hadith.HadithPage
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aljaroudi.muntathir.core.app.ReadingPreferences
@@ -9,6 +8,7 @@ import com.aljaroudi.muntathir.core.hadith.HadithChapter
 import com.aljaroudi.muntathir.core.hadith.HadithCollection
 import com.aljaroudi.muntathir.core.hadith.HadithCursor
 import com.aljaroudi.muntathir.core.hadith.HadithIntroduction
+import com.aljaroudi.muntathir.core.hadith.HadithPage
 import com.aljaroudi.muntathir.core.hadith.HadithRequest
 import com.aljaroudi.muntathir.core.hadith.HadithSearch
 import com.aljaroudi.muntathir.core.hadith.LibraryStatus
@@ -121,7 +121,6 @@ class HadithBrowseViewModel
         /** A restored first visible row to scroll to once loaded. */
         val restoredRow: StateFlow<String?> = mutableRestoredRow.asStateFlow()
 
-
         private val retry = MutableStateFlow(0)
         private var cursor: HadithCursor? = null
         private var loadingJob: Job? = null
@@ -210,19 +209,26 @@ class HadithBrowseViewModel
         private suspend fun searchPage(query: String): HadithPage {
             val request = request(query)
             if (offersSmartSearch(query)) {
-                val (sources, chapter) = try {
-                    reader.meaningSearchScope(request)
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (_: Exception) {
-                    return reader.page(request)
-                }
-                val remote = smartSearch.results(query, "hadith", sources, chapter) { hits ->
-                    val ids = hits.mapNotNull { it.reference as? SemanticSearchResult.Reference.Hadith }
-                        .filter { (sources == null || it.book in sources) && (chapter == null || it.chapter == chapter) }
-                        .mapNotNull { reader.resolveSearch(it.book, it.chapter, it.number) }.distinct()
-                    reader.previews(ids, query).filterNot { it.isSupplication }
-                }
+                val (sources, chapter) =
+                    try {
+                        reader.meaningSearchScope(request)
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (_: Exception) {
+                        return reader.page(request)
+                    }
+                val remote =
+                    smartSearch.results(query, "hadith", sources, chapter) { hits ->
+                        val ids =
+                            hits
+                                .mapNotNull { it.reference as? SemanticSearchResult.Reference.Hadith }
+                                .filter {
+                                    val matchesSource = sources == null || it.book in sources
+                                    matchesSource && (chapter == null || it.chapter == chapter)
+                                }.mapNotNull { reader.resolveSearch(it.book, it.chapter, it.number) }
+                                .distinct()
+                        reader.previews(ids, query).filterNot { it.isSupplication }
+                    }
                 if (remote != null) return HadithPage(remote, false)
             }
             return reader.page(request)

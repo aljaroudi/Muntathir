@@ -207,11 +207,6 @@ platform :ios do
     context
   end
 
-  desc "Compatibility alias for beta"
-  lane :testflight_public do |options|
-    beta(options)
-  end
-
   desc "Run unit tests on iPhone and submit a new build to TestFlight Public"
   lane :beta do |options|
     MuntathirRelease.with_release_lock do
@@ -239,13 +234,8 @@ platform :ios do
     end
   end
 
-  desc "Alias for app_store"
-  lane :release do |options|
-    app_store(options)
-  end
-
   desc "Test on iPhone and iPad, refresh the listing, and submit the TestFlight build for automatic App Store release"
-  lane :app_store do |options|
+  lane :release do |options|
     MuntathirRelease.with_release_lock do
       context = prepare_release(app_store: true, force: options[:force], skip_tests: options[:skip_tests],
                                 skip_screenshots: options[:skip_screenshots])
@@ -297,11 +287,6 @@ platform :android do
       google_play_track_version_codes(package_name: options.fetch(:package_name), json_key: options.fetch(:json_key), track: track)
     end
     (codes.max || 0) + 1
-  end
-
-  desc "Compatibility alias for beta"
-  lane :internal do |options|
-    beta(options)
   end
 
   desc "Build and publish a signed AAB to Google Play internal testing"

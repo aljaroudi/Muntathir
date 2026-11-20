@@ -7,6 +7,7 @@ export default defineConfig({
   fmt: {
     ignorePatterns: ['dist/**', '.astro/**', 'public/**'],
     semi: false,
+    singleQuote: true,
     trailingComma: 'es5',
     arrowParens: 'avoid',
   },

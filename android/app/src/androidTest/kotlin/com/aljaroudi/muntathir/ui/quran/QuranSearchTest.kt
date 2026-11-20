@@ -55,7 +55,11 @@ class QuranSearchTest {
         SmartSearch(
             SemanticSearchClient("https://search.invalid/v1/search") { _, body ->
                 requests += body
-                if ("zzzz" !in body) 503 to "" else 200 to """{"results":[{"kind":"quran","chapter":2,"verse":255,"score":0.8}]}"""
+                if ("zzzz" !in body) {
+                    503 to ""
+                } else {
+                    200 to """{"results":[{"kind":"quran","chapter":2,"verse":255,"score":0.8}]}"""
+                }
             },
         )
 

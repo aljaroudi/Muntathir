@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro'
-import events from '../../../../shared/events.json'
-import feed from '../../../public/calendar/corrections-v1.json'
-import { generateCalendar } from '../../calendar'
-import type { Locale } from '../../site'
+import events from '@shared/events.json'
+import feed from '@public/calendar/corrections-v1.json'
+import { generateCalendar } from '@/calendar'
+import type { Locale } from '@/site'
 
 const builtAt = new Date()
 

@@ -1,7 +1,5 @@
 package com.aljaroudi.muntathir.ui.supplications
 
-import com.aljaroudi.muntathir.core.search.SemanticSearchResult
-import com.aljaroudi.muntathir.search.SmartSearch
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,6 +37,7 @@ import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.hadith.Hadith
 import com.aljaroudi.muntathir.core.hadith.HadithDatabaseException
 import com.aljaroudi.muntathir.core.hadith.LibraryStatus
+import com.aljaroudi.muntathir.core.search.SemanticSearchResult
 import com.aljaroudi.muntathir.core.text.HadithText
 import com.aljaroudi.muntathir.core.text.QuranSearchText
 import com.aljaroudi.muntathir.core.text.SearchArea
@@ -48,6 +47,7 @@ import com.aljaroudi.muntathir.data.QuranTranslations
 import com.aljaroudi.muntathir.data.ReadingSettings
 import com.aljaroudi.muntathir.data.SearchHistoryStore
 import com.aljaroudi.muntathir.data.library.ContentLibraries
+import com.aljaroudi.muntathir.search.SmartSearch
 import com.aljaroudi.muntathir.ui.components.EmptyState
 import com.aljaroudi.muntathir.ui.components.LoadingState
 import com.aljaroudi.muntathir.ui.components.ScreenScaffold
@@ -147,14 +147,22 @@ class SupplicationsViewModel
                     )
                 }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SupplicationsState.Loading)
 
-        private suspend fun searchPrayers(query: String, translation: String, online: Boolean): List<Hadith> {
+        private suspend fun searchPrayers(
+            query: String,
+            translation: String,
+            online: Boolean,
+        ): List<Hadith> {
             val languages = QuranTranslations.preferredLanguages()
             if (online && query.isNotEmpty()) {
-                val remote = smartSearch.results(query, "dua") { hits ->
-                    if (hits.isEmpty()) return@results emptyList()
-                    val locators = hits.mapNotNull { (it.reference as? SemanticSearchResult.Reference.Dua)?.locator }
-                    reader.supplications(query, translation, languages, locators)
-                }
+                val remote =
+                    smartSearch.results(query, "dua") { hits ->
+                        if (hits.isEmpty()) return@results emptyList()
+                        val locators =
+                            hits.mapNotNull {
+                                (it.reference as? SemanticSearchResult.Reference.Dua)?.locator
+                            }
+                        reader.supplications(query, translation, languages, locators)
+                    }
                 if (remote != null) return remote
             }
             return reader.supplications(query, translation, languages)
@@ -220,7 +228,10 @@ fun SupplicationsScreen(
                     )
                 }
                 if (focused && query.isBlank()) {
-                    recentSearches(recent, { viewModel.search(it); viewModel.submit() }, viewModel::removeRecent, viewModel::clearRecent)
+                    recentSearches(recent, {
+                        viewModel.search(it)
+                        viewModel.submit()
+                    }, viewModel::removeRecent, viewModel::clearRecent)
                 }
                 if (query.isBlank()) {
                     item(key = "saved") {
@@ -261,12 +272,28 @@ fun SupplicationsScreen(
                                 )
                             }
                         }
-                        for (collection in if (submitted.isEmpty()) Hadith.SUPPLICATION_COLLECTION_IDS else listOf("results")) {
-                            val prayers = if (submitted.isEmpty()) current.prayers.filter { it.collectionID == collection } else current.prayers
+                        for (collection in if (submitted.isEmpty()) {
+                            Hadith.SUPPLICATION_COLLECTION_IDS
+                        } else {
+                            listOf(
+                                "results",
+                            )
+                        }) {
+                            val prayers =
+                                if (submitted.isEmpty()) {
+                                    current.prayers.filter {
+                                        it.collectionID ==
+                                            collection
+                                    }
+                                } else {
+                                    current.prayers
+                                }
                             if (prayers.isEmpty()) continue
-                            if (submitted.isEmpty()) item(
-                                key = "header-$collection",
-                            ) { SectionHeader(prayers.first().chapter.bookTitle(locale)) }
+                            if (submitted.isEmpty()) {
+                                item(
+                                    key = "header-$collection",
+                                ) { SectionHeader(prayers.first().chapter.bookTitle(locale)) }
+                            }
                             items(prayers, key = { "prayer-${it.id}" }) { prayer ->
                                 SupplicationRow(prayer, query) {
                                     viewModel.record()

@@ -1,13 +1,13 @@
 package com.aljaroudi.muntathir.search
 
-import kotlinx.coroutines.CancellationException
-import com.aljaroudi.muntathir.core.search.SemanticSearchResult
 import com.aljaroudi.muntathir.BuildConfig
 import com.aljaroudi.muntathir.core.search.SemanticSearchClient
+import com.aljaroudi.muntathir.core.search.SemanticSearchResult
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CancellationException
 import javax.inject.Singleton
 
 /** Returns null when local search should handle the request. An empty list is a completed online search. */

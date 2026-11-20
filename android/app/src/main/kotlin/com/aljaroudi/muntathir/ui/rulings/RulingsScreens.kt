@@ -217,7 +217,10 @@ fun RulingsScreen(
                 )
             }
             if (focused && query.isBlank()) {
-                recentSearches(recent, { viewModel.search(it); viewModel.submit() }, viewModel::removeRecent, viewModel::clearRecent)
+                recentSearches(recent, {
+                    viewModel.search(it)
+                    viewModel.submit()
+                }, viewModel::removeRecent, viewModel::clearRecent)
             }
             intro { onOpen(RulingsSavedRoute) }
             when (val current = scope) {

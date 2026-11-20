@@ -92,8 +92,18 @@ struct SavedList<Destination: View>: View {
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: (bookmarksOnly || showingBookmarks) ? "Search bookmarks" : "Search highlights")
         .searchHistory($query, area: .saved)
         .submitsSearch($query, submitted: $submitted)
-        .onChange(of: SectionInputs(highlights: highlights, bookmarks: bookmarks, showsBookmarks: bookmarksOnly || showingBookmarks,
-                                       byDate: byDate, query: submitted, calendar: localCalendar, locale: locale), initial: true) { _, inputs in
+        .onChange(
+            of: SectionInputs(
+                highlights: highlights,
+                bookmarks: bookmarks,
+                showsBookmarks: bookmarksOnly || showingBookmarks,
+                byDate: byDate,
+                query: submitted,
+                calendar: localCalendar,
+                locale: locale
+            ),
+            initial: true
+        ) { _, inputs in
             sections = SavedEntry.sections(entries, byDate: inputs.byDate, query: inputs.query, calendar: inputs.calendar, locale: inputs.locale)
         }
         .autocorrectionDisabled()

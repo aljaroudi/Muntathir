@@ -30,18 +30,27 @@ import kotlinx.serialization.json.Json
 import java.util.Locale
 
 @Serializable
-internal data class ReleaseNote(val version: String, val platforms: List<String>, val notes: Map<String, String>, val releaseDates: Map<String, String> = emptyMap()) {
+internal data class ReleaseNote(
+    val version: String,
+    val platforms: List<String>,
+    val notes: Map<String, String>,
+    val releaseDates: Map<String, String> = emptyMap(),
+) {
     fun text(locale: Locale): String {
         val script = ULocale.addLikelySubtags(ULocale.forLocale(locale)).script
-        val key = notes.keys.firstOrNull { tag ->
-            val candidate = Locale.forLanguageTag(tag)
-            candidate.language == locale.language && (candidate.script.isEmpty() || candidate.script == script)
-        }
+        val key =
+            notes.keys.firstOrNull { tag ->
+                val candidate = Locale.forLanguageTag(tag)
+                candidate.language == locale.language && (candidate.script.isEmpty() || candidate.script == script)
+            }
         return notes[locale.toLanguageTag()] ?: notes[key] ?: notes.getValue("en-US")
     }
 }
 
-internal fun compareVersions(left: String, right: String): Int {
+internal fun compareVersions(
+    left: String,
+    right: String,
+): Int {
     val a = left.split('.').map(String::toInt)
     val b = right.split('.').map(String::toInt)
     for (index in 0 until maxOf(a.size, b.size)) {
@@ -55,14 +64,24 @@ internal fun compareVersions(left: String, right: String): Int {
 internal fun releaseHistory(): List<ReleaseNote> {
     val context = LocalContext.current
     return remember(context) {
-        val json = context.assets.open("changelog.json").bufferedReader().use { it.readText() }
-        Json.decodeFromString<List<ReleaseNote>>(json)
+        val json =
+            context.assets
+                .open("changelog.json")
+                .bufferedReader()
+                .use { it.readText() }
+        Json
+            .decodeFromString<List<ReleaseNote>>(json)
             .filter { "android" in it.platforms && compareVersions(it.version, BuildConfig.VERSION_NAME) <= 0 }
             .sortedWith { a, b -> compareVersions(b.version, a.version) }
     }
 }
 
-internal fun hasUnseenReleaseNotes(history: List<ReleaseNote>, installed: String, seen: String?, onboarded: Boolean): Boolean {
+internal fun hasUnseenReleaseNotes(
+    history: List<ReleaseNote>,
+    installed: String,
+    seen: String?,
+    onboarded: Boolean,
+): Boolean {
     if (!onboarded) return false
     return history.any {
         compareVersions(it.version, installed) <= 0 &&
@@ -76,6 +95,7 @@ internal fun ReleaseNotesPrompt(onboarded: Boolean) {
     val installed = BuildConfig.VERSION_NAME
     val history = releaseHistory()
     var showing by remember { mutableStateOf(false) }
+
     fun markSeen() = preferences.edit().putString("seen", installed).apply()
     LaunchedEffect(onboarded) {
         val seen = preferences.getString("seen", null)
@@ -83,21 +103,41 @@ internal fun ReleaseNotesPrompt(onboarded: Boolean) {
         showing = hasUnseenReleaseNotes(history, installed, seen, onboarded)
         if (!showing) markSeen()
     }
-    if (showing) ReleaseNotesSheet(history) {
-        markSeen()
-        showing = false
+    if (showing) {
+        ReleaseNotesSheet(history) {
+            markSeen()
+            showing = false
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun ReleaseNotesSheet(entries: List<ReleaseNote>, dismiss: () -> Unit) {
+internal fun ReleaseNotesSheet(
+    entries: List<ReleaseNote>,
+    dismiss: () -> Unit,
+) {
     val locale = currentLocale()
     ModalBottomSheet(onDismissRequest = dismiss) {
         LazyColumn(modifier = Modifier.padding(horizontal = 24.dp)) {
-            item { Text(stringResource(R.string.what_s_new), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() }) }
+            item {
+                Text(
+                    stringResource(
+                        R.string.what_s_new,
+                    ),
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier =
+                        Modifier.semantics {
+                            heading()
+                        },
+                )
+            }
             items(entries, key = { it.version }) { entry ->
-                Text(entry.version, Modifier.padding(top = 16.dp).semantics { heading() }, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    entry.version,
+                    Modifier.padding(top = 16.dp).semantics { heading() },
+                    style = MaterialTheme.typography.titleMedium,
+                )
                 entry.releaseDates["android"]?.let { day ->
                     Text(day, style = MaterialTheme.typography.bodySmall)
                 }

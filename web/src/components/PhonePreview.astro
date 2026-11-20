@@ -1,6 +1,6 @@
 ---
-import media from "../../public/marketing/manifest.json";
-import type { Locale } from "../site";
+import media from "@public/marketing/manifest.json";
+import type { Locale } from "@/site";
 interface Props { locale: Locale }
 const { locale } = Astro.props;
 const { images, video } = media[locale];
@@ -141,8 +141,8 @@ const labels = locale === "ar"
 </style>
 
 <script>
-  import { mountPhoneSequence } from "../phone-sequence";
-  import { phoneTilt } from "../phone-motion";
+  import { mountPhoneSequence } from "@/phone-sequence";
+  import { phoneTilt } from "@/phone-motion";
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const mouse = window.matchMedia("(hover: hover) and (pointer: fine)");

@@ -1,11 +1,11 @@
 package com.aljaroudi.muntathir.core.rulings
 
-import com.aljaroudi.muntathir.core.text.QuranSearchText
 import com.aljaroudi.muntathir.core.hadith.HadithDatabaseException
 import com.aljaroudi.muntathir.core.highlight.RulingID
 import com.aljaroudi.muntathir.core.sql.ContentSql
 import com.aljaroudi.muntathir.core.sql.SqlDriver
 import com.aljaroudi.muntathir.core.sql.query
+import com.aljaroudi.muntathir.core.text.QuranSearchText
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers

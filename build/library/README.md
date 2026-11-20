@@ -16,7 +16,7 @@ Classification follows the work, not the filename or missing OpenITI markup.
 1. Find the exact URI in the TSV; inspect the file's metadata, headings, numbering, volumes, commentary, and editorial matter.
 2. Add the URI to `build/hadith/build.py` and a reviewed, edition-specific parser (`parse_openiti` or `import_collections.py`). Preserve text, printed source numbers, and page/edition references; use deterministic internal IDs where numbering is absent. For another prayer collection, extend `extract_supplications` and the supplication reader queries as well.
 3. Pin its SHA-256, reading-entry count, and per-volume counts in `build/hadith/data/openiti-editions.json`. Add boundary tests. Never infer missing Arabic titles from English summaries.
-4. Run `python3 -m unittest discover -s build/hadith`; build both `uv run build/hadith/build.py --sittah --four` and a full build with `--output /tmp/hadith-full.db`. Check gaps, identities, foreign keys, and search. The builder writes `hadith.db` and a separate `supplications.db`. Package locally with `python3 apple/AssetPacks/assets.py package apple/build/AssetPacks/archives --content all`.
+4. Run `python3 -m unittest discover -s build/hadith`; build both `uv run build/hadith/build.py --sittah --four` and a full build with `--output /tmp/hadith-full.db`. Check gaps, identities, foreign keys, and search. The builder writes `hadith.db` and a separate `supplications.db`. Package locally with `just apple-packs`.
 
 The pinned additions load in full and `--four` builds; only الاستبصار belongs to the Four Books. Track parsers and reviewed mappings, never bulk sources or generated databases. See [asset workflow](../../apple/AssetPacks/README.md).
 

@@ -79,7 +79,8 @@ class SmartSearchTest {
                 if ("\"figure\"" in body) {
                     200 to """{"results":[{"kind":"figure","id":"prophet-muhammad","score":null}]}"""
                 } else if ("\"dua\"" in body) {
-                    200 to """{"results":[{"kind":"dua","id":"fixture","locator":"openiti-Sahifa-Sajjadiyya:2.json:2","score":null}]}"""
+                    200 to
+                        """{"results":[{"kind":"dua","id":"fixture","locator":"openiti-Sahifa-Sajjadiyya:2.json:2","score":null}]}"""
                 } else if ("\"rulings\"" in body) {
                     200 to
                         """{"results":[{"kind":"rulings","authority":"sistani","language":"en","id":"43","score":0.7}]}"""

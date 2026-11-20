@@ -31,7 +31,9 @@ data class SemanticSearchResult(
             val number: Int,
         ) : Reference
 
-        data class Figure(val id: String) : Reference
+        data class Figure(
+            val id: String,
+        ) : Reference
 
         data class Dua(
             val id: String,
@@ -184,7 +186,9 @@ class SemanticSearchClient(
                         SemanticSearchResult.Reference.Rulings(authority, language, id)
                     }
 
-                    "figure" -> SemanticSearchResult.Reference.Figure(string("id"))
+                    "figure" -> {
+                        SemanticSearchResult.Reference.Figure(string("id"))
+                    }
 
                     "dua" -> {
                         val passage =
@@ -195,7 +199,11 @@ class SemanticSearchClient(
                                     "passage",
                                 )
                             }
-                        SemanticSearchResult.Reference.Dua(string("id"), passage, if (values.containsKey("locator")) string("locator") else null)
+                        SemanticSearchResult.Reference.Dua(
+                            string("id"),
+                            passage,
+                            if (values.containsKey("locator")) string("locator") else null,
+                        )
                     }
 
                     else -> {

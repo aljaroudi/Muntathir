@@ -60,7 +60,10 @@ fun FiguresScreen(
                     )
                 }
                 if (focused && query.isBlank()) {
-                    recentSearches(recent, { viewModel.search(it); viewModel.submit() }, viewModel::removeRecent, viewModel::clearRecent)
+                    recentSearches(recent, {
+                        viewModel.search(it)
+                        viewModel.submit()
+                    }, viewModel::removeRecent, viewModel::clearRecent)
                 }
                 if (sections.isEmpty()) {
                     item(key = "empty") { EmptyState(stringResource(R.string.no_figures_found)) }

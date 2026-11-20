@@ -56,6 +56,7 @@ import com.aljaroudi.muntathir.core.prayer.PrayerMethod
 import com.aljaroudi.muntathir.core.prayer.PrayerName
 import com.aljaroudi.muntathir.notifications.AlarmScheduler
 import com.aljaroudi.muntathir.notifications.Notifier
+import com.aljaroudi.muntathir.ui.ReleaseNotesSheet
 import com.aljaroudi.muntathir.ui.components.Formats
 import com.aljaroudi.muntathir.ui.components.ScreenScaffold
 import com.aljaroudi.muntathir.ui.components.SectionFooter
@@ -63,7 +64,6 @@ import com.aljaroudi.muntathir.ui.components.SectionHeader
 import com.aljaroudi.muntathir.ui.components.currentLocale
 import com.aljaroudi.muntathir.ui.components.rememberNotificationPermission
 import com.aljaroudi.muntathir.ui.components.title
-import com.aljaroudi.muntathir.ui.ReleaseNotesSheet
 import com.aljaroudi.muntathir.ui.releaseHistory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -190,7 +190,11 @@ fun SettingsScreen(
             modifier = Modifier.testTag("settings-list"),
         ) {
             item { AppLanguageRow() }
-            if (history.isNotEmpty()) item { LinkRow(stringResource(R.string.what_s_new), { showHistory = true }, "settings-release-notes") }
+            if (history.isNotEmpty()) {
+                item {
+                    LinkRow(stringResource(R.string.what_s_new), { showHistory = true }, "settings-release-notes")
+                }
+            }
             item { LinkRow(stringResource(R.string.tabs), links.onTabs, "settings-tabs") }
             item { ReadingSizeRow() }
             item { ArabicDiacriticsRow() }

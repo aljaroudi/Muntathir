@@ -283,7 +283,7 @@ Dir.mktmpdir do |dir|
     assert(action == :upload_to_play_store && upload[:aab] == bundle && upload[:json_key] == key &&
            upload[:track] == "internal" && upload[:release_status] == "completed" && !upload[:validate_only],
            "Android internal lane must publish by default")
-    android.internal(aab: bundle, validate_only: true)
+    android.beta(aab: bundle, validate_only: true)
     assert(android.calls.pop.last[:validate_only], "Explicit validation must prevent publishing")
     android.beta(aab: bundle, draft: true)
     draft = android.calls.pop.last
@@ -471,8 +471,8 @@ assert(!beta[:skip_waiting_for_build_processing] && beta[:wait_processing_timeou
 assert(beta[:localized_build_info] == notes.transform_values { |text| { whats_new: text } }, "Beta localization missing")
 
 check.calls.clear
-check.testflight_public(skip_tests: true, force: true)
-assert(!check.calls.assoc(:run_tests) && check.calls.assoc(:upload_to_testflight).last == beta, "TestFlight alias must forward options to beta")
+check.beta(skip_tests: true, force: true)
+assert(!check.calls.assoc(:run_tests) && check.calls.assoc(:upload_to_testflight).last == beta, "TestFlight must skip tests when requested")
 
 synced_packs = 0
 synced_creatives = 0
@@ -486,7 +486,7 @@ check.define_singleton_method(:upload_to_app_store) do |**options|
   draft_version.release_type = "AFTER_APPROVAL" if options[:automatic_release]
 end
 rows.replace([new_upload])
-check.app_store
+check.release
 assert(synced_packs == 1, "App Store must sync Asset Packs")
 assert(synced_creatives == 1, "App Store must sync header and search creatives")
 assert(check.calls.none? { |name, _| name == :archive_and_upload }, "App Store must reuse the TestFlight build instead of uploading a new binary")
@@ -505,7 +505,7 @@ assert(check.calls.index { |name, _| name == :upload_to_app_store } < check.call
 %i[tests refresh_screenshots].each do |step|
   original = check.method(step)
   check.define_singleton_method(step) { |**_| raise "#{step} failed" }
-  lanes = step == :tests ? %i[beta app_store] : [:app_store]
+  lanes = step == :tests ? %i[beta release] : [:release]
   lanes.each do |lane|
     check.calls.clear
     synced_creatives = 0
@@ -524,7 +524,7 @@ validated_media = 0
 MuntathirRelease.define_singleton_method(:validate_media!) { |**_| validated_media += 1 }
 refresh = check.method(:refresh_screenshots)
 check.define_singleton_method(:refresh_screenshots) { |**_| raise "refresh_screenshots must be skipped" }
-check.app_store(force: "true", skip_tests: "true", skip_screenshots: "true")
+check.release(force: "true", skip_tests: "true", skip_screenshots: "true")
 assert(validated_media == 1, "skip_screenshots must still validate existing store and creative assets")
 assert(synced_creatives == 1, "skip_screenshots must still sync creatives after listing upload")
 assert(check.calls.none? { |name, _| name == :run_tests }, "skip_tests must skip regressions")
@@ -534,7 +534,7 @@ synced_creatives = 0
 MuntathirRelease.define_singleton_method(:sync_creative_assets!) { |_| raise "creative sync failed" }
 check.calls.clear
 draft_version.release_type = "MANUAL"
-rejects("App Store ignored failing creative sync") { check.app_store }
+rejects("App Store ignored failing creative sync") { check.release }
 assert(check.calls.one? { |name, _| name == :upload_to_app_store }, "Creative failure must stop before review submit")
 assert(check.calls.assoc(:upload_to_app_store).last[:submit_for_review] != true, "Review submitted after creative failure")
 MuntathirRelease.define_singleton_method(:sync_creative_assets!) do |localizations|
