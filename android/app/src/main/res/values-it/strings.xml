@@ -414,4 +414,7 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">Puoi continuare a cercare offline nei testi scaricati del Corano e degli hadith.</string>
     <string name="you_can_still_search_downloaded_text_offline">Puoi ancora cercare nei testi scaricati offline.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">Impossibile aprire i dati salvati. Riprova.</string>
+    <string name="horizontal_prayer_times">Orari di preghiera in orizzontale</string>
+    <string name="horizontal_layout">Layout orizzontale</string>
+    <string name="vertical_layout">Layout verticale</string>
 </resources>

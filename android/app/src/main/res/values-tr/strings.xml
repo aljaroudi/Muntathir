@@ -414,4 +414,7 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">İndirilen Kuran ve hadis metinlerinde çevrimdışı arama yapabilirsiniz.</string>
     <string name="you_can_still_search_downloaded_text_offline">İndirilen metinlerde çevrimdışı arama yapabilirsiniz.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">Kayıtlı verileriniz açılamadı. Lütfen tekrar deneyin.</string>
+    <string name="horizontal_prayer_times">Yatay namaz vakitleri</string>
+    <string name="horizontal_layout">Yatay düzen</string>
+    <string name="vertical_layout">Dikey düzen</string>
 </resources>

@@ -26,6 +26,10 @@ struct PrayerPreferencesTests {
         let fresh = try JSONDecoder().decode(Preferences.self, from: Data("{}".utf8))
         #expect(fresh.prayerMethod == .tehran)
         #expect(fresh.enabledPrayers == [.fajr, .dhuhr, .maghrib])
+        #expect(fresh.horizontalPrayerTimes == false)
+        var horizontal = Preferences()
+        horizontal.horizontalPrayerTimes = true
+        #expect(try JSONDecoder().decode(Preferences.self, from: JSONEncoder().encode(horizontal)).horizontalPrayerTimes)
         let encoded = try JSONEncoder().encode(preferences)
         #expect(String(decoding: encoded, as: UTF8.self).contains("asrRule") == false)
         let oldWidget = Data(#"{"method":"tehran","asrRule":"hanafi","hiddenPrayers":[]}"#.utf8)

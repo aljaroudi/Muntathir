@@ -104,6 +104,8 @@ class SettingsViewModel
             change: (com.aljaroudi.muntathir.core.app.Preferences) -> com.aljaroudi.muntathir.core.app.Preferences,
         ) = viewModelScope.launch { model.update(change) }
 
+        fun setHorizontalPrayerTimes(horizontal: Boolean) = update { it.copy(horizontalPrayerTimes = horizontal) }
+
         fun setMethod(method: PrayerMethod) = update { it.copy(prayerMethod = method) }
 
         fun setImsak(minutes: Int) = update { it.copy(imsakMinutes = minutes.coerceIn(IMSAK_STEPPER)) }
@@ -241,6 +243,13 @@ fun SettingsScreen(
             }
 
             section(R.string.visibility)
+            item {
+                SwitchRow(
+                    stringResource(R.string.horizontal_prayer_times),
+                    checked = preferences.horizontalPrayerTimes,
+                    tag = "settings-horizontal-prayer-times",
+                ) { viewModel.setHorizontalPrayerTimes(it) }
+            }
             items(PrayerName.entries, key = { "visible-${it.id}" }) { prayer ->
                 SwitchRow(
                     stringResource(prayer.title),

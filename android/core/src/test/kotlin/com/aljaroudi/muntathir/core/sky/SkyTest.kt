@@ -108,6 +108,17 @@ class SkyTest {
     }
 
     @Test
+    fun southernHemisphereArcRunsRightToLeft() {
+        val bounds = ArcRect(36.0, 24.0, 330.0, 100.0)
+        assertEquals(ArcPoint(366.0, 124.0), SolarArcLayout.point(0.0, 0.0, bounds, mirrored = true))
+        assertEquals(ArcPoint(36.0, 124.0), SolarArcLayout.point(1.0, 0.0, bounds, mirrored = true))
+        assertEquals(
+            SolarArcLayout.point(0.25, 45.0, bounds).y,
+            SolarArcLayout.point(0.25, 45.0, bounds, mirrored = true).y,
+        )
+    }
+
+    @Test
     fun heightUsesFixedDegreesIndependentlyOfProgress() {
         val bounds = ArcRect(36.0, 24.0, 330.0, 100.0)
         for (progress in listOf(0.0, 0.25, 0.5, 1.0)) {

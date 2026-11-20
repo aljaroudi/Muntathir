@@ -416,4 +416,7 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">Вы по-прежнему можете искать в загруженных текстах Корана и хадисов без интернета.</string>
     <string name="you_can_still_search_downloaded_text_offline">Вы по-прежнему можете искать в загруженных текстах без интернета.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">Не удалось открыть сохранённые данные. Повторите попытку.</string>
+    <string name="horizontal_prayer_times">Время молитв в ряд</string>
+    <string name="horizontal_layout">Горизонтальный вид</string>
+    <string name="vertical_layout">Вертикальный вид</string>
 </resources>

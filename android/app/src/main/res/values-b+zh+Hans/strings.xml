@@ -413,4 +413,7 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">您仍可离线搜索已下载的古兰经和圣训文本。</string>
     <string name="you_can_still_search_downloaded_text_offline">您仍可离线搜索已下载的文本。</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">无法打开已保存的数据。请重试。</string>
+    <string name="horizontal_prayer_times">横向显示礼拜时间</string>
+    <string name="horizontal_layout">横向布局</string>
+    <string name="vertical_layout">纵向布局</string>
 </resources>

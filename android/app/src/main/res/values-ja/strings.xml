@@ -413,4 +413,7 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">ダウンロード済みのクルアーンとハディースの本文はオフラインでも検索できます。</string>
     <string name="you_can_still_search_downloaded_text_offline">ダウンロードしたテキストは引き続きオフラインで検索できます。</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">保存したデータを開けませんでした。もう一度お試しください。</string>
+    <string name="horizontal_prayer_times">礼拝時刻を横に並べる</string>
+    <string name="horizontal_layout">横並びレイアウト</string>
+    <string name="vertical_layout">縦並びレイアウト</string>
 </resources>

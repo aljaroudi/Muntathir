@@ -415,4 +415,7 @@
     <string name="you_can_still_search_downloaded_text_offline">همچنان می‌توانید متن‌های دانلودشده را آفلاین جستجو کنید.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">داده‌های ذخیره‌شده باز نشدند. لطفاً دوباره تلاش کنید.</string>
     <string name="rulings_chapter_note">یادداشت فصل</string>
+    <string name="horizontal_prayer_times">اوقات نماز به‌صورت افقی</string>
+    <string name="horizontal_layout">چیدمان افقی</string>
+    <string name="vertical_layout">چیدمان عمودی</string>
 </resources>

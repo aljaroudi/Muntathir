@@ -414,4 +414,7 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">آپ ڈاؤن لوڈ کردہ قرآن اور حدیث کے متن میں آف لائن تلاش کر سکتے ہیں۔</string>
     <string name="you_can_still_search_downloaded_text_offline">آپ اب بھی ڈاؤن لوڈ کردہ متن میں آف لائن تلاش کر سکتے ہیں۔</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">آپ کا محفوظ ڈیٹا نہیں کھل سکا۔ براہ کرم دوبارہ کوشش کریں۔</string>
+    <string name="horizontal_prayer_times">نماز کے اوقات افقی</string>
+    <string name="horizontal_layout">افقی ترتیب</string>
+    <string name="vertical_layout">عمودی ترتیب</string>
 </resources>

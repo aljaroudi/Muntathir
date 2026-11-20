@@ -419,4 +419,7 @@
     <string name="you_can_still_search_downloaded_text_offline">لا يزال بإمكانك البحث في النصوص المحمّلة دون اتصال.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">تعذر فتح بياناتك المحفوظة. يرجى المحاولة مرة أخرى.</string>
     <string name="rulings_chapter_note">هامش الفصل</string>
+    <string name="horizontal_prayer_times">أوقات الصلاة أفقيًا</string>
+    <string name="horizontal_layout">تخطيط أفقي</string>
+    <string name="vertical_layout">تخطيط عمودي</string>
 </resources>

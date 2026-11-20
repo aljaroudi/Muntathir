@@ -414,4 +414,7 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">Vous pouvez toujours rechercher hors ligne dans les textes du Coran et des hadiths téléchargés.</string>
     <string name="you_can_still_search_downloaded_text_offline">Vous pouvez toujours rechercher dans les textes téléchargés hors ligne.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">Impossible d’ouvrir vos données enregistrées. Veuillez réessayer.</string>
+    <string name="horizontal_prayer_times">Horaires de prière à l’horizontale</string>
+    <string name="horizontal_layout">Disposition horizontale</string>
+    <string name="vertical_layout">Disposition verticale</string>
 </resources>

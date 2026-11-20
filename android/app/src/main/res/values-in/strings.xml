@@ -413,4 +413,7 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">Anda tetap dapat mencari teks Al-Quran dan hadis yang diunduh secara offline.</string>
     <string name="you_can_still_search_downloaded_text_offline">Anda masih dapat mencari teks unduhan secara offline.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">Data tersimpan Anda tidak dapat dibuka. Silakan coba lagi.</string>
+    <string name="horizontal_prayer_times">Waktu salat horizontal</string>
+    <string name="horizontal_layout">Tata letak horizontal</string>
+    <string name="vertical_layout">Tata letak vertikal</string>
 </resources>

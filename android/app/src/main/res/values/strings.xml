@@ -415,4 +415,7 @@
     <string name="you_can_still_search_downloaded_text_offline">You can still search downloaded text offline.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">Your saved data could not be opened. Please try again.</string>
     <string name="rulings_chapter_note">Chapter note</string>
+    <string name="horizontal_prayer_times">Horizontal prayer times</string>
+    <string name="horizontal_layout">Horizontal layout</string>
+    <string name="vertical_layout">Vertical layout</string>
 </resources>

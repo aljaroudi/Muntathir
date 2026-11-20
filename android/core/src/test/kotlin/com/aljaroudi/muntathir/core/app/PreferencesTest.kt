@@ -46,6 +46,12 @@ class PreferencesTest {
     }
 
     @Test
+    fun horizontalPrayerTimesDefaultsOffAndRoundTrips() {
+        assertFalse(Preferences.decode("{}").horizontalPrayerTimes)
+        assertTrue(Preferences.decode(Preferences(horizontalPrayerTimes = true).encode()).horizontalPrayerTimes)
+    }
+
+    @Test
     fun imsakPreferenceBoundsAreValidatedOnDecode() {
         assertEquals(0, Preferences.decode("""{"imsakMinutes":-5}""").imsakMinutes)
         assertEquals(120, Preferences.decode("""{"imsakMinutes":999}""").imsakMinutes)
@@ -110,6 +116,7 @@ class PreferencesTest {
                 "imsakMinutes",
                 "enabledPrayers",
                 "showFeelsLikeTemperature",
+                "horizontalPrayerTimes",
                 "announcementNotifications",
                 "timeSensitiveNotifications",
                 "notificationSound",

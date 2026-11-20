@@ -112,6 +112,13 @@ struct SettingsView: View {
                 }
             }
             Section("Prayers") {
+                Toggle(isOn: Binding(
+                    get: { model.preferences.horizontalPrayerTimes },
+                    set: { value in model.update { $0.horizontalPrayerTimes = value } }
+                )) {
+                    Label("Horizontal prayer times", systemImage: "rectangle.split.3x1")
+                }
+                .accessibilityIdentifier("settings-horizontal-prayer-times")
                 NavigationLink {
                     PrayerVisibilitySettings()
                 } label: {
