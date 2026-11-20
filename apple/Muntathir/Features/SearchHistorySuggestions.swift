@@ -45,4 +45,16 @@ extension View {
     func recordSearchOnOpen(_ query: String, area: SearchHistory.Area) -> some View {
         onAppear { SearchHistory.shared.record(query, in: area) }
     }
+
+    /// Searches only run on submit: typing just edits the field, and clearing it resets the search.
+    func submitsSearch(_ query: Binding<String>, submitted: Binding<String>) -> some View {
+        onSubmit(of: .search) {
+            submitted.wrappedValue = query.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        .onChange(of: query.wrappedValue) { _, value in
+            if value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                submitted.wrappedValue = ""
+            }
+        }
+    }
 }

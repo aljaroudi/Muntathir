@@ -17,19 +17,32 @@ struct FigureBrowser: View {
 
     @State private var submitted = ""
     @State private var remote: [FigureLibrary.BrowserSection]?
+    /// Local matches for `submitted`, filtered once per search instead of on every render.
+    @State private var local: [FigureLibrary.BrowserSection] = []
+
+    private struct LocalFilter: Equatable {
+        let query: String
+        let locale: Locale
+        let loaded: Bool
+    }
+
+    private func refreshLocalMatches() {
+        guard case let .success(library) = library else { return }
+        local = library.browserSections(matching: submitted, locale: locale)
+    }
 
     var body: some View {
         Group {
             switch library {
             case let .success(library):
-                let sections = remote ?? library.browserSections(matching: query, locale: locale)
+                let sections = remote ?? local
                 List {
                     ForEach(sections) { section in
                         Section {
                             ForEach(section.figures) { person in
                                 NavigationLink {
                                     FigureProfile(figure: person, library: library)
-                                        .recordSearchOnOpen(query, area: .figures)
+                                        .recordSearchOnOpen(submitted, area: .figures)
                                 } label: {
                                     Text(verbatim: person.title(locale))
                                 }
@@ -39,6 +52,8 @@ struct FigureBrowser: View {
                     }
                 }
                 .task(id: submitted) {
+                    // Reset here rather than in onChange, which can run after a fast search has already finished.
+                    remote = nil
                     guard !submitted.isEmpty, let client = SemanticSearchClient.configured else { return }
                     do {
                         let hits = try await client.search(submitted, kind: "figure")
@@ -71,12 +86,8 @@ struct FigureBrowser: View {
         }
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always))
         .searchHistory($query, area: .figures)
-        .onSubmit(of: .search) { submitted = query }
-        .onChange(of: query) { _, value in
-            if value != submitted {
-                submitted = ""; remote = nil
-            }
-        }
+        .submitsSearch($query, submitted: $submitted)
+        .onChange(of: LocalFilter(query: submitted, locale: locale, loaded: library != nil), initial: true) { refreshLocalMatches() }
         .navigationTitle("Figures")
         .task {
             library = await FigureStore.shared.load()

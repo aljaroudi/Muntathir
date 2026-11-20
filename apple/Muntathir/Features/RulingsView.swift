@@ -99,7 +99,7 @@ private struct RulingsBrowser: View {
             } else if failed {
                 Button("Try again") { retry += 1 }
             } else if let selected = languages.first(where: { $0.id == language }) {
-                RulingsResults(reader: reader, authority: authority, authorityName: authorities.first(where: { $0.id == authority }).map { locale.language.languageCode?.identifier == "ar" ? $0.arabic : $0.english } ?? authority, language: selected, query: query, state: results)
+                RulingsResults(reader: reader, authority: authority, authorityName: authorities.first(where: { $0.id == authority }).map { locale.language.languageCode?.identifier == "ar" ? $0.arabic : $0.english } ?? authority, language: selected, query: submitted, state: results)
             } else {
                 Text("Choose a language")
             }
@@ -108,17 +108,12 @@ private struct RulingsBrowser: View {
         .readingBackground()
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always))
         .searchHistory($query, area: .rulings)
-        .onSubmit(of: .search) { submitted = query }
-        .onChange(of: query) {
-            _, value in if value != submitted {
-                submitted = ""
-            }
-        }
+        .submitsSearch($query, submitted: $submitted)
         .autocorrectionDisabled()
         .scrollDismissesKeyboard(.interactively)
-        .task(id: [authority, language, query, submitted, String(results.retry)]) {
+        .task(id: [authority, language, submitted, String(results.retry)]) {
             guard !language.isEmpty else { return }
-            await results.load(reader: reader, authority: authority, language: language, query: query, online: !submitted.isEmpty && submitted == query)
+            await results.load(reader: reader, authority: authority, language: language, query: submitted, online: !submitted.isEmpty)
         }
         .onChange(of: language) { _, value in
             guard !value.isEmpty else { return }
@@ -162,7 +157,9 @@ private struct RulingsResults: View {
     var body: some View {
         Section {
             if state.loading {
-                ProgressView()
+                // Earlier results stay visible below until the next search replaces them.
+                ProgressView().frame(maxWidth: .infinity)
+                rows(state.questions)
             } else if state.failed {
                 Button("Try again") { state.retry += 1 }
             } else {
@@ -194,6 +191,7 @@ private struct RulingsResults: View {
     var loading = true
     var failed = false
     var retry = 0
+    private var loadedSource = ""
 
     private func search(reader: RulingsReader, authority: String, language: String, query: String) async throws -> [Rulings] {
         if !query.isEmpty {
@@ -224,10 +222,13 @@ private struct RulingsResults: View {
     func load(reader: RulingsReader, authority: String, language: String, query: String = "", online: Bool = false, section: RulingsSection? = nil) async {
         loading = true
         failed = false
+        // Results from another authority or language shouldn't linger while the new ones load.
+        let source = authority + "|" + language
+        if source != loadedSource {
+            questions = []
+            loadedSource = source
+        }
         do {
-            if !query.isEmpty {
-                try await Task.sleep(for: .milliseconds(150))
-            }
             let foundQuestions: [Rulings] = if let section {
                 try await reader.questions(authority: authority, language: language, section: section)
             } else if online {

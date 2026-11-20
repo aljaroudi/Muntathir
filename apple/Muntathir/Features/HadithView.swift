@@ -29,6 +29,7 @@ struct HadithView: View {
     @State private var selected: Hadith?
     @State private var route: SearchRoute?
     @State private var matchingBooks: [HadithCollection] = []
+    @State private var groupedBooks: [HadithBookGroup: [HadithCollection]] = [:]
     @State private var matchingChapters: [HadithChapter] = []
 
     private struct SearchRoute: Identifiable, Hashable {
@@ -60,10 +61,11 @@ struct HadithView: View {
         let chapterID: Int?
         let books: Int
         let chapters: Int
+        let locale: Locale
     }
 
     private var titleInputs: TitleInputs {
-        TitleInputs(query: query, collectionID: request.collectionID, chapterID: request.chapterID, books: catalog.count, chapters: chapters.count)
+        TitleInputs(query: query, collectionID: request.collectionID, chapterID: request.chapterID, books: catalog.count, chapters: chapters.count, locale: locale)
     }
 
     private func refreshTitleMatches() {
@@ -72,6 +74,11 @@ struct HadithView: View {
             matchingBooks = catalog.filter { query.isEmpty || $0.matches(terms: terms) }
         } else {
             matchingBooks = []
+        }
+        groupedBooks = Dictionary(grouping: matchingBooks, by: \.group).mapValues { books in
+            books.sorted {
+                $0.title(locale: locale).compare($1.title(locale: locale), options: .numeric, locale: locale) == .orderedAscending
+            }
         }
         if HadithSearch.number(query) != nil {
             matchingChapters = []
@@ -108,11 +115,8 @@ struct HadithView: View {
                     }
                 }
                 if !matchingBooks.isEmpty {
-                    let grouped = Dictionary(grouping: matchingBooks, by: \.group)
                     ForEach(HadithBookGroup.allCases) { group in
-                        let books = (grouped[group] ?? []).sorted {
-                            $0.title(locale: locale).compare($1.title(locale: locale), options: .numeric, locale: locale) == .orderedAscending
-                        }
+                        let books = groupedBooks[group] ?? []
                         if !books.isEmpty {
                             Section(group.title) {
                                 ForEach(books) { book in
@@ -250,28 +254,19 @@ struct HadithView: View {
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search Hadith")
         .searchHistory($searchText, area: .hadith)
         .onChange(of: searchText) { _, value in
-            if value != submitted {
-                submitted = ""
-            }
-            guard value.isEmpty, request.query != value else { return }
+            // Searches run on submit; clearing the field resets right away.
+            guard value.isEmpty else { return }
+            submitted = ""
+            guard request.query != value else { return }
             update { $0.query = value; $0.number = nil }
-        }
-        .task(id: searchText) {
-            // Live search: wait for a pause in typing, then search; Submit still applies immediately.
-            let text = searchText
-            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard restored, !trimmed.isEmpty, trimmed != query else { return }
-            try? await Task.sleep(for: .milliseconds(250))
-            guard !Task.isCancelled, searchText == text, trimmed != query else { return }
-            update { $0.query = text; $0.number = nil }
         }
         .onChange(of: titleInputs, initial: true) { refreshTitleMatches() }
         .searchFocused($searchFocused)
         .onSubmit(of: .search) {
-            submitted = searchText
             if searchText.trimmingCharacters(in: .whitespacesAndNewlines) != query {
                 update { $0.query = searchText; $0.number = nil }
             }
+            submitted = request.query
             searchFocused = false
         }
         .scrollDismissesKeyboard(.interactively)
@@ -307,7 +302,7 @@ struct HadithView: View {
             HadithDetailView(initialID: narration.id, reader: reader, query: request.query, orderedFallback: page.usedOrderedFallback)
         }
         .task(id: retry) { await restoreSession() }
-        .task(id: LoadRequest(online: !submitted.isEmpty && submitted == searchText, search: request, retry: retry)) {
+        .task(id: LoadRequest(online: !submitted.isEmpty && submitted == request.query, search: request, retry: retry)) {
             if restored {
                 await load()
             }

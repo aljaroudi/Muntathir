@@ -9,6 +9,8 @@ struct SupplicationsView: View {
     @State private var query = ""
     @State private var submitted = ""
     @State private var prayers: [Hadith] = []
+    /// The query `prayers` were loaded for; rows group and highlight by it while a newer search loads.
+    @State private var resultQuery = ""
     @State private var loading = true
     @State private var failed = false
     @State private var needsUpdate = false
@@ -23,8 +25,9 @@ struct SupplicationsView: View {
     }
 
     var body: some View {
+        let terms = QuranSearchText.queryTerms(resultQuery)
         List {
-            if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            if submitted.isEmpty {
                 Section {
                     NavigationLink {
                         HadithSavedView(reader: reader, supplications: true)
@@ -35,7 +38,7 @@ struct SupplicationsView: View {
                     .accessibilityIdentifier("supplication-saved")
                 }
             }
-            if loading {
+            if loading, prayers.isEmpty {
                 ProgressView()
             } else if needsUpdate {
                 ContentUnavailableView {
@@ -53,25 +56,24 @@ struct SupplicationsView: View {
                 ContentUnavailableView("No supplications found", systemImage: "magnifyingglass")
                     .accessibilityIdentifier("supplications-empty")
             } else {
-                ForEach(submitted.isEmpty ? Hadith.supplicationCollectionIDs : ["results"], id: \.self) { collectionID in
-                    let collectionPrayers = submitted.isEmpty ? prayers.filter { $0.collectionID == collectionID } : prayers
+                ForEach(resultQuery.isEmpty ? Hadith.supplicationCollectionIDs : ["results"], id: \.self) { collectionID in
+                    let collectionPrayers = resultQuery.isEmpty ? prayers.filter { $0.collectionID == collectionID } : prayers
                     if let first = collectionPrayers.first {
-                        Section(submitted.isEmpty ? first.chapter.bookTitle(locale: locale) : "") {
+                        Section(resultQuery.isEmpty ? first.chapter.bookTitle(locale: locale) : "") {
                             ForEach(collectionPrayers) { prayer in
                                 NavigationLink {
-                                    HadithDetailView(initialID: prayer.id, reader: reader, query: query,
+                                    HadithDetailView(initialID: prayer.id, reader: reader, query: resultQuery,
                                                      orderedFallback: false, supplication: true)
                                         .environment(\.hadithSession, nil)
-                                        .recordSearchOnOpen(query, area: .supplications)
+                                        .recordSearchOnOpen(resultQuery, area: .supplications)
                                 } label: {
                                     VStack(alignment: .leading, spacing: 8) {
                                         Text(prayer.chapter.chapterTitle(locale: locale))
                                             .font(.headline)
-                                        if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                        if resultQuery.isEmpty {
                                             ReadingTimeHint(words: prayer.readingWords)
-                                        }
-                                        if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                            let translated = prayer.translation.map { HadithText.highlighted($0.text, terms: QuranSearchText.queryTerms(query)) } ?? AttributedString()
+                                        } else {
+                                            let translated = prayer.translation.map { HadithText.highlighted($0.text, terms: terms) } ?? AttributedString()
                                             let blocks = [prayer.arabicDisplay, translated]
                                             let visible = SearchMatch.visibleBlocks(blocks, preferred: locale.language.languageCode?.identifier == "ar" ? 0 : 1)
                                             ForEach(visible, id: \.self) { index in
@@ -93,15 +95,19 @@ struct SupplicationsView: View {
             }
         }
         .readingBackground()
+        .overlay(alignment: .top) {
+            // Earlier results stay visible until the next search replaces them.
+            if loading, !prayers.isEmpty {
+                ProgressView()
+                    .padding(8)
+                    .background(.regularMaterial, in: .circle)
+                    .padding(.top, 8)
+            }
+        }
         .navigationTitle("Supplications")
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search supplications")
         .searchHistory($query, area: .supplications)
-        .onSubmit(of: .search) { submitted = query }
-        .onChange(of: query) { _, value in
-            if value != submitted {
-                submitted = ""
-            }
-        }
+        .submitsSearch($query, submitted: $submitted)
         .autocorrectionDisabled()
         .scrollDismissesKeyboard(.interactively)
         .toolbar {
@@ -112,18 +118,17 @@ struct SupplicationsView: View {
             }
             .accessibilityIdentifier("supplication-reading-options")
         }
-        .task(id: Search(query: query, online: !submitted.isEmpty && submitted == query, retry: retry, translation: translation, locale: locale.identifier)) {
+        .task(id: Search(query: submitted, online: !submitted.isEmpty, retry: retry, translation: translation, locale: locale.identifier)) {
             loading = true
             failed = false
             needsUpdate = false
             do {
-                if !query.isEmpty {
-                    try await Task.sleep(for: .milliseconds(150))
-                }
                 languages = try await reader.translationLanguages()
-                let results = try await search(query)
+                let current = submitted
+                let results = try await search(current)
                 try Task.checkCancellation()
                 prayers = results
+                resultQuery = current
                 loading = false
             } catch is CancellationError {
             } catch HadithDatabaseError.incompatible {
@@ -139,7 +144,7 @@ struct SupplicationsView: View {
     }
 
     private func search(_ query: String) async throws -> [Hadith] {
-        if !query.isEmpty, submitted == query, let client = SemanticSearchClient.configured {
+        if !query.isEmpty, let client = SemanticSearchClient.configured {
             do {
                 let hits = try await client.search(query, kind: "dua")
                 if hits.isEmpty {

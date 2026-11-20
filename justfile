@@ -43,7 +43,7 @@ apple-test: apple-localizations
 [arg("args", help="Fastlane key:value options")]
 [doc("Run a Fastlane lane from the repository root")]
 lane platform name *args:
-    PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/bin:${PATH:-}" BUNDLE_PATH="${BUNDLE_PATH:-vendor/bundle}" bundle exec fastlane "$@"
+    LC_ALL="${LC_ALL:-en_US.UTF-8}" LANG="${LANG:-en_US.UTF-8}" PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/bin:${PATH:-}" BUNDLE_PATH="${BUNDLE_PATH:-vendor/bundle}" bundle exec fastlane "$@"
 
 [positional-arguments]
 [doc("Set the release version for Apple and Android (X.Y.Z)")]

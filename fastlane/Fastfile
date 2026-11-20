@@ -239,6 +239,11 @@ platform :ios do
     end
   end
 
+  desc "Alias for app_store"
+  lane :release do |options|
+    app_store(options)
+  end
+
   desc "Test on iPhone and iPad, refresh the listing, and submit the TestFlight build for automatic App Store release"
   lane :app_store do |options|
     MuntathirRelease.with_release_lock do

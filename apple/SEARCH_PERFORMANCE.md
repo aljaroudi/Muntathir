@@ -1,15 +1,19 @@
 # Basic offline search and search-screen responsiveness
 
-Quran and Hadith passage search is live: results update 250 ms after typing
-pauses, and Submit applies immediately. The last word matches as a prefix once
+All search screens (Quran, Hadith, Supplications, Rulings, Figures, Saved) run
+on Submit only: typing edits the field and shows recent searches, picking a
+recent search submits it, and clearing the field resets the screen. Editing
+after a Submit keeps the current results until the next Submit, and results,
+title matches and highlighting are computed once per Submit rather than per
+keystroke or render. The last word matches as a prefix once
 it has three letters (`صلا` finds `صلاه`; `pray` finds `prayer`), ranked after
 whole-word matches. Two-letter prefixes stay whole-word because `"ال"*` matches
 nearly every narration. Infixes (`بالصلاه` for `صلاه`) and typos still do not
-match. Earlier results stay on screen until new ones arrive. Meaning search
-remains an explicit online action. Search history is recorded on Submit or when
+match. Earlier results stay on screen until new ones arrive. Where meaning search
+exists, each Submit uses it, falling back to local search. Search history is recorded on Submit or when
 a result is opened, never per keystroke.
 
-## Live search changes (November 2026)
+## Live search changes (November 2026, since replaced by Submit-only search)
 
 Measured with the sqlite3 CLI on the 354 MB Hadith database (Mac, warm): FTS
 lookups take 1–20 ms, prefix lookups included, and ranking the largest result

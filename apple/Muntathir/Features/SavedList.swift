@@ -14,6 +14,9 @@ struct SavedList<Destination: View>: View {
     @AppStorage("savedGroupByDate") private var byDate = false
     @State private var showingBookmarks = false
     @State private var query = ""
+    @State private var submitted = ""
+    /// Sections for the submitted search, rebuilt only when their inputs change, never per keystroke.
+    @State private var sections: [SavedEntrySection] = []
     @State private var editing: ReadingHighlight?
     @State private var failed = false
 
@@ -25,6 +28,16 @@ struct SavedList<Destination: View>: View {
         var result = calendar
         result.timeZone = timeZone
         return result
+    }
+
+    private struct SectionInputs: Equatable {
+        let highlights: [ReadingHighlight]
+        let bookmarks: [ReadingBookmark]
+        let showsBookmarks: Bool
+        let byDate: Bool
+        let query: String
+        let calendar: Calendar
+        let locale: Locale
     }
 
     @AppStorage("showArabicDiacritics") private var showMarks = true
@@ -40,7 +53,6 @@ struct SavedList<Destination: View>: View {
                 .listRowBackground(Color.clear)
                 .accessibilityIdentifier("saved-kind")
             }
-            let sections = SavedEntry.sections(savedEntries, byDate: byDate, query: query, calendar: localCalendar, locale: locale)
             if savedEntries.isEmpty {
                 if bookmarksOnly || showingBookmarks {
                     ContentUnavailableView("No bookmarks yet", systemImage: "bookmark", description: Text("Use Bookmark to save a passage."))
@@ -48,7 +60,7 @@ struct SavedList<Destination: View>: View {
                     ContentUnavailableView("No highlights yet", systemImage: "highlighter", description: Text("Select text to highlight it."))
                 }
             } else if sections.isEmpty {
-                ContentUnavailableView.search(text: query)
+                ContentUnavailableView.search(text: submitted)
             } else {
                 ForEach(sections) { section in
                     Section {
@@ -58,7 +70,7 @@ struct SavedList<Destination: View>: View {
                                 .contextMenu { actions(entry) }
                         }
                     } header: {
-                        if !query.isEmpty {
+                        if !submitted.isEmpty {
                             Text(section.id == "related" ? "Related matches" : "Matches")
                         } else if let date = section.date {
                             if localCalendar.isDateInToday(date) {
@@ -79,6 +91,11 @@ struct SavedList<Destination: View>: View {
         .navigationTitle("Saved")
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: (bookmarksOnly || showingBookmarks) ? "Search bookmarks" : "Search highlights")
         .searchHistory($query, area: .saved)
+        .submitsSearch($query, submitted: $submitted)
+        .onChange(of: SectionInputs(highlights: highlights, bookmarks: bookmarks, showsBookmarks: bookmarksOnly || showingBookmarks,
+                                       byDate: byDate, query: submitted, calendar: localCalendar, locale: locale), initial: true) { _, inputs in
+            sections = SavedEntry.sections(entries, byDate: inputs.byDate, query: inputs.query, calendar: inputs.calendar, locale: inputs.locale)
+        }
         .autocorrectionDisabled()
         .scrollDismissesKeyboard(.interactively)
         .toolbar {
@@ -98,10 +115,10 @@ struct SavedList<Destination: View>: View {
 
     @ViewBuilder private func row(_ entry: SavedEntry) -> some View {
         if canOpen(entry) {
-            NavigationLink { destination(entry).recordSearchOnOpen(query, area: .saved) } label: { summary(entry) }
+            NavigationLink { destination(entry).recordSearchOnOpen(submitted, area: .saved) } label: { summary(entry) }
                 .accessibilityIdentifier((entry.bookmark?.kind == .ruling ? "saved-ruling-" : entry.isHadith ? "saved-hadith-" : "saved-verse-") + entry.source)
         } else if let highlight = entry.highlight {
-            Button { SearchHistory.shared.record(query, in: .saved); editing = highlight } label: { summary(entry) }
+            Button { SearchHistory.shared.record(submitted, in: .saved); editing = highlight } label: { summary(entry) }
                 .tint(.primary)
         } else {
             summary(entry)
@@ -110,16 +127,16 @@ struct SavedList<Destination: View>: View {
 
     @ViewBuilder private func summary(_ entry: SavedEntry) -> some View {
         if let highlight = entry.highlight {
-            HighlightSummary(highlight: highlight, available: available(highlight), showReference: byDate, searchQuery: query)
+            HighlightSummary(highlight: highlight, available: available(highlight), showReference: byDate, searchQuery: submitted)
         } else {
             VStack(alignment: .leading, spacing: 8) {
                 if byDate {
                     Text(entry.title(locale: locale)).font(.subheadline).foregroundStyle(.secondary)
                 }
-                if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                if submitted.isEmpty {
                     Text(showMarks ? entry.excerpt : ArabicDisplay.plain(entry.excerpt)).font(.body).lineLimit(4)
                 } else {
-                    SearchMatchText(SearchMatch.preview(SearchMatch.text(entry.excerpt, query: query), compact: true))
+                    SearchMatchText(SearchMatch.preview(SearchMatch.text(entry.excerpt, query: submitted), compact: true))
                         .font(.body).lineLimit(2)
                 }
                 if !canOpen(entry) {

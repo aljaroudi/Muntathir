@@ -32,7 +32,7 @@ final class QuranUITests: XCTestCase {
         }
     }
 
-    @MainActor func testPassageSearchUpdatesWhileTyping() {
+    @MainActor func testPassageSearchRunsOnSubmit() {
         let app = openQuran()
         let field = app.searchFields.firstMatch
         if !field.exists {
@@ -40,15 +40,20 @@ final class QuranUITests: XCTestCase {
         }
         XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
+        // Typing alone never searches.
         field.typeText("2:255")
-        XCTAssertTrue(app.buttons["quran-result-2:255"].waitForExistence(timeout: 5))
+        let reference = app.buttons["quran-result-2:255"]
+        XCTAssertFalse(reference.waitForExistence(timeout: 2))
+        field.typeText("\n")
+        XCTAssertTrue(reference.waitForExistence(timeout: 5))
         field.buttons["Clear text"].tap()
         field.tap()
-        field.typeText("الرحم")
+        // The last word still matches as a prefix.
+        field.typeText("الرحم\n")
         XCTAssertTrue(app.buttons["quran-result-1:1"].waitForExistence(timeout: 5))
     }
 
-    @MainActor func testShorteningAndClearingLiveSearch() {
+    @MainActor func testEditingKeepsResultsUntilSubmitAndClearingResets() {
         let app = openQuran()
         search("الرحمن", in: app)
         let row = app.buttons["quran-result-1:1"]
@@ -56,7 +61,7 @@ final class QuranUITests: XCTestCase {
         let field = app.searchFields.firstMatch
         field.tap()
         field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 5))
-        XCTAssertTrue(row.waitForNonExistence(timeout: 5))
+        XCTAssertFalse(row.waitForNonExistence(timeout: 2))
         field.buttons["Clear text"].tap()
         XCTAssertTrue(app.buttons["quran-surah-1"].waitForExistence(timeout: 5))
         XCTAssertFalse(row.exists)

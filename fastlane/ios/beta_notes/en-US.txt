@@ -1,3 +1,5 @@
 Update from an earlier version and open the app. Check that the release notes appear, dismiss them, then reopen the app and confirm they stay dismissed.
 Submit a search in Quran, Hadith, Rulings, Supplications, and Figures. Open a result, then try the same search offline with the relevant library installed.
 In Hadith, search for من كنت مولاه فعلي and check that the result preview shows the matching phrase.
+Start a rakaat tracking session. Check that the screen dims as calibration starts and returns to its previous brightness after you exit.
+In Quran, Hadith, Rulings, Supplications, Figures, and Saved, type a query and check that nothing loads or lags until you press Return. Then edit the text and check that the earlier results stay until you press Return again.

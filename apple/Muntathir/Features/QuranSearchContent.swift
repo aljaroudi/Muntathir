@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct QuranSearchContent: View {
-    @Binding var query: String
     var submittedQuery: String
     @Environment(\.locale) private var locale
     @State private var translationStore = QuranTranslationStore.shared
@@ -20,8 +19,7 @@ struct QuranSearchContent: View {
     @State private var resultQuery = ""
     @State private var resultTranslationID = ""
     @State private var highlights: [String: QuranSearchHighlight] = [:]
-
-    @State private var liveQuery = ""
+    @State private var matchingSurahs: [QuranSurah] = []
 
     private struct Request: Equatable {
         let query: String
@@ -34,12 +32,20 @@ struct QuranSearchContent: View {
     }
 
     private var request: Request {
-        Request(query: liveQuery.trimmingCharacters(in: .whitespacesAndNewlines), online: !submittedQuery.isEmpty && submittedQuery == query && submittedQuery == liveQuery, surah: surah?.id, translationID: translationStore.activeID, limit: limit, retry: retry, translationRevision: translationStore.revision)
+        Request(query: submittedQuery.trimmingCharacters(in: .whitespacesAndNewlines), online: !submittedQuery.isEmpty, surah: surah?.id, translationID: translationStore.activeID, limit: limit, retry: retry, translationRevision: translationStore.revision)
     }
 
-    private var matchingSurahs: [QuranSurah] {
-        guard surah == nil else { return [] }
-        return query.isEmpty ? surahs : surahs.filter { $0.matches(query) }
+    /// Inputs to surah title filtering; it reruns once per submitted search, never per render.
+    private struct SurahFilter: Equatable {
+        let query: String
+        let surah: Int?
+        let count: Int
+    }
+
+    private func refreshSurahMatches() {
+        let query = request.query
+        guard surah == nil else { matchingSurahs = []; return }
+        matchingSurahs = query.isEmpty ? surahs : surahs.filter { $0.matches(query) }
     }
 
     var body: some View {
@@ -57,7 +63,7 @@ struct QuranSearchContent: View {
                     ForEach(matchingSurahs) { surah in
                         NavigationLink {
                             QuranReadingView(surah: surah, reader: reader)
-                                .recordSearchOnOpen(query, area: .quran)
+                                .recordSearchOnOpen(submittedQuery, area: .quran)
                         } label: {
                             VStack(alignment: .leading, spacing: 6) {
                                 HStack(alignment: .firstTextBaseline, spacing: 0) {
@@ -123,22 +129,8 @@ struct QuranSearchContent: View {
                     .accessibilityLabel("Loading Quran…")
             }
         }
-        .onChange(of: submittedQuery, initial: true) { liveQuery = submittedQuery }
-        .onChange(of: query) { _, value in
-            if value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                liveQuery = ""
-            }
-        }
-        .task(id: query) {
-            // Live search: wait for a pause in typing; Submit still applies immediately.
-            let text = query
-            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !trimmed.isEmpty, trimmed != request.query else { return }
-            try? await Task.sleep(for: .milliseconds(250))
-            guard !Task.isCancelled, query == text, trimmed != request.query else { return }
-            liveQuery = text
-        }
-        .onChange(of: liveQuery) { limit = 50 }
+        .onChange(of: SurahFilter(query: request.query, surah: surah?.id, count: surahs.count), initial: true) { refreshSurahMatches() }
+        .onChange(of: submittedQuery) { limit = 50 }
         .onChange(of: translationStore.activeID) { limit = 50 }
         .task(id: request) { await load() }
     }
@@ -150,7 +142,7 @@ struct QuranSearchContent: View {
                     let translation = QuranTranslation.catalog.first { $0.id == translationStore.activeID }
                     NavigationLink {
                         QuranReadingView(surah: surah, initialVerse: ayah.number, reader: reader, searchQuery: resultQuery)
-                            .recordSearchOnOpen(query, area: .quran)
+                            .recordSearchOnOpen(submittedQuery, area: .quran)
                     } label: {
                         QuranVerseRow(ayah: ayah, translation: translation, searchQuery: resultQuery, preview: true, showsActions: false,
                                       highlight: highlights[ayah.id])

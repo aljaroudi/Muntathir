@@ -16,7 +16,7 @@ struct QuranReadingView: View {
     @State private var surahs: [QuranSurah] = []
 
     private var showingResults: Bool {
-        !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        !submittedQuery.isEmpty
     }
 
     private var currentSurah: QuranSurah {
@@ -32,7 +32,7 @@ struct QuranReadingView: View {
                 .allowsHitTesting(!showingResults)
                 .accessibilityHidden(showingResults)
             if showingResults {
-                QuranSearchContent(query: $query, submittedQuery: submittedQuery, reader: reader, surah: searchSurah ?? currentSurah)
+                QuranSearchContent(submittedQuery: submittedQuery, reader: reader, surah: searchSurah ?? currentSurah)
             }
         }
         .environment(\.searchMatchQuery, searchQuery)
@@ -40,12 +40,8 @@ struct QuranReadingView: View {
         .searchable(text: $query, isPresented: $searchPresented,
                     placement: .navigationBarDrawer(displayMode: .always), prompt: "Verse number or Quran text")
         .searchHistory($query, area: .quran)
-        .onSubmit(of: .search) { submittedQuery = query; searchFocused = false }
-        .onChange(of: query) {
-            _, value in if value != submittedQuery {
-                submittedQuery = ""
-            }
-        }
+        .submitsSearch($query, submitted: $submittedQuery)
+        .onSubmit(of: .search) { searchFocused = false }
         .searchFocused($searchFocused)
         .autocorrectionDisabled()
         .task {

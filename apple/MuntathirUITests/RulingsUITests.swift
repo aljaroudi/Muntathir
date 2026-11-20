@@ -18,7 +18,7 @@ final class RulingsUITests: XCTestCase {
         XCTAssertFalse(app.staticTexts["Original answer"].exists)
         let search = app.searchFields.firstMatch
         search.tap()
-        search.typeText("Prayer")
+        search.typeText("Prayer\n")
         XCTAssertTrue(result.waitForExistence(timeout: 5))
         result.tap()
         XCTAssertTrue(app.staticTexts["Original answer"].waitForExistence(timeout: 5))

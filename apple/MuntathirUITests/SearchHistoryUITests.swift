@@ -59,14 +59,14 @@ final class SearchHistoryUITests: XCTestCase {
         XCTAssertFalse(app.descendants(matching: .any)["search-history-94:6"].firstMatch.exists)
     }
 
-    @MainActor func testOpeningResultSavesWithoutSubmitAndSurvivesRelaunch() {
+    @MainActor func testOpenedSearchSurvivesRelaunch() {
         let app = launch()
         openQuran(app)
         let field = focus(app)
         if app.buttons["search-history-clear"].exists {
             app.buttons["search-history-clear"].tap()
         }
-        field.typeText("2:255")
+        field.typeText("2:255\n")
         let result = app.buttons["quran-result-2:255"]
         XCTAssertTrue(result.waitForExistence(timeout: 5))
         result.tap()

@@ -28,10 +28,10 @@ final class SavedUITests: XCTestCase {
         let search = app.searchFields.firstMatch
         XCTAssertTrue(search.waitForExistence(timeout: 5))
         search.tap()
-        search.typeText("no-such-saved-passage")
+        search.typeText("no-such-saved-passage\n")
         XCTAssertTrue(row.waitForNonExistence(timeout: 5))
         search.buttons["Clear text"].tap()
-        search.typeText(query)
+        search.typeText(query + "\n")
         XCTAssertTrue(row.waitForExistence(timeout: 5))
         if app.buttons["Close"].exists {
             app.buttons["Close"].tap()
