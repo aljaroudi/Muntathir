@@ -42,6 +42,10 @@ SITE_LANGUAGE = {
     ("khorasani", "ar"): "ar",
     ("khorasani", "en"): "en",
     ("khorasani", "fa"): "fa",
+    ("hakeem", "ar"): "ar",
+    ("hakeem", "en"): "en",
+    ("hakeem", "fa"): "fa",
+    ("hakeem", "ur"): "ur",
 }
 
 LANGUAGES = {

@@ -89,7 +89,6 @@ private struct RulingsBrowser: View {
                 .accessibilityIdentifier("rulings-authority")
                 if !loading {
                     Picker("Language", selection: $language) {
-                        Text("Choose a language").tag("")
                         ForEach(languages) { Text($0.name).tag($0.id) }
                     }
                     .accessibilityIdentifier("rulings-language")
@@ -154,7 +153,7 @@ private struct RulingsBrowser: View {
                 try Task.checkCancellation()
                 authorities = choices
                 languages = available
-                language = RulingsReader.preferredLanguage(saved: languagePreferences[authority], locale: locale.identifier, available: available) ?? ""
+                language = RulingsReader.preferredLanguage(saved: languagePreferences[authority], locale: locale.identifier, available: available) ?? available.first?.id ?? ""
                 loading = false
             } catch {
                 guard !Task.isCancelled else { return }
@@ -203,7 +202,6 @@ private struct RulingsResults: View {
                     }
                     Text(showMarks ? value.preview : ArabicDisplay.plain(value.preview)).lineLimit(3)
                 }
-                .font(.headline)
                 .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)
             }
             .accessibilityIdentifier("rulings-question-\(value.id.siteID)")

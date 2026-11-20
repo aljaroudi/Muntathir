@@ -6,6 +6,7 @@
 -- Shirazi question: https://alshirazi.org/estefta?ShareEstefta={id}&langs={language}
 --   That is the link the site itself publishes. Topic pages are the catalog.
 -- Khorasani question: https://wahidkhorasani.com/qna/{slug}
+-- Hakeem question: https://www.alhakeem.com/{language}/question/{id}
 
 PRAGMA application_id = 1364218708;
 PRAGMA user_version = 2;
@@ -45,6 +46,14 @@ VALUES
     'https://wahidkhorasani.com/',
     3,
     'Question URL is https://wahidkhorasani.com/qna/{slug}. Arabic and English locales exist but currently have no Q&A.'
+  ),
+  (
+    'hakeem',
+    'السيد محمد سعيد الحكيم',
+    'Muhammad Saeed al-Tabatabai al-Hakeem',
+    'https://www.alhakeem.com/',
+    4,
+    'Question URL is https://www.alhakeem.com/{language}/question/{id}. Persian uses Arabic category ids; Urdu currently has no Q&A.'
   )
 ON CONFLICT (code) DO UPDATE SET
   name_ar = excluded.name_ar,

@@ -5,7 +5,7 @@
     python3 scrape.py --authority khorasani --language fa
     python3 scrape.py --authority sistani --language arabic
 
-Authorities: sistani.py, shirazi.py, khorasani.py.
+Authorities: sistani.py, shirazi.py, khorasani.py, hakeem.py.
 Shared HTML walking: htmlutil.py. Database setup: db.py.
 """
 
@@ -17,6 +17,7 @@ from pathlib import Path
 
 from db import DEFAULT_DB, init_db, rebuild_fts, utc_now
 import books
+import hakeem
 import treatise
 import khorasani
 import shirazi
@@ -24,9 +25,9 @@ import sistani
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Mirror Sistani, Shirazi, and Khorasani Q&A into SQLite.")
+    parser = argparse.ArgumentParser(description="Mirror Sistani, Shirazi, Khorasani, and Hakeem Q&A into SQLite.")
     parser.add_argument("--db", type=Path, default=DEFAULT_DB)
-    parser.add_argument("--authority", action="append", default=[], help="sistani, shirazi, khorasani; omit for all")
+    parser.add_argument("--authority", action="append", default=[], help="sistani, shirazi, khorasani, hakeem; omit for all")
     parser.add_argument("--language", action="append", default=[], help="language code as that authority's site publishes it")
     parser.add_argument("--reset", action="store_true", help="delete the database before crawling")
     parser.add_argument("--concurrency", type=int, default=4)
@@ -41,12 +42,13 @@ def main() -> int:
     sistani.self_test()
     shirazi.self_test()
     khorasani.self_test()
+    hakeem.self_test()
     if args.self_test:
         return 0
     if args.concurrency < 1:
         raise SystemExit("--concurrency must be >= 1")
-    authorities = args.authority or ["sistani", "shirazi", "khorasani"]
-    unknown = sorted(set(authorities) - {"sistani", "shirazi", "khorasani"})
+    authorities = args.authority or ["sistani", "shirazi", "khorasani", "hakeem"]
+    unknown = sorted(set(authorities) - {"sistani", "shirazi", "khorasani", "hakeem"})
     if unknown:
         raise SystemExit("unknown authority %s" % ", ".join(unknown))
     lang_filter = set(args.language)
@@ -54,6 +56,7 @@ def main() -> int:
         "sistani": {item[0] for item in sistani.FALLBACK_LANGUAGES},
         "shirazi": set(shirazi.LANGUAGES),
         "khorasani": set(khorasani.LANGUAGES),
+        "hakeem": set(hakeem.LANGUAGES),
     }
     known = set().union(*codes.values())
     if lang_filter - known:
@@ -62,6 +65,7 @@ def main() -> int:
         "sistani": sistani.crawl,
         "shirazi": shirazi.crawl,
         "khorasani": khorasani.crawl,
+        "hakeem": hakeem.crawl,
     }
     conn = init_db(args.db, args.reset)
     started = utc_now()
@@ -73,7 +77,7 @@ def main() -> int:
     conn.commit()
     reports = []
     try:
-        for name in ("sistani", "shirazi", "khorasani"):
+        for name in ("sistani", "shirazi", "khorasani", "hakeem"):
             if name not in authorities:
                 continue
             if lang_filter and not (lang_filter & codes[name]):
