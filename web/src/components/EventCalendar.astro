@@ -1,11 +1,11 @@
 ---
 import { Font } from "astro:assets";
-import "../styles/global.css";
-import events from "../../../shared/events.json";
-import feed from "../../public/calendar/corrections-v1.json";
-import { calendarStarts, currentMonthIndex, validateEvents } from "../calendar";
-import { calendarCopy, calendarYears, calendarPath, renderCalendar } from "../calendar-view";
-import { site, isPreview, type Locale } from "../site";
+import "@/styles/global.css";
+import events from "@shared/events.json";
+import feed from "@public/calendar/corrections-v1.json";
+import { calendarStarts, currentMonthIndex, validateEvents } from "@/calendar";
+import { calendarCopy, calendarYears, calendarPath, renderCalendar } from "@/calendar-view";
+import { site, isPreview, type Locale } from "@/site";
 interface Props { locale: Locale; year?: number }
 const { locale, year: requestedYear } = Astro.props;
 const t = calendarCopy[locale];
@@ -90,9 +90,9 @@ const description = `${title}. ${t.description}`;
   .calendar-button:disabled { opacity: 0.4; cursor: default; }
 </style>
 <script>
-  import { calendarStarts, currentMonthIndex, type CalendarEvent } from "../calendar";
-  import { calendarCopy, calendarPath, renderCalendar } from "../calendar-view";
-  import type { Locale } from "../site";
+  import { calendarStarts, currentMonthIndex, type CalendarEvent } from "@/calendar";
+  import { calendarCopy, calendarPath, renderCalendar } from "@/calendar-view";
+  import type { Locale } from "@/site";
   const root = document.querySelector<HTMLElement>("[data-calendar]");
   if (root) {
     const locale = root.dataset.locale as Locale;

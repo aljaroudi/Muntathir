@@ -31,9 +31,14 @@ data class SemanticSearchResult(
             val number: Int,
         ) : Reference
 
+        data class Figure(
+            val id: String,
+        ) : Reference
+
         data class Dua(
             val id: String,
             val passage: Int?,
+            val locator: String? = null,
         ) : Reference
 
         data class Rulings(
@@ -49,6 +54,7 @@ data class SemanticSearchResult(
                 is Reference.Quran -> "quran:${reference.chapter}:${reference.verse}"
                 is Reference.Hadith -> "hadith:${reference.book}:${reference.chapter}:${reference.number}"
                 is Reference.Rulings -> "rulings:${reference.authority}:${reference.language}:${reference.id}"
+                is Reference.Figure -> "figure:${reference.id}"
                 is Reference.Dua -> "dua:${reference.id}:${reference.passage?.toString().orEmpty()}"
             }
 }
@@ -180,6 +186,10 @@ class SemanticSearchClient(
                         SemanticSearchResult.Reference.Rulings(authority, language, id)
                     }
 
+                    "figure" -> {
+                        SemanticSearchResult.Reference.Figure(string("id"))
+                    }
+
                     "dua" -> {
                         val passage =
                             if (values["passage"].let { it == null || it == JsonNull }) {
@@ -189,7 +199,11 @@ class SemanticSearchClient(
                                     "passage",
                                 )
                             }
-                        SemanticSearchResult.Reference.Dua(string("id"), passage)
+                        SemanticSearchResult.Reference.Dua(
+                            string("id"),
+                            passage,
+                            if (values.containsKey("locator")) string("locator") else null,
+                        )
                     }
 
                     else -> {

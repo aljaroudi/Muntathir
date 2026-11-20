@@ -174,7 +174,7 @@ class QuranReader(
             if (surah != null && referenceSurah != surah) return emptyList()
             return listOf(verseLocked(referenceSurah, verse, translation) ?: throw InvalidReferenceException())
         }
-        val terms = QuranSearchText.terms(query)
+        val terms = QuranSearchText.queryTerms(query)
         if (terms.isEmpty()) return emptyList()
         val corpus = corpus()
         val arabicRanks = guarded { ranked(matches(terms, arabicSql(), corpus.texts, job), terms, corpus.texts, job) }

@@ -85,7 +85,7 @@ enum HadithText {
         return SearchMatch.preview(text, compact: !terms.isEmpty || marked)
     }
 
-    /// Long narrations are cut around the first match before parsing; previews show at most a few hundred characters.
+    /// Long narrations are cut around the strongest match before parsing; previews show at most a few hundred characters.
     /// The margins exceed the preview budget, so trimming still adds the leading and trailing ellipses.
     static func previewWindow(_ source: String, terms: [String]) -> String {
         let text = source as NSString
@@ -188,21 +188,33 @@ enum SearchMatch {
         return ranges
     }
 
-    /// UTF-16 offset of the earliest match, without folding the entire text when a match appears early.
-    static func firstMatch(in raw: String, terms: [String]) -> Int? {
-        guard !terms.isEmpty else { return nil }
-        let chunk = 4000
-        let text = raw as NSString
-        var location = 0
-        while location < text.length {
-            // Overlap chunks so a match spanning a boundary is still found.
-            let range = text.rangeOfComposedCharacterSequences(for: NSRange(location: location, length: min(chunk + 200, text.length - location)))
-            if let found = ranges(in: text.substring(with: range), terms: terms).map(\.location).min() {
-                return range.location + found
+    /// Prefer a sequence of distinct nearby matches over an isolated common word.
+    static func bestMatch(in text: NSString, hits: [NSRange]) -> Int? {
+        var start = 0, end = 0, score = 0, bestScore = 0
+        var best: Int?
+        var seen = Set<String>()
+        for hit in hits.sorted(by: { $0.location < $1.location }) {
+            let word = QuranSearchText.fold(QuranSearchText.normalize(text.substring(with: hit)))
+            if hit.location < end {
+                continue
             }
-            location += chunk
+            if hit.location - end > 3 || seen.contains(word) || seen.isEmpty {
+                start = hit.location
+                score = 0
+                seen.removeAll(keepingCapacity: true)
+            }
+            seen.insert(word)
+            score += word.utf16.count + 1
+            if score > bestScore {
+                best = start; bestScore = score
+            }
+            end = NSMaxRange(hit)
         }
-        return nil
+        return best
+    }
+
+    static func firstMatch(in raw: String, terms: [String]) -> Int? {
+        bestMatch(in: raw as NSString, hits: ranges(in: raw, terms: terms))
     }
 
     static func visibleBlocks(_ texts: [AttributedString], preferred: Int) -> [Int] {
@@ -217,7 +229,14 @@ enum SearchMatch {
     }
 
     static func preview(_ text: AttributedString, compact: Bool = false) -> AttributedString {
-        let firstHit = text.runs.first { $0.underlineStyle != nil }?.range.lowerBound ?? text.startIndex
+        let raw = String(text.characters)
+        let hits = text.runs.compactMap { run -> NSRange? in
+            guard run.underlineStyle != nil, let range = Range(run.range, in: raw) else { return nil }
+            return NSRange(range, in: raw)
+        }
+        let offset = bestMatch(in: raw as NSString, hits: hits) ?? 0
+        let position = String.Index(utf16Offset: offset, in: raw)
+        let firstHit = AttributedString.Index(position, within: text) ?? text.startIndex
         let distance = text.characters.distance(from: text.startIndex, to: firstHit)
         var start = text.characters.index(text.startIndex, offsetBy: max(0, distance - (compact ? 12 : 45)))
         if compact {
@@ -261,7 +280,7 @@ enum SearchMatch {
 
     static func text(_ raw: String, query: String) -> AttributedString {
         var text = AttributedString(raw)
-        for range in ranges(in: raw, terms: QuranSearchText.terms(query)) {
+        for range in ranges(in: raw, terms: QuranSearchText.queryTerms(query)) {
             guard let indices = Range(range, in: raw),
                   let start = AttributedString.Index(indices.lowerBound, within: text),
                   let end = AttributedString.Index(indices.upperBound, within: text) else { continue }

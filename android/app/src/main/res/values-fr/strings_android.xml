@@ -25,4 +25,6 @@
     <string name="allow_precise_location">Autoriser la position exacte</string>
     <string name="compass_north">N</string>
     <string name="fonts">Polices</string>
+    <string name="silence_notifications_while_praying">Silencer les notifications pendant la prière</string>
+    <string name="silence_notifications_footer">Autorisez l’accès à Ne pas déranger pour l’activer pendant le comptage et le désactiver à la fin.</string>
 </resources>

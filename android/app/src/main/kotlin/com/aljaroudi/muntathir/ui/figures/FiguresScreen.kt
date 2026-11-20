@@ -42,24 +42,28 @@ fun FiguresScreen(
 ) {
     val load by viewModel.library.collectAsStateWithLifecycle()
     val query by viewModel.query.collectAsStateWithLifecycle()
+    val remote by viewModel.remote.collectAsStateWithLifecycle()
     val recent by viewModel.recent.collectAsStateWithLifecycle()
     var focused by remember { mutableStateOf(false) }
     val locale = currentLocale()
     ScreenScaffold(R.string.figures, onBack = onBack) { padding ->
         FigureGate(load, padding) { library ->
-            val sections = remember(library, query, locale) { library.browserSections(query, locale) }
+            val sections = remote ?: remember(library, query, locale) { library.browserSections(query, locale) }
             LazyColumn(Modifier.fillMaxSize().testTag("figures-list"), contentPadding = padding) {
                 item(key = "search") {
                     SearchField(
                         query = query,
                         onQuery = viewModel::search,
-                        onSubmit = viewModel::record,
+                        onSubmit = viewModel::submit,
                         placeholder = stringResource(R.string.search),
                         onFocusChange = { focused = it },
                     )
                 }
                 if (focused && query.isBlank()) {
-                    recentSearches(recent, viewModel::search, viewModel::removeRecent, viewModel::clearRecent)
+                    recentSearches(recent, {
+                        viewModel.search(it)
+                        viewModel.submit()
+                    }, viewModel::removeRecent, viewModel::clearRecent)
                 }
                 if (sections.isEmpty()) {
                     item(key = "empty") { EmptyState(stringResource(R.string.no_figures_found)) }

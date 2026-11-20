@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
-import events from '../../shared/events.json'
-import { baselineStart, calendarStarts, generateCalendar } from '../src/calendar'
-import { site } from '../src/site'
+import events from '@shared/events.json'
+import { baselineStart, calendarStarts, generateCalendar } from '@/calendar'
+import { site } from '@/site'
 
 const empty = { schemaVersion: 1, announcements: [] }
 const now = new Date('2026-10-28T00:00:00Z')
@@ -179,8 +179,8 @@ for (const locale of ['ar', 'en'] as const)
   })
 
 test('event calendar groups and sorts days with the same corrected dates as ICS', async () => {
-  const { calendarMonths, validateEvents } = await import('../src/calendar')
-  const { renderCalendar } = await import('../src/calendar-view')
+  const { calendarMonths, validateEvents } = await import('@/calendar')
+  const { renderCalendar } = await import('@/calendar-view')
   const sample = [
     { id: 'later', month: 1, day: 5, title: { en: 'Later' } },
     { id: 'first', month: 1, day: 2, title: { en: 'First' } },
@@ -210,7 +210,7 @@ test('event calendar groups and sorts days with the same corrected dates as ICS'
 })
 
 test('expected months exclude confirmed future boundaries and current/past months', async () => {
-  const { calendarMonths, validateEvents } = await import('../src/calendar')
+  const { calendarMonths, validateEvents } = await import('@/calendar')
   const start = calendarStarts(empty)
   const sample = validateEvents(events, 'en')
   const months = calendarMonths(sample, start, [month + 1], 1448, new Date('2026-06-18Z'))
@@ -227,7 +227,7 @@ test('expected months exclude confirmed future boundaries and current/past month
 })
 
 test('month models skip absent day 30 and handle year limits and corrected rollover', async () => {
-  const { calendarMonths, currentMonthIndex, validateEvents } = await import('../src/calendar')
+  const { calendarMonths, currentMonthIndex, validateEvents } = await import('@/calendar')
   const start = calendarStarts({ ...empty, announcements: [announcement('2026-06-17')] })
   expect(currentMonthIndex(start, new Date('2026-06-16Z'))).toBe(month - 1)
   expect(currentMonthIndex(start, new Date('2026-06-17Z'))).toBe(month)
@@ -245,8 +245,8 @@ test('month models skip absent day 30 and handle year limits and corrected rollo
 })
 
 test('calendar rendering escapes event markup and uses localized labels', async () => {
-  const { validateEvents } = await import('../src/calendar')
-  const { renderCalendar } = await import('../src/calendar-view')
+  const { validateEvents } = await import('@/calendar')
+  const { renderCalendar } = await import('@/calendar-view')
   const sample = validateEvents(
     [{ id: 'test', month: 1, day: 1, title: { en: '<img src=x onerror="alert(1)">' } }],
     'ar'
@@ -259,7 +259,7 @@ test('calendar rendering escapes event markup and uses localized labels', async 
 })
 
 test('next-event highlighting rolls into the next year only when no events remain', async () => {
-  const { calendarMonths, validateEvents } = await import('../src/calendar')
+  const { calendarMonths, validateEvents } = await import('@/calendar')
   const start = calendarStarts(empty)
   const sample = validateEvents(
     [{ id: 'new-year', month: 1, day: 1, title: { en: 'New year' } }],

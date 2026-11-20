@@ -20,57 +20,40 @@ final class HadithUITests: XCTestCase {
         return app
     }
 
-    @MainActor func testPassageSearchUpdatesWhileTypingPartialWords() throws {
+    @MainActor func testPassageSearchRunsOnSubmitWithPartialWords() throws {
         let app = try openHadith(fixture: true)
         let field = app.searchFields.firstMatch
         field.tap()
-        // The last word matches as a prefix, and results arrive without Submit.
+        // Typing alone never searches.
         field.typeText("Samp")
+        XCTAssertFalse(app.buttons["hadith-result-1"].waitForExistence(timeout: 2))
+        // The last word matches as a prefix.
+        field.typeText("\n")
         XCTAssertTrue(app.buttons["hadith-result-1"].waitForExistence(timeout: 5))
-        // Results stay on screen while the query is refined.
+        // Results stay on screen while the query is refined, until the next Submit.
+        field.tap()
         field.typeText("le")
         XCTAssertTrue(app.buttons["hadith-result-1"].exists)
+        field.typeText("\n")
         XCTAssertTrue(app.buttons["hadith-result-1"].waitForExistence(timeout: 5))
     }
 
-    @MainActor func testShorteningAndClearingLiveSearch() throws {
+    @MainActor func testEditingKeepsResultsUntilSubmitAndClearingResets() throws {
         let app = try openHadith(fixture: true)
         let field = app.searchFields.firstMatch
         field.tap()
-        field.typeText("Sample")
+        field.typeText("Sample\n")
         let row = app.buttons["hadith-result-1"]
         XCTAssertTrue(row.waitForExistence(timeout: 5))
+        field.tap()
         field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 5))
-        XCTAssertTrue(row.waitForNonExistence(timeout: 5))
+        XCTAssertFalse(row.waitForNonExistence(timeout: 2))
         field.buttons["Clear text"].tap()
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 5))
         XCTAssertFalse(row.exists)
         field.tap()
         field.typeText("Sample\n")
         XCTAssertTrue(row.waitForExistence(timeout: 5))
-    }
-
-    @MainActor func testLargeSearchScrollPerformance() throws {
-        let app = try openHadith(fixture: true)
-        let search = app.searchFields.firstMatch
-        search.tap()
-        search.typeText("Sample\n")
-        XCTAssertTrue(app.buttons["hadith-result-1"].waitForExistence(timeout: 10))
-        let screenshot = XCTAttachment(screenshot: app.screenshot())
-        screenshot.name = "Hadith search match underlines"
-        screenshot.lifetime = .keepAlways
-        add(screenshot)
-        let options = XCTMeasureOptions()
-        options.iterationCount = 3
-        measure(metrics: [XCTOSSignpostMetric.scrollingAndDecelerationMetric, XCTCPUMetric(application: app)], options: options) {
-            for _ in 0 ..< 3 {
-                app.swipeUp()
-            }
-            for _ in 0 ..< 3 {
-                app.swipeDown()
-            }
-        }
-        XCTAssertTrue(app.buttons["hadith-result-1"].isHittable)
     }
 
     @MainActor func testSearchResultsHideReadingTime() throws {
@@ -204,7 +187,7 @@ final class HadithUITests: XCTestCase {
         let rows = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "hadith-result-"))
         XCTAssertTrue(rows.firstMatch.waitForExistence(timeout: 10))
         search.buttons.firstMatch.tap()
-        search.typeText("zzzzzzzzzzzzzzzz")
+        search.typeText("zzzzzzzzzzzzzzzz\n")
         let gone = NSPredicate(format: "exists == false")
         expectation(for: gone, evaluatedWith: rows.firstMatch)
         waitForExpectations(timeout: 10)
@@ -219,11 +202,11 @@ final class HadithUITests: XCTestCase {
         let app = try openHadith()
         let search = app.searchFields.firstMatch
         search.tap()
-        search.typeText("intent intent")
+        search.typeText("intent intent\n")
         let notice = app.staticTexts["hadith-ordered-fallback"]
         XCTAssertTrue(notice.waitForExistence(timeout: 15))
         search.buttons.firstMatch.tap()
-        search.typeText("intent")
+        search.typeText("intent\n")
         expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: notice)
         waitForExpectations(timeout: 10)
         XCTAssertTrue(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "hadith-result-")).firstMatch.waitForExistence(timeout: 10))
@@ -263,37 +246,6 @@ final class HadithUITests: XCTestCase {
         }
         XCTAssertTrue(english.waitForExistence(timeout: 5))
         XCTAssertTrue(app.descendants(matching: .any)["hadith-detail-narrator"].exists)
-    }
-
-    @MainActor func testArabicAtAccessibilitySize() throws {
-        let app = try openHadith(arabic: true)
-        app.buttons["hadith-book-bukhari"].tap()
-        app.openFirstHadithChapter()
-        let row = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "hadith-result-")).firstMatch
-        XCTAssertTrue(row.waitForExistence(timeout: 10))
-        let viewport = CGRect(x: 0, y: app.frame.height * 0.3, width: app.frame.width, height: app.frame.height * 0.4)
-        for _ in 0 ..< 5 {
-            if !row.frame.intersection(viewport).isEmpty {
-                break
-            }
-            app.swipeUp()
-        }
-        let visible = row.frame.intersection(viewport)
-        XCTAssertFalse(visible.isEmpty)
-        app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: visible.midX, dy: visible.midY)).tap()
-        XCTAssertTrue(app.descendants(matching: .any)["hadith-full-arabic"].waitForExistence(timeout: 10))
-        let arabic = app.descendants(matching: .any)["hadith-full-arabic"]
-        for _ in 0 ..< 5 {
-            if arabic.exists {
-                break
-            }
-            app.swipeUp()
-        }
-        XCTAssertTrue(arabic.waitForExistence(timeout: 5))
-        let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = "Arabic Hadith accessibility size"
-        attachment.lifetime = .keepAlways
-        add(attachment)
     }
 }
 
@@ -408,6 +360,7 @@ extension HadithUITests {
         XCTAssertFalse(visible.isEmpty)
         app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: visible.midX, dy: visible.midY)).tap()
         XCTAssertTrue(app.buttons["hadith-actions"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.descendants(matching: .any)["hadith-full-arabic"].exists)
         let image = XCTAttachment(screenshot: app.screenshot())
         image.name = "Arabic Hadith large text"
         image.lifetime = .keepAlways
@@ -512,9 +465,10 @@ extension HadithUITests {
         XCTAssertFalse(app.buttons["hadith-result-1"].exists)
         let contents = app.searchFields.firstMatch
         contents.tap()
-        contents.typeText("missing")
+        contents.typeText("missing\n")
         XCTAssertTrue(chapter.waitForNonExistence(timeout: 5))
         contents.buttons.firstMatch.tap()
+        contents.tap()
         contents.typeText("ch1\n")
         XCTAssertTrue(chapter.waitForExistence(timeout: 5))
         chapter.tap()

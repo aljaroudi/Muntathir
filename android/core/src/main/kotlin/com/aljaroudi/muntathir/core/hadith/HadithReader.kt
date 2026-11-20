@@ -195,7 +195,7 @@ class HadithReader(
         sql: ContentSql,
         request: HadithRequest,
     ): HadithPage {
-        val terms = QuranSearchText.terms(request.query)
+        val terms = QuranSearchText.queryTerms(request.query)
         if (request.query.isNotBlank() && terms.isEmpty()) return HadithPage(emptyList(), hasMore = false)
         if (request.number != null && request.number <= 0) throw HadithDatabaseException.InvalidReference()
         val conditions = mutableListOf("b.collection_id NOT IN (?,?)")
@@ -279,7 +279,7 @@ class HadithReader(
     suspend fun previews(
         ids: List<Int>,
         query: String,
-    ): List<Hadith> = read { previews(it, ids, QuranSearchText.terms(query)) }
+    ): List<Hadith> = read { previews(it, ids, QuranSearchText.queryTerms(query)) }
 
     private fun previews(
         sql: ContentSql,
@@ -315,7 +315,7 @@ class HadithReader(
             var narration =
                 sql.query("SELECT $COLUMNS $JOINS WHERE h.id = ?", id, row = ::narration).firstOrNull()
                     ?: throw HadithDatabaseException.InvalidReference()
-            val terms = QuranSearchText.terms(query)
+            val terms = QuranSearchText.queryTerms(query)
             if (narration.isSupplication) {
                 narration =
                     narration.copy(
@@ -408,15 +408,20 @@ class HadithReader(
         query: String = "",
         translation: String = SupplicationTranslation.AUTO,
         languages: List<Locale> = listOf(Locale.getDefault()),
+        locators: List<String>? = null,
     ): List<Hadith> =
         read { sql ->
-            val terms = QuranSearchText.terms(query)
-            if (query.isNotBlank() && terms.isEmpty()) return@read emptyList()
+            val terms = QuranSearchText.queryTerms(query)
+            if (locators == null && query.isNotBlank() && terms.isEmpty()) return@read emptyList()
             val titled = mutableListOf<Hadith>()
             val content = mutableListOf<Hadith>()
+            val requested = locators?.toSet()
+            val ranked = mutableMapOf<String, Hadith>()
             for (entry in supplicationIndex(sql)) {
                 currentCoroutineContext().ensureActive()
                 val row = entry.row
+                val locator = row.source?.let { "${it.book}:${it.chapterFile}:${it.number}" }
+                if (requested != null && locator !in requested) continue
                 val variants = entry.variants
                 val title = entry.title
 
@@ -427,7 +432,7 @@ class HadithReader(
                 val titleMatch = terms.all { it in title }
                 val selected = SupplicationTranslation.selected(variants, translation, languages)
                 val matched = selected?.takeIf(::matches) ?: variants.firstOrNull(::matches)
-                if (terms.any { it !in entry.text } && matched == null) continue
+                if (requested == null && terms.any { it !in entry.text } && matched == null) continue
                 val preview = HadithText.preview(row.arabic, terms)
                 var result =
                     row.copy(
@@ -436,13 +441,17 @@ class HadithReader(
                         english = "",
                         arabicPreview = preview,
                     )
-                val shown = if (titleMatch) selected else matched
+                val shown = if (titleMatch || requested != null) selected else matched
                 if (terms.isNotEmpty() && shown != null) {
                     result = result.copy(translation = shown.copy(text = HadithText.preview(shown.text, terms).text))
                 }
-                if (titleMatch) titled += result else content += result
+                when {
+                    requested != null && locator != null -> ranked[locator] = result
+                    titleMatch -> titled += result
+                    else -> content += result
+                }
             }
-            titled + content
+            locators?.mapNotNull(ranked::get) ?: (titled + content)
         }
 
     suspend fun source(id: Int): HadithSource? =

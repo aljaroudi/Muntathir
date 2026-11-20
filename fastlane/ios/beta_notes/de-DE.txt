@@ -1,1 +1,2 @@
+Aktualisiere die App von einer früheren Version und öffne sie. Prüfe, ob die Versionshinweise erscheinen. Schließe sie und öffne die App erneut. Die Hinweise sollten nicht noch einmal erscheinen.
 Suchen Sie beim Tippen nach Koranversen und Hadithen. Probieren Sie ein unvollständiges letztes Wort aus. Blenden Sie arabische Vokalzeichen im Lesemodus aus und wieder ein und öffnen Sie eine gespeicherte Markierung. Prüfen Sie das Umblättern im Mushaf nach dem Markieren.

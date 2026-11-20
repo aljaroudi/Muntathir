@@ -74,10 +74,10 @@ final class VerseActionsUITests: XCTestCase {
         let search = app.searchFields.firstMatch
         XCTAssertTrue(search.waitForExistence(timeout: 5))
         search.tap()
-        search.typeText("missing-note")
+        search.typeText("missing-note\n")
         XCTAssertTrue(app.buttons["saved-verse-1:1"].waitForNonExistence(timeout: 5))
         search.buttons["Clear text"].tap()
-        search.typeText("private")
+        search.typeText("private\n")
         XCTAssertTrue(app.buttons["saved-verse-1:1"].waitForExistence(timeout: 5))
         if app.buttons["Close"].exists {
             app.buttons["Close"].tap()

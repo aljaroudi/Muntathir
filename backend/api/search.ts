@@ -3,14 +3,38 @@ import { normalize, type SearchRequest } from './core.ts'
 export type Reference =
   | { kind: 'quran'; chapter: number; verse: number }
   | { kind: 'hadith'; book: string; chapter: string; number: number }
-  | { kind: 'dua'; id: string; passage?: number }
+  | { kind: 'dua'; id: string; passage?: number; locator?: string }
+  | { kind: 'figure'; id: string }
   | { kind: 'rulings'; authority: string; language: string; id: string }
 export type Hit = Reference & { score: number | null }
 export type Point = {
   id: string
   score: number
-  payload: { item_id: string; ref: Reference; text?: string }
+  payload: { item_id: string; ref: Reference; text?: string; search_text?: string }
   vector?: number[]
+}
+/** Literal-match tiers, best first: the whole query as consecutive words, every word, meaning only. */
+export const PHRASE = 2,
+  WORDS = 1,
+  MEANING = 0
+export function words(text: string): string[] {
+  return normalize(text).match(/[\p{L}\p{N}]+/gu) ?? []
+}
+/** Whether [query] appears in [text] as consecutive whole words. */
+export function containsPhrase(query: string[], text: string[]): boolean {
+  if (!query.length || query.length > text.length) return false
+  outer: for (let i = 0; i + query.length <= text.length; i++) {
+    for (let j = 0; j < query.length; j++) if (text[i + j] !== query[j]) continue outer
+    return true
+  }
+  return false
+}
+/** Sorts by tier, keeping the existing order within each tier. */
+export function byTier<T>(values: T[], tier: (value: T) => number): T[] {
+  return values
+    .map((value, index) => ({ value, index, tier: tier(value) }))
+    .sort((a, b) => b.tier - a.tier || a.index - b.index)
+    .map((entry) => entry.value)
 }
 export class Qdrant {
   private cachedActive: { name: string; expiresAt: number } | null = null
@@ -76,7 +100,7 @@ export class Qdrant {
 export function filter(input: SearchRequest): { must: any[] } {
   const must: any[] = []
   for (const [key, values] of [
-    ['kind', input.kinds],
+    ['kind', input.kinds ?? ['quran', 'hadith', 'dua', 'rulings']],
     ['source_id', input.sources],
     ['language', input.languages],
   ] as const) {
@@ -107,8 +131,9 @@ export function cosine(a: number[], b: number[]): number {
 export function fuse(
   semantic: Point[],
   lexical: Point[],
-  scores: Map<string, number>,
+  scores: Map<string, number> | null,
   limit: number,
+  tiers: Map<string, number> = new Map(),
 ) {
   const passages = new Map<string, { point: Point; rank: number }>()
   for (const list of [semantic, lexical])
@@ -119,20 +144,30 @@ export function fuse(
     })
   const items = new Map<
     string,
-    { id: string; pointId: string; ref: Reference; rank: number; score: number; text: string }
+    {
+      id: string
+      pointId: string
+      ref: Reference
+      rank: number
+      score: number | null
+      text: string
+      tier: number
+    }
   >()
   for (const { point, rank } of passages.values()) {
-    const score = scores.get(point.id)
-    if (score === undefined || !Number.isFinite(score)) throw new Error('Missing cosine')
+    const score = scores?.get(point.id) ?? null
+    if (scores && !Number.isFinite(score)) throw new Error('Missing cosine')
     const id = point.payload.item_id,
-      previous = items.get(id)
+      previous = items.get(id),
+      tier = tiers.get(point.id) ?? MEANING
     if (previous) {
+      previous.tier = Math.max(previous.tier, tier)
       if (rank > previous.rank) {
         previous.pointId = point.id
         previous.text = point.payload.text ?? ''
       }
       previous.rank = Math.max(previous.rank, rank)
-      previous.score = Math.max(previous.score, score)
+      if (score !== null) previous.score = Math.max(previous.score ?? score, score)
     } else {
       items.set(id, {
         id,
@@ -141,11 +176,13 @@ export function fuse(
         rank,
         score,
         text: point.payload.text ?? '',
+        tier,
       })
     }
   }
+  // Exact phrases first, then every word, then meaning; fusion rank orders each tier.
   return [...items.values()]
-    .sort((a, b) => b.rank - a.rank || a.id.localeCompare(b.id))
+    .sort((a, b) => b.tier - a.tier || b.rank - a.rank || a.id.localeCompare(b.id))
     .slice(0, limit)
 }
 export async function retrieve(
@@ -192,10 +229,9 @@ export async function retrieve(
         .map(([, hit]) => hit),
     }
   }
-  if (!vector) throw new Error('Missing query embedding')
   selected.must.push({
     should: [
-      { key: 'kind', match: { any: ['hadith', 'dua', 'rulings'] } },
+      { key: 'kind', match: { any: ['hadith', 'dua', 'rulings', 'figure'] } },
       { key: 'search_eligible', match: { value: true } },
     ],
   })
@@ -206,13 +242,14 @@ export async function retrieve(
     with_vector: false,
   }
   const [rawSemantic, lexical] = await Promise.all([
-    db.query(collection, {
+    vector ? db.query(collection, {
       ...common,
       query: vector,
       params: { exact: true },
-    }),
+    }).catch(() => null) : null,
     db.query(collection, {
       ...common,
+      with_payload: ['item_id', 'ref', 'search_text'],
       filter: {
         must: [...selected.must, { key: 'search_text', match: { text: normalize(input.query) } }],
       },
@@ -220,37 +257,57 @@ export async function retrieve(
       using: 'search_text',
     }),
   ])
-  const semantic = rawSemantic
+  let semantic = (rawSemantic ?? [])
     .sort((a, b) => b.score - a.score || a.id.localeCompare(b.id))
     .slice(0, 100)
   const scores = new Map(semantic.map((p) => [p.id, p.score]))
+  let degraded = rawSemantic === null
   const missing = lexical.filter((p) => !scores.has(p.id)).map((p) => p.id)
-  if (missing.length) {
-    const points = await db.call(`/collections/${collection}/points`, {
-      ids: missing,
-      with_vector: true,
-      with_payload: false,
-    })
-    for (const p of points) scores.set(p.id, cosine(vector, p.vector))
+  if (vector && rawSemantic && missing.length) {
+    try {
+      const points = await db.call(`/collections/${collection}/points`, {
+        ids: missing,
+        with_vector: true,
+        with_payload: false,
+      })
+      for (const p of points) scores.set(p.id, cosine(vector, p.vector))
+      if (missing.some(id => !Number.isFinite(scores.get(id)))) throw new Error('Missing vector')
+    } catch {
+      semantic = []
+      degraded = true
+    }
   }
-  const ranked = fuse(semantic, lexical, scores, input.limit)
+  // Keyword hits contain every word; those with the whole query in order are exact phrases.
+  const query = words(input.query)
+  const tiers = new Map(
+    lexical.map((p) => [
+      p.id,
+      containsPhrase(query, words(p.payload.search_text ?? '')) ? PHRASE : WORDS,
+    ]),
+  )
+  const ranked = fuse(semantic, lexical, degraded ? null : scores, input.limit, tiers)
   let texts = new Map<string, string>()
   if (includePassages && ranked.length) {
     const points = await db.call(`/collections/${collection}/points`, {
       ids: ranked.slice(0, 20).map((p) => p.pointId),
       with_payload: ['text'],
       with_vector: false,
-    })
-    if (Array.isArray(points)) {
+    }).catch(() => null)
+    if (!Array.isArray(points)) degraded = true
+    else {
       texts = new Map(points.map((p: any) => [String(p.id), p.payload?.text ?? '']))
     }
   }
+  const missingPassages = includePassages && ranked.slice(0, 20).some(p => !texts.get(p.pointId) && !p.text)
   return {
+    degraded: degraded || missingPassages,
+    missingPassages,
     results: ranked.map((p) => ({ ...p.ref, score: p.score })),
     candidates: ranked.map((p) => ({
       id: p.id,
       hit: { ...p.ref, score: p.score },
       text: texts.get(p.pointId) ?? p.text,
+      tier: p.tier,
     })),
     itemIDs: ranked.map((p) => p.id),
     semanticIDs: semantic.map((p) => p.id),

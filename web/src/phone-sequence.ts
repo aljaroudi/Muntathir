@@ -12,12 +12,12 @@ export function nextMediaIndex(
 }
 
 export function mountPhoneSequence(preview: HTMLElement) {
-  const slides = [...preview.querySelectorAll<HTMLElement>("[data-preview-slide]")]
-  const video = preview.querySelector<HTMLVideoElement>("video")!
-  const caption = preview.querySelector<HTMLElement>("[data-preview-caption]")!
-  const controls = preview.querySelector<HTMLElement>("[data-preview-controls]")!
-  const toggle = preview.querySelector<HTMLButtonElement>("[data-preview-toggle]")!
-  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)")
+  const slides = [...preview.querySelectorAll<HTMLElement>('[data-preview-slide]')]
+  const video = preview.querySelector<HTMLVideoElement>('video')!
+  const caption = preview.querySelector<HTMLElement>('[data-preview-caption]')!
+  const controls = preview.querySelector<HTMLElement>('[data-preview-controls]')!
+  const toggle = preview.querySelector<HTMLButtonElement>('[data-preview-toggle]')!
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)')
   const failed = new Set<number>()
   let current = 0
   let paused = false
@@ -32,13 +32,13 @@ export function mountPhoneSequence(preview: HTMLElement) {
     video.pause()
     toggle.textContent =
       paused || reducedMotion.matches ? toggle.dataset.play! : toggle.dataset.pause!
-    for (const button of controls.querySelectorAll<HTMLButtonElement>("button")) {
+    for (const button of controls.querySelectorAll<HTMLButtonElement>('button')) {
       button.disabled =
         failed.size === slides.length || (button === toggle && reducedMotion.matches)
     }
     if (!playing() || failed.size === slides.length) return
     if (slides[current] === video) {
-      if (!video.hasAttribute("src")) video.src = video.dataset.src!
+      if (!video.hasAttribute('src')) video.src = video.dataset.src!
       const attempt = generation
       void video.play().catch(() => {
         // A pause during an outstanding play request is not a broken video.
@@ -62,9 +62,9 @@ export function mountPhoneSequence(preview: HTMLElement) {
     current = index
     slides.forEach((slide, i) => {
       slide.dataset.active = String(i === index)
-      slide.setAttribute("aria-hidden", String(i !== index))
+      slide.setAttribute('aria-hidden', String(i !== index))
     })
-    caption.setAttribute("aria-live", paused ? "polite" : "off")
+    caption.setAttribute('aria-live', paused ? 'polite' : 'off')
     caption.textContent = slides[index].dataset.caption!
     schedule()
   }
@@ -75,27 +75,27 @@ export function mountPhoneSequence(preview: HTMLElement) {
   }
 
   slides.forEach((slide, index) => {
-    slide.addEventListener("error", () => fail(index))
+    slide.addEventListener('error', () => fail(index))
     if (slide instanceof HTMLImageElement && slide.complete && !slide.naturalWidth)
       failed.add(index)
   })
-  video.addEventListener("ended", () => {
+  video.addEventListener('ended', () => {
     if (playing()) show(nextMediaIndex(current, slides.length, failed))
   })
   for (const direction of [-1, 1]) {
     preview
       .querySelector<HTMLButtonElement>(`[data-preview-step="${direction}"]`)!
-      .addEventListener("click", () => {
+      .addEventListener('click', () => {
         paused = true
         show(nextMediaIndex(current, slides.length, failed, direction))
       })
   }
-  toggle.addEventListener("click", () => {
+  toggle.addEventListener('click', () => {
     paused = !paused
     schedule()
   })
-  document.addEventListener("visibilitychange", schedule)
-  reducedMotion.addEventListener("change", schedule)
+  document.addEventListener('visibilitychange', schedule)
+  reducedMotion.addEventListener('change', schedule)
   new IntersectionObserver(
     ([entry]) => {
       visible = entry.isIntersecting

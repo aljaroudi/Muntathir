@@ -39,11 +39,15 @@ Duplicate translations/passages collapse to a content item; the reported score i
 the maximum cosine among its retrieved candidate passages. Clients may filter
 scores but cannot recover omitted results; no default threshold is applied.
 HTTP 400/413 indicate invalid input, 429 quota exhaustion, 503 unavailability.
-The app hydrates reader text from local assets. Local search runs first; every
-completed text search offers **Search by meaning**, with an online consent button.
-Typing alone never calls Gemini. Query/scope changes cancel and reset online results.
-Translation preferences control local previews; online retrieval remains multilingual.
-There is no separate Search tab.
+Submitting a library search tries hybrid retrieval, then keyword retrieval if embedding or vector search fails.
+Jev reranks either candidate list when available. Keyword-only hits have a null score. Clients resolve
+references against local assets and fall back to local search on failure. An empty success is final.
+
+Requests without `kinds` search Quran, Hadith, Dua and Rulings. Request `kinds: ["figure"]` explicitly
+for figure IDs. New supplication hits retain the existing ID and may include a `locator` for installed packs.
+Deploy the API with the legacy kind filter before activating an index containing figures. Smoke-test both
+unscoped and scoped requests against the candidate. Retain the previous collection and switch the alias
+back before reverting the API. Allow the 30-second alias cache to expire before serving the old API.
 
 ## Local operation
 
@@ -71,6 +75,10 @@ searches remain isolated across revision changes.
 if its health endpoint fails. This does not bypass FileVault's login requirement.
 No forced Mac reboot or system-wide sleep setting changes are performed.
 
+To deploy API code changes, run `just backend-deploy` from the checkout used by the
+launch agent on the hosting Mac. It checks and tests the API before restarting the
+service. Search index updates use the import and activation commands above.
+
 ## Cloudflare
 
 `python3 backend/cloudflare_setup.py` creates the dedicated named tunnel and DNS
@@ -87,8 +95,7 @@ Run `python3 backend/configure_search.py` to generate a private rate-limit salt.
 After the public latency gate passes, `python3 backend/configure_search.py --app`
 checks the public compact-reference response and writes the ignored app URL plist.
 
-Before cutover, validate the permanent URL, then configure the app's
-`SEMANTIC_SEARCH_URL` with the complete `/v1/search` URL (or generated ignored plist).
+Both clients default to the public endpoint. Override it with the app URL setting or generated plist for staging.
 Supabase search resources were removed after public cutover, relevance and load checks passed.
 No backups are requested; deletion is irreversible. Working import artifacts remain.
 
@@ -121,9 +128,7 @@ public latency, and expert relevance review must be reported separately from tes
 
 ## Literal search and optional reranking
 
-The app ranks normalized whole-word phrases before literal substrings. Root, typo,
-and stem-only matches are delegated to explicit **Search by meaning**. API results
-remain below local results, with duplicates removed. Questions use the same input.
+The app ranks normalized whole-word phrases before literal substrings. Submitted queries use the remote ranking when available. Local text search supplies offline results.
 Search underlines are temporary and are never saved or exported.
 
 Quran text/meaning searches exclude verses with fewer than seven normalized Arabic

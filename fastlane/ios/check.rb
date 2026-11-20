@@ -233,16 +233,17 @@ module UI
 end
 class LaneCheck
   attr_reader :calls
-  def initialize = @calls = []
+  def initialize(platform = :ios)
+    @platform = platform
+    @calls = []
+  end
   def default_platform(*) = nil
   def desc(*) = nil
   def sh(*args) = @calls << [:sh, args]
   def platform(name)
-    @platform = name
-    yield
+    yield if @platform == name
   end
   def lane(name, &block)
-    name = :"android_#{name}" if @platform == :android
     define_singleton_method(name) { |options = {}| instance_exec(options, &block) }
   end
   alias private_lane lane
@@ -254,7 +255,8 @@ class LaneCheck
 end
 check = LaneCheck.new
 fastfile = File.expand_path("../Fastfile", __dir__)
-check.instance_eval(File.read(fastfile), fastfile)
+android = LaneCheck.new(:android)
+[check, android].each { |runner| runner.instance_eval(File.read(fastfile), fastfile) }
 
 Dir.mktmpdir do |dir|
   bundle = File.join(dir, "app release.aab")
@@ -264,22 +266,36 @@ Dir.mktmpdir do |dir|
   previous_key = ENV["SUPPLY_JSON_KEY"]
   begin
     ENV["SUPPLY_JSON_KEY"] = key
-    rejects("Missing AAB accepted") { check.android_internal }
-    check.android_internal(aab: bundle)
-    action, upload = check.calls.pop
+    tracks = { "internal" => [5], "alpha" => [], "beta" => [2], "production" => [3, 4] }
+    android.define_singleton_method(:google_play_track_version_codes) do |track:, json_key:, package_name:|
+      raise "Wrong Play app or credentials" unless package_name == "com.aljaroudi.muntathir" && json_key == key
+      tracks.fetch(track)
+    end
+    play = { package_name: "com.aljaroudi.muntathir", json_key: key }
+    assert(android.next_play_version_code(play) == 6, "Play build 5 must advance to 6")
+    tracks["production"] = [9]
+    assert(android.next_play_version_code(play) == 10, "Use the highest version code across tracks")
+    tracks.each_key { |track| tracks[track] = [] }
+    assert(android.next_play_version_code(play) == 1, "Start an empty Play app at 1")
+    rejects("Missing AAB accepted") { android.beta(aab: File.join(dir, "missing.aab")) }
+    android.beta(aab: bundle)
+    action, upload = android.calls.pop
     assert(action == :upload_to_play_store && upload[:aab] == bundle && upload[:json_key] == key &&
-           upload[:track] == "internal" && upload[:release_status] == "draft" && upload[:validate_only],
-           "Android internal lane must validate by default")
-    check.android_internal(aab: bundle, draft: true)
-    assert(check.calls.pop.last[:validate_only] == false, "Explicit Android draft must enable upload")
+           upload[:track] == "internal" && upload[:release_status] == "completed" && !upload[:validate_only],
+           "Android internal lane must publish by default")
+    android.beta(aab: bundle, validate_only: true)
+    assert(android.calls.pop.last[:validate_only], "Explicit validation must prevent publishing")
+    android.beta(aab: bundle, draft: true)
+    draft = android.calls.pop.last
+    assert(draft[:release_status] == "draft" && !draft[:validate_only], "Explicit Android draft must save a draft")
   ensure
     ENV["SUPPLY_JSON_KEY"] = previous_key
   end
 end
 
 %i[screenshots style].each do |operation|
-  check.public_send(:"android_#{operation}", languages: "ar,en,fa")
-  _, args = check.calls.pop
+  android.public_send(operation, languages: "ar,en,fa")
+  _, args = android.calls.pop
   assert(args.last(2) == [operation.to_s, "ar,en,fa"], "Android #{operation} arguments changed")
 end
 check.screenshots(languages: "ar,en", workers: 1)
@@ -370,9 +386,14 @@ MuntathirRelease.define_singleton_method(:test_destinations) { |include_ipad:| i
 check.tests
 regressions = check.calls.find { |name, _| name == :run_tests }.last
 assert(regressions[:destination] == [iphone], "Local regression lane must run on one iPhone by default")
-assert(regressions[:skip_testing] == ["MuntathirUITests/MarketingScreenshotTests", "MuntathirUITests/QuranScreenshotRefreshTests"], "Regression lane must exclude only marketing captures")
+assert(regressions[:testplan] == "Muntathir" && !regressions.key?(:skip_testing), "Regression lane must use the Muntathir test plan, which excludes marketing captures")
 assert(!regressions[:parallel_testing] && regressions[:disable_concurrent_testing], "Regression lane must serialize UI tests")
 assert(regressions[:derived_data_path] == File.join(MuntathirRelease::ROOT, "build/DerivedData"), "Regression and marketing build caches must stay separate")
+assert(!regressions.key?(:only_testing), "Full regression lane must include UI tests")
+check.calls.clear
+check.tests(unit_only: true)
+unit = check.calls.find { |name, _| name == :run_tests }.last
+assert(unit[:testplan] == "Muntathir" && unit[:only_testing] == ["MuntathirTests"], "unit_only must run only MuntathirTests")
 
 MuntathirRelease.define_singleton_method(:validate_media!) { |**_| }
 config = { "submission_information" => { "export_compliance_uses_encryption" => false } }
@@ -381,7 +402,7 @@ rejects("Unconfirmed compliance accepted") { MuntathirRelease.compliance!({}) }
 app = Struct.new(:id, :bundle_id).new(app_id, "com.aljaroudi.Muntathir")
 app.define_singleton_method(:get_edit_app_store_version) { |**_| draft_version }
 context = { app: app, version: version, draft: draft_version, config: config, encryption: false,
-            beta_notes: notes, feedback_email: "review@example.com" }
+            release_notes: MuntathirRelease.release_notes(version).slice(*MuntathirRelease::LOCALES), beta_notes: notes, feedback_email: "review@example.com" }
 synced_packs = 0
 synced_creatives = 0
 draft_localizations = [Struct.new(:locale, :id).new("en-US", "loc-en")]
@@ -437,7 +458,7 @@ check.define_singleton_method(:archive_and_upload) { |_| calls << [:archive_and_
 
 synced_packs = 0
 check.calls.clear
-check.testflight_public(force: "true")
+check.beta(force: "true")
 assert(synced_packs == 1, "TestFlight must sync Asset Packs")
 assert(check.calls.assoc(:release_context).last == { app_store: false, force: true }, "TestFlight force did not reach the freshness check")
 assert(check.calls.assoc(:run_tests).last[:destination] == [iphone], "TestFlight ran on multiple devices")
@@ -448,6 +469,10 @@ assert(beta[:groups] == ["Public"] && beta[:distribute_external] && beta[:submit
 assert(beta[:distribute_only] && beta[:app_version] == build.app_version && beta[:build_number] == build.version, "Public beta must distribute only the processed build")
 assert(!beta[:skip_waiting_for_build_processing] && beta[:wait_processing_timeout_duration].positive?, "Pilot must wait for beta details before distributing the processed build")
 assert(beta[:localized_build_info] == notes.transform_values { |text| { whats_new: text } }, "Beta localization missing")
+
+check.calls.clear
+check.beta(skip_tests: true, force: true)
+assert(!check.calls.assoc(:run_tests) && check.calls.assoc(:upload_to_testflight).last == beta, "TestFlight must skip tests when requested")
 
 synced_packs = 0
 synced_creatives = 0
@@ -461,13 +486,14 @@ check.define_singleton_method(:upload_to_app_store) do |**options|
   draft_version.release_type = "AFTER_APPROVAL" if options[:automatic_release]
 end
 rows.replace([new_upload])
-check.app_store
+check.release
 assert(synced_packs == 1, "App Store must sync Asset Packs")
 assert(synced_creatives == 1, "App Store must sync header and search creatives")
 assert(check.calls.none? { |name, _| name == :archive_and_upload }, "App Store must reuse the TestFlight build instead of uploading a new binary")
 assert(MuntathirRelease.review_pack_versions == ["pack-v2"], "App Store review must attach only pack versions that differ from the live packs")
 assert(check.calls.assoc(:run_tests).last[:destination] == [iphone, ipad], "App Store must test on both devices")
 listing, review = check.calls.filter_map { |name, options| options if name == :upload_to_app_store }
+assert(listing.fetch(:release_notes) == context.fetch(:release_notes), "App Store listing must use the bundled release notes")
 assert(listing[:metadata_path] == File.join(__dir__, "metadata") &&
        File.basename(listing[:screenshots_path]).start_with?("app-store-screenshots-"),
        "App Store listing must use the platform metadata and Apple build output")
@@ -479,7 +505,7 @@ assert(check.calls.index { |name, _| name == :upload_to_app_store } < check.call
 %i[tests refresh_screenshots].each do |step|
   original = check.method(step)
   check.define_singleton_method(step) { |**_| raise "#{step} failed" }
-  lanes = step == :tests ? %i[testflight_public app_store] : [:app_store]
+  lanes = step == :tests ? %i[beta release] : [:release]
   lanes.each do |lane|
     check.calls.clear
     synced_creatives = 0
@@ -498,7 +524,7 @@ validated_media = 0
 MuntathirRelease.define_singleton_method(:validate_media!) { |**_| validated_media += 1 }
 refresh = check.method(:refresh_screenshots)
 check.define_singleton_method(:refresh_screenshots) { |**_| raise "refresh_screenshots must be skipped" }
-check.app_store(force: "true", skip_tests: "true", skip_screenshots: "true")
+check.release(force: "true", skip_tests: "true", skip_screenshots: "true")
 assert(validated_media == 1, "skip_screenshots must still validate existing store and creative assets")
 assert(synced_creatives == 1, "skip_screenshots must still sync creatives after listing upload")
 assert(check.calls.none? { |name, _| name == :run_tests }, "skip_tests must skip regressions")
@@ -508,7 +534,7 @@ synced_creatives = 0
 MuntathirRelease.define_singleton_method(:sync_creative_assets!) { |_| raise "creative sync failed" }
 check.calls.clear
 draft_version.release_type = "MANUAL"
-rejects("App Store ignored failing creative sync") { check.app_store }
+rejects("App Store ignored failing creative sync") { check.release }
 assert(check.calls.one? { |name, _| name == :upload_to_app_store }, "Creative failure must stop before review submit")
 assert(check.calls.assoc(:upload_to_app_store).last[:submit_for_review] != true, "Review submitted after creative failure")
 MuntathirRelease.define_singleton_method(:sync_creative_assets!) do |localizations|

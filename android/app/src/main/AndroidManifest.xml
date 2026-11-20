@@ -17,6 +17,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!-- The Rakaat tracker measures front-camera brightness on the device; frames are never stored. -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Optional: Do Not Disturb during a Rakaat session, only once the user grants access in Settings. -->
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
     <!-- CAMERA would otherwise imply a required rear camera. -->
     <uses-feature
         android:name="android.hardware.camera"

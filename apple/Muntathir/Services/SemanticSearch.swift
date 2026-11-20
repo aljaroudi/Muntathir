@@ -2,6 +2,7 @@ import Foundation
 
 struct SemanticSearchResult: Decodable, Identifiable, Sendable {
     enum Reference: Sendable {
+        case figure(String)
         case quran(chapter: Int, verse: Int)
         case hadith(book: String, chapter: String, number: Int)
         case dua(id: String, passage: Int?)
@@ -9,10 +10,12 @@ struct SemanticSearchResult: Decodable, Identifiable, Sendable {
     }
 
     let reference: Reference
+    let locator: String?
     let score: Double?
 
     var id: String {
         switch reference {
+        case let .figure(id): "figure:\(id)"
         case let .quran(chapter, verse): "quran:\(chapter):\(verse)"
         case let .hadith(book, chapter, number): "hadith:\(book):\(chapter):\(number)"
         case let .rulings(authority, language, id): "rulings:\(authority):\(language):\(id)"
@@ -24,7 +27,7 @@ struct SemanticSearchResult: Decodable, Identifiable, Sendable {
         switch reference {
         case let .quran(chapter, verse): "\(chapter):\(verse)"
         case let .hadith(book, _, number): "\(book) · \(number)"
-        case let .dua(id, _): id
+        case let .figure(id), let .dua(id, _): id
         case let .rulings(authority, _, id): "\(authority) · \(id)"
         }
     }
@@ -34,10 +37,11 @@ struct SemanticSearchResult: Decodable, Identifiable, Sendable {
         return HadithSource(book: book, chapterFile: chapter, number: number, sourceID: nil)
     }
 
-    private enum CodingKeys: String, CodingKey { case kind, chapter, verse, book, number, id, passage, score, authority, language }
+    private enum CodingKeys: String, CodingKey { case kind, chapter, verse, book, number, id, passage, score, authority, language, locator }
 
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
+        locator = try values.decodeIfPresent(String.self, forKey: .locator)
         score = try values.decodeIfPresent(Double.self, forKey: .score)
         if let score, !score.isFinite || !(-1.000001 ... 1.000001).contains(score) {
             throw DecodingError.dataCorruptedError(forKey: .score, in: values, debugDescription: "Invalid cosine similarity")
@@ -66,6 +70,8 @@ struct SemanticSearchResult: Decodable, Identifiable, Sendable {
                 throw DecodingError.dataCorruptedError(forKey: .id, in: values, debugDescription: "Invalid rulings reference")
             }
             reference = .rulings(authority: authority, language: language, id: id)
+        case "figure":
+            reference = try .figure(values.decode(String.self, forKey: .id))
         case "dua":
             reference = try .dua(id: values.decode(String.self, forKey: .id), passage: values.decodeIfPresent(Int.self, forKey: .passage))
         default:
@@ -85,13 +91,16 @@ struct SemanticSearchClient: Sendable {
             if usesTestFixture {
                 return Self(endpoint: URL(string: "https://search.invalid/v1/search")!)
             }
+            if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+                return nil
+            }
         #endif
         let local: [String: String]? = Bundle.main.url(forResource: "SemanticSearchConfiguration", withExtension: "plist")
             .flatMap { try? Data(contentsOf: $0) }
             .flatMap { try? PropertyListDecoder().decode([String: String].self, from: $0) }
         let configuredURL = Bundle.main.object(forInfoDictionaryKey: "SemanticSearchURL") as? String
-        let value = configuredURL.flatMap { $0.hasPrefix("https://") ? $0 : nil } ?? local?["url"]
-        guard let value, let url = URL(string: value), url.scheme == "https", url.host != nil,
+        let value = configuredURL.flatMap { $0.hasPrefix("https://") ? $0 : nil } ?? local?["url"] ?? "https://search.xn--pgbou4cf.com/v1/search"
+        guard let url = URL(string: value), url.scheme == "https", url.host != nil,
               url.path == "/v1/search" else { return nil }
         return Self(endpoint: url)
     }
@@ -109,16 +118,20 @@ struct SemanticSearchClient: Sendable {
                 if query == "unavailable" {
                     throw URLError(.notConnectedToInternet)
                 }
-                let json = kind == "hadith"
-                    ? #"[{"kind":"hadith","book":"bukhari","chapter":"1.json","number":105,"score":0.8}]"#
-                    : #"[{"kind":"quran","chapter":2,"verse":255,"score":0.8}]"#
+                let json = switch kind {
+                case "hadith": #"[{"kind":"hadith","book":"bukhari","chapter":"1.json","number":105,"score":0.8}]"#
+                case "figure": #"[{"kind":"figure","id":"prophet-muhammad","score":null}]"#
+                case "rulings": #"[{"kind":"rulings","authority":"sistani","language":"en","id":"42","score":null}]"#
+                case "dua": #"[{"kind":"dua","id":"fixture","locator":"openiti-Sahifa-Sajjadiyya:2.json:2","score":null}]"#
+                default: #"[{"kind":"quran","chapter":2,"verse":255,"score":0.8}]"#
+                }
                 let results = try JSONDecoder().decode([SemanticSearchResult].self, from: Data(json.utf8))
                 return results.filter { result in
                     guard let chapter else { return true }
                     switch result.reference {
                     case let .quran(number, _): return String(number) == chapter
                     case let .hadith(_, file, _): return file == chapter
-                    case .dua, .rulings: return false
+                    case .dua, .rulings, .figure: return false
                     }
                 }
             }

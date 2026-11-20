@@ -84,13 +84,13 @@ struct ContentView: View {
         }
         .task { model.reschedule() }
         .task { await rulingsAssets.monitor() }
-        .task { await rulingsAssets.refresh() }
+        .task { await rulingsAssets.refresh(); await rulingsAssets.checkForUpdates() }
         .task { await hadithAssets.monitor() }
         .task { await supplicationAssets.monitor() }
         .task { await QuranTranslationStore.shared.monitor() }
-        .task { await QuranTranslationStore.shared.refresh() }
-        .task { await hadithAssets.refresh() }
-        .task { await supplicationAssets.refresh() }
+        .task { await QuranTranslationStore.shared.refresh(); await QuranTranslationStore.shared.checkForUpdates() }
+        .task { await hadithAssets.refresh(); await hadithAssets.checkForUpdates() }
+        .task { await supplicationAssets.refresh(); await supplicationAssets.checkForUpdates() }
         .onChange(of: model.locationService.current) { _, location in
             if model.liveLocation != nil, let location {
                 model.applyLive(location)
@@ -104,7 +104,14 @@ struct ContentView: View {
             }
             if phase == .active {
                 model.reschedule()
-                Task { await rulingsAssets.refresh(); await hadithAssets.refresh(); await supplicationAssets.refresh(); await QuranTranslationStore.shared.refresh() }
+                Task {
+                    await rulingsAssets.refresh(); await hadithAssets.refresh(); await supplicationAssets.refresh(); await QuranTranslationStore.shared.refresh()
+                    // Each check is throttled to once per day and keeps current content readable while updating.
+                    await rulingsAssets.checkForUpdates()
+                    await hadithAssets.checkForUpdates()
+                    await supplicationAssets.checkForUpdates()
+                    await QuranTranslationStore.shared.checkForUpdates()
+                }
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in model.reschedule() }

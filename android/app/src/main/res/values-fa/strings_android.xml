@@ -25,4 +25,6 @@
     <string name="allow_precise_location">اجازه دادن به مکان دقیق</string>
     <string name="compass_north">ش</string>
     <string name="fonts">قلم‌ها</string>
+    <string name="silence_notifications_while_praying">بی‌صدا کردن اعلان‌ها هنگام نماز</string>
+    <string name="silence_notifications_footer">دسترسی «مزاحم نشوید» را مجاز کنید تا هنگام شمارش روشن و پس از پایان خاموش شود.</string>
 </resources>

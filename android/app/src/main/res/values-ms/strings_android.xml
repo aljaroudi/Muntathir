@@ -25,4 +25,6 @@
     <string name="allow_precise_location">Benarkan lokasi tepat</string>
     <string name="compass_north">U</string>
     <string name="fonts">Fon</string>
+    <string name="silence_notifications_while_praying">Senyapkan pemberitahuan semasa solat</string>
+    <string name="silence_notifications_footer">Benarkan akses Jangan Ganggu supaya ia aktif semasa mengira dan dimatikan selepas selesai.</string>
 </resources>

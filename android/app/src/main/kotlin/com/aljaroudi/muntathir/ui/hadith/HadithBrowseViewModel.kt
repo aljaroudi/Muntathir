@@ -8,6 +8,7 @@ import com.aljaroudi.muntathir.core.hadith.HadithChapter
 import com.aljaroudi.muntathir.core.hadith.HadithCollection
 import com.aljaroudi.muntathir.core.hadith.HadithCursor
 import com.aljaroudi.muntathir.core.hadith.HadithIntroduction
+import com.aljaroudi.muntathir.core.hadith.HadithPage
 import com.aljaroudi.muntathir.core.hadith.HadithRequest
 import com.aljaroudi.muntathir.core.hadith.HadithSearch
 import com.aljaroudi.muntathir.core.hadith.LibraryStatus
@@ -21,7 +22,6 @@ import com.aljaroudi.muntathir.data.library.ContentLibraries
 import com.aljaroudi.muntathir.search.SmartSearch
 import com.aljaroudi.muntathir.ui.navigation.HadithBrowseRoute
 import com.aljaroudi.muntathir.ui.navigation.HadithRoute
-import com.aljaroudi.muntathir.ui.search.SmartSearchRunner
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -69,7 +69,7 @@ class HadithBrowseViewModel
         private val history: SearchHistoryStore,
         private val session: HadithSessionStore,
         private val settings: ReadingSettings,
-        smartSearch: SmartSearch,
+        private val smartSearch: SmartSearch,
     ) : ViewModel() {
         @AssistedFactory
         interface Factory {
@@ -121,9 +121,6 @@ class HadithBrowseViewModel
         /** A restored first visible row to scroll to once loaded. */
         val restoredRow: StateFlow<String?> = mutableRestoredRow.asStateFlow()
 
-        /** Opt-in meaning search for the submitted query, within this screen's book or chapter. */
-        val smart = SmartSearchRunner<Hadith>(viewModelScope, smartSearch.client)
-
         private val retry = MutableStateFlow(0)
         private var cursor: HadithCursor? = null
         private var loadingJob: Job? = null
@@ -169,13 +166,11 @@ class HadithBrowseViewModel
         fun setQuery(value: String) {
             mutableQuery.value = value
             // Clearing the field clears the search (Swift `onChange(of: searchText)`).
-            if (value.isEmpty() && mutableSubmitted.value.isNotEmpty()) submit()
+            if (value != mutableSubmitted.value) mutableSubmitted.value = ""
         }
 
         fun submit() {
             if (mutableSubmitted.value == mutableQuery.value) return
-            // A new query asks for consent again.
-            smart.reset()
             mutableSubmitted.value = mutableQuery.value
             if (isRoot) session.setRootQuery(mutableQuery.value)
         }
@@ -201,9 +196,9 @@ class HadithBrowseViewModel
         }
 
         /** Whether smart search may be offered: a meaning, not a number or chapter lookup. */
-        fun offersSmartSearch(submitted: String): Boolean {
+        private fun offersSmartSearch(submitted: String): Boolean {
             val query = submitted.trim()
-            return SmartSearchRunner.accepts(query) && HadithSearch.number(query) == null &&
+            return query.isNotBlank() && HadithSearch.number(query) == null &&
                 HadithSearch.chapter(query) == null
         }
 
@@ -211,19 +206,32 @@ class HadithBrowseViewModel
          * Swift `HadithView` meaning search: references in this scope resolved locally (exactly one match each),
          * without supplications, in the API's order.
          */
-        fun smartSearch() {
-            val query = mutableSubmitted.value.trim()
+        private suspend fun searchPage(query: String): HadithPage {
             val request = request(query)
-            smart.run { client ->
-                val (sources, chapter) = reader.meaningSearchScope(request)
-                val ids =
-                    client
-                        .search(query, kind = "hadith", sources = sources, chapter = chapter)
-                        .mapNotNull { it.reference as? SemanticSearchResult.Reference.Hadith }
-                        .mapNotNull { reader.resolveSearch(it.book, it.chapter, it.number) }
-                        .distinct()
-                reader.previews(ids, query).filterNot { it.isSupplication }
+            if (offersSmartSearch(query)) {
+                val (sources, chapter) =
+                    try {
+                        reader.meaningSearchScope(request)
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (_: Exception) {
+                        return reader.page(request)
+                    }
+                val remote =
+                    smartSearch.results(query, "hadith", sources, chapter) { hits ->
+                        val ids =
+                            hits
+                                .mapNotNull { it.reference as? SemanticSearchResult.Reference.Hadith }
+                                .filter {
+                                    val matchesSource = sources == null || it.book in sources
+                                    matchesSource && (chapter == null || it.chapter == chapter)
+                                }.mapNotNull { reader.resolveSearch(it.book, it.chapter, it.number) }
+                                .distinct()
+                        reader.previews(ids, query).filterNot { it.isSupplication }
+                    }
+                if (remote != null) return HadithPage(remote, false)
             }
+            return reader.page(request)
         }
 
         /** Whether narrations are listed: a chapter, or a text or number search (not a `ch12` filter). */
@@ -266,7 +274,7 @@ class HadithBrowseViewModel
                                     emptyList()
                                 }
                             }
-                        val page = if (showsNarrations(submitted)) reader.page(request(submitted)) else null
+                        val page = if (showsNarrations(submitted)) searchPage(submitted) else null
                         cursor = page?.nextCursor
                         mutableState.value =
                             HadithBrowseState(

@@ -138,7 +138,7 @@ actor HadithReader {
 
     private func loadPage(_ request: HadithRequest) throws -> HadithPage {
         try Task.checkCancellation()
-        let terms = QuranSearchText.terms(request.query)
+        let terms = QuranSearchText.queryTerms(request.query)
         if !request.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, terms.isEmpty {
             return HadithPage(rows: [], hasMore: false)
         }
@@ -245,7 +245,7 @@ actor HadithReader {
                 ids.append(id)
             }
         }
-        let byID = try previews(ids: ids, terms: QuranSearchText.terms(query), in: sharedConnection())
+        let byID = try previews(ids: ids, terms: QuranSearchText.queryTerms(query), in: sharedConnection())
         return ids.compactMap { byID[$0] }.filter { !$0.isSupplication }
     }
 
@@ -254,7 +254,7 @@ actor HadithReader {
         guard var narration = try connection.query("SELECT \(Self.columns) \(Self.joins) WHERE h.id = CAST(? AS INTEGER)", parameters: [String(id)], row: Self.narration).first else {
             throw HadithDatabaseError.invalidReference
         }
-        let terms = QuranSearchText.terms(query)
+        let terms = QuranSearchText.queryTerms(query)
         narration.arabicDisplay = HadithText.highlighted(narration.arabic, terms: terms)
         narration.englishDisplay = HadithText.highlighted(narration.english, terms: terms)
         narration.narratorDisplay = HadithText.highlighted(narration.englishNarrator, terms: terms)
@@ -307,9 +307,9 @@ actor HadithReader {
     }
 
     /// Keep full texts inside the reader actor; lists receive only short matching previews.
-    func supplications(query: String = "", translation: String = "auto", languages: [String] = Locale.preferredLanguages) throws -> [Hadith] {
-        let terms = QuranSearchText.terms(query)
-        if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, terms.isEmpty {
+    func supplications(query: String = "", translation: String = "auto", languages: [String] = Locale.preferredLanguages, locators: [String]? = nil) throws -> [Hadith] {
+        let terms = QuranSearchText.queryTerms(query)
+        if locators == nil, !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, terms.isEmpty {
             return []
         }
         let rows = try sharedConnection().query("""
@@ -320,8 +320,14 @@ actor HadithReader {
         guard !rows.isEmpty else { throw HadithDatabaseError.incompatible }
         var titled: [Hadith] = []
         var content: [Hadith] = []
+        let requested = Set(locators ?? [])
+        var ranked: [String: Hadith] = [:]
         for row in rows {
             try Task.checkCancellation()
+            let locator = row.source.map { "\($0.book):\($0.chapterFile):\($0.number)" }
+            if locators != nil, !requested.contains(locator ?? "") {
+                continue
+            }
             let variants = try translations(id: row.id)
             let title = QuranSearchText.normalize(row.chapter.arabic + " " + row.chapter.english).lowercased()
             func matches(_ text: String) -> Bool {
@@ -331,22 +337,24 @@ actor HadithReader {
             let titleMatch = terms.allSatisfy { title.contains($0) }
             let selected = SupplicationTranslation.selected(from: variants, selection: translation, languages: languages)
             let matched = selected.flatMap { matches($0.text) ? $0 : nil } ?? variants.first { matches($0.text) }
-            guard matches(row.arabic + " " + row.english) || matched != nil else { continue }
+            guard locators != nil || matches(row.arabic + " " + row.english) || matched != nil else { continue }
             let preview = HadithText.preview(row.arabic, terms: terms)
             var result = Hadith(id: row.id, collectionID: row.collectionID, number: row.number,
                                 chapter: row.chapter, arabic: String(preview.characters), englishNarrator: "",
                                 english: "", source: row.source, arabicDisplay: preview, readingWords: row.readingWords, readingNumber: row.readingNumber)
-            if !terms.isEmpty, let matched = titleMatch ? selected : matched {
+            if !terms.isEmpty, let matched = titleMatch || locators != nil ? selected : matched {
                 let excerpt = HadithText.preview(matched.text, terms: terms)
                 result.translation = SupplicationTranslation(language: matched.language, edition: matched.edition, text: String(excerpt.characters))
             }
-            if titleMatch {
+            if let locator, locators != nil {
+                ranked[locator] = result
+            } else if titleMatch {
                 titled.append(result)
             } else {
                 content.append(result)
             }
         }
-        return titled + content
+        return locators?.compactMap { ranked[$0] } ?? (titled + content)
     }
 
     func source(id: Int) throws -> HadithSource? {

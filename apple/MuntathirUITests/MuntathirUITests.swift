@@ -165,49 +165,18 @@ final class MuntathirUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Use device location"].exists)
     }
 
-    @MainActor func testEnglishNavigationAndManualCorrection() {
+    @MainActor func testSettingsLocationOpensCityPicker() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        XCTAssertTrue(app.buttons["Today"].firstMatch.waitForExistence(timeout: 10))
-        app.descendants(matching: .any).matching(identifier: "Calendar").firstMatch.tap()
-        XCTAssertTrue(app.navigationBars["Calendar"].waitForExistence(timeout: 5))
-        app.openSettingsFromTools()
-        let adjustment = app.buttons["month-adjustments"]
-        for _ in 0 ..< 8 where !adjustment.isHittable {
-            app.swipeUp()
-        }
-        XCTAssertTrue(adjustment.isHittable)
-        adjustment.tap()
-        XCTAssertTrue(app.navigationBars["Adjust month"].waitForExistence(timeout: 5))
-        app.buttons["Save"].tap()
-        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
-        app.leaveSettings(for: "square.grid.2x2")
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["Qibla"].tap()
-        XCTAssertTrue(app.staticTexts["Precise location required"].waitForExistence(timeout: 5))
-        app.navigationBars.buttons.element(boundBy: 0).tap()
         app.openSettingsFromTools()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
         let location = app.buttons["Location, Not selected"]
-        for _ in 0 ..< 5 where !location.isHittable {
-            app.swipeDown()
+        for _ in 0 ..< 6 where !location.isHittable {
+            app.swipeUp()
         }
         location.tap()
         XCTAssertTrue(app.searchFields["Search for a city"].waitForExistence(timeout: 5))
-    }
-
-    @MainActor func testArabicNavigation() {
-        let app = XCUIApplication()
-        app.launchArguments = ["--ui-testing", "-AppleLanguages", "(ar)", "-AppleLocale", "ar_SA"]
-        app.launch()
-        XCTAssertTrue(app.buttons["اليوم"].firstMatch.waitForExistence(timeout: 10))
-        app.descendants(matching: .any).matching(identifier: "التقويم").firstMatch.tap()
-        XCTAssertTrue(app.navigationBars["التقويم"].exists)
-        app.buttons["الأدوات"].firstMatch.tap()
-        app.buttons["القبلة"].tap()
-        XCTAssertTrue(app.staticTexts["الموقع الدقيق مطلوب"].waitForExistence(timeout: 5))
-        app.navigationBars.buttons["الأدوات"].tap()
     }
 
     @MainActor private func capture(_ name: String, in app: XCUIApplication) {

@@ -34,6 +34,7 @@
     },
   ],
   "files": [
+    { "path": "<PROJECT>/../shared/release-notes/changelog.json", "target-membership": [ "Muntathir/resources" ] },
     {
       "path": "<PROJECT>/../shared/figures/figures.json",
       "target-membership": [

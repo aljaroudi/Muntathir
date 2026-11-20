@@ -1,7 +1,7 @@
 ---
 import { Font } from "astro:assets";
-import "../styles/global.css";
-import { site, type Locale } from "../site";
+import "@/styles/global.css";
+import { site, type Locale } from "@/site";
 interface Props { locale: Locale }
 const { locale } = Astro.props;
 const arabic = locale === "ar";
@@ -9,12 +9,12 @@ const title = arabic ? "سياسة الخصوصية" : "Privacy policy";
 const paragraphs = arabic ? [
   "لا يتطلب منتظِر حسابًا، ولا يستخدم بياناتك للإعلانات أو التتبّع.",
   "تبقى تفضيلات القراءة والمفضلة والملاحظات على أجهزتك. تُزامَن الإعدادات وبيانات القرآن الشخصية عبر حساب iCloud الخاص بك عند تفعيله. تستخدم خدمات Apple، مثل الطقس والموقع والتنزيلات، البيانات اللازمة لتقديم الخدمة وفق سياسة خصوصية Apple.",
-  "يعمل البحث النصي محليًا. إذا اخترت البحث الذكي بعد عدم العثور على نتائج محلية، يُرسل استعلامك إلى خدمة البحث لدينا وإلى Google لتحويله إلى تمثيل رقمي والعثور على النصوص ذات الصلة. تنقل Cloudflare الطلب وتعالج معلومات الاتصال، ومنها عنوان IP. تخزّن خدمتنا تمثيلات الاستعلام الرقمية ونتائج البحث مؤقتًا، وتستخدم معرّفات مشتقة بالتجزئة من عناوين IP لتحديد معدل الطلبات، وتسجّل مقاييس تشغيلية دون نص الاستعلام الأصلي. لا تُرسل ملاحظات القراءة أو المفضلة مع البحث. تجنّب تضمين معلومات شخصية في استعلاماتك.",
+  "عند إرسال بحث في المكتبة العامة، يُرسل استعلامك إلى خدمة البحث لدينا التي تستخدم Google للعثور على النصوص ذات الصلة، وقد ترسل الاستعلام والنصوص المرشحة إلى خدمة Jev من Typesafe AI لترتيب النتائج. إذا تعذّر البحث عبر الإنترنت، يبحث التطبيق على جهازك. تنقل Cloudflare الطلب وتعالج معلومات الاتصال، ومنها عنوان IP. تخزّن خدمتنا تمثيلات الاستعلام الرقمية ونتائج البحث مؤقتًا، وتستخدم معرّفات مشتقة بالتجزئة من عناوين IP لتحديد معدل الطلبات، وتسجّل مقاييس تشغيلية دون نص الاستعلام الأصلي. لا تُرسل ملاحظات القراءة أو المفضلة مع البحث. تجنّب تضمين معلومات شخصية في استعلاماتك.",
   "إذا اخترت التواصل معنا عبر نموذج الدعم، فسنستخدم المعلومات التي ترسلها طوعًا للرد عليك فقط. تستضيف Google النموذج وفق سياسة خصوصيتها.",
 ] : [
   "Muntathir does not require an account and does not use your data for advertising or tracking.",
   "Reading preferences, favorites, and notes stay on your devices. Settings and personal Quran data sync through your own iCloud account when enabled. Apple services, including weather, location, and downloads, use the data needed to provide those services under Apple’s privacy policy.",
-  "Text search runs locally. If you choose Smart search after no local matches, your query is sent to our search service and to Google to turn it into a search vector and find relevant passages. Cloudflare carries the request and processes connection information, including your IP address. Our service temporarily caches query embeddings and search results, uses hashed IP identifiers for rate limits, and records operational metrics without raw query text. Your reading notes and favorites are not sent with searches. Avoid including personal information in search queries.",
+  "Submitting a public-library search sends your query to our search service, which uses Google to find relevant passages and may send the query and candidate passages to Typesafe AI’s Jev service for ranking. If online search is unavailable, the app searches on your device. Cloudflare carries the request and processes connection information, including your IP address. Our service temporarily caches query embeddings and search results, uses hashed IP identifiers for rate limits, and records operational metrics without raw query text. Your reading notes and favorites are not sent with searches. Avoid including personal information in search queries.",
   "If you contact us through the support form, we use the information you voluntarily submit only to reply. Google hosts the form under its privacy policy.",
 ];
 ---

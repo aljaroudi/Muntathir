@@ -25,4 +25,6 @@
     <string name="allow_precise_location">允許使用精確位置</string>
     <string name="compass_north">北</string>
     <string name="fonts">字體</string>
+    <string name="silence_notifications_while_praying">禮拜時靜音通知</string>
+    <string name="silence_notifications_footer">允許「勿擾」權限後，計數期間會自動開啟勿擾，結束後關閉。</string>
 </resources>

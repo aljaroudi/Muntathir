@@ -25,4 +25,6 @@
     <string name="allow_precise_location">Genauen Standort erlauben</string>
     <string name="compass_north">N</string>
     <string name="fonts">Schriftarten</string>
+    <string name="silence_notifications_while_praying">Mitteilungen beim Beten stummschalten</string>
+    <string name="silence_notifications_footer">Erlaube den Zugriff auf „Bitte nicht stören“, damit es beim Zählen aktiv ist und danach endet.</string>
 </resources>

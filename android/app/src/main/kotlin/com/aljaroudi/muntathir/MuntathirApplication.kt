@@ -7,6 +7,7 @@ import androidx.work.Configuration
 import androidx.work.WorkManager
 import com.aljaroudi.muntathir.feed.FeedRefreshWorker
 import com.aljaroudi.muntathir.notifications.Rescheduler
+import com.aljaroudi.muntathir.ui.rakaat.SessionFocus
 import com.aljaroudi.muntathir.widgets.WidgetUpdater
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -21,6 +22,8 @@ class MuntathirApplication :
     @Inject lateinit var workerFactory: HiltWorkerFactory
 
     @Inject lateinit var widgets: WidgetUpdater
+
+    @Inject lateinit var focus: SessionFocus
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder().setWorkerFactory(workerFactory).build()
@@ -49,6 +52,8 @@ class MuntathirApplication :
         rescheduler.start()
         widgets.start()
         FeedRefreshWorker.schedule(WorkManager.getInstance(this))
+        // A rakaat session cut short by process death must not leave Do Not Disturb on.
+        focus.recover()
     }
 
     // The per-app language (Android 13+) arrives as a configuration change; widget text follows it.

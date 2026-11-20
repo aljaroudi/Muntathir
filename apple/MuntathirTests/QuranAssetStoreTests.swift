@@ -3,6 +3,92 @@ import Foundation
 import Testing
 
 @MainActor struct QuranAssetStoreTests {
+    @Test func brokenTranslationUpdateIsSkippedAndLanguagesKept() async throws {
+        let (root, source) = try fixture()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let bad = URL.temporaryDirectory.appending(path: UUID().uuidString, directoryHint: .isDirectory)
+        defer { try? FileManager.default.removeItem(at: bad) }
+        try FileManager.default.createDirectory(at: bad, withIntermediateDirectories: true)
+        for (id, url) in QuranTestResources.translationURLs {
+            try FileManager.default.copyItem(at: url, to: bad.appending(path: "\(id).db"))
+        }
+        try Data("invalid".utf8).write(to: bad.appending(path: "es.bornez.db"), options: .atomic)
+        let suite = "BrokenTranslations.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let backend = QuranTestBackend(source: source)
+        await backend.setRemote(1)
+        let store = QuranTranslationStore(defaults: defaults, backend: backend, directory: root, reloadWidgets: {})
+        await store.download()
+        #expect(store.installedSizes.count == 12)
+
+        await backend.serve(bad.appending(path: "de.bubenheim.db"))
+        await backend.setRemote(2)
+        let start = Date()
+        await store.checkForUpdates(now: start)
+        #expect(await backend.downloads == 2)
+        #expect(store.downloadState == .idle)
+        #expect(!store.storageError)
+        #expect(store.installedSizes.count == 12)
+        let files = QuranTranslationFiles(root: root)
+        #expect(try files.read().packVersion == 1)
+        #expect(try files.read().pending == nil)
+        #expect(await backend.installed == false)
+
+        // The rejected version is skipped.
+        await store.checkForUpdates(now: start.addingTimeInterval(86400 * 2))
+        #expect(await backend.downloads == 2)
+
+        // A fixed, newer pack is adopted.
+        await backend.serve(nil)
+        await backend.setRemote(3)
+        await store.checkForUpdates(now: start.addingTimeInterval(86400 * 4))
+        #expect(await backend.downloads == 3)
+        #expect(try files.read().packVersion == 3)
+        #expect(store.installedSizes.count == 12)
+    }
+
+    @Test func outdatedTranslationsUpdateSilentlyWithoutRestoringDeletions() async throws {
+        let (root, source) = try fixture()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let backend = QuranTestBackend(source: source)
+        await backend.setRemote(1)
+        let store = QuranTranslationStore(defaults: nil, backend: backend, directory: root, reloadWidgets: {})
+        await store.download()
+        await store.remove(["es.bornez"])
+        let files = QuranTranslationFiles(root: root)
+        #expect(try files.read().packVersion == 1)
+        #expect(store.installedSizes.count == 11)
+
+        await store.checkForUpdates()
+        #expect(await backend.downloads == 1)
+
+        await backend.setRemote(2)
+        await store.checkForUpdates()
+        #expect(await backend.downloads == 2)
+        #expect(store.downloadState == .idle)
+        #expect(store.installedSizes.count == 11)
+        #expect(!store.isInstalled("es.bornez"))
+        #expect(try files.read().packVersion == 2)
+        #expect(try files.read().pending == nil)
+        #expect(await backend.installed == false)
+
+        // A failed update keeps the installed languages and shows no download failure.
+        await backend.setRemote(3)
+        await backend.failDownload(true)
+        await store.checkForUpdates()
+        #expect(store.downloadState == .idle)
+        #expect(store.installedSizes.count == 11)
+        #expect(try files.read().pending == nil)
+        #expect(try files.read().packVersion == 2)
+
+        // A restore from a newer pack refreshes the other installed languages too.
+        await backend.failDownload(false)
+        await store.download(requested: "es.bornez")
+        #expect(store.installedSizes.count == 12)
+        #expect(try files.read().packVersion == 3)
+    }
+
     private func fixture() throws -> (URL, URL) {
         let root = URL.temporaryDirectory.appending(path: UUID().uuidString)
         let source = try #require(QuranTestResources.translationURLs["de.bubenheim"])
@@ -205,6 +291,9 @@ private actor QuranTestBackend: AssetPackBackend {
     let source: URL
     var installed = false
     var downloads = 0
+    var version: Int?
+    var remote: Int?
+    var served: URL?
     private var removalFails = false
     private var downloadFails = false
     private var suspend = false
@@ -215,7 +304,12 @@ private actor QuranTestBackend: AssetPackBackend {
     }
 
     func localURL() -> URL? {
-        installed ? source : nil
+        installed ? served ?? source : nil
+    }
+
+    /// Serves a different pack directory, such as a broken pack, in place of `source`.
+    func serve(_ value: URL?) {
+        served = value
     }
 
     func isDownloading() -> Bool {
@@ -236,6 +330,19 @@ private actor QuranTestBackend: AssetPackBackend {
             throw URLError(.notConnectedToInternet)
         }
         installed = true
+        version = remote ?? version
+    }
+
+    func localVersion() -> Int? {
+        installed ? version : nil
+    }
+
+    func remoteVersion() -> Int? {
+        remote
+    }
+
+    func setRemote(_ value: Int?) {
+        remote = value
     }
 
     func remove() throws {

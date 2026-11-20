@@ -138,8 +138,9 @@ actor RakaatCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         let source = CIImage(cvPixelBuffer: buffer).oriented(.leftMirrored)
         let preview = context.createCGImage(source, from: source.extent)
         if !exposureLocked, let device {
-            // Keep the preview live while the camera settles, before measuring the baseline.
-            guard !device.isAdjustingExposure, !device.isAdjustingWhiteBalance, !device.isAdjustingFocus else {
+            // Keep the preview live while exposure settles, before measuring the baseline. Focus and white
+            // balance barely affect mean brightness, and the cap keeps a camera that never settles from stalling.
+            guard !device.isAdjustingExposure || elapsed >= 1.5 else {
                 publish(preview: preview)
                 return
             }
@@ -151,9 +152,6 @@ actor RakaatCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
                 device.exposureMode = .locked
                 if device.isWhiteBalanceModeSupported(.locked) {
                     device.whiteBalanceMode = .locked
-                }
-                if device.isFocusModeSupported(.locked) {
-                    device.focusMode = .locked
                 }
                 guard device.exposureMode == .locked else { finish(); return }
                 exposureLocked = true

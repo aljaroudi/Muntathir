@@ -20,6 +20,8 @@ The unified build writes to the same `apple/build/AssetPacks/archives` folder us
 
 The folder contains packaged `.aar` files and is ignored by Git. Repackage and restart the debug session after database changes. No separate server, certificates, or manual URL override are needed for this workflow. See [Apple’s Xcode 27 release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-27-release-notes).
 
+If the databases are already built, run `just apple-packs` to package them.
+
 `--four` includes the Four Books, Nahj al-Balagha, al-Sahifa al-Sajjadiyya, Wasa’il al-Shia, and Bihar al-Anwar. The last three are curated additions, not members of the Four Books. Al-Istibsar supplies all four volumes; al-Sahifa supplies 54 prayers in the separate `supplications.db` output. The same asset imports Kumayl, Sabah, and Nudba from `build/hadith/data/supplications.json`, with English translations for all three and Urdu for Kumayl and Nudba. An optional `supplication_translation` table stores language, edition, text, and provenance without changing schema version 7; older assets remain readable. Translation credits are in the app’s system Settings bundle. Source checksums and Duas.org reuse terms accompany the checked-in texts. The OpenITI additions use the pinned OpenITI 2025-01-09 files under `build/library/data/OpenITI_data_2025-1-9`. Their checksums and provenance are recorded in `build/hadith/data/openiti-editions.json`; changed editions require boundary review before import. Reading entries retain author commentary and are not a canonical hadith count. Wasa’il contains 30 volumes. Bihar contains 106 supplied volumes; 103 and 108–110 are missing. See [adding and classifying books](../../build/library/README.md).
 
 Reviewed Arabic chapter mappings live in `build/hadith/data/arabic-chapters.json`. They preserve existing English titles and verify the original narration URLs and text before filling blank Arabic titles. Original headings come from Arabic source indexes; modern summaries without original headings use numbered Arabic section labels. Every build writes a sibling `.chapter-gaps.csv` report. To audit the entire library, build without `--sittah --four`, using `--output` to keep the app's selected database intact.
@@ -42,14 +44,16 @@ New builds use schema v8 (basic word indexes only); the updated reader accepts v
 ## Before release
 
 ```sh
-python3 apple/AssetPacks/assets.py validate --content all
-python3 apple/AssetPacks/assets.py validate --content quran
+just packs-check
+just packs-check quran
 python3 apple/AssetPacks/assets.py check-bundle /path/to/Muntathir.app
 ```
 
 Register the downloader extension and shared app group for signing. Validate hosted delivery through TestFlight and record Apple’s processed download size before release. Keep the pack ID stable for compatible updates; coordinate breaking schemas with an app-compatible rollout.
 
-For an existing pack, upload the rebuilt archive, then choose **Replace** in App Store Connect → **Asset Packs** and submit the processed version for review. After the app’s first approval, compatible updates can be submitted independently. Verify the replacement in TestFlight with the previous pack installed. iOS updates installed Hadith and Supplications packs in the background. Quran translations copied into the App Group remain at their installed version until redownloaded. See [Apple’s submission instructions](https://developer.apple.com/help/app-store-connect/manage-submissions-to-app-review/submit-apple-hosted-asset-packs).
+For an existing pack, upload the rebuilt archive, then choose **Replace** in App Store Connect → **Asset Packs** and submit the processed version for review. After the app’s first approval, compatible updates can be submitted independently. Verify the replacement in TestFlight with the previous pack installed. Every pack, including Rulings, is copied out of its managed pack and read from the app-owned copy, so iOS cannot update it in place. Instead, the app records each copied pack version and, at most once a day on launch or foreground, compares it with the hosted version. Outdated copies download and swap in silently; current content stays readable meanwhile, and removed books or languages stay removed. Copies made before versions were recorded update once.
+
+A hosted pack replaces working content only after read-only checks of the downloaded files pass: integrity, schema compatibility with this app version, and the reader's own queries. A pack that fails is removed, its version is skipped, and the current content stays. A skipped version is retried only after an app update, since a newer app may accept it; any newer pack version is tried as usual. Storage failures while copying are treated as transient and retried at the next daily check. Rejections are logged under the `AssetPacks` category ("Skipping … version …: it failed validation"). To roll out a breaking schema, ship the app that reads it first; older apps will skip the new pack instead of breaking. See [Apple’s submission instructions](https://developer.apple.com/help/app-store-connect/manage-submissions-to-app-review/submit-apple-hosted-asset-packs).
 
 Local packaging and the Run scheme do not upload, publish, or bundle Hadith. Production delivery must be verified in TestFlight for both packs before release.
 
@@ -83,9 +87,9 @@ available through that transition. No compact packs have been uploaded.
 The independent on-demand `rulings` pack contains `Rulings/rulings.db`, built from
 `build/rulings/dist/rulings.db`. Rebuild with `python3 build/rulings/build.py`.
 The crawl mirror remains `build/rulings/data/fatwa.sqlite` so existing database
-connections retain their file identity. Package with `--content rulings`; upload only that pack
-with `bundle exec ruby fastlane/asset_pack_delivery.rb --upload rulings` from
-`apple/` using the Ruby environment in `fastlane/SETUP.md`.
+connections retain their file identity. Package with `just apple-packs rulings`. Upload only that pack
+with `bundle exec ruby fastlane/ios/asset_pack_delivery.rb --upload rulings` from
+the repository root using the [Fastlane Ruby environment](../../fastlane/SETUP.md).
 
 The reader validates application ID `1179809601`, schema version 1, SQLite
 integrity, relationships, and FTS availability. Authority, language, and source

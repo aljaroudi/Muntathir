@@ -1,6 +1,5 @@
 require_relative "../ios/support"
 require_relative "../gallery"
-require "frameit"
 
 root = File.expand_path("../..", __dir__)
 metadata = File.join(__dir__, "metadata")
@@ -13,8 +12,14 @@ operation, languages = ARGV
 locales = languages.to_s.empty? ? available : languages.split(",").map { |s| s.strip == "en" ? "en-US" : s.strip }
 raise "Unknown Play locale" unless locales.any? && locales.uniq == locales && (locales - available).empty?
 run = MuntathirRelease.method(:run!)
+capture_size = "1080x2424"
 FileUtils.mkdir_p(marketing)
 if operation == "style"
+  sdk = ENV["ANDROID_HOME"] || File.expand_path("~/Library/Android/sdk")
+  skin = File.join(sdk, "skins", "pixel_10")
+  %w[back.webp mask.webp].each do |file|
+    raise "Install the Pixel 10 emulator skin in Android Studio: missing #{file}" unless File.file?(File.join(skin, file))
+  end
   compositor = File.join(marketing, "compose")
   run.call("xcrun", "swiftc", File.join(File.dirname(config), "compose.swift"), "-o", compositor)
 else
@@ -25,9 +30,11 @@ else
   end
   raise "Select a Pixel emulator" unless serial.start_with?("emulator-")
   ENV["ANDROID_SERIAL"] = serial
-  previous = run.call("adb", "shell", "wm", "size")[/Override size: (\d+x\d+)/, 1] || "reset"
-  at_exit { run.call("adb", "shell", "wm", "size", previous) }
-  run.call("adb", "shell", "wm", "size", "1080x2160")
+  sizes = run.call("adb", "shell", "wm", "size")
+  unless sizes[/Physical size: (\d+x\d+)/, 1] == capture_size &&
+         [nil, capture_size].include?(sizes[/Override size: (\d+x\d+)/, 1])
+    raise "Use a Pixel 10 emulator at its native #{capture_size} resolution"
+  end
   ENV["JAVA_HOME"] ||= "/Applications/Android Studio.app/Contents/jbr/Contents/Home"
   Dir.chdir(File.join(root, "android")) do
     run.call("./gradlew", ":app:assembleDebug", ":app:assembleDebugAndroidTest")
@@ -77,7 +84,7 @@ locales.each do |locale|
       scenes.each do |scene|
         path = File.join(stage, "#{scene}.png")
         run.call("adb", "pull", "#{remote}/#{scene}.png", path)
-        raise "Invalid capture: #{path}" unless run.call("magick", "identify", "-format", "%wx%h", path) == "1080x2160"
+        raise "Invalid capture: #{path}" unless run.call("magick", "identify", "-format", "%wx%h", path) == capture_size
       end
     end
     next
@@ -87,15 +94,16 @@ locales.each do |locale|
       scenes.each do |scene|
         path = File.join(raw, "#{scene}.png")
         size = run.call("magick", "identify", "-format", "%wx%h", path).strip
-        raise "Expected a 1080x2160 Pixel capture: #{path}" unless size == "1080x2160"
-        FileUtils.cp(path, frames)
-      end
-      Frameit.config = FastlaneCore::Configuration.create(Frameit::Options.available_options,
-        force_device_type: Frameit::Devices::GOOGLE_PIXEL_3.formatted_name_without_apple)
-      Frameit::Runner.new.run(frames)
-      scenes.each do |scene|
+        raise "Expected a #{capture_size} Pixel 10 capture: #{path}" unless size == capture_size
+        frame = File.join(frames, "#{scene}.png")
+        # The Android SDK skin places the display at (59, 55) with an 87px corner radius.
+        run.call("magick", path, File.join(skin, "mask.webp"), "-composite",
+                 "(", "-size", capture_size, "xc:none", "-fill", "white",
+                 "-draw", "roundrectangle 0,0 1079,2423 87,87", ")", "-alpha", "set",
+                 "-compose", "DstIn", "-composite", File.join(skin, "back.webp"),
+                 "+swap", "-geometry", "+59+55", "-compose", "Over", "-composite", frame)
         output = File.join(gallery, "#{scene}.png")
-        run.call(compositor, File.join(frames, "#{scene}_framed.png"), output, 1080, 1920, language, scene, "phone", config)
+        run.call(compositor, frame, output, 1080, 1920, language, scene, "phone", config)
         run.call("magick", output, "-alpha", "off", "PNG24:#{output}")
         raise "Invalid Play export" unless run.call("magick", "identify", "-format", "%wx%h %[opaque]", output).strip.downcase == "1080x1920 true"
       end

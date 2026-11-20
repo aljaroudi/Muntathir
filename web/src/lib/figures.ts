@@ -1,5 +1,5 @@
-import dataset from "../../../shared/figures/figures.json"
-import schema from "../../../shared/figures/schema.json"
+import dataset from '@shared/figures/figures.json'
+import schema from '@shared/figures/schema.json'
 
 type Claim = { citations?: { source_id: string }[]; notes?: string | Record<string, string> }
 
@@ -12,7 +12,7 @@ function legacyClaim<T extends Claim>(claim: T) {
       ? {}
       : {
           notes:
-            typeof notes === "string" ? notes : (notes.en ?? notes.ar ?? Object.values(notes)[0]),
+            typeof notes === 'string' ? notes : (notes.en ?? notes.ar ?? Object.values(notes)[0]),
         }),
   }
 }
@@ -20,7 +20,7 @@ function legacyClaim<T extends Claim>(claim: T) {
 // Installed apps still consume the original string-note, required-citations contract.
 export function legacyDataset({ browser_groups: _, ...source } = dataset) {
   const people = source.people
-    .filter(person => "verified" in person && person.verified === true)
+    .filter(person => 'verified' in person && person.verified === true)
     .map(person => {
       const {
         verified: _,
@@ -78,9 +78,9 @@ export function legacySchema() {
   delete definitions.person.properties.verified
   delete definitions.person.properties.birth_place
   delete definitions.person.properties.death_place
-  for (const name of ["dateClaim", "parentage", "union"]) {
-    definitions[name].properties.notes = { type: "string" }
+  for (const name of ['dateClaim', 'parentage', 'union']) {
+    definitions[name].properties.notes = { type: 'string' }
   }
-  definitions.dateClaim.required!.push("citations")
+  definitions.dateClaim.required!.push('citations')
   return { ...legacy, properties }
 }

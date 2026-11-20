@@ -28,4 +28,7 @@
     <!-- The north mark on Qibla's compass dial. -->
     <string name="compass_north">N</string>
     <string name="fonts">Fonts</string>
+    <!-- Rakaat setup: optional Do Not Disturb access for sessions. -->
+    <string name="silence_notifications_while_praying">Silence notifications while praying</string>
+    <string name="silence_notifications_footer">Allow Do Not Disturb access to turn it on while counting and off when you finish.</string>
 </resources>

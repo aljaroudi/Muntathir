@@ -18,6 +18,7 @@ struct RakaatSessionView: View {
     @State private var denied = false
     @State private var failed = false
     @State private var oldIdleState: Bool?
+    @State private var oldBrightness: CGFloat?
 
     private var preparing: Bool {
         !ended && update?.calibrated != true
@@ -41,7 +42,7 @@ struct RakaatSessionView: View {
                 if ended {
                     await camera.stop()
                     guard !Task.isCancelled, ended else { return }
-                    restoreIdle()
+                    restoreScreen()
                 }
             }
             .task {
@@ -83,7 +84,7 @@ struct RakaatSessionView: View {
             .onDisappear {
                 ended = true
                 qibla.stop()
-                restoreIdle()
+                restoreScreen()
                 Task { await camera.stop() }
             }
     }
@@ -241,6 +242,12 @@ struct RakaatSessionView: View {
         guard authorized else { denied = true; ended = true; return }
         oldIdleState = UIApplication.shared.isIdleTimerDisabled
         UIApplication.shared.isIdleTimerDisabled = true
+        // Dim before the camera locks exposure and measures its baseline; changing screen light after
+        // calibration would shift the measured light.
+        if let screen = activeScreen {
+            oldBrightness = screen.brightness
+            screen.brightness = min(screen.brightness, 0.2)
+        }
         do {
             let stream = try await camera.start(target: target)
             for await value in stream {
@@ -255,7 +262,7 @@ struct RakaatSessionView: View {
             }
         } catch { failed = true; ended = true }
         await camera.stop()
-        restoreIdle()
+        restoreScreen()
     }
 
     private func accept(_ value: RakaatCamera.Update) {
@@ -272,17 +279,26 @@ struct RakaatSessionView: View {
         }
     }
 
-    private func restoreIdle() {
+    private var activeScreen: UIScreen? {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        return (scenes.first { $0.activationState == .foregroundActive } ?? scenes.first)?.screen
+    }
+
+    private func restoreScreen() {
         if let oldIdleState {
             UIApplication.shared.isIdleTimerDisabled = oldIdleState
         }
         oldIdleState = nil
+        if let oldBrightness {
+            activeScreen?.brightness = oldBrightness
+        }
+        oldBrightness = nil
     }
 
     private func returnToSelection() async {
         ended = true
         await camera.stop()
-        restoreIdle()
+        restoreScreen()
         dismiss()
     }
 }

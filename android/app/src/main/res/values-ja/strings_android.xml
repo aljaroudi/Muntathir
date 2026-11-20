@@ -25,4 +25,6 @@
     <string name="allow_precise_location">正確な位置情報を許可</string>
     <string name="compass_north">北</string>
     <string name="fonts">フォント</string>
+    <string name="silence_notifications_while_praying">礼拝中は通知を消音</string>
+    <string name="silence_notifications_footer">「サイレント モード」へのアクセスを許可すると、カウント中はオンになり、終了後にオフになります。</string>
 </resources>

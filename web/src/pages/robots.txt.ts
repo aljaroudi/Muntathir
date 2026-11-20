@@ -1,4 +1,4 @@
-import { isPreview, site } from '../site'
+import { isPreview, site } from '@/site'
 
 export function GET() {
   return new Response(

@@ -25,4 +25,6 @@
     <string name="allow_precise_location">درست مقام کی اجازت دیں</string>
     <string name="compass_north">ش</string>
     <string name="fonts">فونٹس</string>
+    <string name="silence_notifications_while_praying">نماز کے دوران اطلاعات خاموش کریں</string>
+    <string name="silence_notifications_footer">«ڈسٹرب نہ کریں» تک رسائی کی اجازت دیں تاکہ گنتی کے دوران یہ آن رہے اور ختم ہونے پر بند ہو جائے۔</string>
 </resources>

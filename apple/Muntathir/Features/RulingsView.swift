@@ -66,6 +66,7 @@ private struct RulingsBrowser: View {
     @State private var authorities: [RulingsAuthority] = []
     @State private var languages: [RulingsLanguage] = []
     @State private var language = ""
+    @State private var submitted = ""
     @State private var query = ""
     @State private var failed = false
     @State private var loading = true
@@ -98,7 +99,7 @@ private struct RulingsBrowser: View {
             } else if failed {
                 Button("Try again") { retry += 1 }
             } else if let selected = languages.first(where: { $0.id == language }) {
-                RulingsResults(reader: reader, authority: authority, authorityName: authorities.first(where: { $0.id == authority }).map { locale.language.languageCode?.identifier == "ar" ? $0.arabic : $0.english } ?? authority, language: selected, query: query, state: results)
+                RulingsResults(reader: reader, authority: authority, authorityName: authorities.first(where: { $0.id == authority }).map { locale.language.languageCode?.identifier == "ar" ? $0.arabic : $0.english } ?? authority, language: selected, query: submitted, state: results)
             } else {
                 Text("Choose a language")
             }
@@ -107,11 +108,12 @@ private struct RulingsBrowser: View {
         .readingBackground()
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always))
         .searchHistory($query, area: .rulings)
+        .submitsSearch($query, submitted: $submitted)
         .autocorrectionDisabled()
         .scrollDismissesKeyboard(.interactively)
-        .task(id: [authority, language, query, String(results.retry)]) {
+        .task(id: [authority, language, submitted, String(results.retry)]) {
             guard !language.isEmpty else { return }
-            await results.load(reader: reader, authority: authority, language: language, query: query)
+            await results.load(reader: reader, authority: authority, language: language, query: submitted, online: !submitted.isEmpty)
         }
         .onChange(of: language) { _, value in
             guard !value.isEmpty else { return }
@@ -155,30 +157,14 @@ private struct RulingsResults: View {
     var body: some View {
         Section {
             if state.loading {
-                ProgressView()
+                // Earlier results stay visible below until the next search replaces them.
+                ProgressView().frame(maxWidth: .infinity)
+                rows(state.questions)
             } else if state.failed {
                 Button("Try again") { state.retry += 1 }
             } else {
                 rows(state.questions)
-                if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    MeaningSearchResults(query: query, hasLocalResults: !state.questions.isEmpty, search: {
-                        guard let client = SemanticSearchClient.configured else { throw URLError(.unsupportedURL) }
-                        let results = try await client.search(query, kind: "rulings", sources: [authority], languages: [language.id])
-                        var found: [Rulings] = []
-                        var seen: Set<Rulings.ID> = []
-                        for result in results {
-                            guard case let .rulings(source, code, id) = result.reference,
-                                  source == authority, code == language.id else { throw HadithDatabaseError.invalidReference }
-                            let key = Rulings.ID(authority: source, language: code, siteID: id)
-                            guard let value = try await reader.question(key) else { throw HadithDatabaseError.incompatible }
-                            if seen.insert(key).inserted {
-                                found.append(value)
-                            }
-                        }
-                        return found
-                    }) { rows($0) }
-                        .id([authority, language.id, query])
-                } else if state.questions.isEmpty {
+                if state.questions.isEmpty {
                     ContentUnavailableView("No Results", systemImage: "magnifyingglass")
                 }
             }
@@ -205,16 +191,48 @@ private struct RulingsResults: View {
     var loading = true
     var failed = false
     var retry = 0
+    private var loadedSource = ""
 
-    func load(reader: RulingsReader, authority: String, language: String, query: String = "", section: RulingsSection? = nil) async {
+    private func search(reader: RulingsReader, authority: String, language: String, query: String) async throws -> [Rulings] {
+        if !query.isEmpty {
+            do {
+                guard let client = SemanticSearchClient.configured else { throw URLError(.unsupportedURL) }
+                let results = try await client.search(query, kind: "rulings", sources: [authority], languages: [language])
+                var found: [Rulings] = []
+                var seen: Set<Rulings.ID> = []
+                for result in results {
+                    guard case let .rulings(source, code, id) = result.reference,
+                          source == authority, code == language else { continue }
+                    let key = Rulings.ID(authority: source, language: code, siteID: id)
+                    guard let value = try await reader.question(key) else { continue }
+                    if seen.insert(key).inserted {
+                        found.append(value)
+                    }
+                }
+                if results.isEmpty || !found.isEmpty {
+                    return found
+                }
+            } catch {
+                try Task.checkCancellation()
+            }
+        }
+        return try await reader.questions(authority: authority, language: language, query: query)
+    }
+
+    func load(reader: RulingsReader, authority: String, language: String, query: String = "", online: Bool = false, section: RulingsSection? = nil) async {
         loading = true
         failed = false
+        // Results from another authority or language shouldn't linger while the new ones load.
+        let source = authority + "|" + language
+        if source != loadedSource {
+            questions = []
+            loadedSource = source
+        }
         do {
-            if !query.isEmpty {
-                try await Task.sleep(for: .milliseconds(150))
-            }
             let foundQuestions: [Rulings] = if let section {
                 try await reader.questions(authority: authority, language: language, section: section)
+            } else if online {
+                try await search(reader: reader, authority: authority, language: language, query: query)
             } else {
                 try await reader.questions(authority: authority, language: language, query: query)
             }

@@ -1,6 +1,7 @@
 package com.aljaroudi.muntathir.ui.rakaat
 
 import android.Manifest
+import android.view.WindowManager
 import androidx.camera.core.SurfaceRequest
 import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.hasScrollAction
@@ -118,6 +119,8 @@ class RakaatTest {
 
     private fun string(id: Int) = compose.activity.getString(id)
 
+    private fun brightness() = compose.runOnIdle { compose.activity.window.attributes.screenBrightness }
+
     private fun choose(
         target: Int,
         prayer: String,
@@ -140,6 +143,8 @@ class RakaatTest {
         compose.waitUntil(10_000) { fakeCamera.target == 2 }
         fakeCamera.send(RakaatUpdate())
         waitForText(string(R.string.keep_the_camera_uncovered_in_steady_light_while))
+        // Dimmed from calibration on, so the camera's baseline already sees the dim screen.
+        assertEquals(SESSION_BRIGHTNESS, brightness(), 0f)
         fakeCamera.send(RakaatUpdate(count = 2, calibrated = true))
         waitFor("rakaat-count")
         compose.onNodeWithTag("rakaat-count").assertContentDescriptionEquals("1 rakaat")
@@ -147,6 +152,8 @@ class RakaatTest {
         waitFor("rakaat-complete")
         compose.onNodeWithTag("rakaat-count").assertContentDescriptionEquals("2 rakaat")
         compose.onNodeWithText(string(R.string.start_tasbih)).assertExists()
+        // The ended session gives the screen its brightness back.
+        assertEquals(WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE, brightness(), 0f)
         compose.waitUntil(10_000) { runBlocking { progress.prayers() }.isNotEmpty() }
         val saved = runBlocking { progress.prayers() }.single()
         assertEquals(PrayerName.Fajr, saved.prayer)

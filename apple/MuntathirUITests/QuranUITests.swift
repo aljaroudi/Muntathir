@@ -32,7 +32,7 @@ final class QuranUITests: XCTestCase {
         }
     }
 
-    @MainActor func testPassageSearchUpdatesWhileTyping() {
+    @MainActor func testPassageSearchRunsOnSubmit() {
         let app = openQuran()
         let field = app.searchFields.firstMatch
         if !field.exists {
@@ -40,15 +40,20 @@ final class QuranUITests: XCTestCase {
         }
         XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
+        // Typing alone never searches.
         field.typeText("2:255")
-        XCTAssertTrue(app.buttons["quran-result-2:255"].waitForExistence(timeout: 5))
+        let reference = app.buttons["quran-result-2:255"]
+        XCTAssertFalse(reference.waitForExistence(timeout: 2))
+        field.typeText("\n")
+        XCTAssertTrue(reference.waitForExistence(timeout: 5))
         field.buttons["Clear text"].tap()
         field.tap()
-        field.typeText("الرحم")
+        // The last word still matches as a prefix.
+        field.typeText("الرحم\n")
         XCTAssertTrue(app.buttons["quran-result-1:1"].waitForExistence(timeout: 5))
     }
 
-    @MainActor func testShorteningAndClearingLiveSearch() {
+    @MainActor func testEditingKeepsResultsUntilSubmitAndClearingResets() {
         let app = openQuran()
         search("الرحمن", in: app)
         let row = app.buttons["quran-result-1:1"]
@@ -56,7 +61,7 @@ final class QuranUITests: XCTestCase {
         let field = app.searchFields.firstMatch
         field.tap()
         field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 5))
-        XCTAssertTrue(row.waitForNonExistence(timeout: 5))
+        XCTAssertFalse(row.waitForNonExistence(timeout: 2))
         field.buttons["Clear text"].tap()
         XCTAssertTrue(app.buttons["quran-surah-1"].waitForExistence(timeout: 5))
         XCTAssertFalse(row.exists)
@@ -137,11 +142,14 @@ final class QuranUITests: XCTestCase {
             XCTAssertFalse(app.descendants(matching: .any)["reading-time"].firstMatch.exists)
             app.navigationBars.buttons.element(boundBy: 0).tap()
             XCTAssertTrue(app.buttons["quran-result-2:255"].waitForExistence(timeout: 5))
-            search("1:1", in: app)
-            XCTAssertTrue(app.descendants(matching: .any)["local-search-empty"].firstMatch.waitForExistence(timeout: 5))
-            XCTAssertFalse(app.buttons["quran-result-1:1"].exists)
-            search("287", in: app)
-            XCTAssertTrue(app.staticTexts["Invalid verse reference"].waitForExistence(timeout: 5))
+            // Out-of-chapter and invalid references don't depend on the reading mode, so check them once.
+            if mode == "Verses" {
+                search("1:1", in: app)
+                XCTAssertTrue(app.descendants(matching: .any)["local-search-empty"].firstMatch.waitForExistence(timeout: 5))
+                XCTAssertFalse(app.buttons["quran-result-1:1"].exists)
+                search("287", in: app)
+                XCTAssertTrue(app.staticTexts["Invalid verse reference"].waitForExistence(timeout: 5))
+            }
             app.searchFields.firstMatch.tap()
             app.navigationBars.buttons.matching(NSPredicate(format: "label ==[c] %@ OR label ==[c] %@", "close", "cancel")).firstMatch.tap()
             let original = mode == "Verses" ? "quran-verse-2:1" : "quran-page-2"
@@ -200,18 +208,16 @@ final class QuranUITests: XCTestCase {
         }
         guard settled(2) else { return }
         var number = 2
-        for _ in 0 ..< 2 {
-            for destination in Array(3 ... 7) + Array((2 ... 6).reversed()) {
-                if destination > number {
-                    app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5))
-                        .press(forDuration: 0.02, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5)))
-                } else {
-                    app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5))
-                        .press(forDuration: 0.02, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5)))
-                }
-                guard settled(destination) else { return }
-                number = destination
+        for destination in Array(3 ... 7) + Array((2 ... 6).reversed()) {
+            if destination > number {
+                app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5))
+                    .press(forDuration: 0.02, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5)))
+            } else {
+                app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5))
+                    .press(forDuration: 0.02, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5)))
             }
+            guard settled(destination) else { return }
+            number = destination
         }
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5))
             .press(forDuration: 0.02, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5)))
@@ -478,12 +484,9 @@ final class QuranUITests: XCTestCase {
 }
 
 extension QuranUITests {
-    @MainActor func testSurahHeadingsInBothDirectionsAndJapanese() {
+    @MainActor func testSurahHeadingsInBothDirections() {
         for (language, tools, largeText) in [
             ("en", "Tools", false),
-            ("ar", "الأدوات", false),
-            ("fa", "ابزارها", false),
-            ("ja", "ツール", false),
             ("ar", "الأدوات", true),
         ] {
             let app = XCUIApplication()

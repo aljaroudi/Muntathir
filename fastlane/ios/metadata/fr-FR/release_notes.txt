@@ -1,8 +1,0 @@
-Nouveautés :
-• Recherche intelligente avancée dans le Coran et les hadiths
-• Sections dédiées aux invocations, aux règles religieuses et aux événements islamiques
-• Tasbih 3D interactif et compteur de rakats par caméra avant
-• Suivi de l’activité quotidienne pour la prière, la lecture et le dhikr
-
-Mises à jour :
-• Affichage de la direction de la Qibla sur la carte

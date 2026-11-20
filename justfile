@@ -12,6 +12,16 @@ apple-format:
 apple-build:
     xcodebuild -project apple/Muntathir.xcodeproj -scheme Muntathir -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
 
+# Validate and package Apple Background Asset Packs
+[positional-arguments]
+apple-packs content="all":
+    python3 apple/AssetPacks/assets.py package --content "$1"
+
+# Validate content databases for both platforms
+[positional-arguments]
+packs-check content="all":
+    python3 apple/AssetPacks/assets.py validate --content "$1"
+
 # Check translation coverage and placeholders
 apple-localizations:
     python3 apple/scripts/check_localizations.py
@@ -43,7 +53,7 @@ apple-test: apple-localizations
 [arg("args", help="Fastlane key:value options")]
 [doc("Run a Fastlane lane from the repository root")]
 lane platform name *args:
-    PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/bin:${PATH:-}" BUNDLE_PATH="${BUNDLE_PATH:-vendor/bundle}" bundle exec fastlane "$@"
+    LC_ALL="${LC_ALL:-en_US.UTF-8}" LANG="${LANG:-en_US.UTF-8}" PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/bin:${PATH:-}" BUNDLE_PATH="${BUNDLE_PATH:-vendor/bundle}" bundle exec fastlane "$@"
 
 [positional-arguments]
 [doc("Set the release version for Apple and Android (X.Y.Z)")]
@@ -83,12 +93,10 @@ android-screenshots:
 android-format:
     {{ android_gradle }} spotlessApply
 
-# Validate content databases (same checks as iOS) and copy them into the Play asset-pack modules
-android-packs:
-    python3 apple/AssetPacks/assets.py android --content hadith
-    python3 apple/AssetPacks/assets.py android --content supplications
-    python3 apple/AssetPacks/assets.py android --content quran
-    python3 apple/AssetPacks/assets.py android --content rulings
+# Validate and stage Google Play Asset Delivery packs
+[positional-arguments]
+android-packs content="all":
+    python3 apple/AssetPacks/assets.py android --content "$1"
 
 # Install the debug bundle with local Play Asset Delivery testing; set ANDROID_SERIAL to choose a device
 android-local-testing: android-packs
@@ -142,6 +150,10 @@ backend-test:
 backend-check:
     cd backend/api && bun run check
 
+[doc("Check and restart the search API on the hosting Mac")]
+backend-deploy: backend-check backend-test
+    launchctl kickstart -k "gui/$(id -u)/com.muntathir.search"
+
 [arg("args", help="flags for build/build.py: --dry-run | --assets-only | --max-budget USD")]
 [doc("Rebuild reader databases, package assets, and refresh search")]
 data-build *args:
@@ -153,8 +165,33 @@ format: apple-format web-format
 [doc("Run Apple unit tests and web output tests (apple-test + web-test)")]
 test: apple-test web-test
 
-[doc("Same checks as .githooks/pre-commit: apple-format + web-check + web-lint")]
-pre-commit: apple-format web-check web-lint
+[doc("Format platforms with staged changes, then check and lint web sources")]
+pre-commit:
+    #!/usr/bin/env sh
+    set -eu
+    format_staged_platform() {
+        platform="$1"
+        shift
+        staged=$(git diff --cached --name-only -- "$platform/")
+        [ -n "$staged" ] || return 0
+        # Formatters operate on the working tree, while the commit uses the index.
+        if ! git diff --quiet -- "$@"; then
+            echo "Stage or stash unstaged $platform source changes before formatting." >&2
+            exit 1
+        fi
+        just "$platform-format"
+        if ! git diff --quiet -- "$@"; then
+            echo "Review and stage the formatted $platform files, then commit again." >&2
+            exit 1
+        fi
+    }
+    format_staged_platform apple ':(glob)apple/**/*.swift'
+    format_staged_platform android ':(glob)android/**/*.kt' ':(glob)android/**/*.kts'
+    just web-check web-lint
 
 [doc("Same checks as .githooks/pre-push: apple-test + web-check + web-build + web-test")]
 pre-push: apple-test web-check web-build web-test
+
+# Generate the English GitHub changelog from the shared release notes
+changelog:
+    python3 shared/scripts/generate-changelog.py

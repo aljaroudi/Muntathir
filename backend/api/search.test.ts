@@ -77,7 +77,7 @@ test('direct references skip embedding and provider failure is unavailable', asy
   expect((await handler(request('new query'), '127.0.0.1')).status).toBe(503)
   store.db.close()
 })
-test('concurrent embedding misses coalesce and failures remain unavailable', async () => {
+test('concurrent embedding misses coalesce and provider failures use the index', async () => {
   const store = new Store(':memory:'),
     db = new Qdrant('http://unused')
   db.active = async () => 'revision'
@@ -111,7 +111,8 @@ test('concurrent embedding misses coalesce and failures remain unavailable', asy
     globalThis.fetch = Object.assign(async () => new Response('', { status: 503 }), {
       preconnect: original.preconnect,
     })
-    expect((await handler(req('failure'), '127.0.0.1')).status).toBe(503)
+    expect((await handler(req('failure'), '127.0.0.1')).status).toBe(200)
+    db.query = async () => { throw new Error('index unavailable') }
     expect((await handler(req('failure'), '127.0.0.1')).status).toBe(503)
   } finally {
     globalThis.fetch = original
@@ -362,7 +363,8 @@ test('bulk retrieval omits passage text, caps semantic at 100, and fetches top-2
   const withoutText = await retrieve(db, 'test', input, [1, 0], null, false)
   expect(queries).toHaveLength(2)
   expect(queries[0].limit).toBe(100)
-  for (const q of queries) expect(q.with_payload).toEqual(['item_id', 'ref'])
+  expect(queries[0].with_payload).toEqual(['item_id', 'ref'])
+  expect(queries[1].with_payload).toEqual(['item_id', 'ref', 'search_text'])
   expect(pointCalls.filter((c) => c.body.with_payload)).toHaveLength(0)
   expect(withoutText.results).toHaveLength(25)
   expect((withoutText.results[0] as any).text).toBeUndefined()
@@ -370,7 +372,8 @@ test('bulk retrieval omits passage text, caps semantic at 100, and fetches top-2
   queries.length = 0
   pointCalls.length = 0
   const withText = await retrieve(db, 'test', input, [1, 0], null, true)
-  for (const q of queries) expect(q.with_payload).toEqual(['item_id', 'ref'])
+  expect(queries[0].with_payload).toEqual(['item_id', 'ref'])
+  expect(queries[1].with_payload).toEqual(['item_id', 'ref', 'search_text'])
   const textFetches = pointCalls.filter((c) => Array.isArray(c.body.with_payload))
   expect(textFetches).toHaveLength(1)
   expect(textFetches[0].body.with_payload).toEqual(['text'])
@@ -420,6 +423,97 @@ test('Qdrant active() caches alias within TTL, coalesces concurrent calls, and i
     expect(await db.active()).toBe('rev-3')
     expect(aliasCalls).toBe(3)
   } finally {
+    globalThis.fetch = original
+  }
+})
+
+test('legacy unscoped searches exclude new kinds before ranking', () => {
+  expect(filter(parseRequest({ query: 'test' })).must).toContainEqual({
+    key: 'kind', match: { any: ['quran', 'hadith', 'dua', 'rulings'] },
+  })
+})
+
+test('dense retrieval failures keep scoped keyword hits and null cosine scores', async () => {
+  const db = new Qdrant('unused')
+  const input = parseRequest({ query: 'patience', kinds: ['quran'], chapter: '2' })
+  let failVectorSearch = true
+  db.query = async (_, body: any) => {
+    expect(body.filter.must).toContainEqual({ key: 'ref.chapter', match: { value: 2 } })
+    if (body.using === 'search_text') return [point('lexical', 'item')]
+    if (failVectorSearch) throw new Error('dense index unavailable')
+    return []
+  }
+  db.call = async () => { throw new Error('vector read unavailable') }
+  for (const fail of [true, false]) {
+    failVectorSearch = fail
+    const result = await retrieve(db, 'test', input, [1, 0], null)
+    expect(result.degraded).toBe(true)
+    expect(result.results).toEqual([{ kind: 'quran', chapter: 2, verse: 1, score: null }])
+  }
+})
+
+test('mixed legacy and figure requests remain isolated through keyword fallback', async () => {
+  const store = new Store(':memory:')
+  const db = new Qdrant('unused')
+  db.active = async () => 'expanded'
+  db.query = async (_, body: any) => {
+    const kinds = body.filter.must.find((condition: any) => condition.key === 'kind').match.any
+    return kinds.includes('figure')
+      ? [{ ...point('figure', 'figure'), payload: { item_id: 'figure', ref: { kind: 'figure', id: 'ali' } } }]
+      : [point('quran', 'quran')]
+  }
+  const handler = createHandler(store, db, { SEARCH_RATE_SALT: 'test', SEARCH_IP_PER_MINUTE: '40' })
+  try {
+    await Promise.all(Array.from({ length: 40 }, async (_, i) => {
+      const kinds = i % 2 ? ['figure'] : undefined
+      const request = new Request('http://localhost/v1/search', {
+        method: 'POST', body: JSON.stringify({ query: 'Ali', kinds }),
+      })
+      const response = await handler(request, '127.0.0.1')
+      expect(response.status).toBe(200)
+      const { results } = await response.json() as { results: { kind: string; score: number | null }[] }
+      expect(results.map(hit => hit.kind)).toEqual([kinds ? 'figure' : 'quran'])
+      expect(results[0].score).toBeNull()
+    }))
+  } finally {
+    store.db.close()
+  }
+})
+
+test('exhausted embedding budget still reranks keyword hits with Jev', async () => {
+  const store = new Store(':memory:')
+  store.take('embedding:day', 1, 86400)
+  const db = new Qdrant('unused')
+  db.active = async () => 'revision'
+  const a = point('a', 'a'), b = point('b', 'b')
+  b.payload.ref = { kind: 'quran', chapter: 2, verse: 2 }
+  db.query = async (_, body: any) => {
+    expect(body.using).toBe('search_text')
+    return [a, b]
+  }
+  db.call = async () => [a, b].map(p => ({ id: p.id, payload: { text: 'indexed passage' } }))
+  const original = globalThis.fetch
+  let reranks = 0
+  try {
+    globalThis.fetch = Object.assign(async (url: any) => {
+      expect(String(url)).toContain('api.typesafe.ai')
+      reranks++
+      return Response.json({ answers: { p0: { type: 'noul', noul: 0.1 }, p1: { type: 'noul', noul: 0.9 } } })
+    }, { preconnect: original.preconnect })
+    const handler = createHandler(store, db, {
+      GEMINI_API_KEY: 'test', SEARCH_RATE_SALT: 'test', SEARCH_DAILY_EMBEDDING_LIMIT: '1',
+      SEARCH_RERANK_PROVIDER: 'jev', JEV_API_KEY: 'test',
+    })
+    const response = await handler(new Request('http://localhost/v1/search', {
+      method: 'POST', body: JSON.stringify({ query: 'patience', kinds: ['quran'] }),
+    }), '127.0.0.1')
+    expect(response.status).toBe(200)
+    expect((await response.json() as any).results).toEqual([
+      { ...b.payload.ref, score: null }, { ...a.payload.ref, score: null },
+    ])
+    expect(reranks).toBe(1)
+  } finally {
+    store.db.close()
     globalThis.fetch = original
   }
 })

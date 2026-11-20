@@ -1,5 +1,8 @@
 package com.aljaroudi.muntathir.ui.rakaat
 
+import android.content.Context
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,15 +22,18 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -35,6 +41,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -116,6 +123,9 @@ fun RakaatScreen(
                         textAlign = TextAlign.Center,
                     )
                 }
+                // Re-read on every resume, so the card goes away once access is granted in Settings.
+                val focusAvailable = remember(lifecycle) { viewModel.focus.available }
+                if (!focusAvailable) FocusCard()
             }
         }
     }
@@ -123,6 +133,47 @@ fun RakaatScreen(
         PrayerChoice(target, onDismiss = { choosing = null }) { prayer ->
             choosing = null
             open(RakaatSessionRoute(target, prayer))
+        }
+    }
+}
+
+/**
+ * Android only: offers Do Not Disturb access so sessions can silence notifications. Optional; "Not now" hides it
+ * for good.
+ */
+@Composable
+private fun FocusCard() {
+    val context = LocalContext.current
+    val preferences = remember { context.getSharedPreferences("rakaat-focus", Context.MODE_PRIVATE) }
+    var dismissed by rememberSaveable { mutableStateOf(preferences.getBoolean("dismissed", false)) }
+    if (dismissed) return
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(24.dp))
+            .padding(20.dp)
+            .testTag("rakaat-focus-card"),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            stringResource(R.string.silence_notifications_while_praying),
+            style = MaterialTheme.typography.titleMedium,
+            textAlign = TextAlign.Center,
+        )
+        Text(
+            stringResource(R.string.silence_notifications_footer),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            TextButton(onClick = {
+                preferences.edit { putBoolean("dismissed", true) }
+                dismissed = true
+            }) { Text(stringResource(R.string.not_now)) }
+            OutlinedButton(onClick = {
+                context.startActivity(Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
+            }) { Text(stringResource(R.string.open_settings)) }
         }
     }
 }

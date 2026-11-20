@@ -34,6 +34,7 @@ class RakaatSetupViewModel
     @Inject
     constructor(
         val qibla: QiblaSensors,
+        val focus: SessionFocus,
     ) : ViewModel()
 
 /** What the session screen shows. Swift `RakaatSessionView`'s state. */
@@ -74,6 +75,7 @@ class RakaatSessionViewModel
         private val camera: SujoodCamera,
         private val model: AppModel,
         private val history: ProgressStore,
+        private val focus: SessionFocus,
         val qibla: QiblaSensors,
     ) : ViewModel() {
         @AssistedFactory
@@ -100,6 +102,8 @@ class RakaatSessionViewModel
                 mutableState.update { it.copy(denied = true, ended = true) }
                 return
             }
+            // Before calibration, like the screen dimming: nothing should change mid-session.
+            focus.begin()
             session =
                 viewModelScope.launch {
                     var finished = false
@@ -119,6 +123,7 @@ class RakaatSessionViewModel
                         // Reported below as an ended capture.
                     }
                     mutableState.update { it.copy(failed = it.failed || !finished, ended = true) }
+                    focus.end()
                 }
         }
 
@@ -126,6 +131,11 @@ class RakaatSessionViewModel
         fun end() {
             session?.cancel()
             mutableState.update { if (it.ended) it else it.copy(ended = true) }
+            focus.end()
+        }
+
+        override fun onCleared() {
+            focus.end()
         }
 
         fun retrySave() {

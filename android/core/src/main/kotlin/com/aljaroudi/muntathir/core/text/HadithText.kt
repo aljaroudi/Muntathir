@@ -122,7 +122,7 @@ object HadithText {
         return result.toString()
     }
 
-    /** A short excerpt around the first match, for search results. */
+    /** A short excerpt around the strongest match, for search results. */
     fun preview(
         source: String,
         terms: List<String> = emptyList(),
@@ -290,7 +290,7 @@ object SearchMatch {
         raw: String,
         query: String,
     ): StyledText =
-        ranges(raw, QuranSearchText.terms(query)).fold(StyledText(raw)) { text, range ->
+        ranges(raw, QuranSearchText.queryTerms(query)).fold(StyledText(raw)) { text, range ->
             text.styled(range.location, range.end, TextStyle.Match)
         }
 
@@ -306,7 +306,7 @@ object SearchMatch {
     }
 
     /**
-     * About 160–260 characters around the first match, with "… " / " …" where text was cut. [compact] starts
+     * About 160–260 characters around the strongest match, with "… " / " …" where text was cut. [compact] starts
      * near the matching word and prefers word boundaries; otherwise the excerpt starts 45 characters earlier.
      */
     fun preview(
@@ -323,7 +323,29 @@ object SearchMatch {
 
         fun newline(index: Int) = text.text.codePointAtOrNull(characters[index].location)?.let(::isNewline) == true
 
-        val hit = text.spans(TextStyle.Match).minOfOrNull { it.start }?.let(::index) ?: 0
+        var groupStart = 0
+        var previousEnd = 0
+        var bestStart = 0
+        var score = 0
+        var bestScore = 0
+        val seen = mutableSetOf<String>()
+        for (span in text.spans(TextStyle.Match).sortedBy { it.start }) {
+            if (span.start < previousEnd) continue
+            val word = fold(QuranSearchText.normalize(text.text.substring(span.start, span.end)))
+            if (span.start - previousEnd > 3 || word in seen || seen.isEmpty()) {
+                groupStart = span.start
+                score = 0
+                seen.clear()
+            }
+            seen += word
+            score += word.length + 1
+            if (score > bestScore) {
+                bestScore = score
+                bestStart = groupStart
+            }
+            previousEnd = span.end
+        }
+        val hit = index(bestStart)
         var start = maxOf(0, hit - if (compact) 12 else 45)
         if (compact) {
             var wordStart = hit

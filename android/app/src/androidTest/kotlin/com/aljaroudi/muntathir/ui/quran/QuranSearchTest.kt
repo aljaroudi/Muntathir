@@ -55,7 +55,11 @@ class QuranSearchTest {
         SmartSearch(
             SemanticSearchClient("https://search.invalid/v1/search") { _, body ->
                 requests += body
-                200 to """{"results":[{"kind":"quran","chapter":2,"verse":255,"score":0.8}]}"""
+                if ("zzzz" !in body) {
+                    503 to ""
+                } else {
+                    200 to """{"results":[{"kind":"quran","chapter":2,"verse":255,"score":0.8}]}"""
+                }
             },
         )
 
@@ -77,7 +81,7 @@ class QuranSearchTest {
     }
 
     @Test
-    fun searchesTextOpensResultsRemembersQueriesAndAsksBeforeSmartSearch() {
+    fun searchesTextOpensResultsRemembersQueriesAndFallsBackOffline() {
         compose.onNodeWithTag("tab-tools").performClick()
         compose.onNodeWithTag("holy-quran").performClick()
         waitFor("search-field")
@@ -93,13 +97,9 @@ class QuranSearchTest {
         compose.onNodeWithTag("search-field").performClick()
         waitFor("search-history-يستحي")
 
-        // Nothing is sent until the user asks for smart search.
         search("zzzz")
-        waitFor("search-by-meaning")
-        assertTrue(requests.isEmpty())
-        compose.onNodeWithTag("search-by-meaning").performClick()
         waitFor("quran-result-2:255")
-        assertTrue(requests.single().contains("\"kinds\":[\"quran\"]"))
+        assertTrue(requests.last().contains("\"kinds\":[\"quran\"]"))
 
         search("2:300")
         waitFor("quran-list")

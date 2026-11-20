@@ -94,11 +94,8 @@ Done 2026-11-17. `just android-test` passes, and all 20 instrumented tests pass 
   - `ui/rulings` has the browser (disclaimer, Saved, authority and language pickers, a random sample or search with 150 ms debounce and history area `Rulings`), the detail (selectable answer, authority, Source link, sections, text size, bookmark), section and Saved screens, all list-detail. Downloads has a Rulings section. The instrumented `RulingsTest` covers download, default authority, English reader and bookmark.
   - `rulings.authority` and `rulings.languages.v2` are in `ReadingPreferences` (iOS keeps them in local `UserDefaults`); Android backs them up with the other reader choices.
 - [x] **P4.5** Smart search across kinds.
-  - `ui/search/SmartSearchRunner` + `smartSearchSection` are Swift's `MeaningSearchResults` for any result type: nothing is sent before consent, and a new query or scope asks again.
-  - Hadith: kind `hadith`, scoped by `meaningSearchScope` (book volumes or chapter), skipped for numbers and `chN`. Each reference resolves to exactly one local narration; supplications and narrations already listed are dropped. Results show under "Smart search".
-  - Rulings: kind `rulings` with the chosen authority and language. A result outside them, or missing locally, fails the search. Duplicates are dropped, and rows have no header. Supplications have no smart search, as on iOS.
-  - `HadithReaderTest` and `SearchTest` cover the ambiguous lookup, the online scope and the rulings request. The instrumented `SmartSearchTest` covers both screens with a fake endpoint.
-  - Quran search uses the same runner and section.
+  - Quran, Hadith, Rulings, Figures and Supplications submit scoped queries to the backend. The reader resolves returned references in rank order and falls back to its local search on failure.
+  - Hadith book and chapter filters, Quran chapter filters, and Rulings authority and language filters apply to remote and local retrieval.
   - In two panes, every detail route (`DetailRoute`) replaces the open detail when another is opened, so the shell has one `open` rule.
 
 ## P5 — Tools (parallelizable)

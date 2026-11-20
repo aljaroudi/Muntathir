@@ -2,17 +2,23 @@ package com.aljaroudi.muntathir.ui.figures
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aljaroudi.muntathir.core.figures.FigureLibrary
+import com.aljaroudi.muntathir.core.search.SemanticSearchResult
 import com.aljaroudi.muntathir.core.text.SearchArea
 import com.aljaroudi.muntathir.data.FigureLoad
 import com.aljaroudi.muntathir.data.FigureStore
 import com.aljaroudi.muntathir.data.SearchHistoryStore
+import com.aljaroudi.muntathir.data.library
+import com.aljaroudi.muntathir.search.SmartSearch
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /** Swift `FigureBrowser`: the library, the query and its recent searches. */
@@ -22,6 +28,7 @@ class FiguresViewModel
     constructor(
         store: FigureStore,
         private val history: SearchHistoryStore,
+        private val smartSearch: SmartSearch,
     ) : ViewModel() {
         val library: StateFlow<FigureLoad> = store.state
 
@@ -33,7 +40,33 @@ class FiguresViewModel
                 .map { it.queries(SearchArea.Figures) }
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+        val remote = MutableStateFlow<List<FigureLibrary.BrowserSection>?>(null)
+        private var searchJob: Job? = null
+
+        fun submit() {
+            record()
+            val text = query.value.trim()
+            val catalog = library.value.library ?: return
+            searchJob?.cancel()
+            if (text.isEmpty()) return
+            searchJob =
+                viewModelScope.launch {
+                    val figures =
+                        smartSearch.results(text, "figure") { hits ->
+                            hits
+                                .mapNotNull { it.reference as? SemanticSearchResult.Reference.Figure }
+                                .mapNotNull { catalog.byID[it.id] }
+                        }
+                    remote.value =
+                        figures?.let {
+                            if (it.isEmpty()) emptyList() else listOf(FigureLibrary.BrowserSection("results", it))
+                        }
+                }
+        }
+
         fun search(value: String) {
+            searchJob?.cancel()
+            remote.value = null
             _query.value = value
         }
 

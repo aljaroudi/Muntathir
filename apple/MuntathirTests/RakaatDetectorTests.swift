@@ -60,6 +60,24 @@ struct RakaatDetectorTests {
         #expect(detector.sujoodCount == 0)
     }
 
+    @Test func calibratesWithinHalfASecond() {
+        var detector = RakaatDetector(target: 2)
+        var time = 0.0
+        feed(0.8, seconds: 0.6, detector: &detector, time: &time)
+        #expect(detector.baseline != nil)
+    }
+
+    @Test func baselineRisesWhenLightImproves() {
+        var detector = RakaatDetector(target: 2)
+        var time = 0.0
+        feed(0.4, seconds: 1, detector: &detector, time: &time)
+        feed(0.8, seconds: 2, detector: &detector, time: &time)
+        #expect((detector.baseline ?? 0) > 0.6)
+        #expect(detector.sujoodCount == 0)
+        feed(0.2, seconds: 1, detector: &detector, time: &time)
+        #expect(detector.sujoodCount == 1)
+    }
+
     @Test func gapsAndInvalidSamplesCannotCompleteADarkTransition() {
         var detector = RakaatDetector(target: 2)
         var time = 0.0

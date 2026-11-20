@@ -81,11 +81,21 @@ module MuntathirRelease
   # App Store Connect rejects these in What’s New / metadata text fields.
   ASC_FORBIDDEN = /[ʿʾˈˌː]/u.freeze
 
+  def self.release_notes(version)
+    entries = JSON.parse(File.read(File.join(ROOT, "../shared/release-notes/changelog.json")))
+    entry = entries.find { |row| row.fetch("version") == version && row.fetch("platforms").include?("ios") }
+    raise "Missing iOS release notes for #{version}" unless entry
+
+    entry.fetch("notes")
+  end
+
   def self.validate_metadata!(root = File.join(__dir__, "metadata"), locales: LOCALES)
+    version = File.read(File.join(ROOT, "../Version.xcconfig"))[/^MARKETING_VERSION\s*=\s*(\S+)/, 1]
+    notes = release_notes(version)
     locales.each do |locale|
       LIMITS.each do |field, limit|
         path = File.join(root, locale, "#{field}.txt")
-        text = File.read(path).strip
+        text = field == "release_notes" ? notes.fetch(locale).strip : File.read(path).strip
         raise "#{locale}/#{field}: expected 1–#{limit} characters, got #{text.length}" unless (1..limit).cover?(text.length)
         if (bad = text.scan(ASC_FORBIDDEN).uniq).any?
           raise "#{locale}/#{field}: App Store Connect rejects #{bad.map { |c| c.inspect }.join(', ')}"
@@ -312,13 +322,13 @@ module MuntathirRelease
 
     if build_number && !build_number.to_s.strip.empty?
       selected = builds.find { |build| build.version.to_s == build_number.to_s }
-      raise "No valid iOS build #{version} (#{build_number}) found in App Store Connect. Run testflight_public first." unless selected
+      raise "No valid iOS build #{version} (#{build_number}) found in App Store Connect. Run just lane ios beta first." unless selected
 
       return selected
     end
 
     selected = builds.max_by { |build| [build.respond_to?(:uploaded_date) ? build.uploaded_date.to_s : "", build.version.to_i] }
-    raise "No valid iOS build for version #{version} found in App Store Connect. Run testflight_public first." unless selected
+    raise "No valid iOS build for version #{version} found in App Store Connect. Run just lane ios beta first." unless selected
 
     selected
   end

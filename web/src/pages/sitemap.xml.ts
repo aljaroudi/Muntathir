@@ -1,5 +1,5 @@
-import { site, paths } from '../site'
-import { calendarYears, calendarPath } from '../calendar-view'
+import { site, paths } from '@/site'
+import { calendarYears, calendarPath } from '@/calendar-view'
 
 export function GET() {
   function absolute(path: string) {
@@ -8,7 +8,8 @@ export function GET() {
   function localized(ar: string, en: string) {
     return [ar, en]
       .map(
-        path => `<url><loc>${absolute(path)}</loc><xhtml:link rel="alternate" hreflang="ar" href="${absolute(ar)}"/><xhtml:link rel="alternate" hreflang="en" href="${absolute(en)}"/><xhtml:link rel="alternate" hreflang="x-default" href="${absolute(ar)}"/></url>`
+        path =>
+          `<url><loc>${absolute(path)}</loc><xhtml:link rel="alternate" hreflang="ar" href="${absolute(ar)}"/><xhtml:link rel="alternate" hreflang="en" href="${absolute(en)}"/><xhtml:link rel="alternate" hreflang="x-default" href="${absolute(ar)}"/></url>`
       )
       .join('')
   }

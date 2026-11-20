@@ -9,6 +9,8 @@ extension EnvironmentValues {
 /// A stable, visible representation shared by range storage, validation, and text rendering.
 enum HighlightTextContent {
     static let pearlAttribute = NSAttributedString.Key("MuntathirPearl")
+    /// Marks which highlight owns each visible run, so touching highlights of the same color still get their own rounded ends.
+    static let highlightAttribute = NSAttributedString.Key("MuntathirHighlight")
     static func canonical(_ markdown: AttributedString) -> String {
         HadithText.paragraphs(markdown).map { paragraph in
             (paragraph.marker.map { $0 + " " } ?? "") + (paragraph.quoted ? "│ " : "") + String(paragraph.text.characters)
@@ -22,6 +24,7 @@ enum HighlightTextContent {
             for range in mappedRanges?[highlight.id] ?? highlight.ranges(in: rendered.string, block: block) {
                 rendered.addAttribute(.backgroundColor, value: highlight.color.textBackground, range: range)
                 rendered.addAttribute(pearlAttribute, value: highlight.color == .cyan, range: range)
+                rendered.addAttribute(highlightAttribute, value: highlight.id, range: range)
                 if differentiate {
                     rendered.enumerateAttribute(.underlineStyle, in: range) { style, subrange, _ in
                         if style == nil {
@@ -173,7 +176,7 @@ struct SelectableHighlightText: UIViewRepresentable {
 
     func makeUIView(context: Context) -> HighlightUITextView {
         let storage = NSTextStorage()
-        let layout = ReaderUnderlineLayoutManager()
+        let layout = ReaderTextLayoutManager()
         storage.addLayoutManager(layout)
         let container = NSTextContainer()
         layout.addTextContainer(container)
@@ -274,7 +277,115 @@ struct SelectableHighlightText: UIViewRepresentable {
     }
 }
 
-private final class ReaderUnderlineLayoutManager: NSLayoutManager {
+private final class ReaderTextLayoutManager: NSLayoutManager {
+    // Background extent relative to point size. The Uthmani script's marks reach ~0.92 above and ~0.48 below the baseline,
+    // while reader lines are ~1.75 tall, so these caps trim the empty line spacing without clipping diacritics.
+    private static let ascentLimit: CGFloat = 1.0
+    private static let descentLimit: CGFloat = 0.55
+    private static let padding: CGFloat = 0.04
+    private static let cornerRadius: CGFloat = 6
+    private var drawingOrigin = CGPoint.zero
+
+    override func drawBackground(forGlyphRange glyphsToShow: NSRange, at origin: CGPoint) {
+        drawingOrigin = origin
+        super.drawBackground(forGlyphRange: glyphsToShow, at: origin)
+    }
+
+    override func fillBackgroundRectArray(_ rectArray: UnsafePointer<CGRect>, count rectCount: Int,
+                                          forCharacterRange charRange: NSRange, color: UIColor)
+    {
+        guard let storage = textStorage, let container = textContainers.first, charRange.length > 0,
+              NSMaxRange(charRange) <= storage.length, let context = UIGraphicsGetCurrentContext()
+        else {
+            super.fillBackgroundRectArray(rectArray, count: rectCount, forCharacterRange: charRange, color: color)
+            return
+        }
+        context.saveGState()
+        defer { context.restoreGState() }
+        color.setFill()
+
+        // Backgrounds that aren't saved highlights (e.g. markdown) only get the slimmer height.
+        guard storage.attribute(HighlightTextContent.highlightAttribute, at: charRange.location, effectiveRange: nil) != nil else {
+            for index in 0 ..< rectCount {
+                UIRectFill(slimmed(rectArray[index], in: container))
+            }
+            return
+        }
+
+        storage.enumerateAttribute(HighlightTextContent.highlightAttribute, in: charRange) { id, range, _ in
+            guard id != nil else { return }
+            var whole = NSRange(location: NSNotFound, length: 0)
+            storage.attribute(HighlightTextContent.highlightAttribute, at: range.location,
+                              longestEffectiveRange: &whole, in: NSRange(location: 0, length: storage.length))
+            let glyphs = glyphRange(forCharacterRange: range, actualCharacterRange: nil)
+            guard glyphs.length > 0 else { return }
+            var rects: [CGRect] = []
+            enumerateEnclosingRects(forGlyphRange: glyphs, withinSelectedGlyphRange: NSRange(location: NSNotFound, length: 0),
+                                    in: container)
+            { rect, _ in
+                rects.append(rect.offsetBy(dx: self.drawingOrigin.x, dy: self.drawingOrigin.y))
+            }
+            guard let top = rects.map(\.minY).min(), let bottom = rects.map(\.minY).max() else { return }
+            let rightToLeft = Self.isRightToLeft(storage.string as NSString, range: range)
+                ?? ((storage.attribute(.paragraphStyle, at: range.location, effectiveRange: nil) as? NSParagraphStyle)?
+                    .baseWritingDirection == .rightToLeft)
+            let left: UIRectCorner = [.topLeft, .bottomLeft], right: UIRectCorner = [.topRight, .bottomRight]
+            // Only the highlight's true start and end are rounded; line breaks in between stay square.
+            // The start is the leading edge of the first line, the end the trailing edge of the last line.
+            var corners = [UIRectCorner](repeating: [], count: rects.count)
+            func outermost(onLineAt y: CGFloat, rightSide: Bool) -> Int? {
+                let line = rects.indices.filter { abs(rects[$0].minY - y) < 1 }
+                return rightSide ? line.max { rects[$0].maxX < rects[$1].maxX } : line.min { rects[$0].minX < rects[$1].minX }
+            }
+            if range.location == whole.location, let index = outermost(onLineAt: top, rightSide: rightToLeft) {
+                corners[index].formUnion(rightToLeft ? right : left)
+            }
+            if NSMaxRange(range) == NSMaxRange(whole), let index = outermost(onLineAt: bottom, rightSide: !rightToLeft) {
+                corners[index].formUnion(rightToLeft ? left : right)
+            }
+            for (rect, corner) in zip(rects, corners) {
+                let shape = slimmed(rect, in: container)
+                let radius = min(Self.cornerRadius, shape.height * 0.25)
+                UIBezierPath(roundedRect: shape, byRoundingCorners: corner, cornerRadii: CGSize(width: radius, height: radius)).fill()
+            }
+        }
+    }
+
+    /// The direction of the first strong letter in the span, or nil when it has none (digits, punctuation).
+    private static func isRightToLeft(_ string: NSString, range: NSRange) -> Bool? {
+        for scalar in string.substring(with: range).unicodeScalars where scalar.properties.isAlphabetic {
+            switch scalar.value {
+            case 0x0590 ... 0x08FF, 0xFB1D ... 0xFDFF, 0xFE70 ... 0xFEFF: return true
+            default: return false
+            }
+        }
+        return nil
+    }
+
+    /// Trims a line-height background rect to the text's own vertical extent around the baseline.
+    private func slimmed(_ rect: CGRect, in container: NSTextContainer) -> CGRect {
+        guard let storage = textStorage, rect.width > 0 else { return rect }
+        let glyph = glyphIndex(for: CGPoint(x: rect.midX - drawingOrigin.x, y: rect.midY - drawingOrigin.y), in: container)
+        guard glyph < numberOfGlyphs else { return rect }
+        var lineGlyphs = NSRange()
+        let line = lineFragmentRect(forGlyphAt: glyph, effectiveRange: &lineGlyphs)
+        // Diacritic glyphs report shifted positions, so derive the baseline from the line's tallest font
+        // (TextKit places it one ascender below the fragment top; line spacing is added underneath).
+        var ascent: CGFloat = 0, above: CGFloat = 0, below: CGFloat = 0
+        storage.enumerateAttribute(.font, in: characterRange(forGlyphRange: lineGlyphs, actualGlyphRange: nil)) { value, _, _ in
+            guard let font = value as? UIFont else { return }
+            let size = font.pointSize
+            ascent = max(ascent, font.ascender)
+            above = max(above, min(font.ascender, size * Self.ascentLimit) + size * Self.padding)
+            below = max(below, min(-font.descender, size * Self.descentLimit) + size * Self.padding)
+        }
+        guard ascent > 0 else { return rect }
+        let baseline = drawingOrigin.y + line.minY + ascent
+        let top = max(rect.minY, baseline - above)
+        let bottom = min(rect.maxY, baseline + below)
+        return bottom > top ? CGRect(x: rect.minX, y: top, width: rect.width, height: bottom - top) : rect
+    }
+
     override func drawUnderline(forGlyphRange glyphRange: NSRange, underlineType: NSUnderlineStyle,
                                 baselineOffset: CGFloat, lineFragmentRect lineRect: CGRect,
                                 lineFragmentGlyphRange lineGlyphRange: NSRange, containerOrigin: CGPoint)
@@ -415,7 +526,7 @@ final class HighlightUITextView: UITextView {
 
 extension SearchMatch {
     static func applying(to text: NSMutableAttributedString, query: String) -> NSMutableAttributedString {
-        for range in ranges(in: text.string, terms: QuranSearchText.terms(query)) {
+        for range in ranges(in: text.string, terms: QuranSearchText.queryTerms(query)) {
             text.addAttributes([.underlineStyle: NSUnderlineStyle.thick.rawValue, .underlineColor: UIColor(Color.accentColor)], range: range)
         }
         return text

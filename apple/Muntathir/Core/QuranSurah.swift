@@ -101,6 +101,30 @@ enum QuranSearchText {
     }
 
     /// Normalized, lowercased words of a query; never contains FTS syntax characters.
+    /// Preserve lineage markers between Arabic words and allow optional vocalization.
+    private static let commonPhrase = #"(?<![\p{L}\p{M}\p{N}])(?:صلي\s+الله\s+عليه\s+(?:واله\s+)?وسلم|عز\s+وجل|جل\s+جلاله|عليه\s+السلام|قال|من|(?!(?<=[\p{sc=Arabic}\p{M}]\s)(?:ابن|بن)\s+\p{sc=Arabic})(?:ابن|بن))(?![\p{L}\p{M}\p{N}])"#.map { letter -> String in
+        switch letter {
+        case "ا": #"[اأإآٱ][\p{M}ـ]*"#
+        case "ي": #"[يى][\p{M}ـ]*"#
+        case "ء" ... "ي": String(letter) + #"[\p{M}ـ]*"#
+        default: String(letter)
+        }
+    }.joined()
+
+    static func searchQuery(_ text: String) -> String {
+        let raw = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if raw.count >= 2, raw.first == "\"", raw.last == "\"" {
+            return String(raw.dropFirst().dropLast())
+        }
+        let stripped = raw.replacingOccurrences(of: commonPhrase, with: " ", options: .regularExpression)
+        guard stripped != raw, stripped.rangeOfCharacter(from: .alphanumerics) != nil else { return raw }
+        return stripped.split(whereSeparator: { $0.isWhitespace }).joined(separator: " ")
+    }
+
+    static func queryTerms(_ text: String) -> [String] {
+        terms(searchQuery(text))
+    }
+
     static func terms(_ text: String) -> [String] {
         normalize(text).lowercased().split { character in
             !character.unicodeScalars.contains { CharacterSet.alphanumerics.contains($0) || CharacterSet.nonBaseCharacters.contains($0) }

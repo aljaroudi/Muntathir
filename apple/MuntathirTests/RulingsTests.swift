@@ -103,6 +103,10 @@ private actor RulingsTestBackend: AssetPackBackend {
     var installed = false
     var failing = false
     var downloading = false
+    var downloads = 0
+    var version: Int?
+    var remote: Int?
+    var served: URL?
     init(url: URL) {
         self.url = url
     }
@@ -116,7 +120,24 @@ private actor RulingsTestBackend: AssetPackBackend {
     }
 
     func localURL() -> URL? {
-        installed ? url : nil
+        installed ? served ?? url : nil
+    }
+
+    /// Serves a different file, such as a broken pack, in place of `url`.
+    func serve(_ value: URL?) {
+        served = value
+    }
+
+    func setRemote(_ value: Int?) {
+        remote = value
+    }
+
+    func localVersion() -> Int? {
+        installed ? version : nil
+    }
+
+    func remoteVersion() -> Int? {
+        remote
     }
 
     func isDownloading() -> Bool {
@@ -124,11 +145,13 @@ private actor RulingsTestBackend: AssetPackBackend {
     }
 
     func download() throws {
+        downloads += 1
         if failing {
             throw URLError(.notConnectedToInternet)
         }
         installed = true
         downloading = false
+        version = remote ?? version
     }
 
     func remove() throws {
@@ -140,6 +163,54 @@ private actor RulingsTestBackend: AssetPackBackend {
 
     nonisolated func updates() -> AsyncStream<AssetPackEvent> {
         AsyncStream { $0.finish() }
+    }
+}
+
+extension RulingsTests {
+    @MainActor @Test func brokenRulingsUpdateIsSkippedAndCopyKept() async throws {
+        let fixture = try RulingsFixture()
+        defer { fixture.remove() }
+        let root = URL.temporaryDirectory.appending(path: UUID().uuidString, directoryHint: .isDirectory)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let bad = URL.temporaryDirectory.appending(path: "\(UUID().uuidString).db")
+        defer { try? FileManager.default.removeItem(at: bad) }
+        try Data("invalid".utf8).write(to: bad)
+        let suite = "RulingsUpdates.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let backend = RulingsTestBackend(url: fixture.url)
+        await backend.setRemote(1)
+        let store = RulingsAssetStore(backend: backend, defaults: defaults, library: root.appending(path: "rulings.db"))
+        await store.download()
+        #expect(store.state == .ready)
+        #expect(await backend.installed == false)
+        #expect(defaults.integer(forKey: "rulings.installedPackVersion") == 1)
+
+        // Current versions are not downloaded again, and checks are throttled.
+        let start = Date()
+        await store.checkForUpdates(now: start)
+        #expect(await backend.downloads == 1)
+        await backend.setRemote(2)
+        await store.checkForUpdates(now: start.addingTimeInterval(60))
+        #expect(await backend.downloads == 1)
+
+        await backend.serve(bad)
+        await store.checkForUpdates(now: start.addingTimeInterval(86400))
+        #expect(await backend.downloads == 2)
+        #expect(store.state == .ready)
+        #expect(try await store.reader.authorities().count == 2)
+        #expect(defaults.integer(forKey: "rulings.installedPackVersion") == 1)
+        #expect(await backend.installed == false)
+        await store.checkForUpdates(now: start.addingTimeInterval(86400 * 2))
+        #expect(await backend.downloads == 2)
+
+        await backend.serve(nil)
+        await backend.setRemote(3)
+        await store.checkForUpdates(now: start.addingTimeInterval(86400 * 3))
+        #expect(await backend.downloads == 3)
+        #expect(store.state == .ready)
+        #expect(defaults.integer(forKey: "rulings.installedPackVersion") == 3)
+        #expect(try await store.reader.authorities().count == 2)
     }
 }
 

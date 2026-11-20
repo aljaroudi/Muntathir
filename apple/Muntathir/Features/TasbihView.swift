@@ -9,7 +9,7 @@ struct TasbihView: View {
     @ScaledMetric(relativeTo: .largeTitle) private var countHeight = 48
     @State private var activityID = UUID()
     @State private var startedAt = Date.now
-    @State private var session = TasbihSession()
+    @State private var session = TasbihSession.testStart
     @State private var beads = TasbihBeadScene()
     @State private var pull: Float = 0
     @State private var settling = false
@@ -176,5 +176,23 @@ struct TasbihView: View {
         session.reset()
         activityID = UUID()
         startedAt = .now
+    }
+}
+
+private extension TasbihSession {
+    /// UI tests can start near a stage boundary instead of pulling up to 100 beads.
+    static var testStart: TasbihSession {
+        var session = TasbihSession()
+        #if DEBUG
+            let arguments = ProcessInfo.processInfo.arguments
+            if arguments.contains("--ui-testing"), let index = arguments.firstIndex(of: "--ui-testing-tasbih-total"),
+               arguments.indices.contains(index + 1), let total = Int(arguments[index + 1])
+            {
+                for _ in 0 ..< total {
+                    session.advance()
+                }
+            }
+        #endif
+        return session
     }
 }
