@@ -34,6 +34,35 @@ struct RulingsTests {
         await #expect(throws: CancellationError.self) { _ = try await task.value }
     }
 
+    @Test func bookChaptersReturnTheirOwnEntries() async throws {
+        let fixture = try RulingsFixture()
+        defer { fixture.remove() }
+        var db: OpaquePointer?
+        #expect(sqlite3_open(fixture.url.path, &db) == SQLITE_OK)
+        let sql = """
+        PRAGMA user_version=2;
+        ALTER TABLE question ADD COLUMN kind TEXT DEFAULT 'qa';
+        ALTER TABLE question ADD COLUMN context TEXT DEFAULT '';
+        CREATE VIEW entry AS SELECT * FROM question;
+        CREATE TABLE footnote(topic_id INTEGER,entry_id INTEGER,label TEXT,body TEXT);
+        INSERT INTO footnote VALUES (3,300,'(18)','First'),(3,300,'(19)','Second'),(4,301,'(20)','Other');
+        UPDATE question SET kind='intro', question='0', answer='Worship', context='Book · Worship' WHERE id=300;
+        """
+        #expect(sqlite3_exec(db, sql, nil, nil, nil) == SQLITE_OK)
+        sqlite3_close(db)
+        let reader = RulingsReader()
+        try await reader.install(fixture.url)
+        let roots = try await reader.contents(authority: "sistani", language: "en")
+        let section = try #require(roots.first)
+        #expect(try await reader.contents(authority: "sistani", language: "en", parent: section.id).map(\.title) == ["Fasting"])
+        let rows = try await reader.questions(authority: "sistani", language: "en", section: section)
+        #expect(rows.map(\.question) == ["0"])
+        #expect(rows.first?.kind == "intro")
+        #expect(rows.first?.context == "Book · Worship")
+        let entry = try #require(rows.first)
+        #expect(try await reader.footnotes(for: entry.id).map(\.label) == ["(18)", "(19)"])
+    }
+
     @Test func languageMustBeAvailable() {
         let persian = RulingsLanguage(id: "fa", name: "فارسی", rightToLeft: true)
         #expect(RulingsReader.preferredLanguage(saved: nil, locale: "ar-SA", available: [persian]) == nil)
@@ -184,7 +213,7 @@ extension RulingsTests {
         await store.download()
         #expect(store.state == .ready)
         #expect(await backend.installed == false)
-        #expect(defaults.integer(forKey: "rulings.installedPackVersion") == 1)
+        #expect(defaults.integer(forKey: "rulings-v2.installedPackVersion") == 1)
 
         // Current versions are not downloaded again, and checks are throttled.
         let start = Date()
@@ -199,7 +228,7 @@ extension RulingsTests {
         #expect(await backend.downloads == 2)
         #expect(store.state == .ready)
         #expect(try await store.reader.authorities().count == 2)
-        #expect(defaults.integer(forKey: "rulings.installedPackVersion") == 1)
+        #expect(defaults.integer(forKey: "rulings-v2.installedPackVersion") == 1)
         #expect(await backend.installed == false)
         await store.checkForUpdates(now: start.addingTimeInterval(86400 * 2))
         #expect(await backend.downloads == 2)
@@ -209,7 +238,7 @@ extension RulingsTests {
         await store.checkForUpdates(now: start.addingTimeInterval(86400 * 3))
         #expect(await backend.downloads == 3)
         #expect(store.state == .ready)
-        #expect(defaults.integer(forKey: "rulings.installedPackVersion") == 3)
+        #expect(defaults.integer(forKey: "rulings-v2.installedPackVersion") == 3)
         #expect(try await store.reader.authorities().count == 2)
     }
 }

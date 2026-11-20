@@ -21,17 +21,17 @@ import OSLog
     private let defaults: UserDefaults
     /// The app-owned copy that is read. Without one (tests and UI tests), the managed pack is read in place.
     private let library: URL?
-    private let installedVersionKey = "rulings.installedPackVersion"
+    private let installedVersionKey = "rulings-v2.installedPackVersion"
 
     private var installedVersion: Int? {
         defaults.object(forKey: installedVersionKey) as? Int
     }
 
     private var policy: AssetPackUpdatePolicy {
-        AssetPackUpdatePolicy(packID: "rulings", defaults: defaults)
+        AssetPackUpdatePolicy(packID: "rulings-v2", defaults: defaults)
     }
 
-    init(backend: any AssetPackBackend = AppleAssetPackBackend(identifier: "rulings", resourcePath: "Rulings/rulings.db"),
+    init(backend: any AssetPackBackend = AppleAssetPackBackend(identifier: "rulings-v2", resourcePath: "Rulings/rulings.db"),
          defaults: UserDefaults = .standard, library: URL? = nil)
     {
         self.backend = backend

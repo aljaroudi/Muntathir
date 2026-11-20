@@ -42,7 +42,7 @@ struct RulingsDownloadSection: View {
                 } else if assets.state == .failed {
                     Text("Unable to download. Please try again.")
                 }
-                AssetDownloadButton(pack: "rulings", retry: assets.state == .failed || assets.state == .incompatible) {
+                AssetDownloadButton(pack: "rulings-v2", retry: assets.state == .failed || assets.state == .incompatible) {
                     Task { await assets.download() }
                 }
                 .accessibilityIdentifier("downloads-get-rulings")
@@ -63,6 +63,7 @@ private struct RulingsBrowser: View {
     @AppStorage("rulings.authority") private var authority = "sistani"
     @AppStorage("rulings.languages.v2") private var savedLanguages = Data()
     @State private var results = RulingsResultsState()
+    @State private var contents: [RulingsSection] = []
     @State private var authorities: [RulingsAuthority] = []
     @State private var languages: [RulingsLanguage] = []
     @State private var language = ""
@@ -99,6 +100,15 @@ private struct RulingsBrowser: View {
             } else if failed {
                 Button("Try again") { retry += 1 }
             } else if let selected = languages.first(where: { $0.id == language }) {
+                if submitted.isEmpty {
+                    ForEach(contents) { section in
+                        NavigationLink(section.title) {
+                            RulingsSectionView(reader: reader, authority: authority,
+                                               authorityName: authorities.first(where: { $0.id == authority }).map { locale.language.languageCode?.identifier == "ar" ? $0.arabic : $0.english } ?? authority,
+                                               language: selected, section: section)
+                        }
+                    }
+                }
                 RulingsResults(reader: reader, authority: authority, authorityName: authorities.first(where: { $0.id == authority }).map { locale.language.languageCode?.identifier == "ar" ? $0.arabic : $0.english } ?? authority, language: selected, query: submitted, state: results)
             } else {
                 Text("Choose a language")
@@ -112,7 +122,17 @@ private struct RulingsBrowser: View {
         .autocorrectionDisabled()
         .scrollDismissesKeyboard(.interactively)
         .task(id: [authority, language, submitted, String(results.retry)]) {
+            contents = []
             guard !language.isEmpty else { return }
+            do {
+                let found = try await reader.contents(authority: authority, language: language)
+                try Task.checkCancellation()
+                contents = found
+            } catch {
+                if !Task.isCancelled {
+                    results.failed = true
+                }; return
+            }
             await results.load(reader: reader, authority: authority, language: language, query: submitted, online: !submitted.isEmpty)
         }
         .onChange(of: language) { _, value in
@@ -177,9 +197,14 @@ private struct RulingsResults: View {
                 RulingsDetailView(reader: reader, rulings: value, authorityName: authorityName, language: language)
                     .recordSearchOnOpen(query, area: .rulings)
             } label: {
-                Text(showMarks ? value.question : ArabicDisplay.plain(value.question))
-                    .font(.headline)
-                    .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)
+                VStack(alignment: .leading) {
+                    if !value.context.isEmpty {
+                        Text(value.context).font(.caption)
+                    }
+                    Text(showMarks ? value.preview : ArabicDisplay.plain(value.preview)).lineLimit(3)
+                }
+                .font(.headline)
+                .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)
             }
             .accessibilityIdentifier("rulings-question-\(value.id.siteID)")
         }
@@ -209,9 +234,8 @@ private struct RulingsResults: View {
                         found.append(value)
                     }
                 }
-                if results.isEmpty || !found.isEmpty {
-                    return found
-                }
+                let local = try await reader.questions(authority: authority, language: language, query: query)
+                return found + local.filter { !seen.contains($0.id) }
             } catch {
                 try Task.checkCancellation()
             }
@@ -255,13 +279,24 @@ private struct RulingsSectionView: View {
     let section: RulingsSection
     @State private var results = RulingsResultsState()
 
+    @State private var children: [RulingsSection] = []
+
     var body: some View {
         List {
-            RulingsResults(reader: reader, authority: authority, authorityName: authorityName, language: language, state: results)
+            ForEach(children) { child in
+                NavigationLink(child.title) {
+                    RulingsSectionView(reader: reader, authority: authority, authorityName: authorityName, language: language, section: child)
+                }
+            }
+            if children.isEmpty || !results.questions.isEmpty {
+                RulingsResults(reader: reader, authority: authority, authorityName: authorityName, language: language, state: results)
+            }
         }
         .navigationTitle(section.title)
         .readingBackground()
         .task(id: results.retry) {
+            do { children = try await reader.contents(authority: authority, language: language.id, parent: section.id) }
+            catch { results.failed = true; return }
             await results.load(reader: reader, authority: authority, language: language.id, section: section)
         }
     }
@@ -277,6 +312,7 @@ private struct RulingsDetailView: View {
     @State private var textSizePresented = false
     @State private var bookmarkFailed = false
     @State private var sections: [RulingsSection] = []
+    @State private var notes: [RulingFootnote] = []
 
     var body: some View {
         List {
@@ -287,6 +323,22 @@ private struct RulingsDetailView: View {
                 }
             }
             .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)
+            if !notes.isEmpty {
+                Section("Notes") {
+                    ForEach(notes) { note in
+                        DisclosureGroup {
+                            Text(showMarks ? note.body : ArabicDisplay.plain(note.body))
+                                .readingText(arabic: language.id == "ar", hadith: true).textSelection(.enabled)
+                        } label: {
+                            HStack {
+                                if note.chapter { Text("Chapter note") }
+                                Text(verbatim: note.label)
+                            }
+                        }
+                    }
+                }
+                .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)
+            }
             LabeledContent("Religious authority", value: authorityName)
             if let source = rulings.source {
                 Link(destination: source) { Label("Source", systemImage: "arrow.up.right.square") }
@@ -306,6 +358,7 @@ private struct RulingsDetailView: View {
             }
         }
         .task(id: rulings.id) {
+            if let found = try? await reader.footnotes(for: rulings.id), !Task.isCancelled { notes = found }
             if let found = try? await reader.sections(for: rulings.id), !Task.isCancelled {
                 sections = found
             }
@@ -314,7 +367,7 @@ private struct RulingsDetailView: View {
         .readingBackground()
         .toolbar {
             ReadingSizeMenu(isPresented: $textSizePresented)
-            BookmarkButton(source: rulings.id.siteID, isHadith: false, excerpt: rulings.question,
+            BookmarkButton(source: rulings.id.siteID, isHadith: false, excerpt: rulings.preview,
                            reference: authorityName, ruling: rulings.id, failed: $bookmarkFailed)
                 .appTip(.bookmarks)
         }

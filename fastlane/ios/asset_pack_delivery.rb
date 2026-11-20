@@ -4,7 +4,8 @@ Dotenv.load(ENV.fetch("MUNTATHIR_FASTLANE_ENV_FILE", File.expand_path("~/.config
 
 mode = ARGV.shift || "--list"
 pack = ARGV.shift
-known = %w[hadith supplications quran-translations rulings]
+pack = "rulings-v2" if pack == "rulings"
+known = %w[hadith supplications quran-translations rulings-v2]
 abort "Usage: ruby fastlane/ios/asset_pack_delivery.rb [--list|--upload [pack-id]]" unless %w[--list --upload].include?(mode) && ARGV.empty? && (pack.nil? || (mode == "--upload" && known.include?(pack)))
 root = File.expand_path("../../apple", __dir__)
 altool = "/Applications/Transporter.app/Contents/Frameworks/ContentDelivery.framework/Versions/A/Resources/altool"
@@ -14,7 +15,7 @@ key_path = File.expand_path(ENV.fetch("ASC_KEY_PATH"))
 abort "Configured App Store Connect key file is missing" unless File.file?(key_path)
 auth = ["--api-key", ENV.fetch("ASC_KEY_ID"), "--api-issuer", ENV.fetch("ASC_ISSUER_ID"), "--p8-file-path", key_path]
 if mode == "--upload"
-  abort "Asset manifest validation failed" unless system("python3", File.join(root, "AssetPacks/assets.py"), "validate", "--content", pack == "quran-translations" ? "quran" : (pack || "all"))
+  abort "Asset manifest validation failed" unless system("python3", File.join(root, "AssetPacks/assets.py"), "validate", "--content", { "quran-translations" => "quran", "rulings-v2" => "rulings" }.fetch(pack, pack || "all"))
   archives = (pack ? [pack] : known).map { |id| File.join(root, "build/AssetPacks/archives/#{id}.aar") }
   abort "Run just apple-packs from the repository root first" unless archives.all? { |file| File.file?(file) }
   archives.each do |file|

@@ -1,6 +1,12 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Chapter note" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "هامش الفصل" } },
+        "fa" : { "stringUnit" : { "state" : "translated", "value" : "یادداشت فصل" } }
+      }
+    },
     "What’s New" : {
       "localizations" : {
         "ar" : {

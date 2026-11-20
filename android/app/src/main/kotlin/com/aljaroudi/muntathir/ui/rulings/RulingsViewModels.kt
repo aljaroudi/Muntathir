@@ -7,6 +7,7 @@ import com.aljaroudi.muntathir.core.highlight.QuranUserStore
 import com.aljaroudi.muntathir.core.highlight.ReadingBookmark
 import com.aljaroudi.muntathir.core.highlight.RulingID
 import com.aljaroudi.muntathir.core.rulings.Ruling
+import com.aljaroudi.muntathir.core.rulings.RulingFootnote
 import com.aljaroudi.muntathir.core.rulings.RulingsAuthority
 import com.aljaroudi.muntathir.core.rulings.RulingsLanguage
 import com.aljaroudi.muntathir.core.rulings.RulingsReader
@@ -60,6 +61,7 @@ data class RulingsScope(
     val authority: String,
     val languages: List<RulingsLanguage>,
     val language: RulingsLanguage?,
+    val contents: List<RulingsSection> = emptyList(),
 ) {
     fun authorityName(locale: Locale) = authorities.firstOrNull { it.id == authority }?.name(locale) ?: authority
 }
@@ -123,6 +125,7 @@ class RulingsViewModel
                         authority,
                         languages,
                         languages.firstOrNull { it.id == language },
+                        language?.let { reader.contents(authority, it) }.orEmpty(),
                     )
                 }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Loadable.Loading)
 
@@ -153,7 +156,10 @@ class RulingsViewModel
                                     }.distinct()
                                     .mapNotNull { reader.question(it) }
                             }
-                        if (remote != null) return@loading remote
+                        if (remote != null) {
+                            val local = reader.questions(scope.authority, language.id, query)
+                            return@loading (remote + local).distinctBy { it.id }
+                        }
                     }
                     reader.questions(scope.authority, language.id, query)
                 }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Loadable.Loading)
@@ -198,6 +204,7 @@ data class RulingDetail(
     val authorityName: String,
     val language: RulingsLanguage?,
     val sections: List<RulingsSection>,
+    val notes: List<RulingFootnote> = emptyList(),
 )
 
 /** Swift `RulingsDetailView` and `SavedRulingDestination`: one question and answer, its sections and a bookmark. */
@@ -231,6 +238,7 @@ class RulingDetailViewModel
                         authority?.name(locale()) ?: id.authority,
                         reader.languages(id.authority).firstOrNull { it.id == id.language },
                         runCatching { reader.sections(id) }.getOrDefault(emptyList()),
+                        reader.footnotes(id),
                     )
                 }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Loadable.Loading)
 
@@ -254,7 +262,7 @@ class RulingDetailViewModel
                             ReadingBookmark(
                                 source = id.siteID,
                                 isHadith = false,
-                                excerpt = detail.ruling.question,
+                                excerpt = detail.ruling.preview,
                                 reference = detail.authorityName,
                                 ruling = id,
                             ),
@@ -293,6 +301,12 @@ class RulingSectionViewModel
         }
 
         private val retry = MutableStateFlow(0)
+
+        val children =
+            MutableStateFlow(route)
+                .loading(library, retry) { readerRoute ->
+                    library.reader.contents(readerRoute.authority, readerRoute.language, readerRoute.section)
+                }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Loadable.Loading)
 
         val questions: StateFlow<Loadable<Pair<List<Ruling>, RulingsLanguage?>>> =
             MutableStateFlow(route)

@@ -16,7 +16,7 @@ ANDROID_PACKS = {
     'hadith': ('hadith', 'on-demand'),
     'supplications': ('supplications', 'fast-follow'),
     'quran-translations': ('quran_translations', 'on-demand'),
-    'rulings': ('rulings', 'on-demand'),
+    'rulings-v2': ('rulings', 'on-demand'),
 }
 
 
@@ -81,11 +81,11 @@ def validate_hadith(pack_id="hadith", root=ROOT, manifests=MANIFESTS):
 
 
 def validate_rulings(root=ROOT, manifests=MANIFESTS):
-    path = manifests / 'rulings.json'
+    path = manifests / 'rulings-v2.json'
     pack = json.loads(path.read_text())
     selector, = pack['fileSelectors']
     source = (path.parent / pack['sourceRoot'] / selector['fileSource']).resolve()
-    assert pack['assetPackID'] == 'rulings'
+    assert pack['assetPackID'] == 'rulings-v2'
     assert pack['downloadPolicy'] == {'onDemand': {}} and 'language' not in pack
     assert pack['platforms'] == ['iOS']
     assert source == root / 'build/rulings/dist/rulings.db'
@@ -93,7 +93,7 @@ def validate_rulings(root=ROOT, manifests=MANIFESTS):
     with sqlite3.connect(source.as_uri() + '?mode=ro', uri=True) as db:
         assert db.execute('PRAGMA quick_check').fetchall() == [('ok',)]
         assert db.execute('PRAGMA application_id').fetchone() == (1179809601,)
-        assert db.execute('PRAGMA user_version').fetchone() == (1,)
+        assert db.execute('PRAGMA user_version').fetchone() == (2,)
         assert not db.execute('PRAGMA foreign_key_check').fetchall()
         assert db.execute('SELECT count(*) FROM question').fetchone()[0] > 0
         assert not db.execute("SELECT 1 FROM question WHERE trim(question || answer) = '' LIMIT 1").fetchall()
@@ -150,7 +150,7 @@ def check_bundle(path):
             sizes = json.loads(archive.read(size_file))
     else:
         sizes = json.loads((path / 'AssetDownloadSizes.json').read_text())
-    assert all(isinstance(sizes.get(pack), int) and sizes[pack] > 0 for pack in ('hadith', 'supplications', 'quran-translations', 'rulings')), 'Missing download size estimates'
+    assert all(isinstance(sizes.get(pack), int) and sizes[pack] > 0 for pack in ('hadith', 'supplications', 'quran-translations', 'rulings-v2')), 'Missing download size estimates'
     info = metadata('Info.plist')
     downloader = metadata('Extensions/MuntathirAssetDownloader.appex/Info.plist')
     assert downloader.get('CFBundleDisplayName'), 'Missing downloader display name required by App Store validation'

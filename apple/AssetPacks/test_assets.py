@@ -43,7 +43,7 @@ class PackagingTests(unittest.TestCase):
             resources.mkdir(parents=True)
             sizes = resources / 'AssetDownloadSizes.json'
             sizes.write_text(json.dumps({'hadith': 123, 'supplications': 45}))
-            manifest = root / 'rulings.json'
+            manifest = root / 'rulings-v2.json'
             def package(arguments, check):
                 self.assertTrue(check)
                 Path(arguments[-1]).write_bytes(b'rulings archive')
@@ -51,7 +51,7 @@ class PackagingTests(unittest.TestCase):
                  patch.object(assets.subprocess, 'run', side_effect=package), \
                  patch('sys.argv', ['assets.py', 'package', '--content', 'rulings']):
                 assets.main()
-            self.assertEqual(json.loads(sizes.read_text()), {'hadith': 123, 'supplications': 45, 'rulings': 15})
+            self.assertEqual(json.loads(sizes.read_text()), {'hadith': 123, 'supplications': 45, 'rulings-v2': 15})
 
     def test_android_pack_copies_into_module_with_matching_delivery(self):
         with tempfile.TemporaryDirectory() as temporary:

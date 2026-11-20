@@ -88,7 +88,7 @@ struct AppleAssetPackBackend: AssetPackBackend {
 
     @concurrent func localURL() async throws -> URL? {
         #if DEBUG
-            if identifier == "rulings", ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+            if identifier == "rulings-v2", ProcessInfo.processInfo.arguments.contains("--ui-testing") {
                 guard ProcessInfo.processInfo.arguments.contains("--ui-testing-rulings-fixture") else { return nil }
                 return try Self.rulingsFixture.get()
             }
@@ -123,7 +123,7 @@ struct AppleAssetPackBackend: AssetPackBackend {
     func isDownloading() async -> Bool {
         #if DEBUG
             let arguments = ProcessInfo.processInfo.arguments
-            if identifier == "rulings", arguments.contains("--ui-testing") {
+            if identifier == "rulings-v2", arguments.contains("--ui-testing") {
                 return false
             }
             if arguments.contains("--ui-testing"),
@@ -211,7 +211,7 @@ struct AppleAssetPackBackend: AssetPackBackend {
         #if DEBUG
             // Capture/test databases have no hosted download events or hosting entitlements.
             let arguments = ProcessInfo.processInfo.arguments
-            if identifier == "rulings", arguments.contains("--ui-testing") {
+            if identifier == "rulings-v2", arguments.contains("--ui-testing") {
                 return AsyncStream { $0.finish() }
             }
             if arguments.contains("--ui-testing"),

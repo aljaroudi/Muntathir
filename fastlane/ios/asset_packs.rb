@@ -5,7 +5,7 @@ require "base64"
 require "tmpdir"
 
 module MuntathirRelease
-  REQUIRED_ASSET_PACKS = %w[hadith supplications quran-translations rulings].freeze
+  REQUIRED_ASSET_PACKS = %w[hadith supplications quran-translations rulings-v2].freeze
 
   class << self
     attr_accessor :review_pack_versions
@@ -62,7 +62,7 @@ module MuntathirRelease
       archive = File.join(directory, "#{name}.aar")
       manifest = File.join(ROOT, "AssetPacks/manifests", "#{name}.json")
       unless archive_current?(manifest, archive)
-        content = name == "quran-translations" ? "quran" : name
+        content = { "quran-translations" => "quran", "rulings-v2" => "rulings" }.fetch(name, name)
         run!("python3", File.join(ROOT, "AssetPacks/assets.py"), "package", directory, "--content", content)
       end
       checksums = [Digest::SHA256.file(archive), Digest::MD5.file(archive)].flat_map do |digest|

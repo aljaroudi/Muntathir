@@ -152,7 +152,7 @@ def prepare(args):
 
     if getattr(args, "rulings", None):
         db = read_db(args.rulings)
-        if db.execute("PRAGMA application_id").fetchone()[0] != 1179809601 or db.execute("PRAGMA user_version").fetchone()[0] != 1:
+        if db.execute("PRAGMA application_id").fetchone()[0] != 1179809601 or db.execute("PRAGMA user_version").fetchone()[0] not in (1, 2):
             raise ValueError("Incompatible rulings database")
         for authority in db.execute("SELECT * FROM authority ORDER BY sort_order"):
             source(authority["code"], authority["name_en"] or authority["name_ar"])
@@ -160,8 +160,10 @@ def prepare(args):
             if not (row["question"] + row["answer"]).strip():
                 raise ValueError("Empty rulings entry")
             ref = {"authority": row["authority_code"], "language": row["language_code"], "id": row["site_id"]}
-            add("rulings", row["authority_code"], ref, ref,
-                sources[row["authority_code"]]["name"] + " · " + row["site_id"],
+            title = sources[row["authority_code"]]["name"] + " · " + row["site_id"]
+            if "context" in row.keys() and row["site_id"].startswith("book:"):
+                title = row["context"]
+            add("rulings", row["authority_code"], ref, ref, title,
                 [{"language": row["language_code"], "edition": row["url"],
                   "attribution": sources[row["authority_code"]]["name"],
                   "text": row["question"] + "\n\n" + row["answer"]}])

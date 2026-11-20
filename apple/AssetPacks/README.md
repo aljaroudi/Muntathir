@@ -84,14 +84,20 @@ available through that transition. No compact packs have been uploaded.
 
 ## Rulings
 
-The independent on-demand `rulings` pack contains `Rulings/rulings.db`, built from
+The independent on-demand `rulings-v2` Apple pack contains `Rulings/rulings.db`, built from
 `build/rulings/dist/rulings.db`. Rebuild with `python3 build/rulings/build.py`.
 The crawl mirror remains `build/rulings/data/fatwa.sqlite` so existing database
 connections retain their file identity. Package with `just apple-packs rulings`. Upload only that pack
 with `bundle exec ruby fastlane/ios/asset_pack_delivery.rb --upload rulings` from
 the repository root using the [Fastlane Ruby environment](../../fastlane/SETUP.md).
 
-The reader validates application ID `1179809601`, schema version 1, SQLite
+Refresh all source data with `python3 build/rulings/scrape.py`. For books alone run
+`python3 build/rulings/books.py` and `python3 build/rulings/treatise.py`. The latter uses
+the official treatise API. Both importers keep the previous edition on a failed chapter.
+Sistani’s catalogs supply HTML books. Introductions and heading-only pages use number 0.
+The original Apple pack identifier remains available to earlier app versions.
+
+The reader validates application ID `1179809601`, schema versions 1 and 2, SQLite
 integrity, relationships, and FTS availability. Authority, language, and source
 question ID form its durable references. Sistani is the default authority. Content
 language follows the app locale when available; otherwise the user selects from

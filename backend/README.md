@@ -150,10 +150,10 @@ See [RERANK_BENCHMARK.md](RERANK_BENCHMARK.md) for the frozen-candidate comparis
 
 ### Rulings
 
-Pass `--rulings build/rulings/dist/rulings.db` to corpus preparation. The source folder, API kind, and asset pack are `rulings`. Each item is
+Pass `--rulings build/rulings/dist/rulings.db` to corpus preparation. The API kind is `rulings`. Each item is
 one authority/language/site-ID combination, regardless of SQLite row IDs or topic
-placements. The text retains the original question and answer; empty answer fields
-remain empty when the source supplies its text in the question field.
+placements. Version 2 also indexes book introductions and standalone rules with
+their chapter context and source link. Existing Q&A references keep their IDs.
 
 Requests use `kinds: ["rulings"]`, `sources: ["sistani"]`, and `languages: ["ar"]`.
 Compact results contain `kind`, `authority`, `language`, `id`, and `score`.

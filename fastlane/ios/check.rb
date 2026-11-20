@@ -409,7 +409,7 @@ draft_localizations = [Struct.new(:locale, :id).new("en-US", "loc-en")]
 MuntathirRelease.define_singleton_method(:sync_asset_packs!) do
   synced_packs += 1
   [{ name: "hadith", version: "2", version_id: "pack-v2", store_version_id: "pack-v1", external_version_id: "pack-v2" },
-   { name: "rulings", version: "1", version_id: "rulings-v1", store_version_id: "rulings-v1", external_version_id: "rulings-v1" }]
+   { name: "rulings-v2", version: "1", version_id: "rulings-v1", store_version_id: "rulings-v1", external_version_id: "rulings-v1" }]
 end
 MuntathirRelease.define_singleton_method(:sync_creative_assets!) do |localizations|
   synced_creatives += 1

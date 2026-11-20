@@ -16,6 +16,8 @@ import sys
 from pathlib import Path
 
 from db import DEFAULT_DB, init_db, rebuild_fts, utc_now
+import books
+import treatise
 import khorasani
 import shirazi
 import sistani
@@ -84,6 +86,17 @@ def main() -> int:
                 delay=args.delay,
                 limit=args.limit,
             ))
+            if not args.limit and name in ("sistani", "shirazi"):
+                books.ensure_mirror(conn)
+                if name == "sistani":
+                    for failure in books.crawl(conn, selected or books.LANGS, None):
+                        reports.append(dict(ok=False, authority=name, error=failure))
+                else:
+                    for language in selected or shirazi.LANGUAGES:
+                        try:
+                            treatise.crawl(conn, language)
+                        except Exception as exc:
+                            reports.append(dict(ok=False, authority=name, language=language, error=str(exc)))
         if not args.limit:
             rebuild_fts(conn)
         conn.execute("ANALYZE")

@@ -62,6 +62,31 @@ class RulingsTest {
         }
 
     @Test
+    fun bookChaptersReturnTheirOwnEntries() =
+        runBlocking<Unit> {
+            HadithFixture.script(
+                fixture,
+                """
+                PRAGMA user_version=2;
+                ALTER TABLE question ADD COLUMN kind TEXT DEFAULT 'qa';
+                ALTER TABLE question ADD COLUMN context TEXT DEFAULT '';
+                CREATE VIEW entry AS SELECT * FROM question;
+                CREATE TABLE footnote(topic_id INTEGER,entry_id INTEGER,label TEXT,body TEXT);
+                INSERT INTO footnote VALUES (3,300,'(18)','First'),(3,300,'(19)','Second'),(4,301,'(20)','Other');
+                UPDATE question SET kind='intro', question='0', answer='Worship', context='Book · Worship' WHERE id=300;
+                """.trimIndent(),
+            )
+            val reader = reader()
+            val root = reader.contents("sistani", "en").first()
+            assertEquals(listOf("Fasting"), reader.contents("sistani", "en", root.id).map { it.title })
+            val entry = reader.questions("sistani", "en", root).single()
+            assertEquals("0", entry.question)
+            assertEquals("intro", entry.kind)
+            assertEquals("Book · Worship", entry.context)
+            assertEquals(listOf("(18)", "(19)"), reader.footnotes(entry.id).map { it.label })
+        }
+
+    @Test
     fun languageMustBeAvailable() {
         val persian = RulingsLanguage("fa", "فارسی", rightToLeft = true)
         assertNull(RulingsReader.preferredLanguage(null, Locale.forLanguageTag("ar-SA"), listOf(persian)))
