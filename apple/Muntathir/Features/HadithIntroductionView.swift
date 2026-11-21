@@ -81,7 +81,7 @@ struct HadithIntroductionView: View {
         .accessibilityIdentifier("hadith-introduction-reader")
         .toolbar {
             Menu {
-                HadithTranslationPicker()
+                TranslationPicker()
                 ReadingSizeMenu(isPresented: $textSizePresented)
                 ArabicDiacriticsToggle()
             } label: {

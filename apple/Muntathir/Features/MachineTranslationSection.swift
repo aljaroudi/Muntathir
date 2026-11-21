@@ -1,5 +1,5 @@
 import SwiftUI
-import Translation
+@preconcurrency import Translation
 
 /// Small secondary header naming a translation block, shared by trusted and machine translations.
 struct TranslationHeader: View {
@@ -104,7 +104,7 @@ struct MachineTranslationSection: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .translationTask(configuration) { session in
             do {
-                let responses = try await session.translations(from: paragraphs.map { .init(sourceText: $0) })
+                let responses = try await session.translations(from: Self.requests(paragraphs))
                 phase = .translated(responses.map(\.targetText))
             } catch let error as CocoaError where error.code == .userCancelled {
                 // The reader declined or dismissed the language download.
@@ -115,6 +115,10 @@ struct MachineTranslationSection: View {
                 phase = .failed
             }
         }
+    }
+
+    private nonisolated static func requests(_ paragraphs: [String]) -> [TranslationSession.Request] {
+        paragraphs.map { .init(sourceText: $0) }
     }
 
     private func translate() async {

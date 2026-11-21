@@ -376,6 +376,13 @@ private struct RulingsDetailView: View {
                     }
                 }
                 .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)
+                let source = Locale.Language(identifier: language.id)
+                if let target = MachineTranslation.target(from: source) {
+                    let question = MachineTranslation.paragraphs(rulings.question)
+                    MachineTranslationSection(source: source, target: target, paragraphs: question + MachineTranslation.paragraphs(rulings.answer),
+                                              headings: question.count, inList: true)
+                        .id(rulings.id)
+                }
                 if !notes.isEmpty {
                     Section("Notes") {
                         ForEach(notes) { note in

@@ -112,7 +112,7 @@ struct SupplicationsView: View {
         .scrollDismissesKeyboard(.interactively)
         .toolbar {
             Menu {
-                SupplicationTranslationPicker(languages: languages)
+                TranslationPicker(supplicationLanguages: languages)
             } label: {
                 Label("Reading options", systemImage: "textformat")
             }

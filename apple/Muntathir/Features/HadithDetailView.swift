@@ -73,23 +73,36 @@ struct HadithDetailView: View {
                                 .environment(\.layoutDirection, .rightToLeft)
                                 .accessibilityIdentifier("hadith-full-arabic")
                         }
-                        if !isSupplication, showEnglish, !narration.englishNarrator.isEmpty {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Narrator").font(.subheadline).foregroundStyle(.secondary)
-                                highlighted(narration.narratorDisplay, block: "englishNarrator", narration: narration)
-                                    .environment(\.layoutDirection, .leftToRight)
+                        if !isSupplication, showEnglish, !narration.englishNarrator.isEmpty || !narration.english.isEmpty {
+                            VStack(alignment: .leading, spacing: 12) {
+                                TranslationHeader(title: languageName("en"))
+                                if !narration.englishNarrator.isEmpty {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        Text("Narrator").font(.subheadline).foregroundStyle(.secondary)
+                                        highlighted(narration.narratorDisplay, block: "englishNarrator", narration: narration)
+                                    }
+                                    .accessibilityIdentifier("hadith-detail-narrator")
+                                }
+                                if !narration.english.isEmpty {
+                                    highlighted(narration.englishDisplay, block: "english", narration: narration)
+                                        .accessibilityIdentifier("hadith-full-english")
+                                }
                             }
-                            .accessibilityIdentifier("hadith-detail-narrator")
-                        }
-                        if !isSupplication, showEnglish, !narration.english.isEmpty {
-                            highlighted(narration.englishDisplay, block: "english", narration: narration)
-                                .environment(\.layoutDirection, .leftToRight)
-                                .accessibilityIdentifier("hadith-full-english")
+                            .environment(\.layoutDirection, .leftToRight)
                         }
                         if let translation = narration.translation {
-                            highlighted(HadithText.highlighted(translation.text, terms: QuranSearchText.queryTerms(query)), block: translation.block, narration: narration)
-                                .environment(\.layoutDirection, translation.isRightToLeft ? .rightToLeft : .leftToRight)
-                                .accessibilityIdentifier("supplication-full-translation")
+                            VStack(alignment: .leading, spacing: 12) {
+                                TranslationHeader(title: languageName(translation.language))
+                                highlighted(HadithText.highlighted(translation.text, terms: QuranSearchText.queryTerms(query)), block: translation.block, narration: narration)
+                                    .accessibilityIdentifier("supplication-full-translation")
+                            }
+                            .environment(\.layoutDirection, translation.isRightToLeft ? .rightToLeft : .leftToRight)
+                        }
+                        if !narration.arabic.isEmpty, let target = MachineTranslation.target(from: Self.arabic),
+                           !showsTrustedTranslation(in: target, narration: narration) {
+                            MachineTranslationSection(source: Self.arabic, target: target,
+                                                      paragraphs: MachineTranslation.paragraphs(String(HadithText.markdown(narration.arabic).characters)))
+                                .id(narration.id)
                         }
                     }
                     let gradings = detail.gradings.filter {
@@ -215,6 +228,21 @@ struct HadithDetailView: View {
                 loading = false
             }
         }
+    }
+
+    private static let arabic = Locale.Language(identifier: "ar")
+
+    private func languageName(_ code: String) -> String {
+        locale.localizedString(forLanguageCode: code) ?? code
+    }
+
+    /// A trusted translation already on screen in the machine translation's target makes it redundant.
+    private func showsTrustedTranslation(in target: Locale.Language, narration: Hadith) -> Bool {
+        if !isSupplication, showEnglish, !narration.english.isEmpty, target.languageCode == "en" {
+            return true
+        }
+        guard let translation = narration.translation else { return false }
+        return Locale.Language(identifier: translation.language).languageCode == target.languageCode
     }
 
     private func highlighted(_ text: AttributedString, block: String, narration: Hadith, arabic: Bool = false) -> some View {

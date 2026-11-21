@@ -150,9 +150,9 @@ struct HadithActions: View {
             }
             Divider()
             if narration.isSupplication {
-                SupplicationTranslationPicker(languages: translationLanguages)
+                TranslationPicker(supplicationLanguages: translationLanguages)
             } else {
-                HadithTranslationPicker()
+                TranslationPicker()
             }
             ReadingSizeMenu(isPresented: $textSizePresented)
             ArabicDiacriticsToggle()

@@ -291,7 +291,7 @@ struct HadithView: View {
         .autocorrectionDisabled()
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Menu { HadithTranslationPicker() } label: {
+                Menu { TranslationPicker() } label: {
                     Label("Hadith actions", systemImage: "ellipsis.circle")
                 }
                 .accessibilityIdentifier("hadith-library-menu")
