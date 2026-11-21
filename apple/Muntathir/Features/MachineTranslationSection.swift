@@ -14,6 +14,8 @@ struct TranslationHeader: View {
 }
 
 /// On-demand Apple translation of one reading item. Nothing is remembered; callers reset it with `.id`.
+/// Callers only show it for a supported pair (`MachineTranslation.supportedTarget`); when those languages
+/// aren't downloaded yet, the translation task presents the system download prompt.
 struct MachineTranslationSection: View {
     let source: Locale.Language
     let target: Locale.Language
@@ -27,7 +29,7 @@ struct MachineTranslationSection: View {
     @State private var configuration: TranslationSession.Configuration?
 
     private enum Phase: Equatable {
-        case idle, translating, unsupported, failed
+        case idle, translating, failed
         case translated([String])
     }
 
@@ -72,7 +74,7 @@ struct MachineTranslationSection: View {
             switch phase {
             case .idle:
                 Button {
-                    Task { await translate() }
+                    translate()
                 } label: {
                     Label("Translate to \(targetName)", systemImage: "translate")
                 }
@@ -80,14 +82,11 @@ struct MachineTranslationSection: View {
                 .accessibilityIdentifier("machine-translate")
             case .translating:
                 ProgressView("Translating…")
-            case .unsupported:
-                Label("Translation to \(targetName) isn’t available.", systemImage: "exclamationmark.triangle")
-                    .foregroundStyle(.secondary)
             case .failed:
                 Label("Translation unavailable", systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.secondary)
                 Button("Retry") {
-                    Task { await translate() }
+                    translate()
                 }
                 .buttonStyle(.bordered)
             case let .translated(texts):
@@ -121,12 +120,8 @@ struct MachineTranslationSection: View {
         paragraphs.map { .init(sourceText: $0) }
     }
 
-    private func translate() async {
+    private func translate() {
         phase = .translating
-        guard await LanguageAvailability().status(from: source, to: target) != .unsupported else {
-            phase = .unsupported
-            return
-        }
         if configuration == nil {
             configuration = .init(source: source, target: target)
         } else {

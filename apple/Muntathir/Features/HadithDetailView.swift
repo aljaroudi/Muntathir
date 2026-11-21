@@ -30,6 +30,7 @@ struct HadithDetailView: View {
     @State private var loading = true
     @State private var failed = false
     @State private var retry = 0
+    @State private var translationTarget: Locale.Language?
 
     var body: some View {
         ScrollView {
@@ -98,7 +99,7 @@ struct HadithDetailView: View {
                             }
                             .environment(\.layoutDirection, translation.isRightToLeft ? .rightToLeft : .leftToRight)
                         }
-                        if !narration.arabic.isEmpty, let target = MachineTranslation.target(from: Self.arabic),
+                        if !narration.arabic.isEmpty, let target = translationTarget,
                            !showsTrustedTranslation(in: target, narration: narration) {
                             MachineTranslationSection(source: Self.arabic, target: target,
                                                       paragraphs: MachineTranslation.paragraphs(String(HadithText.markdown(narration.arabic).characters)))
@@ -183,6 +184,9 @@ struct HadithDetailView: View {
             }
         }
         .onChange(of: translation) { _, _ in translationChanged = true }
+        .task(id: locale.identifier) {
+            translationTarget = await MachineTranslation.supportedTarget(from: Self.arabic)
+        }
         .alert("Unable to save bookmark", isPresented: $bookmarkFailed) {
             Button("OK", role: .cancel) {}
         } message: { Text("Please try again.") }

@@ -29,7 +29,7 @@ import mshirazi
 import shirazi
 import sistani
 
-AUTHORITIES = ("sistani", "shirazi", "khorasani", "hakeem", "najafi", "fayadh", "alrohani", "rohani", "mshirazi")
+AUTHORITIES = ("fayadh", "najafi", "khorasani", "shirazi", "sistani", "alrohani", "mshirazi", "hakeem", "rohani")
 
 
 def parse_args() -> argparse.Namespace:

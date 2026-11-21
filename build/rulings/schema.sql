@@ -35,7 +35,7 @@ VALUES
     'السيد علي السيستاني',
     'Ali al-Husayni al-Sistani',
     'https://www.sistani.org/',
-    1,
+    5,
     'Question URL redirects to the section page fragment.'
   ),
   (
@@ -43,7 +43,7 @@ VALUES
     'السيد صادق الشيرازي',
     'Sadiq al-Husayni al-Shirazi',
     'https://alshirazi.org/',
-    2,
+    4,
     'Question URL is the site share link (?ShareEstefta=&langs=).'
   ),
   (
@@ -59,7 +59,7 @@ VALUES
     'السيد محمد سعيد الحكيم',
     'Muhammad Saeed al-Tabatabai al-Hakeem',
     'https://www.alhakeem.com/',
-    4,
+    8,
     'Question URL is https://www.alhakeem.com/{language}/question/{id}. Persian uses Arabic category ids; Urdu currently has no Q&A.'
   ),
   (
@@ -67,7 +67,7 @@ VALUES
     'الشيخ بشير النجفي',
     'Bashir al-Najafi',
     'https://www.alnajafy.com/',
-    5,
+    2,
     'Arabic only (site la=1). Question URL is the category page plus #{id}; the site has no per-question page.'
   ),
   (
@@ -75,7 +75,7 @@ VALUES
     'الشيخ إسحاق الفياض',
     'Ishaq al-Fayyad',
     'https://ar.alfayadh.org/',
-    6,
+    1,
     'Arabic (ar.alfayadh.org) and Persian (fa.alfayadh.org), read through the WordPress REST API.'
   ),
   (
@@ -83,7 +83,7 @@ VALUES
     'السيد محمد الروحاني',
     'Muhammad al-Rohani',
     'https://alrohani.org/',
-    7,
+    6,
     'Arabic only. Question URL is https://alrohani.org/index.php?act=qa&action=view&id={id}.'
   ),
   (
@@ -91,7 +91,7 @@ VALUES
     'السيد محمد صادق الروحاني',
     'Muhammad Sadiq al-Rohani',
     'https://www.rohani.ir/',
-    8,
+    9,
     'Arabic and Persian. Question URL is https://www.rohani.ir/{language}/idetail/{id}/x. Sharia and belief rulings are separate top-level topics.'
   ),
   (
@@ -99,7 +99,7 @@ VALUES
     'السيد محمد الشيرازي',
     'Muhammad al-Husayni al-Shirazi',
     'https://www.alshirazi.com/',
-    9,
+    7,
     'Arabic only. Static windows-1256 pages with no API. Question URL is the chapter page https://www.alshirazi.com/rflo/alestiftaatalmarjeyeh/{chapter}.htm. The book Muntakhab al-Masail is stored in book_edition.'
   )
 ON CONFLICT (code) DO UPDATE SET

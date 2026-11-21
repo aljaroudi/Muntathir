@@ -364,6 +364,7 @@ private struct RulingsDetailView: View {
     @State private var sections: [RulingsSection] = []
     @State private var notes: [RulingFootnote] = []
     @State private var expandedNotes: Set<RulingFootnote.ID> = []
+    @State private var translationTarget: Locale.Language?
     var highlight: ReadingHighlight?
 
     var body: some View {
@@ -376,10 +377,9 @@ private struct RulingsDetailView: View {
                     }
                 }
                 .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)
-                let source = Locale.Language(identifier: language.id)
-                if let target = MachineTranslation.target(from: source) {
+                if let target = translationTarget {
                     let question = MachineTranslation.paragraphs(rulings.question)
-                    MachineTranslationSection(source: source, target: target, paragraphs: question + MachineTranslation.paragraphs(rulings.answer),
+                    MachineTranslationSection(source: Locale.Language(identifier: language.id), target: target, paragraphs: question + MachineTranslation.paragraphs(rulings.answer),
                                               headings: question.count, inList: true)
                         .id(rulings.id)
                 }
@@ -429,6 +429,9 @@ private struct RulingsDetailView: View {
         }
         .navigationTitle("Rulings")
         .readingBackground()
+        .task(id: language.id) {
+            translationTarget = await MachineTranslation.supportedTarget(from: Locale.Language(identifier: language.id))
+        }
         .toolbar {
             Menu {
                 ReadingSizeMenu(isPresented: $textSizePresented)
