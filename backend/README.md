@@ -37,7 +37,7 @@ Existing full-corpus artifacts in `backend/work/full` have already been imported
 Do not submit the completed full corpus again.
 
 Submission saves batch manifests. Poll can resume without redownloading completed
-jobs; submit retries missing/failed entries. `--reuse <old-workdir>` reuses saved
+jobs; submit retries missing/failed entries. `--reuse <old-workdir>` (repeatable) reuses saved
 vectors with matching input hashes. Canonical artifacts keep 3,072 dimensions;
 upload derives normalized 1,536-dimensional prefixes without re-embedding.
 
@@ -50,8 +50,12 @@ after validation. Use `--dry-run` to estimate from the existing databases or
 Set `--max-budget USD` to change that threshold. Above it, the script asks for
 approval in a terminal. Rerun the same command to poll outstanding batches and
 continue the refresh. The script needs the backend virtualenv and the validated
-manifest and vectors for the active Qdrant collection. New reader references
-without installed-pack compatibility evidence block activation.
+manifest and vectors for the active Qdrant collection. Vectors from every other
+`backend/work/*` directory with the same embedding profile are reused too, so
+earlier paid batches are never embedded twice. New reader references absent from
+the active index block activation. The error lists them by kind and source. After
+confirming the installed packs contain those groups, pass `--accept-new-references`.
+Older apps skip Rulings hits they cannot open locally.
 
 The commands below document the manual recovery path. Use a new workdir for each
 revision and retain the previous validated workdir and its source provenance.

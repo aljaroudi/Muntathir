@@ -116,6 +116,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--max-budget", type=Decimal, default=Decimal("10"), metavar="USD")
     parser.add_argument("--dry-run", action="store_true", help="Estimate from existing databases without writes")
+    parser.add_argument("--accept-new-references", action="store_true",
+                        help="Activate references absent from the active index after confirming installed packs contain them")
     parser.add_argument("--assets-only", action="store_true", help="Build and package without refreshing search")
     args = parser.parse_args()
     if not args.max_budget.is_finite() or args.max_budget < 0:
@@ -123,7 +125,8 @@ def main():
     try:
         if args.dry_run:
             if not args.assets_only:
-                refresh(ROOT, QURAN, HADITH, RULINGS, args.max_budget, dry_run=True)
+                refresh(ROOT, QURAN, HADITH, RULINGS, args.max_budget, dry_run=True,
+                        accept_new_references=args.accept_new_references)
             return
         work = ROOT / "apple/build/AssetPacks"
         work.mkdir(parents=True, exist_ok=True)
@@ -132,7 +135,8 @@ def main():
             with tempfile.TemporaryDirectory(dir=work) as stage:
                 build_assets(Path(stage))
             if not args.assets_only:
-                refresh(ROOT, QURAN, HADITH, RULINGS, args.max_budget)
+                refresh(ROOT, QURAN, HADITH, RULINGS, args.max_budget,
+                        accept_new_references=args.accept_new_references)
     except (OSError, ValueError, RuntimeError, subprocess.CalledProcessError) as error:
         parser.exit(1, f"{error}\n")
 

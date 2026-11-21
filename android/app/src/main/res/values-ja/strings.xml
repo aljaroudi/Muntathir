@@ -58,6 +58,7 @@
     <string name="camera_capture_ended_start_a_new_session_to_try">カメラの撮影が終了しました。新しいセッションを開始して再試行してください。</string>
     <string name="camera_unavailable">カメラを利用できません</string>
     <string name="cancel">キャンセル</string>
+    <string name="chapter_note">章の注記</string>
     <string name="checking_hadith_download">ハディースのダウンロードを確認中…</string>
     <string name="checking_supplications_download">祈願のダウンロードを確認中…</string>
     <string name="children">子</string>
@@ -69,6 +70,7 @@
     <string name="choose_a_location_in_muntathir">Muntathirで場所を選択</string>
     <string name="choose_a_parentage_report">親子関係の伝承を選ぶ</string>
     <string name="choose_a_translation_to_read_alongside_arabic">アラビア語と併せて読む翻訳を選びます。</string>
+    <string name="choose_prayer">礼拝を選択</string>
     <string name="choose_rakaat">ラカア数を選択</string>
     <string name="choose_the_calculation_method_you_follow_you_can">従う計算方式を選択してください。後で設定から変更できます。</string>
     <string name="choose_up_to_three_tabs_everything_else_stays_in">タブは3つまで選べます。その他の項目はツールに表示されます。</string>
@@ -128,6 +130,7 @@
     <string name="find_the_direction_of_qibla">キブラの方向を確認</string>
     <string name="finding_your_precise_current_location">現在の正確な位置を取得中…</string>
     <string name="finish_setup">設定を完了</string>
+    <string name="first_sujood">1回目のサジダ</string>
     <string name="from_x_to_x">%1$s～%2$s</string>
     <string name="full_siblings">同父母のきょうだい</string>
     <string name="future_dates_are_estimates_until_the_month_s_moo">将来の日付は、その月の新月の目視が確認されるか、その月が始まるまでは推定です。</string>
@@ -157,6 +160,8 @@
     <string name="hijri_month_x_x">ヒジュラ暦の月：%1$s／%2$s</string>
     <string name="hizb_x">ヒズブ %d</string>
     <string name="holy_quran">聖クルアーン</string>
+    <string name="horizontal_layout">横並びレイアウト</string>
+    <string name="horizontal_prayer_times">礼拝時刻を横に並べる</string>
     <string name="hours_and_minutes_until_your_next_prayer">次の礼拝までの時間と分。</string>
     <string name="imsak">イムサーク</string>
     <string name="imsak_before_fajr">ファジュル前のイムサーク</string>
@@ -278,6 +283,7 @@
     <string name="purple">紫</string>
     <string name="qibla">キブラ</string>
     <string name="quran_translations">クルアーンの翻訳</string>
+    <string name="rakaat">ラカア</string>
     <string name="rakaat_tracker">ラカア数カウンター</string>
     <string name="read_and_search_hadith_offline">オフラインでハディースを読み、検索できます。</string>
     <string name="read_and_search_supplications_offline">オフラインで祈願を読み、検索できます。</string>
@@ -331,6 +337,7 @@
     <string name="some_files_remain_on_this_device_please_try_agai">一部のファイルがこのデバイスに残っています。もう一度お試しください。</string>
     <string name="source">出典</string>
     <string name="spouses">配偶者</string>
+    <string name="start_x">%sを開始</string>
     <string name="start_tasbih">タスビーフを始める</string>
     <string name="step_x_of_x">ステップ%1$s／%2$s</string>
     <string name="sunrise">日の出</string>
@@ -402,6 +409,7 @@
     <string name="verse_number_or_quran_text">節番号またはクルアーンの本文</string>
     <string name="verse_unavailable">聖句を利用できません</string>
     <string name="verses">聖句</string>
+    <string name="vertical_layout">縦並びレイアウト</string>
     <string name="view_profile">プロフィールを表示</string>
     <string name="visibility">表示設定</string>
     <string name="weather">天気</string>
@@ -413,7 +421,4 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">ダウンロード済みのクルアーンとハディースの本文はオフラインでも検索できます。</string>
     <string name="you_can_still_search_downloaded_text_offline">ダウンロードしたテキストは引き続きオフラインで検索できます。</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">保存したデータを開けませんでした。もう一度お試しください。</string>
-    <string name="horizontal_prayer_times">礼拝時刻を横に並べる</string>
-    <string name="horizontal_layout">横並びレイアウト</string>
-    <string name="vertical_layout">縦並びレイアウト</string>
 </resources>

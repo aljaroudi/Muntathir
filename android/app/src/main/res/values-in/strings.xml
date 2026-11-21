@@ -58,6 +58,7 @@
     <string name="camera_capture_ended_start_a_new_session_to_try">Pengambilan gambar kamera berakhir. Mulai sesi baru untuk mencoba lagi.</string>
     <string name="camera_unavailable">Kamera tidak tersedia</string>
     <string name="cancel">Batal</string>
+    <string name="chapter_note">Catatan bab</string>
     <string name="checking_hadith_download">Memeriksa unduhan hadis…</string>
     <string name="checking_supplications_download">Memeriksa unduhan doa…</string>
     <string name="children">Anak</string>
@@ -69,6 +70,7 @@
     <string name="choose_a_location_in_muntathir">Pilih lokasi di Muntathir</string>
     <string name="choose_a_parentage_report">Pilih riwayat nasab</string>
     <string name="choose_a_translation_to_read_alongside_arabic">Pilih terjemahan untuk dibaca bersama teks Arab.</string>
+    <string name="choose_prayer">Pilih salat</string>
     <string name="choose_rakaat">Pilih jumlah rakaat</string>
     <string name="choose_the_calculation_method_you_follow_you_can">Pilih metode perhitungan yang Anda ikuti. Anda dapat mengubahnya nanti di Pengaturan.</string>
     <string name="choose_up_to_three_tabs_everything_else_stays_in">Pilih hingga tiga tab. Yang lainnya tetap ada di Alat.</string>
@@ -128,6 +130,7 @@
     <string name="find_the_direction_of_qibla">Temukan arah kiblat</string>
     <string name="finding_your_precise_current_location">Mencari lokasi Anda saat ini secara presisi…</string>
     <string name="finish_setup">Selesaikan pengaturan</string>
+    <string name="first_sujood">Sujud pertama</string>
     <string name="from_x_to_x">%1$s – %2$s</string>
     <string name="full_siblings">Saudara kandung</string>
     <string name="future_dates_are_estimates_until_the_month_s_moo">Tanggal mendatang adalah perkiraan sampai rukyat hilal bulan tersebut dikonfirmasi atau bulan tersebut dimulai.</string>
@@ -157,6 +160,8 @@
     <string name="hijri_month_x_x">Bulan Hijriah: %1$s / %2$s</string>
     <string name="hizb_x">Hizb %d</string>
     <string name="holy_quran">Al-Qur’an</string>
+    <string name="horizontal_layout">Tata letak horizontal</string>
+    <string name="horizontal_prayer_times">Waktu salat horizontal</string>
     <string name="hours_and_minutes_until_your_next_prayer">Jam dan menit hingga salat berikutnya.</string>
     <string name="imsak">Imsak</string>
     <string name="imsak_before_fajr">Imsak sebelum Subuh</string>
@@ -278,6 +283,7 @@
     <string name="purple">Ungu</string>
     <string name="qibla">Kiblat</string>
     <string name="quran_translations">Terjemahan Al-Quran</string>
+    <string name="rakaat">Rakaat</string>
     <string name="rakaat_tracker">Penghitung Rakaat</string>
     <string name="read_and_search_hadith_offline">Baca dan cari hadis secara offline.</string>
     <string name="read_and_search_supplications_offline">Baca dan cari doa secara offline.</string>
@@ -331,6 +337,7 @@
     <string name="some_files_remain_on_this_device_please_try_agai">Beberapa file masih ada di perangkat ini. Coba lagi.</string>
     <string name="source">Sumber</string>
     <string name="spouses">Suami atau istri</string>
+    <string name="start_x">Mulai %s</string>
     <string name="start_tasbih">Mulai tasbih</string>
     <string name="step_x_of_x">Langkah %1$s dari %2$s</string>
     <string name="sunrise">Matahari terbit</string>
@@ -402,6 +409,7 @@
     <string name="verse_number_or_quran_text">Nomor ayat atau teks Al-Quran</string>
     <string name="verse_unavailable">Ayat tidak tersedia</string>
     <string name="verses">Ayat</string>
+    <string name="vertical_layout">Tata letak vertikal</string>
     <string name="view_profile">Lihat profil</string>
     <string name="visibility">Visibilitas</string>
     <string name="weather">Cuaca</string>
@@ -413,7 +421,4 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">Anda tetap dapat mencari teks Al-Quran dan hadis yang diunduh secara offline.</string>
     <string name="you_can_still_search_downloaded_text_offline">Anda masih dapat mencari teks unduhan secara offline.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">Data tersimpan Anda tidak dapat dibuka. Silakan coba lagi.</string>
-    <string name="horizontal_prayer_times">Waktu salat horizontal</string>
-    <string name="horizontal_layout">Tata letak horizontal</string>
-    <string name="vertical_layout">Tata letak vertikal</string>
 </resources>

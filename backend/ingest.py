@@ -235,10 +235,20 @@ def batch_cost(utf8_bytes):
     return utf8_bytes * BATCH_USD_PER_MILLION_TOKENS / 1_000_000
 
 
+def reuse_vector_dirs(reuse):
+    """Normalize one path or a list of paths to vector directories."""
+    if not reuse:
+        return []
+    return [Path(r) for r in ([reuse] if isinstance(reuse, (str, Path)) else reuse)]
+
+
 def submission_plan(manifest, vector_dir, reuse):
     inputs = {p["input_hash"]: p for p in manifest["passages"]}
     cached = {p.stem for p in vector_dir.glob("*.json")} & inputs.keys()
-    reusable = ({p.stem for p in reuse.glob("*.json")} & inputs.keys()) - cached if reuse else set()
+    reusable = set()
+    for directory in reuse_vector_dirs(reuse):
+        reusable |= {p.stem for p in directory.glob("*.json")} & inputs.keys()
+    reusable -= cached
     reserved_jobs = [job for job in manifest["jobs"] if job["name"] or job["state"] != "failed"]
     pending = {key for job in reserved_jobs if job["state"] not in ("done", "failed") for key in job["keys"]}
     pending -= cached | reusable
@@ -268,7 +278,7 @@ def run(args):
     work = path.parent
     vector_dir = work / "vectors"
     if args.command in ("estimate", "submit"):
-        previous = Path(args.reuse) / "vectors" if args.reuse else None
+        previous = [d / "vectors" for d in reuse_vector_dirs(args.reuse)]
         reusable, values, estimate = submission_plan(manifest, vector_dir, previous)
         print(json.dumps(estimate, indent=2), flush=True)
         if args.command == "estimate":
@@ -282,7 +292,7 @@ def run(args):
         # Stored vectors are immutable and keyed by exact input hash.
         for key in reusable:
             name = key + ".json"
-            candidate = previous / name
+            candidate = next(d / name for d in previous if (d / name).exists())
             vector = json.loads(candidate.read_text())
             validate_vector(vector)
             if candidate.stat().st_dev == vector_dir.stat().st_dev:
@@ -384,7 +394,7 @@ def main():
     parser.add_argument("--provenance")
     parser.add_argument("--limit", type=int, help="Pilot item limit")
     parser.add_argument("--pilot", action="store_true", help="Include judged positives and representative distractors")
-    parser.add_argument("--reuse", help="Reuse a previous workdir's exact-input vectors")
+    parser.add_argument("--reuse", action="append", help="Reuse a previous workdir's exact-input vectors; repeatable, first match wins")
     parser.add_argument("--max-usd", type=Decimal, help="Maximum estimated Gemini Batch cost for this revision")
     args = parser.parse_args()
     if args.limit is not None and args.limit < 1:

@@ -5299,10 +5299,88 @@
             "value" : "هامش الفصل"
           }
         },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kapitelnotiz"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chapter note"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nota del capítulo"
+          }
+        },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "یادداشت فصل"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note de chapitre"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Catatan bab"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nota del capitolo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "章の注記"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nota bab"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Примечание к главе"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bölüm notu"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "باب کا حاشیہ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "章节注释"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "章節註釋"
           }
         }
       }
@@ -14824,6 +14902,12 @@
             "value" : "Horizontales Layout"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Horizontal layout"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14911,6 +14995,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gebetszeiten nebeneinander"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Horizontal prayer times"
           }
         },
         "es" : {
@@ -38253,6 +38343,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vertikales Layout"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vertical layout"
           }
         },
         "es" : {

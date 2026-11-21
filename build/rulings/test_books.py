@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import patch
 
 import books
-from build import SCHEMA, add_books
+from build import SCHEMA, add_books, check_books
 from treatise import page_entries
 
 
@@ -66,6 +66,35 @@ class BookTests(unittest.TestCase):
         self.assertEqual(out.execute("SELECT number,printed_label FROM placement").fetchone(), (2,"Ruling 2."))
         self.assertFalse(out.execute("PRAGMA foreign_key_check").fetchall())
         self.assertTrue(json.loads(before[0])[0]["raw"])
+
+    def test_book_references_are_deterministic_and_unique(self):
+        db = sqlite3.connect(":memory:")
+        pages = {"/english/book/fatwa/": '<a href="/english/book/1/">Book</a>',
+                 "/english/book/1/": '<a href="/english/book/1/2/">Chapter</a>',
+                 "/english/book/1/2/": '<div class="book-text">Ruling 2. Body<br>Ruling 2. Body</div>'}
+        def get(client, url):
+            from sistani import Fetch
+            return Fetch(200, url, pages[url.removeprefix(books.ORIGIN)])
+        with patch.object(books, "fetch_retry", get):
+            books.crawl(db, ["english"], None)
+        db.row_factory = sqlite3.Row
+
+        def build():
+            out = sqlite3.connect(":memory:")
+            out.executescript(SCHEMA)
+            out.execute("INSERT INTO authority VALUES ('sistani','ع','Sistani',1)")
+            add_books(db, out)
+            check_books(out)
+            return out.execute("SELECT authority_code,language_code,site_id,kind,context FROM entry ORDER BY id").fetchall()
+        first = build()
+        self.assertEqual(first, build())
+        ids = [row[:3] for row in first]
+        self.assertEqual(len(ids), len(set(ids)))
+        self.assertTrue(all(row[2].startswith("book:") for row in first))
+        # Repeated printed labels in one chapter stay distinct through a numeric suffix.
+        self.assertEqual(len(first), 2)
+        self.assertTrue(first[1][2].endswith(".2"))
+        self.assertTrue(first[0][4].endswith("Chapter"))
 
 
 if __name__ == "__main__":

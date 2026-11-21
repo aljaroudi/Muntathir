@@ -59,6 +59,7 @@
     <string name="camera_capture_ended_start_a_new_session_to_try">کیمرے کی عکس بندی ختم ہو گئی۔ دوبارہ کوشش کے لیے نیا سیشن شروع کریں۔</string>
     <string name="camera_unavailable">کیمرہ دستیاب نہیں</string>
     <string name="cancel">منسوخ</string>
+    <string name="chapter_note">باب کا حاشیہ</string>
     <string name="checking_hadith_download">حدیث کے ڈاؤن لوڈ کی جانچ ہو رہی ہے…</string>
     <string name="checking_supplications_download">دعاؤں کے ڈاؤن لوڈ کی جانچ ہو رہی ہے…</string>
     <string name="children">اولاد</string>
@@ -70,6 +71,7 @@
     <string name="choose_a_location_in_muntathir">منتظر میں مقام منتخب کریں</string>
     <string name="choose_a_parentage_report">نسب کی روایت منتخب کریں</string>
     <string name="choose_a_translation_to_read_alongside_arabic">عربی متن کے ساتھ پڑھنے کے لیے ترجمہ منتخب کریں۔</string>
+    <string name="choose_prayer">نماز منتخب کریں</string>
     <string name="choose_rakaat">رکعتوں کی تعداد منتخب کریں</string>
     <string name="choose_the_calculation_method_you_follow_you_can">اپنا طریقۂ حساب منتخب کریں۔ بعد میں ترتیبات میں اسے بدل سکتے ہیں۔</string>
     <string name="choose_up_to_three_tabs_everything_else_stays_in">زیادہ سے زیادہ تین ٹیبز منتخب کریں۔ باقی سب اوزار میں رہیں گے۔</string>
@@ -129,6 +131,7 @@
     <string name="find_the_direction_of_qibla">قبلے کی سمت معلوم کریں</string>
     <string name="finding_your_precise_current_location">آپ کا موجودہ درست مقام تلاش کیا جا رہا ہے…</string>
     <string name="finish_setup">ابتدائی ترتیب مکمل کریں</string>
+    <string name="first_sujood">پہلا سجدہ</string>
     <string name="from_x_to_x">%1$s تا %2$s</string>
     <string name="full_siblings">سگے بہن بھائی</string>
     <string name="future_dates_are_estimates_until_the_month_s_moo">مستقبل کی تاریخیں تخمینی ہیں، جب تک اس مہینے کی رؤیتِ ہلال کی تصدیق نہ ہو جائے یا مہینہ شروع نہ ہو جائے۔</string>
@@ -158,6 +161,8 @@
     <string name="hijri_month_x_x">ہجری مہینہ: %1$s / %2$s</string>
     <string name="hizb_x">حزب %d</string>
     <string name="holy_quran">قرآنِ کریم</string>
+    <string name="horizontal_layout">افقی ترتیب</string>
+    <string name="horizontal_prayer_times">نماز کے اوقات افقی</string>
     <string name="hours_and_minutes_until_your_next_prayer">اگلی نماز تک گھنٹے اور منٹ۔</string>
     <string name="imsak">امساک</string>
     <string name="imsak_before_fajr">فجر سے پہلے امساک</string>
@@ -279,6 +284,7 @@
     <string name="purple">جامنی</string>
     <string name="qibla">قبلہ</string>
     <string name="quran_translations">قرآن کے تراجم</string>
+    <string name="rakaat">رکعتیں</string>
     <string name="rakaat_tracker">رکعت شمار کنندہ</string>
     <string name="read_and_search_hadith_offline">حدیث آف لائن پڑھیں اور تلاش کریں۔</string>
     <string name="read_and_search_supplications_offline">دعائیں آف لائن پڑھیں اور تلاش کریں۔</string>
@@ -332,6 +338,7 @@
     <string name="some_files_remain_on_this_device_please_try_agai">کچھ فائلیں اس آلے پر باقی ہیں۔ دوبارہ کوشش کریں۔</string>
     <string name="source">ماخذ</string>
     <string name="spouses">شریکِ حیات</string>
+    <string name="start_x">%s شروع کریں</string>
     <string name="start_tasbih">تسبیح شروع کریں</string>
     <string name="step_x_of_x">مرحلہ %1$s از %2$s</string>
     <string name="sunrise">طلوعِ آفتاب</string>
@@ -403,6 +410,7 @@
     <string name="verse_number_or_quran_text">آیت نمبر یا قرآنی متن</string>
     <string name="verse_unavailable">آیت دستیاب نہیں</string>
     <string name="verses">آیات</string>
+    <string name="vertical_layout">عمودی ترتیب</string>
     <string name="view_profile">پروفائل دیکھیں</string>
     <string name="visibility">نمائش</string>
     <string name="weather">موسم</string>
@@ -414,7 +422,4 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">آپ ڈاؤن لوڈ کردہ قرآن اور حدیث کے متن میں آف لائن تلاش کر سکتے ہیں۔</string>
     <string name="you_can_still_search_downloaded_text_offline">آپ اب بھی ڈاؤن لوڈ کردہ متن میں آف لائن تلاش کر سکتے ہیں۔</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">آپ کا محفوظ ڈیٹا نہیں کھل سکا۔ براہ کرم دوبارہ کوشش کریں۔</string>
-    <string name="horizontal_prayer_times">نماز کے اوقات افقی</string>
-    <string name="horizontal_layout">افقی ترتیب</string>
-    <string name="vertical_layout">عمودی ترتیب</string>
 </resources>

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,7 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -46,6 +47,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -57,7 +59,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalDensity
@@ -432,14 +433,19 @@ private fun HorizontalPrayerTimes(
     }
     LazyRow(
         state = listState,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxWidth().testTag("prayer-row"),
     ) {
-        items(state.prayers, key = { it.name.id }) { prayer -> PrayerTile(prayer, state, locale, actions) }
+        itemsIndexed(state.prayers, key = { _, prayer -> prayer.name.id }) { index, prayer ->
+            // Divided like the list's rows; the divider spans the column's height.
+            Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                PrayerTile(prayer, state, locale, actions)
+                if (index < state.prayers.lastIndex) VerticalDivider()
+            }
+        }
     }
 }
 
-/** One card in [HorizontalPrayerTimes]; the next prayer gets a solid fill so it's easy to find. */
+/** One column in [HorizontalPrayerTimes]; the next prayer is tinted and shows its countdown, like the list's row. */
 @Composable
 private fun PrayerTile(
     prayer: PrayerMoment,
@@ -449,16 +455,14 @@ private fun PrayerTile(
 ) {
     val isNext = state.isNext(prayer)
     val colors = MaterialTheme.colorScheme
-    val color = if (isNext) colors.onPrimary else colors.onSurface
+    val color = if (isNext) colors.primary else colors.onSurface
     val zone = state.location?.zone ?: state.engine.zone
     PrayerActions(prayer, state, actions) { interaction ->
         Column(
             Modifier
                 .width(84.dp)
-                .clip(RoundedCornerShape(14.dp))
-                .background(if (isNext) colors.primary else colors.surfaceVariant)
                 .then(interaction)
-                .padding(horizontal = 4.dp, vertical = 10.dp),
+                .padding(horizontal = 4.dp, vertical = 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
@@ -479,7 +483,7 @@ private fun PrayerTile(
                 if (isNext) FontWeight.SemiBold else FontWeight.Medium,
                 padded = false,
             )
-            // Other cards reserve the countdown's height so every card matches.
+            // Other columns reserve the countdown's height so every column matches.
             Text(
                 if (isNext) Formats.duration(Duration.between(state.now, prayer.time), locale) else " ",
                 style = MaterialTheme.typography.labelSmall,
@@ -489,7 +493,7 @@ private fun PrayerTile(
                 modifier =
                     Modifier
                         .alpha(if (isNext) 1f else 0f)
-                        .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(50))
+                        .background(colors.primary.copy(alpha = 0.1f), RoundedCornerShape(50))
                         .padding(horizontal = 6.dp, vertical = 3.dp)
                         .then(if (isNext) Modifier.testTag("prayer-countdown") else Modifier.clearAndSetSemantics {}),
             )

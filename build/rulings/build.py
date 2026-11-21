@@ -294,6 +294,7 @@ def build_candidate(source: Path, output: Path) -> None:
         )
         check_legacy(src, out)
         add_books(src, out)
+        check_books(out)
         out.execute("INSERT INTO question_fts (rowid, question, answer) SELECT id, question, answer FROM question")
         out.execute("INSERT INTO question_fts (question_fts) VALUES ('optimize')")
         if not out.execute("SELECT 1 FROM question_fts WHERE question_fts MATCH 'الصلاة' LIMIT 1").fetchone():
@@ -345,6 +346,20 @@ def check_legacy(src: sqlite3.Connection, out: sqlite3.Connection) -> None:
 
 QUESTION_TITLES = dict(ar="أسئلة", en="Questions", fa="پرسش‌ها", ur="سوالات",
                        az="Suallar", tr="Sorular", fr="Questions")
+
+
+def check_books(out) -> None:
+    """Report final entry totals; check_legacy runs before the books are added."""
+    for kind, count, books in out.execute(
+        "SELECT kind, COUNT(*), SUM(site_id LIKE 'book:%') FROM entry GROUP BY kind ORDER BY kind"
+    ):
+        print("entries %s %s (books %s)" % (kind, count, books))
+    if out.execute("SELECT 1 FROM entry WHERE site_id LIKE 'book:%' AND label = '' AND TRIM(body) = '' LIMIT 1").fetchone():
+        raise SystemExit("Book entry has neither label nor body")
+    # A source can print a ruling number with no text; keep the label and flag it.
+    empty = out.execute("SELECT COUNT(*) FROM entry WHERE site_id LIKE 'book:%' AND TRIM(body) = ''").fetchone()[0]
+    if empty:
+        print("warning: %s book entries have an empty body" % empty)
 
 
 def add_books(src, out):

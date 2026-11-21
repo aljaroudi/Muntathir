@@ -59,6 +59,7 @@
     <string name="camera_capture_ended_start_a_new_session_to_try">Camera capture ended. Start a new session to try again.</string>
     <string name="camera_unavailable">Camera unavailable</string>
     <string name="cancel">Cancel</string>
+    <string name="chapter_note">Chapter note</string>
     <string name="checking_hadith_download">Checking Hadith download…</string>
     <string name="checking_supplications_download">Checking supplications download…</string>
     <string name="children">Children</string>
@@ -70,6 +71,7 @@
     <string name="choose_a_location_in_muntathir">Choose a location in Muntathir</string>
     <string name="choose_a_parentage_report">Choose a parentage report</string>
     <string name="choose_a_translation_to_read_alongside_arabic">Choose a translation to read alongside Arabic.</string>
+    <string name="choose_prayer">Choose prayer</string>
     <string name="choose_rakaat">Choose rakaat</string>
     <string name="choose_the_calculation_method_you_follow_you_can">Choose the calculation method you follow. You can change it later in Settings.</string>
     <string name="choose_up_to_three_tabs_everything_else_stays_in">Choose up to three tabs. Everything else stays in Tools.</string>
@@ -129,6 +131,7 @@
     <string name="find_the_direction_of_qibla">Find the direction of Qibla</string>
     <string name="finding_your_precise_current_location">Finding your precise current location…</string>
     <string name="finish_setup">Finish setup</string>
+    <string name="first_sujood">First sujood</string>
     <string name="from_x_to_x">%1$s – %2$s</string>
     <string name="full_siblings">Full siblings</string>
     <string name="future_dates_are_estimates_until_the_month_s_moo">Future dates are estimates until the month’s moonsighting is confirmed or the month begins.</string>
@@ -158,6 +161,8 @@
     <string name="hijri_month_x_x">Hijri month: %1$s / %2$s</string>
     <string name="hizb_x">Hizb %d</string>
     <string name="holy_quran">Holy Quran</string>
+    <string name="horizontal_layout">Horizontal layout</string>
+    <string name="horizontal_prayer_times">Horizontal prayer times</string>
     <string name="hours_and_minutes_until_your_next_prayer">Hours and minutes until your next prayer.</string>
     <string name="imsak">Imsak</string>
     <string name="imsak_before_fajr">Imsak before Fajr</string>
@@ -279,6 +284,7 @@
     <string name="purple">Purple</string>
     <string name="qibla">Qibla</string>
     <string name="quran_translations">Quran translations</string>
+    <string name="rakaat">Rakaat</string>
     <string name="rakaat_tracker">Rakaat Tracker</string>
     <string name="read_and_search_hadith_offline">Read and search Hadith offline.</string>
     <string name="read_and_search_supplications_offline">Read and search supplications offline.</string>
@@ -332,6 +338,7 @@
     <string name="some_files_remain_on_this_device_please_try_agai">Some files remain on this device. Please try again.</string>
     <string name="source">Source</string>
     <string name="spouses">Spouses</string>
+    <string name="start_x">Start %s</string>
     <string name="start_tasbih">Start Tasbih</string>
     <string name="step_x_of_x">Step %1$s of %2$s</string>
     <string name="sunrise">Sunrise</string>
@@ -403,6 +410,7 @@
     <string name="verse_number_or_quran_text">Verse number or Quran text</string>
     <string name="verse_unavailable">Verse unavailable</string>
     <string name="verses">Verses</string>
+    <string name="vertical_layout">Vertical layout</string>
     <string name="view_profile">View profile</string>
     <string name="visibility">Visibility</string>
     <string name="weather">Weather</string>
@@ -414,8 +422,4 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">You can still search downloaded Quran and Hadith text offline.</string>
     <string name="you_can_still_search_downloaded_text_offline">You can still search downloaded text offline.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">Your saved data could not be opened. Please try again.</string>
-    <string name="rulings_chapter_note">Chapter note</string>
-    <string name="horizontal_prayer_times">Horizontal prayer times</string>
-    <string name="horizontal_layout">Horizontal layout</string>
-    <string name="vertical_layout">Vertical layout</string>
 </resources>

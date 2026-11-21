@@ -2,6 +2,7 @@ import argparse
 from decimal import Decimal
 import json
 from pathlib import Path
+import sqlite3
 import tempfile
 from types import SimpleNamespace
 import types
@@ -70,6 +71,56 @@ class IngestionTests(unittest.TestCase):
             ingest.run(args)
             self.assertEqual(json.loads((root / "vectors/saved.json").read_text()), vector)
             client.assert_not_called()
+
+    def test_estimate_and_submit_reuse_every_listed_workdir(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(ingest, "gemini_client") as client:
+            root = Path(tmp)
+            vector = [0.1] * 3072
+            for name, key in (("first", "one"), ("second", "two")):
+                (root / name / "vectors").mkdir(parents=True)
+                (root / name / "vectors" / (key + ".json")).write_text(json.dumps(vector))
+            work = root / "work"
+            work.mkdir()
+            passages = [{"input_hash": key, "input": "text"} for key in ("one", "two", "three")]
+            (work / "manifest.json").write_text(json.dumps({"revision": "r", "profile": ingest.PROFILE, "passages": passages, "jobs": []}))
+            reuse = [str(root / "first"), str(root / "second")]
+            args = SimpleNamespace(command="estimate", workdir=str(work), reuse=reuse, max_usd=None)
+            _, missing, estimate = ingest.submission_plan(json.loads((work / "manifest.json").read_text()), work / "vectors",
+                                                          [root / name / "vectors" for name in ("first", "second")])
+            self.assertEqual(estimate["reusable"], 2)
+            self.assertEqual([p["input_hash"] for p in missing], ["three"])
+            client.return_value.files.upload.return_value.name = "files/requests"
+            client.return_value.batches.create_embeddings.return_value.name = "batches/one"
+            args.command, args.max_usd = "submit", ingest.batch_cost(4)
+            ingest.run(args)
+            self.assertTrue((work / "vectors/one.json").exists())
+            self.assertTrue((work / "vectors/two.json").exists())
+
+    def test_rulings_v2_books_use_context_and_keep_question_references(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            database = root / "rulings.db"
+            db = sqlite3.connect(database)
+            db.executescript("""
+                PRAGMA application_id = 1179809601; PRAGMA user_version = 2;
+                CREATE TABLE authority(code, name_ar, name_en, sort_order);
+                CREATE TABLE question(authority_code, language_code, site_id, question, answer, url, context);
+                INSERT INTO authority VALUES ('sistani', 'ع', 'Sistani', 1);
+                INSERT INTO question VALUES ('sistani', 'en', '42', 'Q?', 'A.', 'u1', 'Questions · Prayer');
+                INSERT INTO question VALUES ('sistani', 'en', 'book:7:3:Ruling1', 'Ruling 1.', 'Body.', 'u2', 'Islamic Laws · Prayer');
+            """)
+            db.commit()
+            db.close()
+            manifests = []
+            for name in ("one", "two"):
+                ingest.prepare(argparse.Namespace(workdir=str(root / name), provenance=None, quran=None, hadith=None, dua=None,
+                                                  rulings=str(database), translation=[], limit=None, pilot=False))
+                manifests.append(json.loads((root / name / "manifest.json").read_text()))
+            items = {i["navigation"]["id"]: i for i in manifests[0]["items"]}
+            self.assertEqual(items["42"]["title"], "Sistani · 42")
+            self.assertEqual(items["book:7:3:Ruling1"]["title"], "Islamic Laws · Prayer")
+            self.assertEqual(items["42"]["reference"], {"authority": "sistani", "language": "en", "id": "42"})
+            self.assertEqual([i["id"] for i in manifests[0]["items"]], [i["id"] for i in manifests[1]["items"]])
 
     def test_offsets_preserve_arabic_and_supplication_paragraphs(self):
         text = "اللَّهُمَّ ارحمنا 🌙.\n\n" * 500

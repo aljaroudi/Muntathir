@@ -485,7 +485,7 @@ private fun RulingContent(
                                 Text(
                                     if (note.chapter) {
                                         stringResource(
-                                            R.string.rulings_chapter_note,
+                                            R.string.chapter_note,
                                         ) + " " + note.label
                                     } else {
                                         note.label

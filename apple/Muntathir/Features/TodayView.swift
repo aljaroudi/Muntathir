@@ -296,13 +296,13 @@ struct TodayView: View {
         }
     }
 
-    /// One equal-width card in the horizontal layout. `next` is set only on the upcoming prayer's card,
-    /// which gets a solid accent fill so it stands out from the others.
+    /// One equal-width column in the horizontal layout. `next` is set only on the upcoming prayer's column,
+    /// which is tinted and shows its countdown, like the upcoming row in the list.
     private func prayerCard(_ prayer: PrayerMoment, next: PrayerMoment?, now: Date) -> some View {
         let isNext = next != nil
         let countdown = next.map { PrayerCountdownFormat(target: $0.date, locale: locale).format(now) }
         return VStack(spacing: 6) {
-            // Symbols differ in height; a fixed frame keeps every card's rows on the same lines.
+            // Symbols differ in height; a fixed frame keeps every column's rows on the same lines.
             Image(systemName: prayer.name.symbol)
                 .frame(height: prayerCardSymbolHeight)
             Text(prayer.name.title)
@@ -311,21 +311,19 @@ struct TodayView: View {
                 .minimumScaleFactor(0.7)
             prayerTime(prayer.date, padded: false)
                 .fontWeight(isNext ? .semibold : .medium)
-            // Non-upcoming cards reserve the countdown's height so every card matches.
+            // Other columns reserve the countdown's height so every column matches.
             Text(countdown ?? " ")
                 .font(.caption2).monospacedDigit()
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
                 .padding(.horizontal, 6).padding(.vertical, 3)
-                .background(.white.opacity(0.2), in: .capsule)
+                .background(Color.accentColor.opacity(0.1), in: .capsule)
                 .opacity(isNext ? 1 : 0)
                 .accessibilityHidden(!isNext)
         }
         .frame(width: prayerCardWidth)
-        .padding(.vertical, 10)
-        .foregroundStyle(isNext ? Color(uiColor: .systemBackground) : Color.primary)
-        .background(isNext ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(.quaternary),
-                    in: .rect(cornerRadius: 14))
+        .padding(.vertical, 6)
+        .foregroundStyle(isNext ? Color.accentColor : Color.primary)
         .accessibilityElement(children: .combine)
         .contentShape(.contextMenuPreview, .rect(cornerRadius: 14))
         .accessibilityIdentifier("prayer-\(prayer.name.rawValue)")
@@ -356,7 +354,7 @@ struct TodayView: View {
     }
 }
 
-/// A sideways-scrolling row of prayer cards that keeps the upcoming prayer in view.
+/// A sideways-scrolling row of prayer columns, divided like the list's rows, that keeps the upcoming prayer in view.
 private struct HorizontalPrayerTimes<Card: View>: View {
     let prayers: [PrayerMoment]
     let next: PrayerName?
@@ -366,11 +364,16 @@ private struct HorizontalPrayerTimes<Card: View>: View {
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(alignment: .top, spacing: 8) {
+                HStack(alignment: .top, spacing: 4) {
                     ForEach(prayers) { prayer in
                         card(prayer).id(prayer.name)
+                        if prayer.id != prayers.last?.id {
+                            Divider()
+                        }
                     }
                 }
+                // Dividers span the tallest column instead of the scroll view's height.
+                .fixedSize(horizontal: false, vertical: true)
             }
             .onAppear { reveal(with: proxy, animated: false) }
             .onChange(of: next) { reveal(with: proxy, animated: !reduceMotion) }
