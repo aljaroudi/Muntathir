@@ -302,6 +302,8 @@ platform :android do
     else
       android = File.join(root, "android")
       version_code = next_play_version_code(package_name: package_name, json_key: credentials)
+      # Packs ship inside the AAB, so rebuild data first; android-packs only stages what's already in build/*/dist.
+      sh("python3", File.join(root, "build/build.py"), "--assets-only")
       sh("just", "--justfile", File.join(root, "justfile"), "android-packs")
       sh(File.join(android, "gradlew"), "-p", android, ":app:bundleRelease", "-PrequireUploadSigning=true",
          "-PplayVersionCode=#{version_code}")

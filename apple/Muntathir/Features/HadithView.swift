@@ -682,7 +682,9 @@ struct HadithSavedView: View {
         store?.highlights.filter {
             guard $0.isHadith else { return false }
             // Introductions belong to the hadith library, never to supplications.
-            if $0.source.hasPrefix(HadithIntroduction.highlightPrefix) { return !supplications }
+            if $0.source.hasPrefix(HadithIntroduction.highlightPrefix) {
+                return !supplications
+            }
             return (Hadith.supplicationCollectionIDs.contains(HadithSource(key: $0.source)?.book ?? "")) == supplications
         } ?? []
     }

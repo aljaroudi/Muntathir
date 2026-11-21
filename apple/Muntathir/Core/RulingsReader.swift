@@ -31,7 +31,9 @@ struct RulingFootnote: Identifiable, Sendable {
     let chapter: Bool
 
     /// Row IDs change when the database is rebuilt; labels are stable within a ruling.
-    var highlightBlock: String { "note:" + label + (chapter ? ":chapter" : "") }
+    var highlightBlock: String {
+        "note:" + label + (chapter ? ":chapter" : "")
+    }
 }
 
 struct RulingsAuthority: Identifiable, Sendable {

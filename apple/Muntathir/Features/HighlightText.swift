@@ -109,9 +109,13 @@ struct HighlightSegment: Identifiable, Sendable {
             start = nil
         }
         for line in text.split(separator: "\n", omittingEmptySubsequences: true) {
-            if start == nil { start = line.startIndex }
+            if start == nil {
+                start = line.startIndex
+            }
             end = line.endIndex
-            if text.utf16.distance(from: start ?? end, to: end) >= length { close() }
+            if text.utf16.distance(from: start ?? end, to: end) >= length {
+                close()
+            }
         }
         close()
         return result
@@ -134,10 +138,14 @@ struct HighlightSegment: Identifiable, Sendable {
             characters = 0
         }
         for (_, range) in markdown.runs[\.presentationIntent] {
-            if start == nil { start = range.lowerBound }
+            if start == nil {
+                start = range.lowerBound
+            }
             end = range.upperBound
             characters += markdown.characters.distance(from: range.lowerBound, to: range.upperBound)
-            if characters >= length { close() }
+            if characters >= length {
+                close()
+            }
         }
         close()
         return result

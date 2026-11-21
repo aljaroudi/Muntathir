@@ -30,11 +30,8 @@ struct RulingsDownloadSection: View {
                     AssetSizeText(bytes: assets.installedBytes)
                 } label: { Text("Total size") }
                     .accessibilityIdentifier("downloads-size-rulings")
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button("Remove download", systemImage: "trash", role: .destructive) {
-                            Task { await assets.remove() }
-                        }
-                        .accessibilityIdentifier("downloads-remove-rulings")
+                    .removeDownloadControl("Remove download", id: "downloads-remove-rulings") {
+                        Task { await assets.remove() }
                     }
             } else {
                 if assets.state == .incompatible {
@@ -256,7 +253,9 @@ private struct RulingsResults: View {
 private struct RulingsGroup: Identifiable {
     let language: RulingsLanguage
     let questions: [Rulings]
-    var id: String { language.id }
+    var id: String {
+        language.id
+    }
 }
 
 /// Searches every language of an authority, grouping matches by language.
@@ -383,7 +382,11 @@ private struct RulingsDetailView: View {
                             DisclosureGroup(isExpanded: Binding {
                                 expandedNotes.contains(note.id)
                             } set: { expanded in
-                                if expanded { expandedNotes.insert(note.id) } else { expandedNotes.remove(note.id) }
+                                if expanded {
+                                    expandedNotes.insert(note.id)
+                                } else {
+                                    expandedNotes.remove(note.id)
+                                }
                             }) {
                                 segments(HighlightBlock(id: note.highlightBlock, plain: note.body))
                             } label: {
@@ -438,8 +441,13 @@ private struct RulingsDetailView: View {
         .environment(\.focusedHighlight, highlight)
     }
 
-    private var question: HighlightBlock { HighlightBlock(id: "question", plain: rulings.question) }
-    private var answer: HighlightBlock { HighlightBlock(id: "answer", plain: rulings.answer) }
+    private var question: HighlightBlock {
+        HighlightBlock(id: "question", plain: rulings.question)
+    }
+
+    private var answer: HighlightBlock {
+        HighlightBlock(id: "answer", plain: rulings.answer)
+    }
 
     @ViewBuilder private var details: some View {
         LabeledContent("Religious authority", value: authorityName)
@@ -523,7 +531,7 @@ private struct RulingsSavedView: View {
                 guard let id, let ruling = try? await assets.reader.question(id) else { continue }
                 var blocks = ["question": ruling.question, "answer": ruling.answer]
                 if values.contains(where: { $0.block?.hasPrefix("note:") == true }) {
-                    for note in (try? await assets.reader.footnotes(for: id)) ?? [] {
+                    for note in await (try? assets.reader.footnotes(for: id)) ?? [] {
                         blocks[note.highlightBlock] = note.body
                     }
                 }

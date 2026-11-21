@@ -12,7 +12,10 @@ struct HadithIntroduction: Identifiable, Hashable, Sendable {
     var readingWords = 0
 
     /// Highlights key on the book, which stays stable when the database is rebuilt.
-    var highlightSource: String { Self.highlightPrefix + bookID }
+    var highlightSource: String {
+        Self.highlightPrefix + bookID
+    }
+
     static let highlightPrefix = "introduction:"
 
     var highlightBlocks: [String: String] {

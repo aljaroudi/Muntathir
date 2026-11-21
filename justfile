@@ -12,7 +12,7 @@ apple-format:
 apple-build:
     xcodebuild -project apple/Muntathir.xcodeproj -scheme Muntathir -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
 
-# Validate and package Apple Background Asset Packs
+# Validate and package already-built DBs as Apple Background Asset Packs (rebuild data first with `just data-build --assets-only`)
 [positional-arguments]
 apple-packs content="all":
     python3 apple/AssetPacks/assets.py package --content "$1"
@@ -93,7 +93,7 @@ android-screenshots:
 android-format:
     {{ android_gradle }} spotlessApply
 
-# Validate and stage Google Play Asset Delivery packs
+# Validate and stage already-built DBs as Google Play Asset Delivery packs (rebuild data first with `just data-build --assets-only`)
 [positional-arguments]
 android-packs content="all":
     python3 apple/AssetPacks/assets.py android --content "$1"

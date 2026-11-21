@@ -165,7 +165,7 @@ import SwiftData
 
     func save(_ highlights: [ReadingHighlight], now: Date = .now) throws {
         guard !highlights.isEmpty, highlights.allSatisfy({
-            !$0.source.isEmpty && ($0.block == nil || !$0.ranges.isEmpty) && ($0.ruling.map { $0.siteID } ?? $0.source) == $0.source
+            !$0.source.isEmpty && ($0.block == nil || !$0.ranges.isEmpty) && ($0.ruling.map(\.siteID) ?? $0.source) == $0.source
         }) else {
             throw QuranUserStoreError.invalidHighlight
         }

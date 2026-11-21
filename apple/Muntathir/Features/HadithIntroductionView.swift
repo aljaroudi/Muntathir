@@ -42,7 +42,8 @@ struct HadithIntroductionView: View {
                             .environment(\.layoutDirection, .rightToLeft)
                     }
                     if let english, !english.text.isEmpty,
-                       showEnglish || arabic?.text.isEmpty != false || highlight?.block == english.id {
+                       showEnglish || arabic?.text.isEmpty != false || highlight?.block == english.id
+                    {
                         segments(english)
                             .environment(\.layoutDirection, .leftToRight)
                     }
@@ -61,7 +62,8 @@ struct HadithIntroductionView: View {
                     loading = false
                     // Lazy segments only exist once scrolled to; bring the saved highlight's segment on screen first.
                     if let block = [blocks.0, blocks.1].first(where: { $0.id == highlight?.block }),
-                       let segment = block.segment(for: highlight) {
+                       let segment = block.segment(for: highlight)
+                    {
                         await Task.yield()
                         proxy.scrollTo("\(block.id):\(segment.id)", anchor: .top)
                     }

@@ -28,12 +28,10 @@ struct DownloadsSettingsView: View {
                         AssetSizeText(bytes: quran.installedSizes.values.reduce(0, +))
                     } label: { Text("Total size") }
                         .accessibilityIdentifier("downloads-size-translations")
-                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                            Button("Remove all translations", systemImage: "trash", role: .destructive) {
-                                Task { await quran.remove(QuranTranslation.downloadable.map(\.id)) }
-                            }
-                            .accessibilityIdentifier("downloads-remove-translations")
-                            .disabled(quran.busy || quran.isDownloading)
+                        .removeDownloadControl("Remove all translations", id: "downloads-remove-translations",
+                                               disabled: quran.busy || quran.isDownloading)
+                        {
+                            Task { await quran.remove(QuranTranslation.downloadable.map(\.id)) }
                         }
                 }
                 LabeledContent("English", value: String(localized: "Included"))
@@ -59,19 +57,17 @@ struct DownloadsSettingsView: View {
                             translationDownloadStatus
                         }
                     }
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        if quran.installedSizes[translation.id] != nil {
-                            Button("Remove download", systemImage: "trash", role: .destructive) {
-                                Task { await quran.remove([translation.id]) }
-                            }
-                            .accessibilityIdentifier("downloads-remove-\(translation.id)")
-                            .disabled(quran.busy || quran.isDownloading)
-                        }
+                    .removeDownloadControl("Remove download", id: "downloads-remove-\(translation.id)",
+                                           isRemovable: quran.installedSizes[translation.id] != nil,
+                                           disabled: quran.busy || quran.isDownloading)
+                    {
+                        Task { await quran.remove([translation.id]) }
                     }
                 }
             } header: { Text("Quran translations") }
         }
         .navigationTitle("Downloads")
+        .toolbar { EditButton() }
         .task { await quran.refresh() }
         .onChange(of: quran.downloadState) { _, state in
             if state == .idle {
@@ -93,5 +89,56 @@ struct DownloadsSettingsView: View {
         } else if quran.downloadState == .failed {
             Text("Unable to download. Please try again.").foregroundStyle(.secondary)
         }
+    }
+}
+
+/// Keeps the trailing swipe action and, while the list is in edit mode,
+/// shows a leading red minus button that performs the same removal.
+/// Swiping and tapping is already a deliberate two-step gesture, so only the
+/// one-tap minus button asks for confirmation. (A destructive swipe button that
+/// doesn't remove its row makes the List animate the row out and crash.)
+private struct RemoveDownloadControl: ViewModifier {
+    @Environment(\.editMode) private var editMode
+    let title: LocalizedStringKey
+    let id: String
+    let isRemovable: Bool
+    let disabled: Bool
+    let action: () -> Void
+    @State private var confirming = false
+
+    func body(content: Content) -> some View {
+        HStack {
+            if isRemovable, editMode?.wrappedValue.isEditing == true {
+                Button(role: .destructive) { confirming = true } label: {
+                    Image(systemName: "minus.circle.fill")
+                }
+                .buttonStyle(.borderless)
+                .foregroundStyle(.red)
+                .accessibilityLabel(Text(title))
+                .accessibilityIdentifier(id)
+                .disabled(disabled)
+            }
+            content
+        }
+        .animation(.default, value: editMode?.wrappedValue.isEditing)
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            if isRemovable {
+                Button(title, systemImage: "trash", role: .destructive, action: action)
+                    .accessibilityIdentifier(id)
+                    .disabled(disabled)
+            }
+        }
+        .confirmationDialog(title, isPresented: $confirming, titleVisibility: .visible) {
+            Button(title, role: .destructive, action: action)
+        }
+    }
+}
+
+extension View {
+    func removeDownloadControl(_ title: LocalizedStringKey, id: String, isRemovable: Bool = true,
+                               disabled: Bool = false, action: @escaping () -> Void) -> some View
+    {
+        modifier(RemoveDownloadControl(title: title, id: id, isRemovable: isRemovable,
+                                       disabled: disabled, action: action))
     }
 }

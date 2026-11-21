@@ -17,12 +17,10 @@ struct HadithDownloadsSection: View {
                     AssetSizeText(bytes: assets.installedBytes)
                 } label: { Text("Total size") }
                     .accessibilityIdentifier("downloads-size-\(assets.packID)")
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button("Remove download", systemImage: "trash", role: .destructive) {
-                            Task { await assets.remove() }
-                        }
-                        .accessibilityIdentifier("downloads-remove-\(assets.packID)")
-                        .disabled(assets.busy || assets.isDownloading)
+                    .removeDownloadControl("Remove download", id: "downloads-remove-\(assets.packID)",
+                                           disabled: assets.busy || assets.isDownloading)
+                    {
+                        Task { await assets.remove() }
                     }
             }
             if !assets.isDownloading, assets.state == .checking || assets.busy {
@@ -61,14 +59,11 @@ struct HadithDownloadsSection: View {
                                 downloadStatus
                             }
                         }
-                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                            if book.installed {
-                                Button("Remove download", systemImage: "trash", role: .destructive) {
-                                    Task { await assets.remove(title: book.id) }
-                                }
-                                .accessibilityIdentifier("downloads-remove-book-\(book.id)")
-                                .disabled(assets.busy || assets.isDownloading)
-                            }
+                        .removeDownloadControl("Remove download", id: "downloads-remove-book-\(book.id)",
+                                               isRemovable: book.installed,
+                                               disabled: assets.busy || assets.isDownloading)
+                        {
+                            Task { await assets.remove(title: book.id) }
                         }
                         .labelStyle(.iconOnly)
                     }

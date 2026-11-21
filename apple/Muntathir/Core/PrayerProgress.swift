@@ -71,7 +71,9 @@ enum PrayerProgress {
         for prayer in prayers {
             let record = snapshot(prayer: prayer, at: date, location: location, method: method, calculate: calculate)
             guard days(for: prayer, in: completed)[record.prayerDay] == nil else { continue }
-            if record.timing == .onTime { return prayer }
+            if record.timing == .onTime {
+                return prayer
+            }
             if upcoming == nil, let athan = record.athan, athan > date {
                 upcoming = prayer
             }

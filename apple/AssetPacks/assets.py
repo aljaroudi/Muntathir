@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Package Hadith and Quran asset packs and verify shipping bundles; no network or credentials."""
 import argparse
+import hashlib
 import json
+import os
 from pathlib import Path
 import plistlib
 import shutil
 import sqlite3
 import subprocess
+import tempfile
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -18,6 +21,35 @@ ANDROID_PACKS = {
     'quran-translations': ('quran_translations', 'on-demand'),
     'rulings-v2': ('rulings', 'on-demand'),
 }
+
+
+def db_hash(path):
+    with path.open("rb") as file:
+        digest = hashlib.sha256()
+        header = file.read(100)
+        # SQLite changes these header fields when writing equivalent databases.
+        digest.update(header[:24] + header[28:92] + header[100:])
+        while chunk := file.read(1024 * 1024):
+            digest.update(chunk)
+        return digest.hexdigest()
+
+
+def archive_matches(archive, manifest, root, scratch):
+    """True when an .aar already holds this manifest and equivalent databases; ba-package output is not byte-reproducible."""
+    if not archive.is_file():
+        return False
+    with tempfile.TemporaryDirectory(dir=scratch) as extracted:
+        try:
+            subprocess.run(["xcrun", "aa", "extract", "-i", str(archive), "-d", extracted], check=True, capture_output=True)
+            packed = Path(extracted)
+            record = json.loads((packed / "Manifest.json").read_text())
+            record.pop("toolsVersion", None)
+            return record == manifest and all(
+                db_hash(packed / "Contents" / entry["fileDestination"])
+                == db_hash(root / entry["fileSource"]) for entry in manifest["fileSelectors"]
+            )
+        except (OSError, ValueError, subprocess.CalledProcessError):
+            return False
 
 
 def validate_quran(root=ROOT, manifests=MANIFESTS):
@@ -181,17 +213,30 @@ def main():
             # Old per-language archives would collide with the new pack in Xcode local testing.
             for obsolete in output.glob('quran-*.aar'):
                 if obsolete.name != 'quran-translations.aar': obsolete.unlink()
+        repackaged = 0
         for manifest in manifests:
             archive = output / (manifest.stem + '.aar')
-            archive.unlink(missing_ok=True)
-            subprocess.run(['xcrun', 'ba-package', 'package', str(manifest), '--output-path', str(archive)], check=True)
+            # Repackaging identical content still changes the archive by a few bytes, so keep matching archives.
+            if archive_matches(archive, json.loads(manifest.read_text()), ROOT, output):
+                print(f'{manifest.stem}: unchanged, {archive.stat().st_size:,} B')
+                continue
+            # Package beside the archive first so a failed run never leaves the pack missing.
+            with tempfile.TemporaryDirectory(dir=output) as stage:
+                staged = Path(stage) / archive.name
+                subprocess.run(['xcrun', 'ba-package', 'package', str(manifest), '--output-path', str(staged)], check=True)
+                os.replace(staged, archive)
+            repackaged += 1
+            print(f'{manifest.stem}: repackaged, {archive.stat().st_size:,} B')
         # The UI uses archive byte counts, never rounded MB constants treated as bytes.
         metadata_path = ROOT / 'apple/Muntathir/Resources/AssetDownloadSizes.json'
-        sizes = json.loads(metadata_path.read_text()) if metadata_path.exists() else {}
+        old_metadata = metadata_path.read_text() if metadata_path.exists() else '{}'
+        sizes = json.loads(old_metadata)
         for manifest in manifests:
             sizes[manifest.stem] = (output / (manifest.stem + '.aar')).stat().st_size
-        metadata_path.write_text(json.dumps(sizes, indent=2) + '\n')
-        print(f'Packaged {len(manifests)} asset packs in {output}')
+        metadata = json.dumps(sizes, indent=2) + '\n'
+        if metadata != old_metadata:
+            metadata_path.write_text(metadata)
+        print(f'Repackaged {repackaged} of {len(manifests)} asset packs in {output}')
     elif args.command == 'android':
         copied = [path for manifest in manifests for path in android_pack(manifest)]
         print(f'Copied {len(copied)} files into {len(manifests)} Android asset-pack modules')
