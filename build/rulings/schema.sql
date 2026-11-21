@@ -12,6 +12,8 @@
 -- Fayadh question: the WordPress permalink from https://{language}.alfayadh.org/wp-json/wp/v2/question
 -- Al-Rohani question: https://alrohani.org/index.php?act=qa&action=view&id={id}
 -- Rohani question: https://www.rohani.ir/{language}/idetail/{id}/x
+-- Muhammad al-Shirazi question: https://www.alshirazi.com/rflo/alestiftaatalmarjeyeh/{chapter}.htm
+--   Static pages without anchors; the URL is the chapter page.
 
 PRAGMA application_id = 1364218708;
 PRAGMA user_version = 2;
@@ -91,6 +93,14 @@ VALUES
     'https://www.rohani.ir/',
     8,
     'Arabic and Persian. Question URL is https://www.rohani.ir/{language}/idetail/{id}/x. Sharia and belief rulings are separate top-level topics.'
+  ),
+  (
+    'mshirazi',
+    'السيد محمد الشيرازي',
+    'Muhammad al-Husayni al-Shirazi',
+    'https://www.alshirazi.com/',
+    9,
+    'Arabic only. Static windows-1256 pages with no API. Question URL is the chapter page https://www.alshirazi.com/rflo/alestiftaatalmarjeyeh/{chapter}.htm. The book Muntakhab al-Masail is stored in book_edition.'
   )
 ON CONFLICT (code) DO UPDATE SET
   name_ar = excluded.name_ar,

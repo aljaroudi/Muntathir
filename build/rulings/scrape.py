@@ -6,7 +6,7 @@
     python3 scrape.py --authority sistani --language arabic
 
 Authorities: sistani.py, shirazi.py, khorasani.py, hakeem.py, najafi.py,
-fayadh.py, alrohani.py, rohani.py (the last four share mirror.py).
+fayadh.py, alrohani.py, rohani.py, mshirazi.py (the last five share mirror.py).
 Shared HTML walking: htmlutil.py. Database setup: db.py.
 """
 
@@ -25,10 +25,11 @@ import najafi
 import rohani
 import treatise
 import khorasani
+import mshirazi
 import shirazi
 import sistani
 
-AUTHORITIES = ("sistani", "shirazi", "khorasani", "hakeem", "najafi", "fayadh", "alrohani", "rohani")
+AUTHORITIES = ("sistani", "shirazi", "khorasani", "hakeem", "najafi", "fayadh", "alrohani", "rohani", "mshirazi")
 
 
 def parse_args() -> argparse.Namespace:
@@ -54,6 +55,7 @@ def main() -> int:
     fayadh.self_test()
     alrohani.self_test()
     rohani.self_test()
+    mshirazi.self_test()
     if args.self_test:
         return 0
     if args.concurrency < 1:
@@ -72,6 +74,7 @@ def main() -> int:
         "fayadh": set(fayadh.LANGUAGES),
         "alrohani": set(alrohani.LANGUAGES),
         "rohani": set(rohani.LANGUAGES),
+        "mshirazi": set(mshirazi.LANGUAGES),
     }
     known = set().union(*codes.values())
     if lang_filter - known:
@@ -85,6 +88,7 @@ def main() -> int:
         "fayadh": fayadh.crawl,
         "alrohani": alrohani.crawl,
         "rohani": rohani.crawl,
+        "mshirazi": mshirazi.crawl,
     }
     conn = init_db(args.db, args.reset)
     started = utc_now()
@@ -109,9 +113,12 @@ def main() -> int:
                 delay=args.delay,
                 limit=args.limit,
             ))
-            if not args.limit and name in ("sistani", "shirazi"):
+            if not args.limit and name in ("sistani", "shirazi", "mshirazi"):
                 books.ensure_mirror(conn)
-                if name == "sistani":
+                if name == "mshirazi":
+                    for failure in mshirazi.crawl_book(conn, args.delay):
+                        reports.append(dict(ok=False, authority=name, error=failure))
+                elif name == "sistani":
                     for failure in books.crawl(conn, selected or books.LANGS, None):
                         reports.append(dict(ok=False, authority=name, error=failure))
                 else:

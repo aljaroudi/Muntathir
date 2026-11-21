@@ -52,6 +52,7 @@ SITE_LANGUAGE = {
     ("alrohani", "ar"): "ar",
     ("rohani", "ar"): "ar",
     ("rohani", "fa"): "fa",
+    ("mshirazi", "ar"): "ar",
 }
 
 LANGUAGES = {
