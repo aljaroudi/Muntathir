@@ -31,5 +31,5 @@ Spec paths are relative to `apple/Muntathir/` unless noted. Read the listed Swif
 | Credits | `Settings.bundle/Credits.plist`, `Resources/*CREDITS*`, `*LICENSE*` | In-app Sources and licenses screen (`ui/settings/CreditsScreen`) |
 | Widgets | `apple/MuntathirWidgets/*.swift` | Glance: prayer (Chronometer countdown), daily ayah, Hijri date (no weather). Refresh at prayer boundaries/midnight. |
 | Strings | `Localizable.xcstrings` (15 locales) | Generated `values-*/strings.xml` + plurals |
-| Watch | `apple/MuntathirWatch*/` | Later (P8): Wear Compose, tiles, complications, Data Layer |
+| Watch | `apple/MuntathirWatch/`, `apple/MuntathirWatchWidgets/`, `Core/WatchSettings.swift`, `Services/WatchConnectivityService.swift` | `:wear` (Wear Compose M3 list, 3 complications, ProtoLayout tile); `core/wear/WatchSnapshot` + `WatchTimeline`; phone `app/wear/WatchSync` over the Data Layer |
 | Not ported | WeatherKit, CarPlay, iCloud KVS/CloudKit, Lock Screen widgets | — |

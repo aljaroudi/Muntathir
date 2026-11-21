@@ -11,7 +11,8 @@ minSdk 26, compile/target latest. Edge-to-edge, predictive back, per-app languag
 ```
 android/
   core/    Pure Kotlin/JVM. Calendar, feed, prayer, solar/moon, qibla, text, tasbih, rakaat detector, models.
-  app/     All Android code: ui/<feature>, data, assets, notifications, widgets.
+  app/     All Android code: ui/<feature>, data, assets, notifications, widgets, wear (sync to the watch).
+  wear/    Wear OS app: prayer list, complications, tile. Reads the phone's snapshot only.
   packs/   PAD modules: hadith, supplications, quran_translations, rulings.
 ```
 
@@ -66,6 +67,7 @@ One `AssetPackBackend` over `AssetPackManager`, mirroring `AssetPackBackend.swif
 - **Feed:** WorkManager periodic 12 h with a network constraint, plus a refresh on every `ON_START`. Ktor (OkHttp) transport, ETag + last-good cache in `cacheDir`. The host is stored in punycode.
 - **Widgets:** Glance in `app/widgets` (prayer, daily ayah, Hijri date), reading `AppModel`, `QuranDatabase` and `QuranTranslations` via `WidgetEntryPoint`; text is RemoteViews XML for Plex and Hafs. `WidgetUpdater` re-renders on settings, location, corrections or translation changes, on time/zone/locale changes (`RescheduleReceiver`, `onConfigurationChanged`), and at one alarm for the next prayer, sunset or midnight; it's idle with no widgets placed.
 - **Tile and shortcuts:** `NextPrayerTileService` reads the next prayer when the panel opens. Static shortcuts (Quran, Qibla, Tasbih, Calendar), widgets and the tile pass an `OpenRequest` extra to the `singleTop` `MainActivity`; `AppNavigator.open` selects the tool's tab or pushes it onto Tools.
+- **Watch:** `app/wear/WatchSync` puts `WatchSnapshot.from(AppState)` at Data Layer path `/settings/v1` whenever it changes. On the watch, `SettingsListenerService` (and `MainActivity` on start) hand it to `WatchStore` (validated, saved in `filesDir`), then `Surfaces.refresh` asks the three complication services and `PrayerTileService` to re-render. Those render `WatchTimeline` spans as timeline entries.
 - **Fonts:** IBM Plex Sans Arabic (bundled) for the UI, through `Typography` and the View theme. Reader bodies keep Hafs, Lateef or the system font.
 
 ## Testing

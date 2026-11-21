@@ -76,9 +76,9 @@ android_gradle := 'cd android && JAVA_HOME="${JAVA_HOME:-/Applications/Android S
 android-strings:
     python3 android/scripts/strings.py
 
-# Build the Android debug app
+# Build the Android debug app and its Wear OS app
 android-build:
-    {{ android_gradle }} :app:assembleDebug
+    {{ android_gradle }} :app:assembleDebug :wear:assembleDebug
 
 [doc("Check Android strings and run core + app unit and screenshot tests")]
 android-test:

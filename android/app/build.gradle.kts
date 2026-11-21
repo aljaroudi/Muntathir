@@ -234,6 +234,9 @@ dependencies {
     implementation(libs.androidx.camera.compose)
     // Home screen widgets (prayer, daily ayah, Hijri date).
     implementation(libs.androidx.glance.appwidget)
+    // Sends the Wear OS app its settings snapshot over the Data Layer.
+    implementation(libs.play.services.wearable)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)

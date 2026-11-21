@@ -326,4 +326,39 @@ platform :android do
       skip_upload_screenshots: true
     )
   end
+
+  # The Wear OS app shares the phone's listing (same package and key) on the Wear OS form factor track, which must
+  # be enabled in Play Console first. Its version code is 100000 + the phone's (android/wear/build.gradle.kts), so
+  # run this after `beta` with the same release, or pass `version_code:` (the phone's code).
+  desc "Build and publish the signed Wear OS AAB to the Wear OS internal testing track"
+  lane :wear_beta do |options|
+    root = File.expand_path("..", __dir__)
+    credentials = File.expand_path(ENV.fetch("SUPPLY_JSON_KEY", "~/.android/muntathir-upload/play-publisher.json"), root)
+    UI.user_error!("Set SUPPLY_JSON_KEY to a readable Google credentials JSON file") unless
+      File.file?(credentials) && File.readable?(credentials)
+
+    package_name = "com.aljaroudi.muntathir"
+    android = File.join(root, "android")
+    # The phone release just uploaded holds the newest code.
+    version_code = options[:version_code] || next_play_version_code(package_name: package_name, json_key: credentials) - 1
+    sh(File.join(android, "gradlew"), "-p", android, ":wear:bundleRelease", "-PrequireUploadSigning=true",
+       "-PplayVersionCode=#{version_code}")
+    bundle = File.join(android, "wear/build/outputs/bundle/release/wear-release.aab")
+    UI.user_error!("Expected a signed AAB at #{bundle}") unless File.file?(bundle)
+
+    upload_to_play_store(
+      package_name: package_name,
+      json_key: credentials,
+      aab: bundle,
+      track: "wear:internal",
+      release_status: options[:draft] == true ? "draft" : "completed",
+      validate_only: options[:validate_only] == true,
+      skip_upload_apk: true,
+      skip_upload_aab: false,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
 end

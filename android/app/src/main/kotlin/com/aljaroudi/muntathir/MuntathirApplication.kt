@@ -8,6 +8,7 @@ import androidx.work.WorkManager
 import com.aljaroudi.muntathir.feed.FeedRefreshWorker
 import com.aljaroudi.muntathir.notifications.Rescheduler
 import com.aljaroudi.muntathir.ui.rakaat.SessionFocus
+import com.aljaroudi.muntathir.wear.WatchSync
 import com.aljaroudi.muntathir.widgets.WidgetUpdater
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -24,6 +25,8 @@ class MuntathirApplication :
     @Inject lateinit var widgets: WidgetUpdater
 
     @Inject lateinit var focus: SessionFocus
+
+    @Inject lateinit var watch: WatchSync
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder().setWorkerFactory(workerFactory).build()
@@ -51,6 +54,7 @@ class MuntathirApplication :
         // Every process start (launch, alarm, boot) re-derives the next alert from current settings.
         rescheduler.start()
         widgets.start()
+        watch.start()
         FeedRefreshWorker.schedule(WorkManager.getInstance(this))
         // A rakaat session cut short by process death must not leave Do Not Disturb on.
         focus.recover()

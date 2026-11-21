@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="open_on_phone">スマートフォンで開く</string>
+    <string name="open_muntathir_on_your_phone">スマートフォンで Muntathir を開いてください</string>
+    <string name="sync_from_phone">位置情報と設定を同期するには、スマートフォンで Muntathir を開いてください。</string>
+</resources>

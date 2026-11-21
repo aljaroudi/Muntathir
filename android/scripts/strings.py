@@ -2,7 +2,8 @@
 """Generate Android string resources from the Apple catalogs (single source of truth).
 
 Reads apple/Muntathir/Localizable.xcstrings and <locale>.lproj/InfoPlist.strings and writes
-app/src/main/res/values*/strings.xml. Android-only strings belong in strings_android.xml.
+app/src/main/res/values*/strings.xml, plus the watch's subset (WEAR_KEYS) to wear/src/main/res/values*/strings.xml.
+Android-only strings belong in strings_android.xml (phone) or strings_wear.xml (watch).
 
     python3 android/scripts/strings.py          # write
     python3 android/scripts/strings.py --check  # fail if the output is stale
@@ -17,6 +18,17 @@ from pathlib import Path
 ANDROID = Path(__file__).resolve().parents[1]
 APPLE = ANDROID.parent / "apple/Muntathir"
 RES = ANDROID / "app/src/main/res"
+WEAR_RES = ANDROID / "wear/src/main/res"
+# Catalog keys the Wear OS app uses (Swift MuntathirWatch and MuntathirWatchWidgets), under the phone's names.
+WEAR_KEYS = {
+    "Prayer times",
+    "Prayer times unavailable for this location and date.",
+    "Islamic calendar",
+    "Upcoming prayer",
+    "Prayer countdown",
+    *"Imsak Fajr Sunrise Dhuhr Asr Sunset Maghrib Isha Midnight".split(),
+}
+WEAR_INFO_PLIST = {"app_name"}
 SOURCE = "en"
 QUALIFIERS = {
     "en": "values",
@@ -121,10 +133,11 @@ def info_plist(locale):
     return {name: pairs[key].replace('\\"', '"') for key, name in INFO_PLIST.items() if key in pairs}
 
 
-def render(locale, catalog, resource_names):
+def render(locale, catalog, resource_names, info_names=None):
     lines = ['<?xml version="1.0" encoding="utf-8"?>', HEADER, "<resources>"]
     for name, text in info_plist(locale).items():
-        lines.append(f'    <string name="{name}">{escape(text)}</string>')
+        if info_names is None or name in info_names:
+            lines.append(f'    <string name="{name}">{escape(text)}</string>')
     for key in sorted(catalog):
         entry = catalog[key]
         translatable = entry.get("shouldTranslate", True)
@@ -159,16 +172,23 @@ def main():
     # Pure-format keys such as "%@ %@" are composed in Kotlin instead.
     catalog = {k: v for k, v in catalog.items() if re.search(r"[^\W\d_]", PLACEHOLDER.sub("", k))}
     resource_names = names(catalog)
+    missing = WEAR_KEYS - catalog.keys()
+    if missing:
+        raise SystemExit("WEAR_KEYS not in the catalog: " + ", ".join(sorted(missing)))
+    wear_catalog = {k: v for k, v in catalog.items() if k in WEAR_KEYS}
     stale = []
     for locale, qualifier in QUALIFIERS.items():
-        path = RES / qualifier / "strings.xml"
-        output = render(locale, catalog, resource_names)
-        if "--check" in sys.argv:
-            if not path.exists() or path.read_text() != output:
-                stale.append(str(path.relative_to(ANDROID)))
-        else:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(output)
+        outputs = {
+            RES / qualifier / "strings.xml": render(locale, catalog, resource_names),
+            WEAR_RES / qualifier / "strings.xml": render(locale, wear_catalog, resource_names, WEAR_INFO_PLIST),
+        }
+        for path, output in outputs.items():
+            if "--check" in sys.argv:
+                if not path.exists() or path.read_text() != output:
+                    stale.append(str(path.relative_to(ANDROID)))
+            else:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(output)
     if stale:
         raise SystemExit("Stale strings; run `just android-strings`:\n" + "\n".join(stale))
     print(f"{'Checked' if '--check' in sys.argv else 'Wrote'} {len(catalog)} strings in {len(QUALIFIERS)} locales.")

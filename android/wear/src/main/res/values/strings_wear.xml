@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Watch-only strings (not in the Apple catalogs). Keep every values-*/strings_wear.xml in sync. -->
+<resources>
+    <!-- Button on the watch that opens the app's Play listing on the paired phone. -->
+    <string name="open_on_phone">Open on phone</string>
+    <!-- Complications and tile before the phone has sent settings. -->
+    <string name="open_muntathir_on_your_phone">Open Muntathir on your phone</string>
+    <string name="sync_from_phone">Open Muntathir on your phone to sync your location and settings.</string>
+</resources>

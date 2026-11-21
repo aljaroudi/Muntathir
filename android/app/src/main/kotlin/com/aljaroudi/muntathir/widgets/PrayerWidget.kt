@@ -22,7 +22,6 @@ import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.app.AppState
-import com.aljaroudi.muntathir.core.prayer.WidgetPrayerSettings
 import com.aljaroudi.muntathir.core.sky.SolarPosition
 import com.aljaroudi.muntathir.ui.components.Formats
 import com.aljaroudi.muntathir.ui.components.title
@@ -54,16 +53,6 @@ class PrayerWidget : GlanceAppWidget() {
         val TALL = DpSize(110.dp, 190.dp)
     }
 }
-
-/** The prayer settings every surface (widget, tile, refresh alarm) reads from the app state. */
-val AppState.prayerSettings: WidgetPrayerSettings
-    get() =
-        WidgetPrayerSettings(
-            location,
-            preferences.prayerMethod,
-            preferences.hiddenPrayers,
-            preferences.imsakMinutes,
-        )
 
 @Composable
 private fun PrayerContent(

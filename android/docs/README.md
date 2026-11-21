@@ -4,30 +4,30 @@ Native Kotlin + Jetpack Compose port of the iOS app in [`apple/`](../../apple/):
 
 | Doc | Purpose |
 |---|---|
-| [TASKS.md](TASKS.md) | Phased checklist. **Start here every session.** |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Stack, modules, data, conventions |
 | [MAPPING.md](MAPPING.md) | iOS feature → Swift spec files → Android approach |
 | [PLAY_DATA_SAFETY.md](PLAY_DATA_SAFETY.md) | Play Console declarations |
 
 ## Session workflow
 
-1. In `TASKS.md`, take the first unblocked `[ ]` task and mark it `[~]`.
-2. Read its Swift spec files from `MAPPING.md`. **Swift code and READMEs define behavior**; these docs don't restate it.
-3. Port the matching Swift tests first, then implement.
-4. Run `just android-test`, mark the task `[x]`, and note only deviations.
-5. Record new decisions below.
+The phased port (P0–P8) is done; the checklist was retired. For new work:
 
-**Parallel agents:** only for tasks in different packages (e.g. P1 ports, P5 tools). One task per agent, each in its own git worktree branched from `feat/android-port` (not `main`); link `web/node_modules` so the pre-commit hook runs. Merge one at a time and re-run tests.
+1. Read the Swift spec files from `MAPPING.md`. **Swift code and READMEs define behavior**; these docs don't restate it.
+2. Port the matching Swift tests first, then implement.
+3. Run `just android-test` and note only deviations.
+4. Record new decisions below.
+
+**Parallel agents:** only for work in different packages. One task per agent, each in its own git worktree; link `web/node_modules` so the pre-commit hook runs. Merge one at a time and re-run tests.
 
 ## Decisions
 
 ### Scope
 - One platform per user: no iOS↔Android sync.
 - **No login, backend or Firestore.** Continuity is Android Auto Backup + device-to-device transfer only.
-- No weather. Google Play only (Play Asset Delivery, no fallback). Wear OS later.
+- No weather. Google Play only (Play Asset Delivery, no fallback).
 - minSdk 26; avoid version-gated features.
 - Smart search uses the existing `/v1/search` API.
-- Simple, minimal code; three module types only (plus the test-only `:baselineprofile`).
+- Simple, minimal code; four module types only: `core`, `app`, `wear`, asset packs (plus the test-only `:baselineprofile`).
 
 ### Core (P1)
 - **Adhan:** `core/prayer/adhan` is a direct port of Adhan Swift 1.5.0 (MIT notice kept). adhan2 0.0.7 lacks Maghrib angles, the Tehran preset and failable results needed for Jafari/Tehran and high-latitude failures.
@@ -39,7 +39,7 @@ Native Kotlin + Jetpack Compose port of the iOS app in [`apple/`](../../apple/):
 - **Notification channels are versioned by sound**; no Time Sensitive toggle (`timeSensitiveNotifications` stays in the JSON for parity); no full-adhan foreground service.
 - **One chained alarm** instead of a 10-day batch of 50.
 - **`AppModel` lives in `core/app`** so the iOS AppModel tests run on the JVM.
-- **Android-only strings** go in `values*/strings_android.xml`, hand-translated for all 15 locales; `strings.py` owns only `strings.xml`.
+- **Android-only strings** go in `values*/strings_android.xml` (watch: `wear/…/strings_wear.xml`), hand-translated for all 15 locales; `strings.py` owns only `strings.xml`, including the watch's subset (`WEAR_KEYS`).
 
 ### Quran (P3)
 - **Platform-neutral stores in `core`:** `QuranSql`, `TranslationPack` and `UserRecords` are tiny interfaces so Swift tests run on the JVM against the iOS databases; the app adapts the bundled driver, PAD and Room.
@@ -73,3 +73,12 @@ Native Kotlin + Jetpack Compose port of the iOS app in [`apple/`](../../apple/):
 - **Release workflow:** [shared Fastlane setup](../../fastlane/SETUP.md#android).
 - **Check release layouts on device:** `ReleaseLayoutTest` (Accessibility Test Framework, English and Arabic at 200% font). Also run at tablet size: `adb shell wm size 2560x1600; adb shell wm density 320`, then `wm size reset; wm density reset`.
 - **Two-pane lists don't move focus** (`shouldAutoFocusCurrentDestination = false`) and back stops at the list (`PopUntilContentChange`), since every list pane has a detail placeholder.
+
+### Wear OS (P8)
+- **`:wear` is a fourth module type** (Wear app) with the phone's application id and upload key, which the Data Layer requires. Wear OS 3+ (`minSdk 30`), not standalone: like the Apple Watch it has no settings of its own. No Hilt; one `WatchStore` object per process.
+- **Sync is one Data Layer item:** the phone's `WatchSync` puts `core/wear/WatchSnapshot` (prayer settings + calendar zone, month offsets and confirmed corrections) at `/settings/v1` on every change; Play services dedupes and delivers it. The watch validates it (Swift `WatchSettings.decode`), keeps the last good one in `filesDir`, and also reads the item whenever the app comes to the front.
+- **Complications and the tile render timelines** (`core/wear/WatchTimeline`): one entry per prayer or local day, so nothing runs at each boundary. The countdown is a `TimeDifferenceComplicationText` the watch face ticks itself.
+- **The tile is ProtoLayout Material 3**, not Glance Wear widgets (Wear OS 6+, alpha). iOS has no tile; it fills the Smart Stack role. No live countdown on the tile (the complication has one).
+- **"Open on phone" opens the Play listing** on the phone (`RemoteActivityHelper`), which shows Open or Install.
+- **Release:** `fastlane android wear_beta` after `beta` uploads `:wear:bundleRelease` to the Wear OS internal track; version code = 100000 + the phone's. Enable the Wear OS form factor in Play Console first.
+- **Not yet checked on a Wear emulator or watch:** sync with a paired phone, complications on a watch face, tile rendering, RTL. Compose previews render.

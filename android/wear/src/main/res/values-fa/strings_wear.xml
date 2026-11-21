@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="open_on_phone">باز کردن در تلفن</string>
+    <string name="open_muntathir_on_your_phone">منتظر را در تلفن خود باز کنید</string>
+    <string name="sync_from_phone">برای همگام‌سازی مکان و تنظیمات، منتظر را در تلفن خود باز کنید.</string>
+</resources>

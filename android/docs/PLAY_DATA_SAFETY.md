@@ -15,7 +15,7 @@ From the P7.3 audit (play-policy-insights). Re-check whenever a network call, SD
 - **If the release ships with a Maps key:** add whatever Google's Maps SDK for Android data disclosure lists. App code itself sends no location.
 
 Not collected (stays on the device; Auto Backup is the user's own encrypted Google backup):
-- Approximate location (prayer times) and precise location (Qibla, never saved).
+- Approximate location (prayer times) and precise location (Qibla, never saved). The location and prayer settings also go to the user's own paired Wear OS watch through Google Play services' Data Layer, which is device to device, not a transfer to us or a third party.
 - Prayer records, reading time, highlights, bookmarks, recent searches, preferences.
 - Camera frames (Rakaat reads brightness in memory; nothing is captured or stored).
 
