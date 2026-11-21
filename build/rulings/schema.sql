@@ -7,6 +7,11 @@
 --   That is the link the site itself publishes. Topic pages are the catalog.
 -- Khorasani question: https://wahidkhorasani.com/qna/{slug}
 -- Hakeem question: https://www.alhakeem.com/{language}/question/{id}
+-- Najafi question: https://www.alnajafy.com/list/mainnews-{page}-1-677-{category}-1.html#{id}
+--   Questions have no page of their own; the URL is the category page plus #id.
+-- Fayadh question: the WordPress permalink from https://{language}.alfayadh.org/wp-json/wp/v2/question
+-- Al-Rohani question: https://alrohani.org/index.php?act=qa&action=view&id={id}
+-- Rohani question: https://www.rohani.ir/{language}/idetail/{id}/x
 
 PRAGMA application_id = 1364218708;
 PRAGMA user_version = 2;
@@ -54,6 +59,38 @@ VALUES
     'https://www.alhakeem.com/',
     4,
     'Question URL is https://www.alhakeem.com/{language}/question/{id}. Persian uses Arabic category ids; Urdu currently has no Q&A.'
+  ),
+  (
+    'najafi',
+    'الشيخ بشير النجفي',
+    'Bashir al-Najafi',
+    'https://www.alnajafy.com/',
+    5,
+    'Arabic only (site la=1). Question URL is the category page plus #{id}; the site has no per-question page.'
+  ),
+  (
+    'fayadh',
+    'الشيخ إسحاق الفياض',
+    'Ishaq al-Fayyad',
+    'https://ar.alfayadh.org/',
+    6,
+    'Arabic (ar.alfayadh.org) and Persian (fa.alfayadh.org), read through the WordPress REST API.'
+  ),
+  (
+    'alrohani',
+    'السيد محمد الروحاني',
+    'Muhammad al-Rohani',
+    'https://alrohani.org/',
+    7,
+    'Arabic only. Question URL is https://alrohani.org/index.php?act=qa&action=view&id={id}.'
+  ),
+  (
+    'rohani',
+    'السيد محمد صادق الروحاني',
+    'Muhammad Sadiq al-Rohani',
+    'https://www.rohani.ir/',
+    8,
+    'Arabic and Persian. Question URL is https://www.rohani.ir/{language}/idetail/{id}/x. Sharia and belief rulings are separate top-level topics.'
   )
 ON CONFLICT (code) DO UPDATE SET
   name_ar = excluded.name_ar,

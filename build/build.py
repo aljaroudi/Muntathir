@@ -3,7 +3,6 @@
 import argparse
 from decimal import Decimal
 import fcntl
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -21,6 +20,7 @@ SIZES = Path("apple/Muntathir/Resources/AssetDownloadSizes.json")
 MANIFESTS = Path("apple/AssetPacks/manifests")
 sys.path[:0] = [str(ROOT / "backend"), str(ROOT / MANIFESTS.parent)]
 import assets
+from assets import archive_matches, db_hash
 from refresh_search import refresh
 
 
@@ -28,37 +28,9 @@ def run(*args, **kwargs):
     subprocess.run(args, cwd=ROOT, check=True, **kwargs)
 
 
-def db_hash(path):
-    with path.open("rb") as file:
-        digest = hashlib.sha256()
-        header = file.read(100)
-        # SQLite changes these header fields when writing equivalent databases.
-        digest.update(header[:24] + header[28:92] + header[100:])
-        while chunk := file.read(1024 * 1024):
-            digest.update(chunk)
-        return digest.hexdigest()
-
-
 def install(source, target):
     target.parent.mkdir(parents=True, exist_ok=True)
     os.replace(source, target)
-
-
-def archive_matches(archive, manifest, stage, scratch):
-    if not archive.is_file():
-        return False
-    with tempfile.TemporaryDirectory(dir=scratch) as extracted:
-        try:
-            run("xcrun", "aa", "extract", "-i", archive, "-d", extracted)
-            packed = Path(extracted)
-            record = json.loads((packed / "Manifest.json").read_text())
-            record.pop("toolsVersion", None)
-            return record == manifest and all(
-                db_hash(packed / "Contents" / entry["fileDestination"])
-                == db_hash(stage / entry["fileSource"]) for entry in manifest["fileSelectors"]
-            )
-        except (OSError, ValueError, subprocess.CalledProcessError):
-            return False
 
 
 def build_assets(stage):

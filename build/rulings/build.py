@@ -46,6 +46,12 @@ SITE_LANGUAGE = {
     ("hakeem", "en"): "en",
     ("hakeem", "fa"): "fa",
     ("hakeem", "ur"): "ur",
+    ("najafi", "ar"): "ar",
+    ("fayadh", "ar"): "ar",
+    ("fayadh", "fa"): "fa",
+    ("alrohani", "ar"): "ar",
+    ("rohani", "ar"): "ar",
+    ("rohani", "fa"): "fa",
 }
 
 LANGUAGES = {

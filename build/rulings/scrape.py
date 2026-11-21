@@ -5,7 +5,8 @@
     python3 scrape.py --authority khorasani --language fa
     python3 scrape.py --authority sistani --language arabic
 
-Authorities: sistani.py, shirazi.py, khorasani.py, hakeem.py.
+Authorities: sistani.py, shirazi.py, khorasani.py, hakeem.py, najafi.py,
+fayadh.py, alrohani.py, rohani.py (the last four share mirror.py).
 Shared HTML walking: htmlutil.py. Database setup: db.py.
 """
 
@@ -16,18 +17,24 @@ import sys
 from pathlib import Path
 
 from db import DEFAULT_DB, init_db, rebuild_fts, utc_now
+import alrohani
 import books
+import fayadh
 import hakeem
+import najafi
+import rohani
 import treatise
 import khorasani
 import shirazi
 import sistani
 
+AUTHORITIES = ("sistani", "shirazi", "khorasani", "hakeem", "najafi", "fayadh", "alrohani", "rohani")
+
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Mirror Sistani, Shirazi, Khorasani, and Hakeem Q&A into SQLite.")
+    parser = argparse.ArgumentParser(description="Mirror marja Q&A into SQLite.")
     parser.add_argument("--db", type=Path, default=DEFAULT_DB)
-    parser.add_argument("--authority", action="append", default=[], help="sistani, shirazi, khorasani, hakeem; omit for all")
+    parser.add_argument("--authority", action="append", default=[], help=", ".join(AUTHORITIES) + "; omit for all")
     parser.add_argument("--language", action="append", default=[], help="language code as that authority's site publishes it")
     parser.add_argument("--reset", action="store_true", help="delete the database before crawling")
     parser.add_argument("--concurrency", type=int, default=4)
@@ -43,12 +50,16 @@ def main() -> int:
     shirazi.self_test()
     khorasani.self_test()
     hakeem.self_test()
+    najafi.self_test()
+    fayadh.self_test()
+    alrohani.self_test()
+    rohani.self_test()
     if args.self_test:
         return 0
     if args.concurrency < 1:
         raise SystemExit("--concurrency must be >= 1")
-    authorities = args.authority or ["sistani", "shirazi", "khorasani", "hakeem"]
-    unknown = sorted(set(authorities) - {"sistani", "shirazi", "khorasani", "hakeem"})
+    authorities = args.authority or list(AUTHORITIES)
+    unknown = sorted(set(authorities) - set(AUTHORITIES))
     if unknown:
         raise SystemExit("unknown authority %s" % ", ".join(unknown))
     lang_filter = set(args.language)
@@ -57,6 +68,10 @@ def main() -> int:
         "shirazi": set(shirazi.LANGUAGES),
         "khorasani": set(khorasani.LANGUAGES),
         "hakeem": set(hakeem.LANGUAGES),
+        "najafi": set(najafi.LANGUAGES),
+        "fayadh": set(fayadh.LANGUAGES),
+        "alrohani": set(alrohani.LANGUAGES),
+        "rohani": set(rohani.LANGUAGES),
     }
     known = set().union(*codes.values())
     if lang_filter - known:
@@ -66,6 +81,10 @@ def main() -> int:
         "shirazi": shirazi.crawl,
         "khorasani": khorasani.crawl,
         "hakeem": hakeem.crawl,
+        "najafi": najafi.crawl,
+        "fayadh": fayadh.crawl,
+        "alrohani": alrohani.crawl,
+        "rohani": rohani.crawl,
     }
     conn = init_db(args.db, args.reset)
     started = utc_now()
@@ -77,7 +96,7 @@ def main() -> int:
     conn.commit()
     reports = []
     try:
-        for name in ("sistani", "shirazi", "khorasani", "hakeem"):
+        for name in AUTHORITIES:
             if name not in authorities:
                 continue
             if lang_filter and not (lang_filter & codes[name]):
