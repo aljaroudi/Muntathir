@@ -255,7 +255,7 @@ fun AppShell(
                                 )
                             }
                             entry<SermonRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
-                                SermonsScreen(route.id, onBack = detailBack)
+                                SermonsScreen(route.id, onBack = detailBack, open = { navigator.push(it) })
                             }
                             entry<RulingDetailRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
                                 RulingDetailScreen(
@@ -428,7 +428,7 @@ private fun ToolScreen(
         }
 
         AppTool.Sermons -> {
-            SermonsScreen(onBack = onBack, onOpen = { open(SermonRoute(it)) })
+            SermonsScreen(onBack = onBack, onOpen = { open(SermonRoute(it)) }, open = open)
         }
 
         AppTool.Rulings -> {

@@ -22,8 +22,8 @@ class SermonBuildTests(unittest.TestCase):
         with sqlite3.connect(here.parents[1] / "shared/sermons/sermons.db") as db:
             self.assertEqual(db.execute("PRAGMA integrity_check").fetchone(), ("ok",))
             self.assertEqual(list(db.execute("PRAGMA foreign_key_check")), [])
-            self.assertEqual(db.execute("SELECT id,title,speaker,source FROM sermon").fetchall(),
-                             [tuple(sermon[k] for k in ("id", "title", "speaker", "source"))])
+            self.assertEqual(db.execute("SELECT id,title,speaker_id,source FROM sermon").fetchall(),
+                             [tuple(sermon[k] for k in ("id", "title", "speaker_id", "source"))])
             self.assertEqual(list(db.execute("SELECT id,section,kind,text FROM segment ORDER BY position")),
                              [tuple(s[k] for k in ("id", "section", "kind", "text")) for s in sermon["segments"]])
             self.assertEqual(list(db.execute("SELECT id,language,kind,credit FROM edition ORDER BY position")),
@@ -31,6 +31,8 @@ class SermonBuildTests(unittest.TestCase):
             for edition in sermon["editions"]:
                 self.assertEqual(dict(db.execute("SELECT segment,text FROM translation WHERE edition=?", (edition["id"],))),
                                  edition["aligned"])
+        figures = json.loads((here.parents[1] / "shared/figures/figures.json").read_text())["people"]
+        self.assertIn(sermon["speaker_id"], {f["id"] for f in figures if f.get("verified")})
         segments = sermon["segments"]
         self.assertEqual([s["id"] for s in segments[:2]], ["s006", "s008"])
         self.assertTrue(segments[0]["text"].startswith("روى عبد الله بن الحسن"))

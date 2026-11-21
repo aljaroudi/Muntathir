@@ -29,4 +29,20 @@ final class SermonsUITests: XCTestCase {
         app.navigationBars.buttons.firstMatch.tap()
         XCTAssertTrue(app.buttons["sermon-fadak"].exists)
     }
+
+    @MainActor func testSpeakerOpensFigureProfile() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        app.buttons["Tools"].firstMatch.tap()
+        app.buttons["sermons"].tap()
+        let row = app.buttons["sermon-fadak"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        XCTAssertTrue(row.staticTexts["Fatima al-Zahra"].waitForExistence(timeout: 5))
+        row.tap()
+        let speaker = app.buttons["sermon-speaker"]
+        XCTAssertTrue(speaker.waitForExistence(timeout: 5))
+        speaker.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["figure-profile-fatima-al-zahra"].waitForExistence(timeout: 5))
+    }
 }

@@ -3,6 +3,7 @@
 Run `just data-build --assets-only` at the repository root after editing publication inputs. The deterministic
 builder writes `shared/sermons/sermons.db`, bundled by both apps and rebuilt by the unified
 content build. Run `python3 -m unittest discover -s build/sermons` to check the published file.
+Each sermon's `speaker_id` is a verified figure ID from `shared/figures/figures.json`; the apps show that figure's name and link to its profile.
 
 ## Fadak editions
 

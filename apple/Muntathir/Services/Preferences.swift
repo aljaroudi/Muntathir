@@ -8,7 +8,7 @@ struct Preferences: Codable, Equatable, Sendable {
     var imsakMinutes = 10
     var enabledPrayers: Set<PrayerName> = [.fajr, .dhuhr, .maghrib]
     var showFeelsLikeTemperature = false
-    var horizontalPrayerTimes = false
+    var horizontalPrayerTimes = true
     var announcementNotifications = false
     var timeSensitiveNotifications = true
     var notificationSound: PrayerAlertSound = .chime
@@ -36,7 +36,7 @@ struct Preferences: Codable, Equatable, Sendable {
     init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         showFeelsLikeTemperature = try c.decodeIfPresent(Bool.self, forKey: .showFeelsLikeTemperature) ?? false
-        horizontalPrayerTimes = try c.decodeIfPresent(Bool.self, forKey: .horizontalPrayerTimes) ?? false
+        horizontalPrayerTimes = try c.decodeIfPresent(Bool.self, forKey: .horizontalPrayerTimes) ?? true
         savedLocation = try c.decodeIfPresent(SavedLocation.self, forKey: .savedLocation)
         prayerMethod = try c.decodeIfPresent(PrayerMethod.self, forKey: .prayerMethod) ?? .tehran
         imsakMinutes = try min(120, max(0, c.decodeIfPresent(Int.self, forKey: .imsakMinutes) ?? 10))

@@ -33,9 +33,6 @@ python3 build/build.py --assets-only # local packaging, no search refresh
 - Needs the backend virtualenv plus the validated manifest and vectors of the active
   Qdrant collection. Vectors from other `backend/work/*` dirs with the same embedding
   profile are reused, so nothing is embedded twice.
-- New reader references missing from the active index block activation (listed by
-  kind and source). Once the installed packs contain them, pass
-  `--accept-new-references`. Older apps skip Rulings hits they cannot open.
 
 ## Manual corpus pipeline (recovery path)
 

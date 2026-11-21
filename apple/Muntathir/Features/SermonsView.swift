@@ -20,49 +20,66 @@ private struct Sermon: Identifiable {
         }
     }
 
-    let id, title, speaker: String
-    let segments: [Segment]
-    let editions: [Edition]
+    /// A sermon's text and translations, loaded only when it's opened.
+    struct Content {
+        let segments: [Segment]
+        let editions: [Edition]
+    }
 
-    static func load() throws -> [Self] {
+    let id, title, speakerID: String
+
+    /// Lists sermons without their text, so the list stays cheap as sermons are added.
+    @concurrent static func load() async throws -> [Self] {
+        try open().query("SELECT id, title, speaker_id FROM sermon ORDER BY id") { row in
+            Self(id: QuranConnection.text(row, 0), title: QuranConnection.text(row, 1), speakerID: QuranConnection.text(row, 2))
+        }
+    }
+
+    @concurrent func content() async throws -> Content {
+        let db = try Self.open()
+        let text = QuranConnection.text
+        let segments = try db.query("SELECT id, kind, text FROM segment WHERE sermon = ? ORDER BY position", parameters: [id]) {
+            Segment(id: text($0, 0), kind: text($0, 1), text: text($0, 2))
+        }
+        let editions = try db.query("SELECT id, language, kind, credit FROM edition WHERE sermon = ? ORDER BY position", parameters: [id]) { item in
+            let key = text(item, 0)
+            let pairs = try db.query("SELECT segment, text FROM translation WHERE sermon = ? AND edition = ?", parameters: [id, key]) {
+                (text($0, 0), text($0, 1))
+            }
+            return Edition(id: key, language: text(item, 1), kind: text(item, 2),
+                           credit: sqlite3_column_type(item, 3) == SQLITE_NULL ? nil : text(item, 3),
+                           aligned: Dictionary(uniqueKeysWithValues: pairs))
+        }
+        return Content(segments: segments, editions: editions)
+    }
+
+    private static func open() throws -> QuranConnection {
         guard let url = Bundle.main.url(forResource: "sermons", withExtension: "db") else {
             throw CocoaError(.fileNoSuchFile)
         }
-        let db = try QuranConnection(path: url.path, flags: SQLITE_OPEN_READONLY)
-        let text = QuranConnection.text
-        return try db.query("SELECT id, title, speaker FROM sermon ORDER BY id") { row in
-            let id = text(row, 0)
-            let segments = try db.query("SELECT id, kind, text FROM segment WHERE sermon = ? ORDER BY position", parameters: [id]) {
-                Segment(id: text($0, 0), kind: text($0, 1), text: text($0, 2))
-            }
-            let editions = try db.query("SELECT id, language, kind, credit FROM edition WHERE sermon = ? ORDER BY position", parameters: [id]) { item in
-                let key = text(item, 0)
-                let pairs = try db.query("SELECT segment, text FROM translation WHERE sermon = ? AND edition = ?", parameters: [id, key]) {
-                    (text($0, 0), text($0, 1))
-                }
-                return Edition(id: key, language: text(item, 1), kind: text(item, 2),
-                               credit: sqlite3_column_type(item, 3) == SQLITE_NULL ? nil : text(item, 3),
-                               aligned: Dictionary(uniqueKeysWithValues: pairs))
-            }
-            return Self(id: id, title: text(row, 1), speaker: text(row, 2), segments: segments, editions: editions)
-        }
+        return try QuranConnection(path: url.path, flags: SQLITE_OPEN_READONLY)
     }
 }
 
 struct SermonsView: View {
+    @Environment(\.locale) private var locale
     @State private var sermons: [Sermon]?
+    @State private var figures: FigureLibrary?
     @State private var failed = false
 
     var body: some View {
         Group {
             if let sermons {
                 List(sermons) { sermon in
+                    let speaker = figures?.byID[sermon.speakerID]
                     NavigationLink {
-                        SermonReader(sermon: sermon)
+                        SermonReader(sermon: sermon, speaker: speaker)
                     } label: {
                         VStack(alignment: .leading) {
                             Text(verbatim: sermon.title)
-                            Text(verbatim: sermon.speaker).foregroundStyle(.secondary)
+                            if let speaker {
+                                Text(verbatim: speaker.title(locale)).foregroundStyle(.secondary)
+                            }
                         }
                     }
                     .accessibilityIdentifier("sermon-\(sermon.id)")
@@ -75,13 +92,18 @@ struct SermonsView: View {
         }
         .navigationTitle("Sermons")
         .task {
-            do { sermons = try Sermon.load() } catch { failed = true }
+            do { sermons = try await Sermon.load() } catch { failed = true }
+            figures = try? await FigureStore.shared.load().get()
         }
     }
 }
 
 private struct SermonReader: View {
     let sermon: Sermon
+    let speaker: Figure?
+    @Environment(\.locale) private var locale
+    @State private var content: Sermon.Content?
+    @State private var failed = false
     @State private var selection: String?
     @State private var position: String?
     @State private var textSizePresented = false
@@ -89,14 +111,24 @@ private struct SermonReader: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     private var edition: Sermon.Edition? {
-        sermon.editions.first { $0.id == selection }
+        content?.editions.first { $0.id == selection }
     }
 
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 28) {
                 header
-                ForEach(sermon.segments) { segment in
+                if content == nil {
+                    Group {
+                        if failed {
+                            Text("Sermons unavailable")
+                        } else {
+                            ProgressView()
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                ForEach(content?.segments ?? []) { segment in
                     VStack(alignment: .leading, spacing: 14) {
                         if segment.kind == "heading" {
                             passage(arabic(segment.text), language: "ar", centered: true)
@@ -127,6 +159,9 @@ private struct SermonReader: View {
         }
         .scrollPosition(id: $position, anchor: .top)
         .readingBackground()
+        .task {
+            do { content = try await sermon.content() } catch { failed = true }
+        }
         .navigationTitle(sermon.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -137,10 +172,10 @@ private struct SermonReader: View {
                     } label: {
                         EmptyView()
                     }
-                    ForEach(Set(sermon.editions.map(\.language)).sorted(), id: \.self) { language in
+                    ForEach(Set((content?.editions ?? []).map(\.language)).sorted(), id: \.self) { language in
                         Menu(nativeName(language)) {
                             Picker(selection: $selection) {
-                                ForEach(sermon.editions.filter { $0.language == language }) { item in
+                                ForEach((content?.editions ?? []).filter { $0.language == language }) { item in
                                     Text(item.label).tag(Optional(item.id))
                                 }
                             } label: {
@@ -173,9 +208,13 @@ private struct SermonReader: View {
             Text(verbatim: sermon.title)
                 .readingText(arabic: true, hadith: true, heading: 1)
                 .accessibilityAddTraits(.isHeader)
-            Text(verbatim: sermon.speaker)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            if let speaker {
+                NavigationLink(value: FigureRoute.profile(speaker.id)) {
+                    Text(verbatim: speaker.title(locale))
+                        .font(.subheadline)
+                }
+                .accessibilityIdentifier("sermon-speaker")
+            }
             Capsule()
                 .fill(Color.accentColor.opacity(0.5))
                 .frame(width: 44, height: 3)

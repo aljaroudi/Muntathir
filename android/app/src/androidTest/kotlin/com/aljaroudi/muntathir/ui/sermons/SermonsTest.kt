@@ -71,7 +71,22 @@ class SermonsTest {
         }
         compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
         compose.waitUntil(10_000) {
-            compose.onAllNodes(hasText("فاطمة الزهراء (عليها السلام)")).fetchSemanticsNodes().isNotEmpty()
+            compose.onAllNodes(hasTestTag("sermon-passages")).fetchSemanticsNodes().isEmpty()
+        }
+        compose.onNodeWithText(title).assertIsDisplayed()
+    }
+
+    @Test
+    fun speakerOpensFigureProfile() {
+        compose.onNodeWithTag("tab-tools").performClick()
+        compose.onNodeWithTag("sermons").performClick()
+        val title = "الخطبة الفدكية"
+        compose.waitUntil(10_000) { compose.onAllNodes(hasText(title)).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText(title).performClick()
+        compose.waitUntil(10_000) { compose.onAllNodes(hasTestTag("sermon-speaker")).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithTag("sermon-speaker").performClick()
+        compose.waitUntil(10_000) {
+            compose.onAllNodes(hasTestTag("figure-profile-fatima-al-zahra")).fetchSemanticsNodes().isNotEmpty()
         }
     }
 }

@@ -126,6 +126,6 @@ def load_sermon():
         clauses = []
     if clauses:
         raise ValueError("Unpublished Arabic clauses at end of sermon")
-    return dict(id="fadak", title="الخطبة الفدكية", speaker="فاطمة الزهراء (عليها السلام)",
+    return dict(id="fadak", title="الخطبة الفدكية", speaker_id="fatima-al-zahra",
                 source=reader_text(source[ids.index("s004")]["arabic"]),
                 segments=paragraphs, editions=editions)

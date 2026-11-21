@@ -46,9 +46,9 @@ class PreferencesTest {
     }
 
     @Test
-    fun horizontalPrayerTimesDefaultsOffAndRoundTrips() {
-        assertFalse(Preferences.decode("{}").horizontalPrayerTimes)
-        assertTrue(Preferences.decode(Preferences(horizontalPrayerTimes = true).encode()).horizontalPrayerTimes)
+    fun horizontalPrayerTimesDefaultsOnAndRoundTrips() {
+        assertTrue(Preferences.decode("{}").horizontalPrayerTimes)
+        assertFalse(Preferences.decode(Preferences(horizontalPrayerTimes = false).encode()).horizontalPrayerTimes)
     }
 
     @Test

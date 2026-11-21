@@ -17,7 +17,7 @@ def build(target):
         with closing(sqlite3.connect(file)) as db, db:
             db.executescript("""
                 PRAGMA foreign_keys = ON;
-                CREATE TABLE sermon(id TEXT PRIMARY KEY, title TEXT NOT NULL, speaker TEXT NOT NULL, source TEXT NOT NULL);
+                CREATE TABLE sermon(id TEXT PRIMARY KEY, title TEXT NOT NULL, speaker_id TEXT NOT NULL, source TEXT NOT NULL);
                 CREATE TABLE segment(sermon TEXT REFERENCES sermon, id TEXT, position INTEGER NOT NULL,
                     section TEXT NOT NULL, kind TEXT NOT NULL, text TEXT NOT NULL, PRIMARY KEY(sermon, id));
                 CREATE TABLE edition(sermon TEXT REFERENCES sermon, id TEXT, position INTEGER NOT NULL,
@@ -28,7 +28,7 @@ def build(target):
             """)
             sermon = load_sermon()
             key = sermon["id"]
-            db.execute("INSERT INTO sermon VALUES (:id,:title,:speaker,:source)", sermon)
+            db.execute("INSERT INTO sermon VALUES (:id,:title,:speaker_id,:source)", sermon)
             for position, segment in enumerate(sermon["segments"]):
                 db.execute("INSERT INTO segment VALUES (?,?,?,?,?,?)",
                            (key, segment["id"], position, segment["section"], segment["kind"], segment["text"]))

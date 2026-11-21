@@ -59,12 +59,19 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.sqlite.SQLiteException
 import com.aljaroudi.muntathir.R
+import com.aljaroudi.muntathir.core.figures.Figure
 import com.aljaroudi.muntathir.data.BundledContentSql
+import com.aljaroudi.muntathir.data.FigureLoad
+import com.aljaroudi.muntathir.data.FigureStore
+import com.aljaroudi.muntathir.data.library
 import com.aljaroudi.muntathir.ui.components.ScreenScaffold
 import com.aljaroudi.muntathir.ui.components.currentLocale
+import com.aljaroudi.muntathir.ui.navigation.FigureProfileRoute
+import com.aljaroudi.muntathir.ui.navigation.Route
 import com.aljaroudi.muntathir.ui.quran.ReadingOptionsMenu
 import com.aljaroudi.muntathir.ui.quran.ReadingSizeSheet
 import com.aljaroudi.muntathir.ui.reader.ReadingTextStyle
@@ -72,16 +79,19 @@ import com.aljaroudi.muntathir.ui.reader.readingDisplay
 import com.aljaroudi.muntathir.ui.settings.ReadingSettingsViewModel
 import com.aljaroudi.muntathir.ui.theme.HadithFont
 import com.aljaroudi.muntathir.ui.theme.ReaderBodyFont
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import java.util.Locale
+import javax.inject.Inject
 
 private data class Sermon(
     val id: String,
     val title: String,
-    val speaker: String,
+    val speakerId: String,
     val segments: List<Segment>,
     val editions: List<Edition>,
 )
@@ -114,7 +124,7 @@ private fun loadSermons(context: Context): List<Sermon> {
         }
     }
     return BundledContentSql.Driver.open(file, writable = false).use { db ->
-        db.query("SELECT id, title, speaker FROM sermon ORDER BY id", emptyList()) { row ->
+        db.query("SELECT id, title, speaker_id FROM sermon ORDER BY id", emptyList()) { row ->
             val id = row.text(0)
             val segments =
                 db.query("SELECT id, section, kind, text FROM segment WHERE sermon = ? ORDER BY position", listOf(id)) {
@@ -155,12 +165,24 @@ private fun Edition.label(): String =
         else -> credit.orEmpty()
     }
 
+/** The figure library, for resolving each sermon's speaker. */
+@HiltViewModel
+class SermonFiguresViewModel
+    @Inject
+    constructor(
+        store: FigureStore,
+    ) : ViewModel() {
+        val library: StateFlow<FigureLoad> = store.state
+    }
+
 @Composable
 fun SermonsScreen(
     id: String? = null,
     onBack: (() -> Unit)?,
     onOpen: (String) -> Unit = {},
+    open: (Route) -> Unit = {},
     settings: ReadingSettingsViewModel = hiltViewModel(),
+    figures: SermonFiguresViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current.applicationContext
     val sermons by produceState<List<Sermon>?>(null, context) {
@@ -176,6 +198,7 @@ fun SermonsScreen(
             }
     }
     val reading by settings.state.collectAsStateWithLifecycle()
+    val library = figures.library.collectAsStateWithLifecycle().value.library
     val sermon = sermons?.firstOrNull { it.id == id }
     var selection by rememberSaveable(id) { mutableStateOf<String?>(null) }
     var showEditions by rememberSaveable(id) { mutableStateOf(false) }
@@ -201,16 +224,17 @@ fun SermonsScreen(
             }
 
             sermon != null -> {
-                Reader(sermon, modifier, edition, reading.readingSizePercent)
+                Reader(sermon, library?.byID?.get(sermon.speakerId), modifier, edition, reading.readingSizePercent, open)
                 if (showEditions) EditionsDialog(sermon, edition, { showEditions = false }, { selection = it })
             }
 
             else -> {
                 LazyColumn(modifier) {
                     items(sermons.orEmpty(), key = { it.id }) {
+                        val speaker = library?.byID?.get(it.speakerId)
                         ListItem(
                             headlineContent = { Text(it.title) },
-                            supportingContent = { Text(it.speaker) },
+                            supportingContent = speaker?.let { figure -> { Text(figure.title(currentLocale())) } },
                             modifier = Modifier.clickable { onOpen(it.id) },
                         )
                     }
@@ -234,9 +258,11 @@ fun SermonsScreen(
 @Composable
 private fun Reader(
     sermon: Sermon,
+    speaker: Figure?,
     modifier: Modifier,
     edition: Edition?,
     percent: Int,
+    open: (Route) -> Unit,
 ) {
     val arabicSize = ReadingTextStyle.arabicSize(percent)
     val arabic =
@@ -269,7 +295,7 @@ private fun Reader(
                 contentPadding = PaddingValues(20.dp),
                 verticalArrangement = Arrangement.spacedBy(28.dp),
             ) {
-                item(key = "header") { Header(sermon, heading, accent) }
+                item(key = "header") { Header(sermon, speaker, heading, accent, open) }
                 items(sermon.segments, key = { it.id }) { segment ->
                     Column(modifier = Modifier.testTag(segment.id), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         if (segment.kind == "heading") {
@@ -317,8 +343,10 @@ private fun Reader(
 @Composable
 private fun Header(
     sermon: Sermon,
+    speaker: Figure?,
     style: TextStyle,
     accent: Color,
+    open: (Route) -> Unit,
 ) {
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         Column(
@@ -327,12 +355,17 @@ private fun Header(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(sermon.title, Modifier.semantics { heading() }, style = style, textAlign = TextAlign.Center)
-            Text(
-                sermon.speaker,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
+            speaker?.let { figure ->
+                Text(
+                    figure.title(currentLocale()),
+                    Modifier
+                        .clickable(role = Role.Button) { open(FigureProfileRoute(figure.id)) }
+                        .testTag("sermon-speaker"),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center,
+                )
+            }
             Box(
                 Modifier
                     .padding(

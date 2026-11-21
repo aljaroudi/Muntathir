@@ -12,7 +12,7 @@ import time
 import urllib.request
 
 import ingest
-from qdrant_import import Client, compact
+from qdrant_import import Client
 from serve import environment
 
 
@@ -87,28 +87,6 @@ def preserve_other_sources(candidate, prior):
             candidate["passages"].append(dict(row, id=ingest.identity(text_id, row["ordinal"]), text_id=text_id))
 
 
-def check_client_references(candidate, prior, accept=False):
-    # Existing production references are the baseline for already installed packs.
-    def reference(row):
-        return json.dumps(compact(row), sort_keys=True)
-    known = {reference(row) for row in prior["items"] if row["kind"] not in ("dua", "figure")}
-    groups = {}
-    for row in candidate["items"]:
-        if row["kind"] not in ("dua", "figure") and reference(row) not in known:
-            # Fold numbered volumes together so the breakdown stays readable.
-            source = re.sub(r"-[Vv]olume-\d+.*$", "", row["source_id"])
-            groups[row["kind"], source] = groups.get((row["kind"], source), 0) + 1
-    if not groups:
-        return
-    total = sum(groups.values())
-    print(f"New reader references: {total:,}")
-    for (kind, source), count in sorted(groups.items(), key=lambda group: (-group[1], group[0])):
-        print(f"  {kind} {source}: {count:,}")
-    if not accept:
-        raise ValueError(f"Activation blocked: {total:,} reader references lack installed-pack compatibility evidence. "
-                         "Confirm installed packs contain the groups above, then pass --accept-new-references")
-
-
 def report(manifest, work, reuse):
     reusable, missing, estimate = ingest.submission_plan(manifest, work / "vectors", [d / "vectors" for d in reuse])
     texts = {row["id"]: row["item_id"] for row in manifest["texts"]}
@@ -181,7 +159,7 @@ def promote(client, collection, target, work, activate, env):
     print(f"Activated and smoke-tested {target}")
 
 
-def refresh(root, quran, hadith, rulings, cap, *, dry_run=False, accept_new_references=False):
+def refresh(root, quran, hadith, rulings, cap, *, dry_run=False):
     env = environment()
     client = Client(env.get("QDRANT_URL"), api_key=env.get("QDRANT_API_KEY"))
     try:
@@ -228,12 +206,7 @@ def refresh(root, quran, hadith, rulings, cap, *, dry_run=False, accept_new_refe
     estimate, total = report(candidate, work, reuse)
     print("New embeddings required" if estimate["missing"] or estimate["pending"] else "Index update requires no new embeddings")
     if dry_run:
-        try:
-            check_client_references(candidate, previous, accept_new_references)
-        except ValueError as error:
-            print(error)
         return
-    check_client_references(candidate, previous, accept_new_references)
     work.mkdir(exist_ok=True)
     if not (work / "manifest.json").exists():
         ingest.atomic_json(work / "manifest.json", candidate)

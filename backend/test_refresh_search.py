@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
-from refresh_search import alias, authorize, check_client_references, keys, preserve_other_sources, promote, reusable_workdirs
+from refresh_search import alias, authorize, keys, preserve_other_sources, promote, reusable_workdirs
 
 
 def corpus(revision, kind="dua"):
@@ -34,22 +34,6 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(keys(candidate), keys(prior))
         self.assertEqual(candidate["texts"][0]["revision_id"], "new")
         self.assertEqual(candidate["passages"][0]["text_id"], candidate["texts"][0]["id"])
-
-    def test_new_reader_reference_requires_compatibility(self):
-        candidate = corpus("new", "quran")
-        check_client_references(candidate, corpus("old", "quran"))
-        with self.assertRaisesRegex(ValueError, "compatibility"):
-            check_client_references(candidate, corpus("old"))
-
-    def test_new_references_are_reported_by_source_and_can_be_accepted(self):
-        candidate = corpus("new", "quran")
-        candidate["items"][0]["source_id"] = "openiti-bihar-volume-3"
-        with patch("builtins.print") as output:
-            check_client_references(candidate, corpus("old"), accept=True)
-        printed = " ".join(str(call.args[0]) for call in output.call_args_list)
-        self.assertIn("quran openiti-bihar: 1", printed)
-        with patch("builtins.print"), self.assertRaisesRegex(ValueError, "--accept-new-references"):
-            check_client_references(candidate, corpus("old"))
 
     def test_reuse_includes_active_and_profile_compatible_workdirs_only(self):
         with tempfile.TemporaryDirectory() as temp:

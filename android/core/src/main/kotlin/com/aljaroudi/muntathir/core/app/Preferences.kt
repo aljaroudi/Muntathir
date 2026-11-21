@@ -47,7 +47,7 @@ data class Preferences(
     /** Weather isn't ported; kept so restored iOS-shaped data round-trips. */
     val showFeelsLikeTemperature: Boolean = false,
     /** Today shows prayer times as a sideways-scrolling row of cards instead of a list. */
-    val horizontalPrayerTimes: Boolean = false,
+    val horizontalPrayerTimes: Boolean = true,
     val announcementNotifications: Boolean = false,
     /** No Android UI: channel importance is a system setting. Kept for the shared shape. */
     val timeSensitiveNotifications: Boolean = true,

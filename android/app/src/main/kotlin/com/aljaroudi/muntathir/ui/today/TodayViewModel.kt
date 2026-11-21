@@ -53,7 +53,7 @@ data class TodayUi(
     val ayah: Ayah?,
     val surahNames: Map<Int, String> = emptyMap(),
     /** Prayer times as a sideways-scrolling row of cards (Swift `horizontalPrayerTimes`). */
-    val horizontalPrayerTimes: Boolean = false,
+    val horizontalPrayerTimes: Boolean = true,
 ) {
     companion object {
         fun make(
