@@ -65,7 +65,7 @@ struct MachineTranslationSection: View {
 
     @ViewBuilder private var footer: some View {
         if case .translated = phase {
-            Text("Translated by Apple. Machine translations may be inaccurate; refer to the original text.")
+            Text("Machine translations may be inaccurate; refer to the original text.")
         }
     }
 

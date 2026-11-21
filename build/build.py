@@ -47,7 +47,9 @@ def build_assets(stage):
              + assets.validate_hadith("supplications", stage, stage / MANIFESTS)
              + assets.validate_rulings(stage, stage / MANIFESTS))
     sizes = json.loads((ROOT / SIZES).read_text()) if (ROOT / SIZES).exists() else {}
-    replacements = {}
+    sermons = Path("shared/sermons/sermons.db")
+    run(sys.executable, "build/sermons/build.py", "--output", stage / sermons)
+    replacements = {stage / sermons: ROOT / sermons}
     for path in packs:
         pack = json.loads(path.read_text())
         name = path.stem

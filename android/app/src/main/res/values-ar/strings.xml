@@ -199,6 +199,7 @@
     <string name="local_naked_eye">الرؤية المحلية بالعين المجردة</string>
     <string name="location">الموقع</string>
     <string name="location_access_is_disabled_search_for_a_city_in">الوصول إلى الموقع معطّل. ابحث عن مدينة بدلًا من ذلك.</string>
+    <string name="simplified">مبسّطة</string>
     <string name="maghrib">المغرب</string>
     <string name="maghrib_prayer">صلاة المغرب</string>
     <string name="manual_month_correction">تعديل يدوي للشهر</string>
@@ -324,6 +325,7 @@
     <string name="select_text_to_highlight_it">حدد نصًا لتظليله.</string>
     <string name="select_text_to_highlight_it_use_the_passage_acti">حدد النص لتظليله. استخدم إجراءات المقطع لإضافة إشارة مرجعية.</string>
     <string name="selected_location">الموقع المحدّد</string>
+    <string name="sermons_unavailable">تعذّر تحميل الخُطب</string>
     <string name="set_a_location_to_view_prayer_times">حدد موقعًا لعرض أوقات الصلاة</string>
     <string name="set_location_in_app">حدّد الموقع في التطبيق</string>
     <string name="set_up_muntathir">إعداد منتظر</string>
@@ -426,4 +428,6 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">يمكنك البحث في نصوص القرآن والحديث المحمّلة دون اتصال.</string>
     <string name="you_can_still_search_downloaded_text_offline">لا يزال بإمكانك البحث في النصوص المحمّلة دون اتصال.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">تعذر فتح بياناتك المحفوظة. يرجى المحاولة مرة أخرى.</string>
+    <string name="literal">حرفية</string>
+    <string name="sermons">الخُطب</string>
 </resources>

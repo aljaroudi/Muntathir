@@ -195,6 +195,7 @@
     <string name="local_naked_eye">Local naked eye</string>
     <string name="location">Location</string>
     <string name="location_access_is_disabled_search_for_a_city_in">Location access is disabled. Search for a city instead.</string>
+    <string name="simplified">Simplified</string>
     <string name="maghrib">Maghrib</string>
     <string name="maghrib_prayer">Maghrib prayer</string>
     <string name="manual_month_correction">Manual month correction</string>
@@ -320,6 +321,7 @@
     <string name="select_text_to_highlight_it">Select text to highlight it.</string>
     <string name="select_text_to_highlight_it_use_the_passage_acti">Select text to highlight it. Use the passage actions to add a bookmark.</string>
     <string name="selected_location">Selected location</string>
+    <string name="sermons_unavailable">Sermons unavailable</string>
     <string name="set_a_location_to_view_prayer_times">Set a location to view prayer times.</string>
     <string name="set_location_in_app">Set location in app</string>
     <string name="set_up_muntathir">Set up Muntathir</string>
@@ -422,4 +424,6 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">You can still search downloaded Quran and Hadith text offline.</string>
     <string name="you_can_still_search_downloaded_text_offline">You can still search downloaded text offline.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">Your saved data could not be opened. Please try again.</string>
+    <string name="literal">Literal</string>
+    <string name="sermons">Sermons</string>
 </resources>

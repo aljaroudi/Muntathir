@@ -197,6 +197,7 @@
     <string name="local_naked_eye">Местное наблюдение невооружённым глазом</string>
     <string name="location">Местоположение</string>
     <string name="location_access_is_disabled_search_for_a_city_in">Доступ к геопозиции отключён. Попробуйте найти город.</string>
+    <string name="simplified">Упрощённый</string>
     <string name="maghrib">Магриб</string>
     <string name="maghrib_prayer">Намаз магриб</string>
     <string name="manual_month_correction">Ручная корректировка месяца</string>
@@ -322,6 +323,7 @@
     <string name="select_text_to_highlight_it">Выберите текст, чтобы выделить его.</string>
     <string name="select_text_to_highlight_it_use_the_passage_acti">Выделите текст, чтобы подсветить его. Добавьте закладку через меню действий отрывка.</string>
     <string name="selected_location">Выбранное местоположение</string>
+    <string name="sermons_unavailable">Проповеди недоступны</string>
     <string name="set_a_location_to_view_prayer_times">Укажите местоположение для просмотра времени намаза.</string>
     <string name="set_location_in_app">Указать местоположение в приложении</string>
     <string name="set_up_muntathir">Настроить Muntathir</string>
@@ -424,4 +426,6 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">Вы по-прежнему можете искать в загруженных текстах Корана и хадисов без интернета.</string>
     <string name="you_can_still_search_downloaded_text_offline">Вы по-прежнему можете искать в загруженных текстах без интернета.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">Не удалось открыть сохранённые данные. Повторите попытку.</string>
+    <string name="literal">Буквальный</string>
+    <string name="sermons">Проповеди</string>
 </resources>

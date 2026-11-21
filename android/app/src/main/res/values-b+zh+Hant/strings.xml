@@ -194,6 +194,7 @@
     <string name="local_naked_eye">本地肉眼觀月</string>
     <string name="location">位置</string>
     <string name="location_access_is_disabled_search_for_a_city_in">位置取用已停用。請改為搜尋城市。</string>
+    <string name="simplified">簡明譯文</string>
     <string name="maghrib">昏禮</string>
     <string name="maghrib_prayer">昏禮拜功</string>
     <string name="manual_month_correction">手動月份修正</string>
@@ -319,6 +320,7 @@
     <string name="select_text_to_highlight_it">選取文字以醒目標示。</string>
     <string name="select_text_to_highlight_it_use_the_passage_acti">選取文字以標示重點。透過段落操作加入書籤。</string>
     <string name="selected_location">所選位置</string>
+    <string name="sermons_unavailable">無法載入講辭</string>
     <string name="set_a_location_to_view_prayer_times">請設定位置以查看禮拜時間。</string>
     <string name="set_location_in_app">在 App 中設定位置</string>
     <string name="set_up_muntathir">設定 Muntathir</string>
@@ -421,4 +423,6 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">您仍可離線搜尋已下載的古蘭經和聖訓文字。</string>
     <string name="you_can_still_search_downloaded_text_offline">您仍可離線搜尋已下載的文字。</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">無法打開已儲存的資料。請再試一次。</string>
+    <string name="literal">直譯</string>
+    <string name="sermons">講辭</string>
 </resources>

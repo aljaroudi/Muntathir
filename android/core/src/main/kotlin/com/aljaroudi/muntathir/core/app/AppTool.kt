@@ -17,6 +17,7 @@ enum class AppTool(
     Quran("quran"),
     Hadith("hadith"),
     Supplications("supplications"),
+    Sermons("sermons"),
     Rulings("rulings"),
     Figures("figures"),
     Tasbih("tasbih"),
@@ -40,7 +41,7 @@ enum class AppTool(
 
         val groups: List<List<AppTool>> =
             listOf(
-                listOf(Quran, Hadith, Supplications),
+                listOf(Quran, Hadith, Supplications, Sermons),
                 listOf(Rulings),
                 listOf(Calendar, Events, Figures),
                 listOf(Qibla, Rakaat, Tasbih, PrayerProgress),

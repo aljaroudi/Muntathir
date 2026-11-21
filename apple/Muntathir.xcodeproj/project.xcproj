@@ -34,6 +34,7 @@
     },
   ],
   "files": [
+    { "path": "<PROJECT>/../shared/sermons/sermons.db", "target-membership": [ "Muntathir/resources" ] },
     { "path": "<PROJECT>/../shared/release-notes/changelog.json", "target-membership": [ "Muntathir/resources" ] },
     {
       "path": "<PROJECT>/../shared/figures/figures.json",
@@ -238,7 +239,7 @@
         { "path": "<PRODUCTS>/MuntathirWatchWidgets.appex", "id": "C3000000000000000000000B", "type": "wrapper.app-extension", "index": false, "target-membership": [ { "build-phase": "MuntathirWatch/copy/Embed Foundation Extensions", "header-preservation": "remove-on-copy" } ] },
         { "path": "<PRODUCTS>/MuntathirWatch.app", "id": "C3000000000000000000001D", "type": "wrapper.application", "index": false, "target-membership": [ { "build-phase": "Muntathir/copy/Embed Watch Content", "header-preservation": "remove-on-copy" } ] },
         { "path": "<PRODUCTS>/Muntathir.app", "id": "04457E5D308394FD00A8887D", "type": "wrapper.application", "index": false },
-        { "path": "<PRODUCTS>/MuntathirAssetDownloader.appex", "id": "A12400000000000000000004", "type": "wrapper.app-extension", "target-membership": [ { "build-phase": "Muntathir/copy/Embed Asset Downloader", "header-preservation": "remove-on-copy" } ] },
+        { "path": "<PRODUCTS>/MuntathirAssetDownloader.appex", "id": "A12400000000000000000004", "type": "wrapper.extensionkit-extension", "target-membership": [ { "build-phase": "Muntathir/copy/Embed Asset Downloader", "header-preservation": "remove-on-copy" } ] },
         { "path": "<PRODUCTS>/MuntathirWidgets.appex", "id": "B20000000000000000000014", "type": "wrapper.app-extension", "target-membership": [ { "build-phase": "Muntathir/copy/Embed Foundation Extensions", "header-preservation": "remove-on-copy" } ] },
         { "path": "<PRODUCTS>/MuntathirTests.xctest", "id": "04457E6A308394FE00A8887D", "type": "wrapper.cfbundle", "index": false },
         { "path": "<PRODUCTS>/MuntathirUITests.xctest", "id": "04457E74308394FE00A8887D", "type": "wrapper.cfbundle", "index": false },

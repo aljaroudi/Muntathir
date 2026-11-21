@@ -194,6 +194,7 @@
     <string name="local_naked_eye">Rukyat lokal dengan mata telanjang</string>
     <string name="location">Lokasi</string>
     <string name="location_access_is_disabled_search_for_a_city_in">Akses lokasi dinonaktifkan. Cari kota sebagai gantinya.</string>
+    <string name="simplified">Sederhana</string>
     <string name="maghrib">Magrib</string>
     <string name="maghrib_prayer">Salat Magrib</string>
     <string name="manual_month_correction">Koreksi bulan manual</string>
@@ -319,6 +320,7 @@
     <string name="select_text_to_highlight_it">Pilih teks untuk menyorotnya.</string>
     <string name="select_text_to_highlight_it_use_the_passage_acti">Pilih teks untuk menyorotnya. Gunakan tindakan bagian teks untuk menambahkan markah.</string>
     <string name="selected_location">Lokasi yang dipilih</string>
+    <string name="sermons_unavailable">Khotbah tidak tersedia</string>
     <string name="set_a_location_to_view_prayer_times">Atur lokasi untuk melihat waktu salat.</string>
     <string name="set_location_in_app">Atur lokasi di aplikasi</string>
     <string name="set_up_muntathir">Siapkan Muntathir</string>
@@ -421,4 +423,6 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">Anda tetap dapat mencari teks Al-Quran dan hadis yang diunduh secara offline.</string>
     <string name="you_can_still_search_downloaded_text_offline">Anda masih dapat mencari teks unduhan secara offline.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">Data tersimpan Anda tidak dapat dibuka. Silakan coba lagi.</string>
+    <string name="literal">Harfiah</string>
+    <string name="sermons">Khotbah</string>
 </resources>

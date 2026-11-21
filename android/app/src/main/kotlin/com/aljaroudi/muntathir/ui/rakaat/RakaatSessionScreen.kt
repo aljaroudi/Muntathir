@@ -91,6 +91,7 @@ import com.aljaroudi.muntathir.core.prayer.PrayerName
 import com.aljaroudi.muntathir.core.rakaat.RakaatPreparation
 import com.aljaroudi.muntathir.ui.components.Formats
 import com.aljaroudi.muntathir.ui.components.currentLocale
+import com.aljaroudi.muntathir.ui.components.title
 import com.aljaroudi.muntathir.ui.navigation.RakaatSessionRoute
 import com.aljaroudi.muntathir.ui.navigation.Route
 import com.aljaroudi.muntathir.ui.navigation.ToolRoute

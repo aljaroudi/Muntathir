@@ -195,6 +195,7 @@
     <string name="local_naked_eye">مقامی رؤیتِ ہلال بلا آلات</string>
     <string name="location">مقام</string>
     <string name="location_access_is_disabled_search_for_a_city_in">مقام تک رسائی بند ہے۔ اس کے بجائے شہر تلاش کریں۔</string>
+    <string name="simplified">آسان</string>
     <string name="maghrib">مغرب</string>
     <string name="maghrib_prayer">نمازِ مغرب</string>
     <string name="manual_month_correction">مہینے کی دستی تصحیح</string>
@@ -320,6 +321,7 @@
     <string name="select_text_to_highlight_it">نمایاں کرنے کے لیے متن منتخب کریں۔</string>
     <string name="select_text_to_highlight_it_use_the_passage_acti">متن نمایاں کرنے کے لیے اسے منتخب کریں۔ بک مارک شامل کرنے کے لیے عبارت کے اختیارات استعمال کریں۔</string>
     <string name="selected_location">منتخب مقام</string>
+    <string name="sermons_unavailable">خطبات دستیاب نہیں</string>
     <string name="set_a_location_to_view_prayer_times">نماز کے اوقات دیکھنے کے لیے مقام مقرر کریں۔</string>
     <string name="set_location_in_app">ایپ میں مقام مقرر کریں</string>
     <string name="set_up_muntathir">منتظر کی ابتدائی ترتیب</string>
@@ -422,4 +424,6 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">آپ ڈاؤن لوڈ کردہ قرآن اور حدیث کے متن میں آف لائن تلاش کر سکتے ہیں۔</string>
     <string name="you_can_still_search_downloaded_text_offline">آپ اب بھی ڈاؤن لوڈ کردہ متن میں آف لائن تلاش کر سکتے ہیں۔</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">آپ کا محفوظ ڈیٹا نہیں کھل سکا۔ براہ کرم دوبارہ کوشش کریں۔</string>
+    <string name="literal">لفظی</string>
+    <string name="sermons">خطبات</string>
 </resources>

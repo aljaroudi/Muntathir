@@ -22,6 +22,7 @@ import sys
 from pathlib import Path
 
 from books import parse_page
+from db import SCHEMA_PATH
 
 HERE = Path(__file__).resolve().parent
 SOURCE = HERE / "data" / "fatwa.sqlite"
@@ -195,6 +196,8 @@ def build(source: Path, output: Path) -> None:
 def build_candidate(source: Path, output: Path) -> None:
     src = sqlite3.connect(source)
     src.row_factory = sqlite3.Row
+    # Refresh authority rows (names, sort_order) from schema.sql; the crawl DB only gets them when scraping.
+    src.executescript(SCHEMA_PATH.read_text())
     out = sqlite3.connect(output)
     try:
         out.executescript(SCHEMA)

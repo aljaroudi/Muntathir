@@ -21,6 +21,7 @@ struct ToolDestination: View {
                     .environment(\.hadithAssets, supplicationAssets)
                     .environment(\.hadithSession, nil)
             }
+        case .sermons: SermonsView()
         case .figures: FigureBrowser()
         case .tasbih: TasbihView()
         case .rakaat: RakaatTrackerView()

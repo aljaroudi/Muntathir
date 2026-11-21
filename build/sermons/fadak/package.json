@@ -1,0 +1,24 @@
+{
+  "name": "muntathir-translate",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "translate": "bun run src/cli.ts",
+    "segments": "bun run src/segments-cli.ts",
+    "align": "bun run src/align-cli.ts",
+    "publish": "bun run src/publish-cli.ts",
+    "status": "bun run src/status-cli.ts",
+    "test": "bun test",
+    "typecheck": "bunx tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.10",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@ai-sdk/gateway": "^4.0.149",
+    "ai": "^7.0.176",
+    "zod": "^4.6.7"
+  }
+}

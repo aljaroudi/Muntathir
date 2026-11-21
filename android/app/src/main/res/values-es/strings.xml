@@ -195,6 +195,7 @@
     <string name="local_naked_eye">Avistamiento local a simple vista</string>
     <string name="location">Ubicación</string>
     <string name="location_access_is_disabled_search_for_a_city_in">El acceso a la ubicación está desactivado. Busca una ciudad.</string>
+    <string name="simplified">Simplificada</string>
     <string name="maghrib">Maghrib</string>
     <string name="maghrib_prayer">Oración del Maghrib</string>
     <string name="manual_month_correction">Corrección manual del mes</string>
@@ -320,6 +321,7 @@
     <string name="select_text_to_highlight_it">Selecciona texto para resaltarlo.</string>
     <string name="select_text_to_highlight_it_use_the_passage_acti">Selecciona texto para resaltarlo. Usa las acciones del pasaje para añadir un marcador.</string>
     <string name="selected_location">Ubicación seleccionada</string>
+    <string name="sermons_unavailable">Sermones no disponibles</string>
     <string name="set_a_location_to_view_prayer_times">Establece una ubicación para ver los horarios de oración.</string>
     <string name="set_location_in_app">Establecer ubicación en la app</string>
     <string name="set_up_muntathir">Configurar Muntathir</string>
@@ -422,4 +424,6 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">Puedes seguir buscando sin conexión en los textos descargados del Corán y los hadices.</string>
     <string name="you_can_still_search_downloaded_text_offline">Puedes seguir buscando en los textos descargados sin conexión.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">No se pudieron abrir tus datos guardados. Vuelve a intentarlo.</string>
+    <string name="literal">Literal</string>
+    <string name="sermons">Sermones</string>
 </resources>

@@ -195,6 +195,7 @@
     <string name="local_naked_eye">Yerel çıplak gözle gözlem</string>
     <string name="location">Konum</string>
     <string name="location_access_is_disabled_search_for_a_city_in">Konum erişimi kapalı. Bunun yerine bir şehir arayın.</string>
+    <string name="simplified">Sadeleştirilmiş</string>
     <string name="maghrib">Akşam</string>
     <string name="maghrib_prayer">Akşam namazı</string>
     <string name="manual_month_correction">Elle ay düzeltmesi</string>
@@ -320,6 +321,7 @@
     <string name="select_text_to_highlight_it">Vurgulamak için metni seçin.</string>
     <string name="select_text_to_highlight_it_use_the_passage_acti">Vurgulamak için metni seçin. Yer imi eklemek için metin bölümünün işlemlerini kullanın.</string>
     <string name="selected_location">Seçilen konum</string>
+    <string name="sermons_unavailable">Hutbelere erişilemiyor</string>
     <string name="set_a_location_to_view_prayer_times">Namaz vakitlerini görmek için bir konum ayarlayın.</string>
     <string name="set_location_in_app">Konumu uygulamada ayarla</string>
     <string name="set_up_muntathir">Muntathir’i kur</string>
@@ -422,4 +424,6 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">İndirilen Kuran ve hadis metinlerinde çevrimdışı arama yapabilirsiniz.</string>
     <string name="you_can_still_search_downloaded_text_offline">İndirilen metinlerde çevrimdışı arama yapabilirsiniz.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">Kayıtlı verileriniz açılamadı. Lütfen tekrar deneyin.</string>
+    <string name="literal">Kelimesi kelimesine</string>
+    <string name="sermons">Hutbeler</string>
 </resources>

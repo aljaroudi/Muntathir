@@ -91,6 +91,7 @@ android {
             signingConfig = signingConfigs.findByName("upload") ?: signingConfigs.getByName("debug")
             isMinifyEnabled = true
             isShrinkResources = true
+            ndk.debugSymbolLevel = "FULL"
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
@@ -171,7 +172,16 @@ val figureAssets =
         outputDir = layout.buildDirectory.dir("generated/shared/figures")
     }
 
+val sermonAssets =
+    tasks.register<SharedContent>("sermonAssets") {
+        files.from(rootProject.file("../shared/sermons/sermons.db"))
+        subdirectory = "sermons"
+        lowercase = false
+        outputDir = layout.buildDirectory.dir("generated/shared/sermons")
+    }
+
 androidComponents.onVariants { variant ->
+    variant.sources.assets?.addGeneratedSourceDirectory(sermonAssets, SharedContent::outputDir)
     variant.sources.assets?.addGeneratedSourceDirectory(quranAssets, SharedContent::outputDir)
     variant.sources.assets?.addGeneratedSourceDirectory(figureAssets, SharedContent::outputDir)
     variant.sources.assets?.addGeneratedSourceDirectory(licenseAssets, SharedContent::outputDir)
