@@ -2298,6 +2298,12 @@
             "value" : "Alle"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -17913,6 +17919,12 @@
             "value" : "Maschinelle Übersetzungen können Fehler enthalten; ziehe den Originaltext heran."
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Machine translations may be inaccurate; refer to the original text."
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -26187,6 +26199,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "Fragen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questions"
           }
         },
         "es" : {
@@ -35412,6 +35430,12 @@
             "value" : "Übersetzen nach %@"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Translate to %@"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -35500,6 +35524,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "Übersetzen …"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Translating…"
           }
         },
         "es" : {
@@ -35686,6 +35716,12 @@
             "value" : "Übersetzung · %@"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Translation · %@"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -35774,6 +35810,12 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "Übersetzung nicht verfügbar"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Translation unavailable"
           }
         },
         "es" : {

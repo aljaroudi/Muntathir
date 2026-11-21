@@ -73,5 +73,28 @@
       "zh-Hans": "• 智能搜索现已成为默认搜索方式，搜索结果也更切合你的需求。\n• 阅读时可显示或隐藏阿拉伯语注音符号。",
       "zh-Hant": "• 智慧搜尋現已成為預設搜尋方式，搜尋結果也更切合你的需求。\n• 閱讀時可顯示或隱藏阿拉伯語注音符號。"
     }
+  },
+  {
+    "version": "1.2.0",
+    "platforms": [
+      "ios"
+    ],
+    "notes": {
+      "en-US": "• Translate Hadiths and rulings on demand.\n• Explore newly added rulings.\n• Enjoy faster, smoother performance.\n• Discover the new Sermons section.\n• Meet the redesigned Today and Rakaat screens.",
+      "ar-SA": "• ترجم الأحاديث والأحكام الشرعية عند الطلب.\n• اطّلع على الأحكام الشرعية المضافة حديثًا.\n• استمتع بأداء أسرع وأكثر سلاسة.\n• اكتشف قسم الخطب الجديد.\n• تعرّف على شاشتي اليوم والركعات بتصميمهما الجديد.",
+      "de-DE": "• Übersetze Hadithe und Rechtsgutachten bei Bedarf.\n• Entdecke neu hinzugefügte Rechtsgutachten.\n• Profitiere von schnellerer, flüssigerer Leistung.\n• Entdecke den neuen Bereich „Predigten“.\n• Lerne die neu gestalteten Bildschirme „Heute“ und „Rakaat“ kennen.",
+      "es-ES": "• Traduce hadices y dictámenes cuando lo necesites.\n• Explora los nuevos dictámenes añadidos.\n• Disfruta de un rendimiento más rápido y fluido.\n• Descubre la nueva sección de Sermones.\n• Descubre las pantallas Hoy y Rakaat, ahora rediseñadas.",
+      "fa": "• حدیث‌ها و احکام را در صورت نیاز ترجمه کنید.\n• احکام تازه‌اضافه‌شده را مرور کنید.\n• از عملکرد سریع‌تر و روان‌تر لذت ببرید.\n• بخش جدید خطبه‌ها را کشف کنید.\n• با صفحه‌های بازطراحی‌شدهٔ امروز و رکعت آشنا شوید.",
+      "fr-FR": "• Traduisez les hadiths et les avis juridiques à la demande.\n• Découvrez les nouveaux avis juridiques ajoutés.\n• Profitez de performances plus rapides et plus fluides.\n• Découvrez la nouvelle section Sermons.\n• Découvrez les écrans Aujourd’hui et Rakaat entièrement repensés.",
+      "id": "• Terjemahkan hadis dan fatwa sesuai kebutuhan.\n• Jelajahi fatwa yang baru ditambahkan.\n• Nikmati performa yang lebih cepat dan mulus.\n• Temukan bagian Khotbah yang baru.\n• Lihat tampilan Hari Ini dan Rakaat yang didesain ulang.",
+      "it": "• Traduci hadith e responsi giuridici su richiesta.\n• Scopri i responsi giuridici appena aggiunti.\n• Goditi prestazioni più rapide e fluide.\n• Scopri la nuova sezione Sermoni.\n• Prova le schermate Oggi e Rakaat completamente ridisegnate.",
+      "ja": "• ハディースと法的見解を必要に応じて翻訳できます。\n• 新たに追加された法的見解をご覧ください。\n• より速く、よりスムーズに動作します。\n• 新しい「説教」セクションが登場しました。\n• 「今日」と「ラカア」の画面を刷新しました。",
+      "ms": "• Terjemahkan hadis dan fatwa mengikut keperluan.\n• Terokai fatwa yang baru ditambah.\n• Nikmati prestasi yang lebih pantas dan lancar.\n• Temui bahagian Khutbah yang baharu.\n• Lihat skrin Hari Ini dan Rakaat yang direka bentuk semula.",
+      "ru": "• Переводите хадисы и фетвы по запросу.\n• Изучайте новые добавленные фетвы.\n• Наслаждайтесь более быстрой и плавной работой.\n• Откройте для себя новый раздел «Проповеди».\n• Оцените обновлённый дизайн экранов «Сегодня» и «Ракаат».",
+      "tr": "• Hadisleri ve fetvaları istediğiniz zaman çevirin.\n• Yeni eklenen fetvaları keşfedin.\n• Daha hızlı ve akıcı performansın keyfini çıkarın.\n• Yeni Hutbeler bölümünü keşfedin.\n• Yeniden tasarlanan Bugün ve Rekât ekranlarını deneyin.",
+      "ur-PK": "• احادیث اور فتاویٰ کا ضرورت کے مطابق ترجمہ کریں۔\n• نئے شامل کیے گئے فتاویٰ دیکھیں۔\n• تیز اور زیادہ رواں کارکردگی سے لطف اٹھائیں۔\n• خطبات کا نیا سیکشن دریافت کریں۔\n• نئے ڈیزائن والی آج اور رکعات کی اسکرینیں دیکھیں۔",
+      "zh-Hans": "• 按需翻译圣训和教法裁决。\n• 探索新增的教法裁决。\n• 享受更快、更流畅的性能。\n• 发现全新的“讲道”板块。\n• 体验焕然一新的“今日”和“拜数”界面。",
+      "zh-Hant": "• 依需求翻譯聖訓與教法裁決。\n• 探索新增的教法裁決。\n• 享受更快、更流暢的效能。\n• 探索全新的「講道」區塊。\n• 體驗煥然一新的「今日」與「拜數」畫面。"
+    }
   }
 ]

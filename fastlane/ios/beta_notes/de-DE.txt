@@ -1,2 +1,5 @@
-Aktualisiere die App von einer früheren Version und öffne sie. Prüfe, ob die Versionshinweise erscheinen. Schließe sie und öffne die App erneut. Die Hinweise sollten nicht noch einmal erscheinen.
-Suchen Sie beim Tippen nach Koranversen und Hadithen. Probieren Sie ein unvollständiges letztes Wort aus. Blenden Sie arabische Vokalzeichen im Lesemodus aus und wieder ein und öffnen Sie eine gespeicherte Markierung. Prüfen Sie das Umblättern im Mushaf nach dem Markieren.
+Öffne einen Hadith und ein Rechtsgutachten und fordere eine Übersetzung in eine andere Sprache an. Prüfe, dass die Übersetzung mit dem Hinweis auf maschinelle Übersetzung erscheint.
+Durchsuche die Rechtsgutachten und prüfe, dass neu hinzugefügte Gutachten erscheinen und sich korrekt öffnen.
+Öffne den neuen Bereich „Predigten“. Prüfe, dass die Predigten laden und ein Tipp auf einen Redner dessen Profil öffnet.
+Prüfe die neu gestalteten Bildschirme „Heute“ und „Rakaat“ auf iPhone und iPad im hellen und dunklen Erscheinungsbild.
+Navigiere durch Koran, Hadith, Rechtsgutachten und Gespeichertes. Prüfe, dass Scrollen, Suchen und das Öffnen von Einträgen schnell und flüssig sind.
