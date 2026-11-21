@@ -26,7 +26,7 @@ def reader_text(text):
 
 # Final Arabic clause of each reading paragraph in the speech and closing elegy.
 PARAGRAPH_ENDS = {6, 7, 8, 14, 23, 33, 44, 57, 69, 80, 92, 106, 114, 128,
-                  143, 154, 166, 174, 176, 182, 183, 184, 188, 192, *range(193, 207)}
+                  143, 154, 166, 174, 176, 182, 183, 184, 188, 192, *range(193, 201)}
 END_IDS = {f"s{i:03}" for i in PARAGRAPH_ENDS}
 
 
@@ -90,7 +90,9 @@ def load_sermon():
     if len(ids) != len(set(ids)) or any(not s["arabic"].strip() for s in source):
         raise ValueError("Empty or duplicate Arabic segment")
     # s007 labels the start of the speech in the manuscript.
-    segments = [s for s in source[ids.index("s006"):] if s["id"] != "s007"]
+    # The reader ends before the later dialogue with Amir al-Mu’minin.
+    segments = [s for s in source[ids.index("s006"):]
+                if s["id"] != "s007" and s["sectionId"] != "05-ali-dialogue"]
     visible_ids = {s["id"] for s in segments}
     speech = {s["id"] for s in segments if "wikishiaIndex" in s}
     editions = [wikishia(segments, speech)]
@@ -126,6 +128,6 @@ def load_sermon():
         clauses = []
     if clauses:
         raise ValueError("Unpublished Arabic clauses at end of sermon")
-    return dict(id="fadak", title="الخطبة الفدكية", speaker_id="fatima-al-zahra",
+    return dict(id="fadak", title="خطبة الزهراء", speaker_id="fatima-al-zahra",
                 source=reader_text(source[ids.index("s004")]["arabic"]),
                 segments=paragraphs, editions=editions)

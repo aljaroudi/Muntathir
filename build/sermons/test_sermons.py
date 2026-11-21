@@ -37,6 +37,8 @@ class SermonBuildTests(unittest.TestCase):
         self.assertEqual([s["id"] for s in segments[:2]], ["s006", "s008"])
         self.assertTrue(segments[0]["text"].startswith("روى عبد الله بن الحسن"))
         self.assertIn("الاحتجاج", sermon["source"])
+        self.assertEqual(sermon["title"], "خطبة الزهراء")
+        self.assertEqual(segments[-1]["section"], "04-abu-bakr-dialogue")
         ids = {s["id"] for s in segments}
         editions = {e["id"]: e for e in sermon["editions"]}
         self.assertEqual(len(editions), 17)
@@ -72,7 +74,8 @@ class SermonBuildTests(unittest.TestCase):
         source = json.loads((root / "fadak/data/segments.json").read_text())
         paragraphs = sermon["segments"]
         self.assertEqual(" ".join(s["text"] for s in paragraphs).split(),
-                         " ".join(reader_text(s["arabic"]) for s in source if s["id"] >= "s006" and s["id"] != "s007").split())
+                         " ".join(reader_text(s["arabic"]) for s in source if s["id"] >= "s006" and s["id"] != "s007"
+                                  and s["sectionId"] != "05-ali-dialogue").split())
         for file in (root / "fadak/human").glob("*.json"):
             edition = json.loads(file.read_text())
             published = next(e["aligned"] for e in sermon["editions"] if e["id"] == edition["id"])

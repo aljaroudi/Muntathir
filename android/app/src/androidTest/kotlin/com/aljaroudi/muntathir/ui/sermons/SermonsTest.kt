@@ -46,7 +46,7 @@ class SermonsTest {
     fun openBundledSermonAndReadEnglishEdition() {
         compose.onNodeWithTag("tab-tools").performClick()
         compose.onNodeWithTag("sermons").performClick()
-        val title = "الخطبة الفدكية"
+        val title = "خطبة الزهراء"
         compose.waitUntil(10_000) { compose.onAllNodes(hasText(title)).fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText(title).performClick()
         val picker = compose.onNodeWithTag("sermon-edition")
@@ -80,7 +80,7 @@ class SermonsTest {
     fun speakerOpensFigureProfile() {
         compose.onNodeWithTag("tab-tools").performClick()
         compose.onNodeWithTag("sermons").performClick()
-        val title = "الخطبة الفدكية"
+        val title = "خطبة الزهراء"
         compose.waitUntil(10_000) { compose.onAllNodes(hasText(title)).fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText(title).performClick()
         compose.waitUntil(10_000) { compose.onAllNodes(hasTestTag("sermon-speaker")).fetchSemanticsNodes().isNotEmpty() }
