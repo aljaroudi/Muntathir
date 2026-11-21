@@ -1,21 +1,21 @@
 # iOS and CarPlay widgets
 
-The embedded MuntathirWidgets extension provides Prayer times (countdown plus schedule). It supports small Home Screen widgets; iOS 26 exposes the small versions in CarPlay. Add them through the Home Screen widget gallery, or Settings → General → CarPlay → your car → Widgets.
+| Widget | Sizes | Notes |
+| --- | --- | --- |
+| Prayer times | Small (also shown in CarPlay) | Countdown and schedule. No network. |
+| Daily ayah | Medium, Lock Screen rectangular | Medium shows the installed translation below the Arabic; Lock Screen is Arabic only. |
+| Calendar | Home Screen, Lock Screen | The Home Screen size adds weather (WeatherKit); Lock Screen shows dates only. |
 
-Open Muntathir once and choose a location. Widgets use the app's method, Imsak offset, and hidden-prayer choices. The app shares those settings, calendar corrections, the temperature preference, and selected coordinates through the local App Group, group.com.aljaroudi.Muntathir. Both targets require that App Group in their signing profiles. GPS coordinates are not uploaded to iCloud.
+## Setup
 
-The extension uses the same Adhan source and pinned dependency as the app. Timelines include three local days of prayer boundaries and midnight changes, with a requested reload after six hours. Minute-spaced timeline entries update the hours/minutes countdown without network polling. WidgetKit controls actual timeline delivery. Settings changes request a widget reload.
+Open the app once and choose a location. The app shares its settings, calendar corrections, and coordinates with the widgets through the App Group `group.com.aljaroudi.Muntathir`, which both targets need in their signing profiles. The extension also needs WeatherKit.
 
-Simulator validation covers compilation/embedding, settings serialization, hidden prayers, midnight entries, next-day Fajr, and the single-unit, full-length localized countdown format. Physical CarPlay layout and signed-device App Group provisioning still need device validation.
+## Behavior
 
-Sunset uses Adhan's neutral calculation parameters without Maghrib adjustments. Islamic midnight is the midpoint from that sunset to the following day's Fajr under the selected method, rounded to the nearest minute. This is not civil or solar midnight. Prayer widgets need no WeatherKit or network request. Fajr, Dhuhr, and Maghrib remain visible even if old stored preferences contain them in the hidden set; Sunrise, Asr, Sunset, Isha, and Islamic midnight can be hidden. Sunset and midnight are not next-prayer countdown targets.
+- Prayer timelines cover three days and request a reload after six hours. Settings changes reload the widgets.
+- Islamic midnight is the midpoint from sunset to the next day's Fajr. Sunset and midnight are never countdown targets.
+- Ayah timelines preload the current verse plus seven midnights. The verse follows the corrected Hijri date.
+- Only Arabic and English Quran text are bundled. Other translations come from the App Group, and widgets never start downloads.
+- Weather is cached in the App Group. Readings older than one hour are hidden, and a failed refresh waits five minutes before retrying.
 
-Prayer times retains its existing widget kind. Schedule-only and Upcoming prayer widgets were removed; replace old copies through the widget gallery. Watch complications remain available.
-
-Daily ayah widgets bundle the same Arabic `quran.db`, numeric daily verse references, Quran font, and static emerald-to-ivory artwork as the app. SQLite databases are read-only. The medium widget shows the selected installed translation below Arabic; the Lock Screen remains Arabic-only. The timeline preloads the current verse plus seven local midnights in the selected location’s time zone and renews with `.atEnd`. The rotation uses the corrected Islamic month and day, so calendar adjustments also change the verse. A future complete dated dataset will use the same corrected Hijri month/day as the app; see [schedule preparation](../content/daily-verses/). See [iPhone/iPad behavior](../Muntathir/) and [Apple setup](../).
-
-The calendar Home Screen widget pairs the abbreviated weekday with temperature, gives the corrected Hijri day and month the main emphasis, and places the Gregorian date in the footer. The weather illustration sits beside the Hijri day. It uses the same weather fetch and scene as Today, honors the feels-like preference, and requests a weather refresh after 30 minutes. The app saves successful readings in the local App Group and reloads the calendar widget. A shared reading younger than 15 minutes avoids a separate widget request; a failed refresh retains a matching, unexpired reading instead of dropping it. WidgetKit decides actual refresh timing; weather older than an hour is omitted while dates continue updating at local midnight. Without a usable reading, the date content stays visible and a dash marks unavailable weather. Refresh failures are logged; shared retry attempts back off for five minutes even when no cached reading exists. Today also reuses this cache and refreshes every 15 minutes while displayed. Weather is fetched only for the Home Screen family; Lock Screen calendar widgets remain date-only. The widget extension needs WeatherKit enabled in its signing profile. Apple Weather attribution is included; its images are downloaded before the widget view is archived.
-
-The medium prayer widget and large ayah widget are no longer offered. Ayah retains medium Home Screen and rectangular Lock Screen sizes. Replace existing copies of removed sizes through the widget gallery.
-
-Only English and Arabic are bundled. Other translations read installed files from the shared App Group and follow the reader's Auto/None/explicit selection. Missing translations show Arabic only; widgets never initiate downloads. The medium widget shows the selected translation with its text direction; None leaves Arabic readable. See [asset delivery](../AssetPacks/).
+Check CarPlay layouts and signed App Group provisioning on a real device.

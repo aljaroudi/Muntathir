@@ -100,7 +100,8 @@ struct HadithDetailView: View {
                             .environment(\.layoutDirection, translation.isRightToLeft ? .rightToLeft : .leftToRight)
                         }
                         if !narration.arabic.isEmpty, let target = translationTarget,
-                           !showsTrustedTranslation(in: target, narration: narration) {
+                           !showsTrustedTranslation(in: target, narration: narration)
+                        {
                             MachineTranslationSection(source: Self.arabic, target: target,
                                                       paragraphs: MachineTranslation.paragraphs(String(HadithText.markdown(narration.arabic).characters)))
                                 .id(narration.id)

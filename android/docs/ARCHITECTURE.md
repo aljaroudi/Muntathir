@@ -39,7 +39,7 @@ android/
 | Downloaded Quran translations | `no_backup/QuranTranslations/<generation>/<id>.db` + atomic `index.json` (`core/quran/QuranTranslationFiles`) |
 | Highlights, bookmarks, activity, prayer history (`prayer_history`, v2) | Room `databases/user.db` (bundled driver, schemas in `app/schemas`), stores in `core` behind small interfaces; installation id in `no_backup/QuranIdentity` |
 
-Schema checks match iOS: Hadith `application_id` 1230262606, `user_version` 7–8; Rulings 1179809601 v1. Keep the iOS record design (stable IDs, `modifiedAt`, tombstones) so that restore and merge logic stays identical.
+Schema checks match iOS: Hadith `application_id` 1230262606, `user_version` 7–8; Rulings 1179809601 v1. Keep the iOS record design (stable IDs, `modifiedAt`, tombstones) so restore and merge logic stays identical.
 
 ## Backup (replaces iCloud)
 
@@ -56,21 +56,21 @@ Schema checks match iOS: Hadith `application_id` 1230262606, `user_version` 7–
 | `quran_translations` | on-demand | Copy validated DBs to `noBackupFilesDir`, then `removePack` (iOS App Group flow); state machine in `core/quran/QuranTranslationStore` |
 | `rulings` | on-demand | |
 
-One `AssetPackBackend` interface over `AssetPackManager`, mirroring `AssetPackBackend.swift` events. Handle the confirmation dialogs (cellular / user confirmation) and the post-update "patching" state. Pack content ships with app releases. Packaging extends `apple/AssetPacks/assets.py` with an Android target that reuses the same validators.
+One `AssetPackBackend` over `AssetPackManager`, mirroring `AssetPackBackend.swift` events; handle the cellular/user confirmation dialogs and the post-update "patching" state. Pack content ships with app releases. `apple/AssetPacks/assets.py android` packages them with the same validators (`just android-packs`).
 
 ## System
 
-- **State:** `core/app/AppModel` (Swift `AppModel` minus iCloud) holds `StateFlow<AppState>`, validates every change (including building a calendar) before saving, and has the feed's stale-response guard. Hilt provides one per process.
-- **Location:** GPS only, with no city search and no reverse geocoding. `SavedLocation` is just coordinates and a time zone, and the UI calls it "Device location". There's no saved city in the preferences. Prayer times use a coarse Fused fix: a cached fix up to 10 minutes old, else a new one, else any cached fix. It's zoned with the offline `timezonemap`, stored device-local, and refreshed on start when the device moved more than 5 km. Qibla runs its own precise, high-accuracy session (`DeviceQiblaSensors`) that is never stored.
-- **Notifications:** one chained alarm. `AlarmScheduler` sets an alarm for the next alert (exact when `SCHEDULE_EXACT_ALARM` is granted, otherwise a 10-minute window). `AlarmReceiver` posts what's due from current settings and sets the next one. `Rescheduler` follows settings, and `RescheduleReceiver` handles boot, time, zone, locale, update and permission changes. One channel per category; prayer channels are versioned by sound (`prayers.chime.v1`). The adhan clips play fully as channel sounds, so there's no foreground service.
+- **State:** `core/app/AppModel` (Swift `AppModel` minus iCloud) holds `StateFlow<AppState>`, validates every change (including building a calendar) before saving, and guards against stale feed responses. One per process via Hilt.
+- **Location:** GPS only (see README decisions). Prayer times use a coarse Fused fix: cached ≤10 min, else fresh, else any cached. Zoned with the offline `timezonemap`, stored device-local, refreshed on start after moving >5 km. The UI shows the zone's localized exemplar city, else rounded coordinates. Qibla's precise session (`DeviceQiblaSensors`) is never stored.
+- **Notifications:** `AlarmScheduler` sets one alarm for the next alert (exact with `SCHEDULE_EXACT_ALARM`, else a 10-minute window); `AlarmReceiver` posts what's due from current settings and sets the next. `Rescheduler` follows settings; `RescheduleReceiver` handles boot, time, zone, locale, update and permission changes. One channel per category; prayer channels versioned by sound (`prayers.chime.v1`). Adhan clips play fully as channel sounds (no foreground service).
 - **Feed:** WorkManager periodic 12 h with a network constraint, plus a refresh on every `ON_START`. Ktor (OkHttp) transport, ETag + last-good cache in `cacheDir`. The host is stored in punycode.
-- **Widgets:** Glance in `app/widgets` (prayer, daily ayah, Hijri date). They read `AppModel`, `QuranDatabase` and `QuranTranslations` through `WidgetEntryPoint`. Text is RemoteViews XML so it can use the app font and Hafs. `WidgetUpdater` re-renders on settings, location, corrections or translation changes, after time, zone or locale changes (`RescheduleReceiver`, `onConfigurationChanged`), and at one alarm for the next prayer, sunset or midnight. With no widgets placed it does nothing.
-- **Quick Settings and shortcuts:** `NextPrayerTileService` reads the next prayer when the panel opens. Static launcher shortcuts (Quran, Qibla, Tasbih, Calendar), widgets and the tile open the app with an `OpenRequest` extra. `MainActivity` is `singleTop`, and `AppNavigator.open` selects the tool's tab, or pushes the tool onto Tools.
+- **Widgets:** Glance in `app/widgets` (prayer, daily ayah, Hijri date), reading `AppModel`, `QuranDatabase` and `QuranTranslations` via `WidgetEntryPoint`; text is RemoteViews XML for Plex and Hafs. `WidgetUpdater` re-renders on settings, location, corrections or translation changes, on time/zone/locale changes (`RescheduleReceiver`, `onConfigurationChanged`), and at one alarm for the next prayer, sunset or midnight; it's idle with no widgets placed.
+- **Tile and shortcuts:** `NextPrayerTileService` reads the next prayer when the panel opens. Static shortcuts (Quran, Qibla, Tasbih, Calendar), widgets and the tile pass an `OpenRequest` extra to the `singleTop` `MainActivity`; `AppNavigator.open` selects the tool's tab or pushes it onto Tools.
 - **Fonts:** IBM Plex Sans Arabic (bundled) for the UI, through `Typography` and the View theme. Reader bodies keep Hafs, Lateef or the system font.
 
 ## Testing
 
 - `core`: JUnit ports of `apple/MuntathirTests` logic tests.
-- Shared fixtures move to `shared/fixtures/` for both platforms.
+- Shared fixtures live in `shared/fixtures/` for both platforms.
 - `app`: Compose UI tests (Hilt test modules, no launch-flag branches in production code) and Compose Preview screenshot tests (phone/foldable/tablet × ar/en × light/dark).
 - `just android-build`, `just android-test`.

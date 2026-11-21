@@ -1,66 +1,57 @@
-# Manual Apple releases
+# Apple releases
 
-Use the [shared Fastlane setup](../SETUP.md) on the signing Mac. Run lane commands from the repository root.
+Releases run locally on the signing Mac, from the repository root, after the [shared Fastlane setup](../SETUP.md). Wait for one release to finish before starting another or uploading the same version elsewhere; a checkout lock blocks overlapping runs in one working directory.
 
-## Release behavior
+## Lanes
 
-- **TestFlight Public** runs unit tests by default on the newest compatible installed iPhone simulator and submits the build to the external `Public` group with localized What to Test. TestFlight invitations pull screenshots from the latest App Store version ready for distribution. Screenshot capture and upload run in the App Store lane. [Apple’s TestFlight screenshot rules](https://developer.apple.com/help/app-store-connect/test-a-beta-version/provide-test-information)
-- **App Store** runs the full unit and UI regression suite on that iPhone and the configured iPad Pro. It uploads fresh screenshots and listing metadata, syncs Asset Packs, uploads composed header/search creatives to the App Asset Library, and submits the existing TestFlight beta build for automatic publication after approval (without uploading a new binary). Keep existing preview videos intact.
-- Both commands are local and manual. The GitHub Actions deployment workflow is removed. Wait for one release to finish before starting another checkout or uploading the same version elsewhere. A checkout lock prevents overlapping release commands in the same working directory.
+- **`beta`** runs unit tests on the newest installed compatible iPhone simulator and submits to the external `Public` TestFlight group with localized What to Test. TestFlight invitations show screenshots from the latest App Store version ready for distribution ([Apple's rules](https://developer.apple.com/help/app-store-connect/test-a-beta-version/provide-test-information)).
+- **`release`** runs the full unit and UI suite on that iPhone and the configured iPad Pro, uploads screenshots and metadata, syncs Asset Packs, uploads header/search creatives to the App Asset Library, and submits the existing TestFlight build for automatic release after approval (no new binary). Existing preview videos are kept.
+- **`check`** validates localization, metadata, screenshot config and lane behavior offline.
+- **`tests`** runs the unit/UI regressions on one iPhone.
+- **`screenshots`**, **`watch_screenshots`**, **`style`** capture and compose iOS and Watch screens in all 15 locales (the upload picks the locales App Store Connect supports). `languages:ar,en,fa` limits locales; `workers:N` (default 2, max 8) sets screenshot workers.
+- **`previews`** makes optional videos; `previews devices:"iPhone Duo"` makes Duo videos for manual upload.
+- **`marketing`** refreshes screenshots and standard previews.
+- **`web_media`** exports the website's phone-tour media (see [web/README.md](../../web/README.md)).
+- **`cleanup`** removes project-local disposable caches.
 
-The workflow deletion takes effect on GitHub once it reaches the default branch. Until then, disable the old **Local Apple deployment** workflow in Actions before opening or merging a PR that would trigger it.
+Options: `force:true` allows intentionally unchanged notes (all other checks still run). `release skip_screenshots:true` reuses `apple/build/marketing/store` and `creative` from a successful local refresh instead of recapturing (~2 h).
 
 ## Before running
 
-1. Set the shared marketing version with `just version X.Y.Z` and, for the App Store lane, manually create the matching editable iOS draft in App Store Connect. Keep the project build number at `1`. Xcode assigns the final build number during upload. [Apple’s build-number rules](https://developer.apple.com/documentation/xcode/preparing-your-app-for-distribution)
-2. Update `fastlane/ios/beta_notes/<locale>.txt` for What to Test or `shared/release-notes/changelog.json` for What’s New. Each lane compares its notes against the latest Public build or live App Store version. All 14 store locales must pass validation and at least one note must differ when Apple has prior notes. Use `force:true` on the release command to allow intentionally unchanged notes. The draft, tests, archive, screenshots, and metadata validity checks still run. App Store Connect rejects modifier letters such as `ʿ` in What’s New — `check` fails those before upload. After a successful local screenshot refresh, `just lane ios release skip_screenshots:true` reuses `apple/build/marketing/store` and `apple/build/marketing/creative` instead of re-capturing (~2h).
-3. Configure the App Store Connect key in `~/.config/muntathir/fastlane.env` using `fastlane/.env.local.example`. Set `MUNTATHIR_REVIEW_CONFIG` to a private JSON file for export compliance and any missing review fields. See `fastlane/ios/review.example.json`. Protect the credentials and review files with `chmod 600`. Automatic signing covers the app, Watch companion, and extensions. Set up the external group named `Public` and enable its public link in App Store Connect if needed.
-4. Install Apple Transporter for asset uploads. For the App Store lane, also install the capture simulators and runtimes below, a shutdown Apple Watch Series 12 (46mm) simulator, ImageMagick, and FFmpeg. Generate the local content databases and validate the assets with `just packs-check`.
+1. `just version X.Y.Z`. For `release`, create the matching editable iOS draft in App Store Connect. Keep the project build number at `1`; Xcode assigns it on upload ([Apple's rules](https://developer.apple.com/documentation/xcode/preparing-your-app-for-distribution)).
+2. Update `fastlane/ios/beta_notes/<locale>.txt` (What to Test) or `shared/release-notes/changelog.json` (What's New; also bundled in the apps and rendered by `just changelog`). Add an entry per marketing version listing its shipping platforms. All 14 store locales must validate, and at least one note must differ from Apple's previous notes. App Store Connect rejects modifier letters such as `ʿ` in What's New; `check` catches them.
+3. Put the App Store Connect key in `~/.config/muntathir/fastlane.env` (template: `fastlane/.env.local.example`; override the path with `MUNTATHIR_FASTLANE_ENV_FILE`). Set `MUNTATHIR_REVIEW_CONFIG` to a private JSON for export compliance and review fields (see `fastlane/ios/review.example.json`). `chmod 600` both files. Automatic signing covers the app, Watch companion and extensions. The external group must be named `Public`, with its public link enabled.
+4. Install Apple Transporter. For `release`, also install the capture simulators and runtimes, a shut-down Apple Watch Series 12 (46mm) simulator, ImageMagick and FFmpeg. Build the content databases and run `just packs-check`.
 
-The mobile apps bundle the same changelog. Append an entry for each marketing version and list the platforms shipping its copy. Add Android starting with its first public version.
+## Asset packs
 
-Both release lanes compare the manifest and payload files with each cached archive under `apple/build/AssetPacks/archives/`. They rebuild changed packs, update the bundled download-size estimates when repackaging, and reuse an Apple version whenever its checksum matches the archive. Keep the originally uploaded archives on the release Mac. A missing archive, or an older remote version without a comparable checksum, can require a one-time upload to establish the match. The App Store lane attaches the exact processed versions that differ from the live packs. After submitting a Public build, submit the listed pack versions for external testing in App Store Connect. [Apple’s asset-pack testing instructions](https://developer.apple.com/help/app-store-connect/test-a-beta-version/test-apple-hosted-asset-packs)
+Both release lanes compare each pack's manifest and payload with the cached archive in `apple/build/AssetPacks/archives/`, rebuild changed packs (updating bundled download-size estimates), and reuse an Apple version whose checksum matches. Keep the uploaded archives on the release Mac; a missing archive or an old remote version without a comparable checksum can force a one-time upload. `release` attaches the processed versions that differ from the live packs. After submitting a Public build, submit the listed pack versions for external testing in App Store Connect ([Apple's instructions](https://developer.apple.com/help/app-store-connect/test-a-beta-version/test-apple-hosted-asset-packs)).
 
-Manage localized names, descriptions, keywords, promotional text, support/privacy URLs, and copyright under `fastlane/ios/metadata/`. Persian interface copy is supported and its store copy stays under `fastlane/ios/listing-drafts/fa/`. Keep private review contacts in App Store Connect or the private review JSON.
+## Metadata
 
-## Local commands
+Localized names, descriptions, keywords, promotional text, URLs and copyright live in `fastlane/ios/metadata/`. Persian store copy is in `fastlane/ios/listing-drafts/fa/`. Keep private review contacts in App Store Connect or the review JSON.
 
-- `check` validates localization, metadata, screenshot configuration, and lane behavior offline.
-- `tests` runs the local unit/UI regressions on one iPhone. Both release lanes run screenshot capture separately.
-- `screenshots`, `watch_screenshots`, and `style` capture and compose the iOS screens and Watch prayer screen in all 15 app locales. The App Store upload selects the locales supported by App Store Connect. Use `just lane ios screenshots languages:ar,en,fa` and `just lane ios style languages:ar,en,fa`. Canonical locale IDs remain supported. Screenshot workers default to 2 (override with `workers:N`, max 8); they share one simulator lock.
-- `previews` generates optional videos. `previews devices:"iPhone Duo"` generates Duo videos for manual upload.
-- `marketing` refreshes screenshots and generates the standard previews locally.
+## Captures
 
-## Capture settings and outputs
+- **Fixture (Debug only):** isolated preferences, Mecca, 23 October 2026, light mode, local weather data; Fajr, Dhuhr, Maghrib and sunset visible. Screenshots read ayah 94:6 (index 6096) from the bundled Quran database; videos and SwiftUI previews use `exampleAyah` in `DailyAyahCard.swift`. Quran capture builds stage downloaded translations (English where none matches, Arabic alone in Arabic); the Debug bundle stages the production Hadith database. Release builds exclude capture controls and bundle only Arabic and English.
+- **Runtimes:** standard devices use `SCREENSHOT_IOS_VERSION` (default 27.0), iPhone and iPad concurrently per locale. Duo uses `SCREENSHOT_DUO_IOS_VERSION` (default 27.2). Workers use separate DerivedData clones but share one simulator lock, since Snapshot picks the same device UUIDs.
+- **Duo:** native 1398 × 2034 output (validation also accepts 2007 × 2853 and landscape). Video records the outer `primary` display, since the default can target the blank inner one; QA rejects blank frames. One display doesn't prove folding-transition layout.
+- **Config:** [marketing/screenshots.json](marketing/screenshots.json) sets ordered screen IDs (they set upload order and match `MarketingScreenshotTests` names), per-locale headlines, brand text, gradient stops and creative canvas. Frameit supplies iPhone 17 Pro Max, iPad and Duo bezels; the iPad shot fits the 12.9-inch bezel on the 13-inch canvas. Images are flattened without alpha.
+- **Creative:** `style` builds one 5244 × 2950 PNG from the app icon (emerald `#174F45 → #082F2B`, paths from `AppIcon.icon/Assets/Muntathir-Icon.svg`) and copies it per locale. `release` uploads it to the App Asset Library and sets it as `PRODUCT_PAGE_HEADER_ASSET` and `APP_STORE_SEARCH_RESULTS_ASSET` (`creative_assets.rb`). Follow [Apple's asset best practices](https://developer.apple.com/app-store/asset-best-practices/): no pricing, URLs or awards.
+- **Video:** the Debug clock runs Today from sunrise to sunset; `ffmpeg` exports H.264/yuv420p 30 fps with silent stereo AAC, checked by `ffprobe`.
+- **Duo previews:** Fastlane 2.241.2 has no Duo preview upload type, so Duo videos are exported separately for manual upload and kept out of automatic preview discovery.
+- **QA:** check headline readability, Arabic joining and direction, the four prayer rows, and Sun movement. Simulators don't cover compass, notifications or Watch hardware.
 
-Captures use a clean isolated test preferences suite, Mecca, 23 October 2026, light appearance and local weather data. Fajr, Dhuhr and Maghrib are visible, with sunset enabled; all other optional times are hidden. This fixture is Debug-only and leaves normal app preferences unchanged. Quran source text is never modified. Screenshot captures read 94:6 from the bundled Quran database. Video captures and SwiftUI previews retain `exampleAyah` from `DailyAyahCard.swift`; each reference matches its text.
+Outputs (git-ignored, under `apple/build/marketing/`):
 
-Screenshot captures use ayah 94:6 (index 6096). Quran capture builds stage downloaded translations locally, with English where no capture translation matches and Arabic alone in Arabic. Release bundles only Arabic and English. The capture runner stages the production Hadith database in its Debug bundle under the marketing launch flag; Release uses the hosted Hadith pack.
+- `raw/<locale>/`: simulator PNGs (each run clears the locale's `raw` and `frames`).
+- `store/<locale>/`: framed App Store PNGs (Watch slot kept if present).
+- `creative/universal.png`, `creative/<locale>/universal.png`: brand creative.
+- `frames/`: intermediate bezels (disposable). `watch/`: native Watch captures.
+- `previews/`: 15 s iPhone/iPad videos plus QA frames. `duo-previews/`: 15 s Duo videos on Apple's 886 × 1920 canvas, plus QA frames.
 
-Standard devices use `SCREENSHOT_IOS_VERSION` (default 27.0), with iPhone and iPad captured concurrently for each locale. Locale workers use separate DerivedData clones, logs and raw directories, but serialize simulator access because Snapshot selects the same device UUIDs across workers. Duo uses `SCREENSHOT_DUO_IOS_VERSION` (default 27.2) after standard devices within each worker. Install the runtimes in Xcode. Current snapshot captures use the native 1398 × 2034 Duo output; validation also accepts 2007 × 2853 and both landscape equivalents. Duo video recording explicitly selects the outer `primary` display; the simulator default can target the blank inner display. QA rejects blank frames. Capturing a single display does not establish layout correctness across folding transitions.
+## Upload recovery
 
-Edit [the screenshot config](marketing/screenshots.json) to set the ordered screen IDs, headlines for each locale, brand text, two RGB gradient stops, and the creative canvas size. Numbered screen IDs control upload order and match the snapshot names in `MarketingScreenshotTests`. The Watch slot captures the native app. Frameit provides the iPhone 17 Pro Max, iPad and Duo bezels. The iPad capture fits the available 12.9-inch bezel without stretching and exports on the accepted 13-inch canvas. ImageMagick is required (`brew install imagemagick`). AppKit draws localized text, and final images are flattened with no alpha channel.
+Upload, processing (waits up to 30 minutes) and review submission are separate stages. On an upload or processing error, check **Build Uploads** in App Store Connect before retrying. If the build processed but a later step failed, finish the draft or Public distribution in App Store Connect using the version and build number the lane printed; rerunning creates a new build. An interrupted screenshot replacement may need finishing in App Store Connect.
 
-`style` also builds one locale-agnostic universal creative at **5244 × 2950** (PNG, no alpha) from the app icon: emerald gradient `#174F45 → #082F2B`, a quiet tiled hourglass–dome mark, and one clear mark in Apple’s safe area (paths match `AppIcon.icon/Assets/Muntathir-Icon.svg`). `style` copies the same PNG into each locale folder for upload. Follow [App Store asset best practices](https://developer.apple.com/app-store/asset-best-practices/): one clear idea, no pricing/URLs/awards, and 4+ safe imagery. The `release` lane uploads each creative to the App Asset Library (`CREATIVE_ASSETS`) and places the same image as `PRODUCT_PAGE_HEADER_ASSET` and `APP_STORE_SEARCH_RESULTS_ASSET` on the draft localization (preferring the `DEFAULT_PROFILE` placement group from Apple’s reference data).
-
-The Debug capture clock advances the actual Today UI continuously from sunrise to sunset. `ffmpeg` exports H.264/yuv420p video at 30 fps, with silent stereo AAC audio. `ffprobe` checks format and duration. Release builds exclude the capture controls.
-
-Generated files live under ignored `apple/build/marketing/` (from the repo root):
-
-- `raw/<locale>/`: original simulator PNGs from `screenshots` / `just lane ios screenshots`. Each run deletes that locale’s prior raw (and `frames/`) files before writing.
-- `store/<locale>/`: framed App Store PNGs from `style` / `just lane ios style` (Watch slot kept if present). Device shots for the styled locales are replaced each run.
-- `creative/universal.png` and `creative/<locale>/universal.png`: 5244 × 2950 brand creative from `style` (uploaded by `release`).
-- `frames/`: intermediate bezel images (disposable).
-- `watch/`: native Watch captures required for the embedded companion.
-- `previews/`: 15-second standard iPhone/iPad videos and start/middle/end QA frames.
-- `duo-previews/`: 15-second Duo videos at 886 × 1920, with QA frames. Duo keeps the native screen proportions inside a neutral frame and background on Apple’s required 886 × 1920 canvas.
-
-**Duo preview upload limitation:** Fastlane 2.241.2 supports Duo screenshots but has no Duo preview upload type. Optional Duo videos are exported separately with `just lane ios previews devices:"iPhone Duo"` for manual App Store Connect upload. Keeping them outside automatic preview discovery prevents silent skipping or assignment to another device slot. No undocumented preview enum is invented here; screenshots remain on classic Deliver while header/search creatives use the Asset Library client in `creative_assets.rb`.
-
-For visual QA, run the local media lanes and inspect headline readability, Arabic joining and direction, the four prayer rows, and the Sun movement in previews. Simulator captures do not establish hardware compass, notifications or Watch behavior.
-
-## Upload recovery and artifacts
-
-Binary upload, Apple processing, and review submission are separate stages. If upload or processing errors, inspect **Build Uploads** in App Store Connect before retrying. Processing waits up to 30 minutes. If the expected build processed and a later step failed, finish its draft or Public distribution in App Store Connect using the exact version and build number printed by the lane. Rerunning a release command creates a new build. Screenshot replacement may need to be completed in App Store Connect if an upload stops partway through.
-
-Failed uploads and processing retain the archive under `apple/build/`. Successful processing saves dSYMs under `apple/build/symbols/<version>-<build>/` and removes that archive. Test and capture failures retain local diagnostics. `just lane ios cleanup` removes project-local disposable caches after the run.
+Failed runs keep the archive under `apple/build/`; successful processing saves dSYMs to `apple/build/symbols/<version>-<build>/` and removes the archive. Test and capture failures keep diagnostics.

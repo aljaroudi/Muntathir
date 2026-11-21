@@ -1,6 +1,6 @@
 # Play Console answers
 
-From the P7.3 audit (2026-11-17, play-policy-insights). Fill these in when the app is created in Play Console (P7.5). Re-check them whenever a network call, SDK or permission is added.
+From the P7.3 audit (play-policy-insights). Re-check whenever a network call, SDK or permission is added.
 
 ## Data safety
 
@@ -26,7 +26,7 @@ Not declared because the user starts it: sharing verse or narration text and ima
 - **Exact alarms:** `SCHEDULE_EXACT_ALARM` only (never `USE_EXACT_ALARM`). Not granted → alerts use a 10-minute window. No declaration form.
 - **Location:** foreground only, no `ACCESS_BACKGROUND_LOCATION`. No declaration form.
 - **Camera:** front camera, frames analysed in memory only.
-- **Foreground service: declaration still required.** Our own code no longer declares a type (WorkManager's service is untyped; it only runs below API 31). But Play Asset Delivery's `com.google.android.play.core.assetpacks.ExtractionForegroundService` is merged with `foregroundServiceType="dataSync"` and `FOREGROUND_SERVICE_DATA_SYNC`. Declare **Data sync**: "Downloading and installing optional content packs (Hadith, Supplications, Quran translations, Rulings) that the user requests from Downloads", with a short video of a pack download. Don't remove the library's service; asset packs depend on it.
+- **Foreground service: declaration required.** Our code declares no type (WorkManager's service is untyped and only runs below API 31), but Play Asset Delivery's `com.google.android.play.core.assetpacks.ExtractionForegroundService` merges in `foregroundServiceType="dataSync"` and `FOREGROUND_SERVICE_DATA_SYNC`. Declare **Data sync**: "Downloading and installing optional content packs (Hadith, Supplications, Quran translations, Rulings) that the user requests from Downloads", with a short video of a pack download. Don't remove the library's service; asset packs depend on it.
 
 ## App content
 

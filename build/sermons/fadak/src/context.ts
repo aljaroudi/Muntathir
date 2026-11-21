@@ -19,7 +19,7 @@ export function slugifySectionTitle(title: string, index: number): string {
   if (title.includes("مقدمة")) return `${prefix}-intro`;
   if (title.includes("متن الخطبة")) return `${prefix}-sermon`;
   if (title.includes("قبر")) return `${prefix}-grave-elegy`;
-  if (title.includes("أبي بكر")) return `${prefix}-abu-bakr-dialogue`;
+  if (title.includes("فلان")) return `${prefix}-abu-bakr-dialogue`;
   if (title.includes("أمير المؤمنين")) return `${prefix}-ali-dialogue`;
   return `${prefix}-section`;
 }

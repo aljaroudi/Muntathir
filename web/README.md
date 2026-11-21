@@ -1,97 +1,54 @@
 # Muntathir website
 
-Static Arabic and English landing page built with Astro, Tailwind CSS, Bun, and Vite+. Arabic lives at `/`; English lives at `/en/`. Both pages render fully without JavaScript. The language switch uses ordinary links, with no browser-language redirects or cookies.
+Static Arabic (`/`) and English (`/en/`) site built with Astro, Tailwind CSS, Bun and Vite+. Pages render fully without JavaScript; the language switch is plain links (no redirects or cookies).
 
-## Local development
+## Development
 
-Use Node >=22.22 and Bun 1.4.3 (recorded in `package.json`).
+Node >=22.22 and Bun 1.4.4 (pinned in `package.json`).
 
 ```sh
 cd web
 bun install --frozen-lockfile
-bun run dev -- --background
+bun run dev -- --background   # manage with: bun run astro -- dev status|logs|stop
+bun run format                # Vite+ formatting (skips .astro; Astro checks those)
+bun run validate              # format check, lint, Astro/TypeScript check, build, output tests
+bun run preview               # serve production output
 ```
 
-Use `bun run astro -- dev status`, `bun run astro -- dev logs`, and `bun run astro -- dev stop` to manage the background server.
+`bun test` checks built output, so run `bun run build` first. The first build needs network access: Astro downloads and self-hosts the Google fonts (Noto Sans Arabic, Amiri for the Quran verse).
 
-```sh
-bun run format       # Explicitly format source files
-bun run validate     # Formatting, lint, Astro/TypeScript checks, build, output tests
-bun run preview      # Serve production output
-```
+Git hooks (from the repository root): `git config core.hooksPath .githooks`. Pre-commit runs Swift and Vite+ format checks and web lint; pre-push runs Apple tests, web type checks, build and output tests. Hooks never stage files and need Bun on PATH (including for GUI Git clients) plus installed web dependencies.
 
-`bun test` checks built output, so run `bun run build` first. Vite+ provides linting; Vite+ formats its supported source files. It currently skips `.astro` templates; those stay manually formatted and are checked by Astro. Astro handles framework compilation and type checking. The scaffold was created with:
+## Layout
 
-```sh
-vp create astro --package-manager bun --no-git --no-hooks --no-agent --no-editor --no-interactive -- web --template minimal --no-install --no-git --yes
-```
+- `src/i18n.ts`: typed Arabic and English copy.
+- `src/site.ts`: canonical origin, localized paths, App Store link.
+- `src/components/Landing.astro`: shared layout and metadata.
+- `src/styles/global.css`: Tailwind theme tokens and fonts; layout uses Tailwind utilities.
+- `public/social/`: localized 1200×630 social images.
+- `public/marketing/`: phone-tour manifest, WebP screenshots and WebM video, exported by `just lane ios web_media` (run `just lane ios marketing` first to recapture). The exporter validates both locales before replacing files; web builds need no simulator.
 
-## Content and assets
-
-- `src/i18n.ts`: complete, typed Arabic and English copy.
-- `src/site.ts`: canonical origin, localized paths, and App Store destination.
-- `src/components/Landing.astro`: shared layout, accessible content, and metadata.
-- `src/styles/global.css`: Tailwind theme tokens, language-level fonts, and shared accessibility defaults. Layout and component styles use Tailwind utilities.
-- `public/social/`: localized 1200×630 social images. Browser typography uses Noto Sans Arabic for both languages and Amiri for the Quran verse through Astro’s Google font provider. Astro downloads and self-hosts the font at build time; the first build requires network access.
-
-The phone preview uses `public/marketing/manifest.json` and tracked WebP screenshots
-and WebM video exported by `just lane ios web_media` from the repository root. Run `just lane ios marketing` to regenerate captures first.
-The exporter validates both locales before replacing the web assets; web builds
-need no simulator. Store assets remain PNG/MP4 in `apple/build/marketing`.
-
-The tour shows ten screenshots for four seconds each, followed by the muted
-15-second sky video. Previous/next controls pause automatic cycling; Play resumes.
-Offscreen and hidden tabs pause playback. Reduced motion disables automatic
-cycling, video, tilt, and crossfades; manual navigation stays available. Without
-JavaScript, Today remains visible. The metal frame retains pointer/scroll tilt
-and glass reflections. The download link points to the published App Store listing.
-Do not add pricing, ratings, or claims without evidence.
-
-## Git hooks
-
-From the repository root:
-
-```sh
-git config core.hooksPath .githooks
-```
-
-Pre-commit preserves Swift formatting checks and adds Vite+ formatting checks for supported files and web lint. Pre-push preserves Apple tests and adds web type checks, a production build, and build-output tests. Hooks never stage files. Both hooks require the existing Apple tools plus Bun on PATH and installed web dependencies. GUI Git clients must inherit a PATH containing Bun.
+Don't add pricing, ratings or unsupported claims.
 
 ## Vercel
 
-Import the repository and set **Root Directory** to `web`. Enable [**Include source files outside of the Root Directory in the Build Step**](https://vercel.com/docs/monorepos/monorepo-faq) so shared events are available. Changes to this shared input must trigger a web deployment; disable automatic skipping of unaffected projects if it excludes these paths. The checked-in `vercel.json` selects Astro, `bun install --frozen-lockfile`, `bun run build`, and `dist` output. Use a supported Node version satisfying `engines.node`. No server adapter, runtime functions, or secrets are needed.
+- Root Directory `web`, with **Include source files outside of the Root Directory in the Build Step** enabled ([docs](https://vercel.com/docs/monorepos/monorepo-faq)) so `shared/events.json` is available. Changes to shared inputs must trigger a web deploy; disable skipping of unaffected projects if it excludes them.
+- `vercel.json` sets Astro, `bun install --frozen-lockfile`, `bun run build` and `dist`. No adapter, functions or secrets.
+- Domain: **منتظر.com** (DNS records from Vercel). Never use the preview hostname as the canonical origin.
+- `VERCEL_ENV=preview` builds emit `noindex, nofollow` and a disallow-all robots.txt. That isn't access control; use preview protection for private previews.
 
-Attach **منتظر.com** in Vercel's Domains settings and apply the DNS records Vercel supplies. The URL API normalizes the internationalized hostname consistently for canonical URLs, social metadata, and sitemap entries. Do not substitute the preview hostname as the canonical origin.
-
-Vercel sets `VERCEL_ENV=preview` for preview builds. Those builds emit `noindex, nofollow` on both pages and a robots.txt that disallows crawling. Production builds allow indexing. Preview protection is still recommended for private previews; robots directives are not access controls.
-
-To verify the preview output locally:
+Check preview output locally, then restore production output:
 
 ```sh
-VERCEL_ENV=preview bun run build
-VERCEL_ENV=preview bun test
-bun run build
-bun test
+VERCEL_ENV=preview bun run build && VERCEL_ENV=preview bun test
+bun run build && bun test
 ```
 
-The final two commands restore and check production output. Deployment and DNS changes are not performed by these scripts.
+## Calendar
 
-## Calendar feed
+- **Corrections feed:** `public/calendar/corrections-v1.json` is served at `/calendar/corrections-v1.json` and fetched by the apps (ETag, last-good cache). Keep the envelope even with no announcements, and never publish fixture announcements. Source IDs, validation and publication rules: [apple/Shared/README.md](../apple/Shared/README.md). After deploying, confirm the production URL returns 200 and a valid v1 payload.
+- **Events:** edit `shared/events.json` (also bundled by the apps). Each `title` needs `en`; missing `ar` falls back to English. Invalid data fails the build.
+- **ICS feeds:** `/calendar/ar.ics` and `/calendar/en.ics` (linked via `webcal:`) are built from `naked-eye-middle-east` / `nakedEye` announcements in the checked-in feed, falling back to Umm al-Qura, with month resolution mirroring Apple's `CalendarEngine`. Events are all-day civil dates. Each build covers the previous, current and next five Hijri years, so rebuild at least yearly. UIDs are stable. After deploying, check both URLs return 200 with `Content-Type: text/calendar; charset=utf-8`.
+- **Calendar pages:** `/calendar/` and `/en/calendar/` show the current Hijri year without JavaScript; year pages `/calendar/1350/`–`/calendar/1500/` (and `/en/calendar/{year}/`) are pre-rendered with canonical URLs and sitemap entries. Today follows the visitor's civil date (no sunset rollover); unconfirmed future months are labeled estimates.
 
-The already-live website serves `/calendar/corrections-v1.json` from `public/calendar/corrections-v1.json`. Its production payload confirms 1448-05 starts on 2026-10-13 for `naked-eye-middle-east` / `nakedEye` and `government-SA` / `government`, each at revision 1. Keep the envelope even when there are no announcements. The Apple app fetches this URL from the production origin, using ETag and last-good caching. See [the shared calendar documentation](../apple/Shared/README.md) for source IDs, wire validation, and publication rules. Never publish fixture announcements as real data. After deployment, verify the production URL returns HTTP 200 and a valid version-one payload.
-
-## Calendar subscriptions
-
-Arabic `/calendar/ar.ics` and English `/calendar/en.ics` are generated by Astro on every build. Landing pages link to these feeds using `webcal:` for subscription. Feed dates use `naked-eye-middle-east` / `nakedEye` announcements from the checked-in corrections feed, falling back to Umm al-Qura. Month resolution mirrors Apple's CalendarEngine. Events are all-day civil dates, not sunset times or personal calendar adjustments.
-
-Edit repository-root `shared/events.json` for event dates and localized titles. Xcode bundles that same file as `events.json` for the app and iOS widgets. Each event’s `title` dictionary contains language codes and text. English (`en`) is required; missing Arabic (`ar`) falls back to English. Invalid data or missing English titles fails the build.
-
-Publish reviewed announcements to `public/calendar/corrections-v1.json`, then rebuild/deploy to update subscriptions. The feeds never fetch live announcements or publish test fixtures. Each build includes the previous, current, and next five Hijri years. Rebuild at least annually to advance that window. Stable UIDs preserve occurrence identity when dates change. Calendar apps choose their own refresh schedule; the feed suggests 12 hours. Removed occurrences disappear from the next complete feed.
-
-Vercel must include files outside `web` as described above. After deploying, check both HTTPS `.ics` URLs return HTTP 200 with `Content-Type: text/calendar; charset=utf-8`, and test subscription in a calendar client.
-
-## Event calendar
-
-`/calendar/` and `/en/calendar/` show all twelve months of the build’s current Hijri year without JavaScript. Browser enhancement enables a year dropdown for 1350–1500 with Gregorian year ranges, Today, and current-day countdowns. The visitor’s local civil date determines Today; dates do not roll over at sunset. Future unconfirmed months are labeled as estimates. The page shares event validation, month resolution, and occurrence generation with ICS feeds, using the same checked-in corrections and shared events. Rebuild after publishing confirmations. No native preferences or personal offsets are used.
-
-Year pages at `/calendar/1350/` through `/calendar/1500/` (and `/en/calendar/{year}/`) are pre-rendered with year-specific titles, canonical URLs, language alternates, and sitemap entries. The base calendar URL shows the current year and declares that year's page as canonical. The year dropdown navigates to these URLs; ordinary links under Browse years work without JavaScript and let crawlers discover every year. Month headings and event headings have fragment links for sharing. Rebuild to publish new corrections and refresh expected-date labels.
+Feeds and pages never fetch live data: publish reviewed announcements to the corrections file, then rebuild and deploy.

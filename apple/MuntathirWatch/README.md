@@ -1,9 +1,7 @@
 # Apple Watch
 
-The `MuntathirWatch` scheme builds the watchOS 26+ companion app and its WidgetKit extension. The iPhone target embeds both. The watch shows the visible prayer times; settings remain on the iPhone.
+The `MuntathirWatch` scheme builds the watchOS 26+ app and its [complications](../MuntathirWatchWidgets/). The iPhone app embeds both.
 
-WatchConnectivity transfers the latest location, method, visibility settings, and Hijri month corrections. The watch caches this snapshot and calculates times locally while disconnected. Open the iPhone app after installation or configuration changes. Delivery is opportunistic; changes can take time to reach a disconnected watch. Invalid snapshots preserve the last valid settings.
+The Watch shows prayer times and has no settings of its own. WatchConnectivity sends it the location, method, visibility, and month corrections. The Watch caches the latest valid snapshot and calculates times offline. Open the iPhone app after changing settings, since delivery is opportunistic.
 
-Enable the existing `group.com.aljaroudi.Muntathir` App Group for both watch targets when signing. App Groups share data between the watch app and its extension; WatchConnectivity transfers it between devices. Paired-device sync and watch-face rendering require device validation.
-
-See [complications](../MuntathirWatchWidgets/) and [Apple setup](../).
+Enable `group.com.aljaroudi.Muntathir` on both Watch targets. Check paired-device sync and watch-face rendering on real hardware.

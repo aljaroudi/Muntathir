@@ -41,7 +41,9 @@ enum HadithDatabaseError: Error {
 /// A connection stays inside one synchronous actor operation, including its progress callback.
 final class HadithConnection {
     private let connection: SQLiteConnection
-    private var handle: OpaquePointer { connection.handle }
+    private var handle: OpaquePointer {
+        connection.handle
+    }
 
     init(url: URL) throws {
         connection = try SQLiteConnection(path: url.path, flags: SQLITE_OPEN_READONLY, failure: HadithDatabaseError.unavailable)

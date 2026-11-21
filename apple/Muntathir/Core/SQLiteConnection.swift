@@ -68,9 +68,10 @@ final class SQLiteConnection {
     /// A cancelled task interrupts its statement, so report cancellation rather than logging a database failure.
     private func failed(_ sql: String) throws -> any Error {
         try Task.checkCancellation()
+        let handle = handle
         let message = String(cString: sqlite3_errmsg(handle))
         Logger(subsystem: "com.aljaroudi.Muntathir", category: "SQLite")
-            .error("SQLite error \(sqlite3_extended_errcode(self.handle)): \(message, privacy: .public) in \(sql, privacy: .public)")
+            .error("SQLite error \(sqlite3_extended_errcode(handle)): \(message, privacy: .public) in \(sql, privacy: .public)")
         return failure
     }
 

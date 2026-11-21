@@ -11,7 +11,7 @@ run from s008 through s182. Editions can cover individual clauses or contiguous 
 All editions use the same Arabic reading paragraphs. Source ranges must fit inside one paragraph. An uncovered passage
 remains readable in Arabic. Credits identify the human sources.
 
-The 13 human editions span ten languages. English WikiShia uses its numbered bilingual text.
+The 13 human editions span ten languages. The English Ahl al-Bayt World Assembly edition (from WikiShia) uses its numbered bilingual text.
 The other twelve editions have source-specific range mappings in `fadak/human/`. These retain
 the supplied translation in source order within each passage and omit unmatched commentary.
 The four English and Simplified Chinese literal and simplified editions use the same reader.
@@ -27,7 +27,7 @@ The four English and Simplified Chinese literal and simplified editions use the 
 - **Basmala** — a `basmala` field records a publisher-supplied conventional rendering separately
   from the credited source text. It is used for Azerbaijani, Persian, Indonesian, Swahili,
   Urdu, and the al-Jibouri and HubeAli English editions. The builder checks the rest of the
-  spoken text before adding it. German and English WikiShia supply their own opening.
+  spoken text before adding it. The German and English Ahl al-Bayt World Assembly editions supply their own opening.
 - **Poetry** — match individual verses where the source order differs. Source-only verses
   and commentary stay in the authoring documents.
 

@@ -68,7 +68,7 @@ tags:
 ### 🇪🇸 es - Spanish:
 - [[Projects/Shia Wiki/Literature/Sermons/الخطبة الفدكية/الترجمات (Translations)/es - Spanish/El inmortal e histórico sermón de Fátima Zahra (Fundación Cultural Oriente)|El inmortal e histórico sermón de Fátima Zahra (Fundación Cultural Oriente)]]:
   - **المترجم والمؤسسة:** العلامة باقر شريف القرشي ومؤسسة **Fundación Cultural Oriente (Islamoriente)** في قم وبوينس آيرس.
-  - **المحتوى:** ترجمة إسبانية معتمدة كاملة للخطبة مع مقدمتها التاريخية، وتفنيد مزاعم أبي بكر، والأبيات عند قبر الرسول، والخطبة اللاحقة لنساء المدينة.
+  - **المحتوى:** ترجمة إسبانية معتمدة كاملة للخطبة مع مقدمتها التاريخية، وتفنيد مزاعم فلان، والأبيات عند قبر الرسول، والخطبة اللاحقة لنساء المدينة.
 
 ---
 
@@ -98,7 +98,7 @@ tags:
 
 ### 🇦🇿 az - Azerbaijani — الأذرية:
 - [[Projects/Shia Wiki/Literature/Sermons/الخطبة الفدكية/الترجمات (Translations)/az - Azerbaijani/Həzrət Fatimənin Fədəkiyyə Xütbəsi (Azərbaycan Tərcüməsi)|Həzrət Fatimənin Fədəkiyyə Xütbəsi (Azərbaycan Tərcüməsi)]]:
-  - الترجمة الأذرية الشاملة للخطبة ومناظرة أبي بكر واستدلالات القرآن.
+  - الترجمة الأذرية الشاملة للخطبة ومناظرة فلان واستدلالات القرآن.
 
 ---
 
