@@ -1,2 +1,5 @@
-Actualiza la aplicación desde una versión anterior y ábrela. Comprueba que aparecen las notas de la versión. Ciérralas y vuelve a abrir la aplicación para comprobar que no se muestran de nuevo.
-Busca aleyas y hadices mientras escribes. Prueba con la última palabra incompleta. Oculta y vuelve a mostrar los signos diacríticos árabes en el lector y abre un pasaje resaltado. Comprueba que puedes pasar las páginas del mushaf después de resaltar texto.
+Abre un hadiz y un dictamen y solicita su traducción a otro idioma. Comprueba que la traducción aparece con el aviso de traducción automática.
+Explora los dictámenes y comprueba que los recién añadidos aparecen y se abren correctamente.
+Abre la nueva sección de Sermones. Comprueba que los sermones cargan y que al tocar a un orador se abre su perfil.
+Revisa las pantallas Hoy y Rakaat rediseñadas en iPhone y iPad, con apariencia clara y oscura.
+Recorre Corán, Hadiz, Dictámenes y Guardados. Comprueba que el desplazamiento, la búsqueda y la apertura de elementos son rápidos y fluidos.
