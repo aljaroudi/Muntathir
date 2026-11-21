@@ -147,6 +147,8 @@ struct HadithRequest: Codable, Hashable, Sendable {
     var collectionID: String?
     var chapterID: Int?
     var number: Int?
+    /// Library-level scope; ignored once a single collection is chosen.
+    var group: HadithBookGroup?
     var cursor = HadithCursor()
 }
 
@@ -183,14 +185,18 @@ struct HadithGrading: Identifiable, Hashable, Sendable {
     }
 }
 
-enum HadithBookGroup: CaseIterable, Identifiable {
+enum HadithBookGroup: String, CaseIterable, Codable, Identifiable, Sendable {
     case four, six, other
+
+    static let fourCollectionIDs = ["alkafi", "additional-Man-La-Yahduruh-al-Faqih-Saduq",
+                                    "additional-Tahdhib-al-Ahkam-Tusi", "additional-Al-Istibsar-Tusi"]
+    static let sixCollectionIDs = ["bukhari", "muslim", "abudawud", "tirmidhi", "nasai", "ibnmajah"]
 
     var title: LocalizedStringResource {
         switch self {
         case .four: "The Four"
         case .six: "The Six"
-        case .other: "Other books"
+        case .other: "Other"
         }
     }
 
@@ -199,13 +205,11 @@ enum HadithBookGroup: CaseIterable, Identifiable {
     }
 
     init(collectionID: String) {
-        self = switch collectionID {
-        case "bukhari", "muslim", "abudawud", "tirmidhi", "nasai", "ibnmajah":
+        self = if Self.sixCollectionIDs.contains(collectionID) {
             .six
-        case "alkafi", "additional-Man-La-Yahduruh-al-Faqih-Saduq",
-             "additional-Tahdhib-al-Ahkam-Tusi", "additional-Al-Istibsar-Tusi":
+        } else if Self.fourCollectionIDs.contains(collectionID) {
             .four
-        default:
+        } else {
             .other
         }
     }

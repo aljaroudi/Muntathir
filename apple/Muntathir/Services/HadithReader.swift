@@ -150,6 +150,10 @@ actor HadithReader {
         if let collectionID = request.collectionID {
             conditions.append("b.collection_id = ?")
             scopeParameters.append(collectionID)
+        } else if let group = request.group {
+            let (condition, parameters) = group.sqlCondition
+            conditions.append(condition)
+            scopeParameters += parameters
         }
         if let chapterID = request.chapterID {
             conditions.append("h.chapter_id = CAST(? AS INTEGER)")
@@ -370,7 +374,15 @@ actor HadithReader {
             guard let source = try chapterSource(id: id) else { throw URLError(.resourceUnavailable) }
             return ([source.book], source.chapterFile)
         }
-        guard let collection = request.collectionID else { return (nil, nil) }
+        guard let collection = request.collectionID else {
+            guard let group = request.group else { return (nil, nil) }
+            let (condition, parameters) = group.sqlCondition
+            let books = try sharedConnection().query("SELECT b.id FROM book b WHERE \(condition) ORDER BY b.id", parameters: parameters) {
+                QuranConnection.text($0, 0)
+            }
+            guard !books.isEmpty else { throw URLError(.resourceUnavailable) }
+            return (books, nil)
+        }
         let books = try sharedConnection().query("SELECT id FROM book WHERE collection_id = ? ORDER BY id", parameters: [collection]) {
             QuranConnection.text($0, 0)
         }
@@ -442,5 +454,18 @@ actor HadithReader {
                    ? ReadingTime.words(arabic: QuranConnection.text(row, 8), english: QuranConnection.text(row, 10))
                    : Int(sqlite3_column_int(row, 14)),
                readingNumber: sqlite3_column_type(row, 15) == SQLITE_NULL ? nil : Int(sqlite3_column_int(row, 15)))
+    }
+}
+
+private extension HadithBookGroup {
+    /// Collection filter against `book b`; "Other" is everything outside the canonical groups.
+    var sqlCondition: (String, [String]) {
+        let ids = switch self {
+        case .four: Self.fourCollectionIDs
+        case .six: Self.sixCollectionIDs
+        case .other: Self.fourCollectionIDs + Self.sixCollectionIDs
+        }
+        let placeholders = Array(repeating: "?", count: ids.count).joined(separator: ",")
+        return ("b.collection_id \(self == .other ? "NOT IN" : "IN") (\(placeholders))", ids)
     }
 }
