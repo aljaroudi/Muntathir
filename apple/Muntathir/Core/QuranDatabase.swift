@@ -107,48 +107,21 @@ enum QuranDatabaseError: Error {
 
 /// Owned locally by a synchronous lookup, or exclusively by the search actor.
 final class QuranConnection {
-    private let handle: OpaquePointer
+    private let connection: SQLiteConnection
 
     init(path: String, flags: Int32) throws {
-        var pointer: OpaquePointer?
-        guard sqlite3_open_v2(path, &pointer, flags, nil) == SQLITE_OK, let pointer else {
-            if let pointer {
-                sqlite3_close(pointer)
-            }
-            throw QuranDatabaseError.unavailable
-        }
-        handle = pointer
+        connection = try SQLiteConnection(path: path, flags: flags, failure: QuranDatabaseError.unavailable)
     }
 
-    deinit { sqlite3_close(handle) }
-
-    func query<T>(_ sql: String, parameters: [String] = [], row: (OpaquePointer) throws -> T) throws -> [T] {
-        try Task.checkCancellation()
-        var pointer: OpaquePointer?
-        guard sqlite3_prepare_v2(handle, sql, -1, &pointer, nil) == SQLITE_OK, let pointer else {
-            throw QuranDatabaseError.unavailable
-        }
-        defer { sqlite3_finalize(pointer) }
-        for (offset, parameter) in parameters.enumerated() {
-            let status = parameter.withCString { sqlite3_bind_text(pointer, Int32(offset + 1), $0, -1, unsafeBitCast(-1, to: sqlite3_destructor_type.self)) }
-            guard status == SQLITE_OK else { throw QuranDatabaseError.unavailable }
-        }
-        var result: [T] = []
-        while true {
-            try Task.checkCancellation()
-            switch sqlite3_step(pointer) {
-            case SQLITE_ROW: try result.append(row(pointer))
-            case SQLITE_DONE: return result
-            default: throw QuranDatabaseError.unavailable
-            }
-        }
+    func query<T>(_ sql: String, parameters: [any SQLiteBindable] = [], row: (OpaquePointer) throws -> T) throws -> [T] {
+        try connection.query(sql, parameters: parameters, row: row)
     }
 
-    func execute(_ sql: String, parameters: [String] = []) throws {
+    func execute(_ sql: String, parameters: [any SQLiteBindable] = []) throws {
         _ = try query(sql, parameters: parameters) { _ in () }
     }
 
     static func text(_ row: OpaquePointer, _ column: Int32) -> String {
-        sqlite3_column_text(row, column).map { String(cString: $0) } ?? ""
+        SQLiteConnection.text(row, column)
     }
 }

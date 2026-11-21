@@ -135,7 +135,7 @@ actor RulingsReader {
         func children(_ parent: Int64?) throws -> [RulingsSection] {
             try db.query("SELECT id,title FROM topic WHERE authority_code=? AND language_code=? AND " +
                 (parent == nil ? "parent_id IS NULL" : "parent_id=?") + " ORDER BY position,id",
-                parameters: [authority, language] + (parent.map { [String($0)] } ?? []))
+                parameters: [authority, language] + (parent.map { [$0] } ?? []) as [any SQLiteBindable])
             {
                 RulingsSection(id: sqlite3_column_int64($0, 0), title: Self.text($0, 1))
             }
@@ -201,7 +201,7 @@ actor RulingsReader {
         FROM question q JOIN placement p ON p.question_id = q.id JOIN sections s ON s.id = p.topic_id
         WHERE q.authority_code = ?1 AND q.language_code = ?2
         GROUP BY q.id ORDER BY MIN(p.position), q.site_id
-        """, parameters: [authority, language, String(section.id)], row: Self.rulings)
+        """, parameters: [authority, language, section.id], row: Self.rulings)
     }
 
     func questions(authority: String, language: String, query: String = "") throws -> [Rulings] {

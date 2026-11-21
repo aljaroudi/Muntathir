@@ -56,6 +56,7 @@
     { "path": "<PROJECT>/Muntathir/Core/QuranTranslation.swift", "target-membership": [ "MuntathirWidgets/compile-sources" ] },
     { "path": "<PROJECT>/Muntathir/Core/QuranSurah.swift", "target-membership": [ "MuntathirWidgets/compile-sources" ] },
     { "path": "<PROJECT>/Muntathir/Core/QuranDatabase.swift", "target-membership": [ "MuntathirWidgets/compile-sources" ] },
+    { "path": "<PROJECT>/Muntathir/Core/SQLiteConnection.swift", "target-membership": [ "MuntathirWidgets/compile-sources" ] },
     {
       "kind": "folder",
       "path": "<PROJECT>/Muntathir/Resources",
