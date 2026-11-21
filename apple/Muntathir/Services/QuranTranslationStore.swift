@@ -105,7 +105,7 @@ import WidgetKit
                     do {
                         try await files.verify(source: directory, version: version)
                     } catch {
-                        if let version {
+                        if let version, !Task.isCancelled {
                             policy.reject(version)
                         }
                         throw error
@@ -159,6 +159,8 @@ import WidgetKit
         do {
             try await files.verify(source: directory, version: version)
         } catch {
+            // An interrupted check proves nothing about the pack; the update resumes on the next refresh.
+            guard !Task.isCancelled else { return }
             log.error("Rejected Quran translation pack \(version ?? 0): \(String(describing: error), privacy: .public)")
             if let version {
                 policy.reject(version)
@@ -172,6 +174,7 @@ import WidgetKit
             changed()
             log.notice("Quran translations updated to version \(version ?? 0).")
         } catch {
+            guard !Task.isCancelled else { return }
             log.error("Quran translation update could not install: \(String(describing: error), privacy: .public)")
             abandonUpdate(files, removingPack: true)
         }
@@ -191,9 +194,9 @@ import WidgetKit
         return index.pending != nil && index.backgroundUpdate != true
     }
 
-    /// Silently reinstalls outdated languages from the latest hosted pack, at most once per day.
-    func checkForUpdates(now: Date = .now) async {
-        guard let files, !busy, !requesting, !isDownloading, downloadState != .failed, policy.isDue(now),
+    /// Silently reinstalls outdated languages from the latest hosted pack when due.
+    func checkForUpdates(now: Date = .now, trigger: AssetPackUpdateTrigger = .foreground) async {
+        guard let files, !busy, !requesting, !isDownloading, downloadState != .failed, policy.isDue(now, trigger: trigger),
               let index = try? files.read(), index.pending == nil, !index.installed.isEmpty else { return }
         let log = Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
         let remote: Int

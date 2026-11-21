@@ -6,6 +6,11 @@ struct Rulings: Identifiable, Sendable {
         let authority: String
         let language: String
         let siteID: String
+
+        /// Length prefixes keep identifiers unambiguous even when they contain punctuation.
+        var key: String {
+            [authority, language, siteID].map { "\($0.utf8.count):\($0)" }.joined()
+        }
     }
 
     let id: ID
@@ -24,6 +29,9 @@ struct RulingFootnote: Identifiable, Sendable {
     let label: String
     let body: String
     let chapter: Bool
+
+    /// Row IDs change when the database is rebuilt; labels are stable within a ruling.
+    var highlightBlock: String { "note:" + label + (chapter ? ":chapter" : "") }
 }
 
 struct RulingsAuthority: Identifiable, Sendable {
@@ -50,6 +58,16 @@ actor RulingsReader {
     }
 
     private var database: HadithConnection?
+
+    /// Swaps in a validated file atomically. Queries wait on this actor, and the open connection
+    /// closes first so SQLite never reads a file that was replaced underneath it.
+    func replace(_ destination: URL, with staged: URL) throws {
+        database = nil
+        guard rename(staged.path, destination.path) == 0 else {
+            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+        }
+        try install(destination)
+    }
 
     func install(_ url: URL?) throws {
         database = nil

@@ -334,6 +334,8 @@ import OSLog
         do {
             try await library.verify(source: managed, supplications: packID == "supplications")
         } catch {
+            // An interrupted check proves nothing about the pack; keep it for the next refresh.
+            guard !Task.isCancelled else { return false }
             log.error("Rejected \(packID, privacy: .public) pack \(version ?? 0): \(String(describing: error), privacy: .public)")
             if let version {
                 policy.reject(version)
@@ -349,18 +351,21 @@ import OSLog
         if restoring != nil {
             state = .installing
         }
+        // A scan of the current file must not keep it open while it is replaced.
+        integrityWorker?.cancel()
         do {
             let staged = try await library.prepare(source: managed, restoring: restoring)
             defer { try? FileManager.default.removeItem(at: staged) }
             try await reader.commit(staged, to: library.url)
         } catch {
+            guard !Task.isCancelled else { return false }
             log.error("Could not install \(packID, privacy: .public) pack \(version ?? 0): \(String(describing: error), privacy: .public)")
             if restoring != nil {
                 // The restore stays retryable from the downloaded pack.
                 storageErrorMessage = error.localizedDescription
                 storageError = true
             } else {
-                // Storage failures are transient; the next daily check downloads the update again.
+                // Storage failures are transient; the next check downloads the update again.
                 defaults.set(true, forKey: cleanupKey)
             }
             return false
@@ -374,15 +379,16 @@ import OSLog
         return true
     }
 
-    /// Downloads a newer hosted pack at most once per day; `resolve()` adopts it only if it passes validation.
-    func checkForUpdates(now: Date = .now) async {
-        // An incompatible library is unreadable anyway, so it may update too.
-        guard library != nil, state == .ready || state == .incompatible, !busy, !checkingForUpdates, pendingDownload == nil,
-              !defaults.bool(forKey: removedKey), defaults.string(forKey: restorationKey) == nil, policy.isDue(now) else { return }
+    /// Downloads a newer hosted pack when due; `resolve()` adopts it only if it passes validation.
+    /// Any local library qualifies, whatever its state, so a refresh still in flight cannot skip the check.
+    func checkForUpdates(now: Date = .now, trigger: AssetPackUpdateTrigger = .foreground) async {
+        guard let library, !checkingForUpdates, pendingDownload == nil, !defaults.bool(forKey: removedKey),
+              defaults.string(forKey: restorationKey) == nil, policy.isDue(now, trigger: trigger) else { return }
         let log = Logger(subsystem: "com.aljaroudi.Muntathir", category: "HadithAssets")
         let packID = packID
         checkingForUpdates = true
         defer { checkingForUpdates = false }
+        guard await library.localURL() != nil else { return }
         do {
             guard let remote = try await backend.remoteVersion() else { return }
             policy.markChecked(now)
@@ -390,7 +396,7 @@ import OSLog
             if let installedVersion {
                 log.notice("Updating \(packID, privacy: .public) from \(installedVersion) to \(remote).")
             }
-            if await backend.localVersion().map({ $0 < remote }) ?? true {
+            if await backend.localVersion() != remote {
                 try await backend.download()
             }
             await refresh()

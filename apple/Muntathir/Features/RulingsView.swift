@@ -355,7 +355,6 @@ private struct RulingsSectionView: View {
 }
 
 private struct RulingsDetailView: View {
-    @AppStorage("showArabicDiacritics") private var showMarks = true
     let reader: RulingsReader
     let rulings: Rulings
     let authorityName: String
@@ -365,58 +364,57 @@ private struct RulingsDetailView: View {
     @State private var bookmarkFailed = false
     @State private var sections: [RulingsSection] = []
     @State private var notes: [RulingFootnote] = []
+    @State private var expandedNotes: Set<RulingFootnote.ID> = []
+    var highlight: ReadingHighlight?
 
     var body: some View {
-        List {
-            Section {
-                Text(showMarks ? rulings.question : ArabicDisplay.plain(rulings.question)).readingText(arabic: language.id == "ar", hadith: true, heading: 2).textSelection(.enabled)
-                if !rulings.answer.isEmpty {
-                    Text(showMarks ? rulings.answer : ArabicDisplay.plain(rulings.answer)).readingText(arabic: language.id == "ar", hadith: true).textSelection(.enabled)
-                }
-            }
-            .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)
-            if !notes.isEmpty {
-                Section("Notes") {
-                    ForEach(notes) { note in
-                        DisclosureGroup {
-                            Text(showMarks ? note.body : ArabicDisplay.plain(note.body))
-                                .readingText(arabic: language.id == "ar", hadith: true).textSelection(.enabled)
-                        } label: {
-                            HStack {
-                                if note.chapter {
-                                    Text("Chapter note")
-                                }
-                                Text(verbatim: note.label)
-                            }
-                        }
+        ScrollViewReader { proxy in
+            List {
+                Section {
+                    segments(question, heading: 2)
+                    if !rulings.answer.isEmpty {
+                        segments(answer)
                     }
                 }
                 .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)
-            }
-            LabeledContent("Religious authority", value: authorityName)
-            if let source = rulings.source {
-                Link(destination: source) { Label("Source", systemImage: "arrow.up.right.square") }
-            }
-            if !sections.isEmpty {
-                Section {
-                    ForEach(sections) { section in
-                        NavigationLink {
-                            RulingsSectionView(reader: reader, authority: rulings.id.authority, authorityName: authorityName, language: language, section: section)
-                        } label: {
-                            Label(section.title, systemImage: "tag")
-                                .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)
+                if !notes.isEmpty {
+                    Section("Notes") {
+                        ForEach(notes) { note in
+                            DisclosureGroup(isExpanded: Binding {
+                                expandedNotes.contains(note.id)
+                            } set: { expanded in
+                                if expanded { expandedNotes.insert(note.id) } else { expandedNotes.remove(note.id) }
+                            }) {
+                                segments(HighlightBlock(id: note.highlightBlock, plain: note.body))
+                            } label: {
+                                HStack {
+                                    if note.chapter {
+                                        Text("Chapter note")
+                                    }
+                                    Text(verbatim: note.label)
+                                }
+                            }
                         }
-                        .accessibilityIdentifier("rulings-section-\(section.id)")
                     }
+                    .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)
                 }
+                details
             }
-        }
-        .task(id: rulings.id) {
-            if let found = try? await reader.footnotes(for: rulings.id), !Task.isCancelled {
-                notes = found
-            }
-            if let found = try? await reader.sections(for: rulings.id), !Task.isCancelled {
-                sections = found
+            .task(id: rulings.id) {
+                if let found = try? await reader.footnotes(for: rulings.id), !Task.isCancelled {
+                    notes = found
+                    // Reveal the note a saved highlight points to.
+                    expandedNotes = Set(found.filter { $0.highlightBlock == highlight?.block }.map(\.id))
+                }
+                // Long answers render lazily; bring the saved highlight's segment on screen before it focuses.
+                let blocks = [question, answer] + notes.map { HighlightBlock(id: $0.highlightBlock, plain: $0.body) }
+                if let block = blocks.first(where: { $0.id == highlight?.block }), let segment = block.segment(for: highlight), segment.id > 0 {
+                    await Task.yield()
+                    proxy.scrollTo("\(block.id):\(segment.id)", anchor: .top)
+                }
+                if let found = try? await reader.sections(for: rulings.id), !Task.isCancelled {
+                    sections = found
+                }
             }
         }
         .navigationTitle("Rulings")
@@ -437,6 +435,41 @@ private struct RulingsDetailView: View {
         .alert("Unable to save bookmark", isPresented: $bookmarkFailed) {
             Button("OK", role: .cancel) {}
         } message: { Text("Please try again.") }
+        .environment(\.focusedHighlight, highlight)
+    }
+
+    private var question: HighlightBlock { HighlightBlock(id: "question", plain: rulings.question) }
+    private var answer: HighlightBlock { HighlightBlock(id: "answer", plain: rulings.answer) }
+
+    @ViewBuilder private var details: some View {
+        LabeledContent("Religious authority", value: authorityName)
+        if let source = rulings.source {
+            Link(destination: source) { Label("Source", systemImage: "arrow.up.right.square") }
+        }
+        if !sections.isEmpty {
+            Section {
+                ForEach(sections) { section in
+                    NavigationLink {
+                        RulingsSectionView(reader: reader, authority: rulings.id.authority, authorityName: authorityName, language: language, section: section)
+                    } label: {
+                        Label(section.title, systemImage: "tag")
+                            .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)
+                    }
+                    .accessibilityIdentifier("rulings-section-\(section.id)")
+                }
+            }
+        }
+    }
+
+    private func segments(_ block: HighlightBlock, heading: Int? = nil) -> some View {
+        ForEach(block.segments) { segment in
+            HighlightText(text: segment.text, source: rulings.id.siteID, block: block.id, reference: authorityName,
+                          arabic: language.id == "ar", ruling: rulings.id, heading: heading, blockText: block.text, offset: segment.offset)
+                .id("\(block.id):\(segment.id)")
+                // Segments of one passage read as continuous text.
+                .listRowSeparator(segment.id == 0 ? .automatic : .hidden, edges: .top)
+                .listRowSeparator(segment.id == block.segments.count - 1 ? .automatic : .hidden, edges: .bottom)
+        }
     }
 }
 
@@ -455,6 +488,12 @@ private struct RulingsIntroSection: View {
 
 private struct RulingsSavedView: View {
     @Environment(\.quranUserStore) private var store
+    @Environment(\.rulingsAssets) private var assets
+    @State private var availableHighlights: Set<String> = []
+
+    private var highlights: [ReadingHighlight] {
+        store?.highlights.filter { $0.ruling != nil } ?? []
+    }
 
     var body: some View {
         Group {
@@ -467,21 +506,38 @@ private struct RulingsSavedView: View {
                     Button("Try again") { store?.reopen() }
                 }
             } else {
-                SavedList(bookmarksOnly: true, highlights: [], bookmarks: store?.bookmarks.filter { $0.kind == .ruling } ?? [],
-                          canOpen: { $0.bookmark?.ruling != nil }, available: { _ in false })
+                SavedList(highlights: highlights, bookmarks: store?.bookmarks.filter { $0.kind == .ruling } ?? [],
+                          canOpen: { $0.ruling != nil }, available: { availableHighlights.contains($0.id) })
                 { entry in
-                    if let id = entry.bookmark?.ruling {
-                        SavedRulingDestination(id: id)
+                    if let id = entry.ruling {
+                        SavedRulingDestination(id: id, highlight: entry.highlight)
                     }
                 }
             }
         }
         .navigationTitle("Saved")
+        .task(id: "\(assets?.revision ?? 0)|" + highlights.map { $0.id + String($0.modifiedAt.timeIntervalSince1970) }.joined(separator: "|")) {
+            guard let assets, assets.state == .ready else { return }
+            var available: Set<String> = []
+            for (id, values) in Dictionary(grouping: highlights, by: { $0.ruling }) {
+                guard let id, let ruling = try? await assets.reader.question(id) else { continue }
+                var blocks = ["question": ruling.question, "answer": ruling.answer]
+                if values.contains(where: { $0.block?.hasPrefix("note:") == true }) {
+                    for note in (try? await assets.reader.footnotes(for: id)) ?? [] {
+                        blocks[note.highlightBlock] = note.body
+                    }
+                }
+                available.formUnion(values.filter { $0.isAvailable(in: blocks) }.map(\.id))
+            }
+            guard !Task.isCancelled else { return }
+            availableHighlights = available
+        }
     }
 }
 
 private struct SavedRulingDestination: View {
     let id: Rulings.ID
+    var highlight: ReadingHighlight?
     @Environment(\.rulingsAssets) private var assets
     @Environment(\.locale) private var locale
     @State private var ruling: Rulings?
@@ -495,7 +551,7 @@ private struct SavedRulingDestination: View {
             if let assets, assets.state != .ready {
                 List { RulingsDownloadSection(assets: assets) }
             } else if let assets, let ruling, let language {
-                RulingsDetailView(reader: assets.reader, rulings: ruling, authorityName: authorityName, language: language)
+                RulingsDetailView(reader: assets.reader, rulings: ruling, authorityName: authorityName, language: language, highlight: highlight)
             } else if loading {
                 ProgressView()
             } else {

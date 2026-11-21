@@ -39,8 +39,6 @@ struct RakaatSessionView: View {
     var body: some View {
         prayerView
             .background { RakaatHeadingOrientation(onChange: qibla.orientHeading).allowsHitTesting(false) }
-            .navigationTitle("Rakaat Tracker")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar(.hidden, for: .tabBar)
             .task(id: session) {
@@ -214,6 +212,11 @@ struct RakaatSessionView: View {
                     Text("Keep the camera uncovered in steady light while it calibrates.")
                         .font(.body)
                 } else {
+                    if let prayer {
+                        Text(prayer.title)
+                            .font(.title.bold())
+                            .shadow(color: .black.opacity(0.6), radius: 8)
+                    }
                     count
                         .shadow(color: .black.opacity(0.6), radius: 8)
                         .padding(24)

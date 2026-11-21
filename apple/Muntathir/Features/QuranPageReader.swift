@@ -19,7 +19,7 @@ struct QuranPageReader: View {
 
     var body: some View {
         let content = QuranPageText(page: page, surahs: surahs)
-        let highlights = (store?.highlights ?? []).filter { !$0.isHadith && content.verses[$0.source] != nil }
+        let highlights = (store?.highlights ?? []).filter { !$0.isHadith && $0.ruling == nil && content.verses[$0.source] != nil }
         let missingFocus = highlight.flatMap { value in highlights.contains { $0.id == value.id } ? nil : value }
         let mappedHighlights = highlights + [missingFocus].compactMap(\.self)
         let ranges = Dictionary(uniqueKeysWithValues: mappedHighlights.map { ($0.id, content.displayRanges(for: $0)) })

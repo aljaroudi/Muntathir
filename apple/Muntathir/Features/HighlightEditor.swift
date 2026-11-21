@@ -197,7 +197,7 @@ struct HighlightSummary: View {
     @Environment(\.locale) private var locale
 
     private var reference: String {
-        highlight.isHadith || locale.language.languageCode?.identifier != "ar"
+        highlight.isHadith || highlight.ruling != nil || locale.language.languageCode?.identifier != "ar"
             ? highlight.reference : QuranReference.display(highlight.source, locale: locale)
     }
 

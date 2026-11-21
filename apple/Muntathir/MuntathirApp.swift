@@ -46,7 +46,12 @@ struct MuntathirApp: App {
         #endif
         _model = State(initialValue: model)
         _quranStore = State(initialValue: QuranUserStore.application())
-        BackgroundRefresh.register { await model.refreshInBackground() }
+        BackgroundRefresh.register {
+            let refreshed = await model.refreshInBackground()
+            // Content stays fresh for the next open even when the app goes unopened for days.
+            await AssetPackUpdates.shared.run(.background)
+            return refreshed
+        }
     }
 
     var body: some Scene {

@@ -17,7 +17,7 @@ struct QuranSavedVersesView: View {
     }
 
     private var highlights: [ReadingHighlight] {
-        store?.highlights.filter { !$0.isHadith } ?? []
+        store?.highlights.filter { !$0.isHadith && $0.ruling == nil } ?? []
     }
 
     private var bookmarks: [ReadingBookmark] {

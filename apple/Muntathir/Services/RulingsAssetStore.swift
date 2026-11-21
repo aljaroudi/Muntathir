@@ -44,11 +44,11 @@ import OSLog
         return URL.applicationSupportDirectory.appending(path: "Libraries/rulings/rulings.db")
     }
 
-    /// Downloads a newer hosted pack at most once per day; `refresh()` adopts it only if it passes validation.
-    func checkForUpdates(now: Date = .now) async {
-        // An incompatible copy is unreadable anyway, so it may update too.
-        guard library != nil, state == .ready || state == .incompatible, !busy, !downloading, !checkingForUpdates,
-              policy.isDue(now) else { return }
+    /// Downloads a newer hosted pack when due; `refresh()` adopts it only if it passes validation.
+    /// Any local copy qualifies, whatever its state, so a refresh still in flight cannot skip the check.
+    func checkForUpdates(now: Date = .now, trigger: AssetPackUpdateTrigger = .foreground) async {
+        guard let library, FileManager.default.fileExists(atPath: library.path), !downloading, !checkingForUpdates,
+              policy.isDue(now, trigger: trigger) else { return }
         checkingForUpdates = true
         defer { checkingForUpdates = false }
         do {
@@ -59,7 +59,7 @@ import OSLog
                 Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
                     .notice("Updating rulings from \(installedVersion) to \(remote).")
             }
-            if await backend.localVersion().map({ $0 < remote }) ?? true {
+            if await backend.localVersion() != remote {
                 try await backend.download()
             }
             await refresh()
@@ -89,6 +89,10 @@ import OSLog
         do {
             try await RulingsReader().install(managed)
         } catch {
+            // An interrupted check proves nothing about the pack; keep it for the next refresh.
+            if Task.isCancelled, let local {
+                return local
+            }
             // Without a copy to keep, the error surfaces as incompatible or failed.
             guard let local else { throw error }
             log.error("Rejected rulings pack \(version ?? 0): \(String(describing: error), privacy: .public)")
@@ -99,8 +103,15 @@ import OSLog
             return local
         }
         do {
-            try await Self.copy(managed, to: library)
+            let staged = try await Self.stage(managed, beside: library)
+            defer { try? FileManager.default.removeItem(at: staged) }
+            // Whatever file ends up in place, the next install must reopen it.
+            signature = nil
+            try await reader.replace(library, with: staged)
         } catch {
+            if Task.isCancelled, let local {
+                return local
+            }
             guard let local else { throw error }
             // Storage failures are transient; the managed pack stays for the next refresh.
             log.error("Could not install rulings pack \(version ?? 0): \(String(describing: error), privacy: .public)")
@@ -109,12 +120,13 @@ import OSLog
         if let version {
             defaults.set(version, forKey: installedVersionKey)
         }
+        log.notice("Installed rulings pack \(version ?? 0).")
         try? await backend.remove()
         return library
     }
 
-    /// Readers of the previous file keep it open until they reinstall; the swap itself is atomic.
-    @concurrent private nonisolated static func copy(_ source: URL, to destination: URL) async throws {
+    /// Copies a pack next to the library so the final swap is an atomic rename on the same volume.
+    @concurrent private nonisolated static func stage(_ source: URL, beside destination: URL) async throws -> URL {
         let fm = FileManager.default
         var directory = destination.deletingLastPathComponent()
         try fm.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -122,11 +134,13 @@ import OSLog
         values.isExcludedFromBackup = true
         try directory.setResourceValues(values)
         let staged = directory.appending(path: "staging-\(UUID().uuidString).db")
-        defer { try? fm.removeItem(at: staged) }
-        try fm.copyItem(at: source, to: staged)
-        guard rename(staged.path, destination.path) == 0 else {
-            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+        do {
+            try fm.copyItem(at: source, to: staged)
+        } catch {
+            try? fm.removeItem(at: staged)
+            throw error
         }
+        return staged
     }
 
     func refresh() async {

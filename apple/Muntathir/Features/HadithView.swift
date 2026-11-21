@@ -149,7 +149,7 @@ struct HadithView: View {
                     }
                 }
                 if query.isEmpty, !introductions.isEmpty {
-                    Section("Introduction") {
+                    Section {
                         ForEach(introductions) { introduction in
                             HadithIntroductionRow(introduction: introduction, reader: reader)
                                 .modifier(HadithListAnchor(id: "introduction:\(introduction.id)", tracking: scrollTracking, settled: saveVisibleRow))
@@ -672,6 +672,7 @@ struct HadithSavedView: View {
     var supplications = false
     @Environment(\.quranUserStore) private var store
     @State private var rows: [String: Int] = [:]
+    @State private var introductions: [String: HadithIntroduction] = [:]
     @State private var availableHighlights: Set<String> = []
     @State private var loading = true
     @State private var failed = false
@@ -679,7 +680,10 @@ struct HadithSavedView: View {
 
     private var highlights: [ReadingHighlight] {
         store?.highlights.filter {
-            $0.isHadith && (Hadith.supplicationCollectionIDs.contains(HadithSource(key: $0.source)?.book ?? "")) == supplications
+            guard $0.isHadith else { return false }
+            // Introductions belong to the hadith library, never to supplications.
+            if $0.source.hasPrefix(HadithIntroduction.highlightPrefix) { return !supplications }
+            return (Hadith.supplicationCollectionIDs.contains(HadithSource(key: $0.source)?.book ?? "")) == supplications
         } ?? []
     }
 
@@ -694,10 +698,12 @@ struct HadithSavedView: View {
     }
 
     var body: some View {
-        SavedList(highlights: highlights, bookmarks: bookmarks, canOpen: { rows[$0.source] != nil },
+        SavedList(highlights: highlights, bookmarks: bookmarks, canOpen: { rows[$0.source] != nil || introductions[$0.source] != nil },
                   available: { availableHighlights.contains($0.id) })
         { entry in
-            if let id = rows[entry.source] {
+            if let introduction = introductions[entry.source] {
+                HadithIntroductionView(introduction: introduction, reader: reader, highlight: entry.highlight)
+            } else if let id = rows[entry.source] {
                 HadithDetailView(initialID: id, reader: reader, query: "", orderedFallback: false,
                                  highlight: entry.highlight, supplication: supplications)
             }
@@ -729,8 +735,18 @@ struct HadithSavedView: View {
             failed = false
             do {
                 var loaded: [String: Int] = [:]
+                var loadedIntroductions: [String: HadithIntroduction] = [:]
                 var available: Set<String> = []
                 for key in keys {
+                    if key.hasPrefix(HadithIntroduction.highlightPrefix) {
+                        guard let introduction = try await reader.introduction(book: String(key.dropFirst(HadithIntroduction.highlightPrefix.count))) else { continue }
+                        loadedIntroductions[key] = introduction
+                        let blocks = introduction.highlightBlocks
+                        for highlight in highlights where highlight.source == key && highlight.isAvailable(in: blocks) {
+                            available.insert(highlight.id)
+                        }
+                        continue
+                    }
                     guard let source = HadithSource(key: key), let id = try await reader.resolve(source) else { continue }
                     let narration = try await reader.detail(id: id).narration
                     loaded[key] = id
@@ -746,6 +762,7 @@ struct HadithSavedView: View {
                     try Task.checkCancellation()
                 }
                 rows = loaded
+                introductions = loadedIntroductions
                 availableHighlights = available
                 loading = false
             } catch is CancellationError {

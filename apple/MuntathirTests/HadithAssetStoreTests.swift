@@ -673,3 +673,95 @@ extension HadithAssetStoreTests {
         #expect(relaunched.books.filter(\.installed).map(\.id) == ["other"])
     }
 }
+
+extension HadithAssetStoreTests {
+    @Test func launchCheckIsNotSkippedByARefreshInFlight() async throws {
+        let fixture = try HadithFixture(count: 3)
+        defer { fixture.remove() }
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let suite = "LaunchRace.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let backend = TestHadithAssets(url: fixture.url)
+        await backend.setInstalled(true)
+        await backend.setVersion(1)
+        await HadithAssetStore(backend: backend, defaults: defaults, library: HadithLocalLibrary(root: root)).refresh()
+
+        // A fresh launch: the first refresh is still resolving when the launch check runs.
+        await backend.setRemote(2)
+        let store = HadithAssetStore(backend: backend, defaults: defaults, library: HadithLocalLibrary(root: root))
+        async let first: Void = store.refresh()
+        await store.checkForUpdates(trigger: .launch)
+        await first
+        await store.refresh()
+        #expect(await backend.downloads == 1)
+        #expect(store.state == .ready)
+        #expect(defaults.integer(forKey: "hadith.installedPackVersion") == 2)
+    }
+
+    @Test func cancelledValidationNeitherRejectsNorDiscardsThePack() async throws {
+        let fixture = try HadithFixture(count: 3)
+        defer { fixture.remove() }
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let suite = "CancelledUpdate.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let backend = TestHadithAssets(url: fixture.url)
+        await backend.setInstalled(true)
+        await backend.setVersion(1)
+        let store = HadithAssetStore(backend: backend, defaults: defaults, library: HadithLocalLibrary(root: root))
+        await store.refresh()
+
+        // A newer, valid pack arrives, but the refresh that adopts it is cancelled, as when a background task expires.
+        await backend.setInstalled(true)
+        await backend.setVersion(2)
+        let expired = Task { await store.refresh() }
+        expired.cancel()
+        await expired.value
+        #expect(!AssetPackUpdatePolicy(packID: "hadith", defaults: defaults).isRejected(2))
+        #expect(await backend.localURL() != nil)
+        #expect(defaults.integer(forKey: "hadith.installedPackVersion") == 1)
+
+        await store.refresh()
+        #expect(store.state == .ready)
+        #expect(defaults.integer(forKey: "hadith.installedPackVersion") == 2)
+        #expect(await backend.localURL() == nil)
+    }
+}
+
+struct AssetPackUpdatePolicyTests {
+    @Test func launchAlwaysChecksAndOtherTriggersWaitAboutADay() throws {
+        let suite = "UpdatePolicy.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let policy = AssetPackUpdatePolicy(packID: "test", defaults: defaults)
+        let start = Date()
+        #expect(policy.isDue(start, trigger: .foreground))
+        policy.markChecked(start)
+        #expect(policy.isDue(start, trigger: .launch))
+        #expect(!policy.isDue(start.addingTimeInterval(19 * 3600), trigger: .foreground))
+        #expect(!policy.isDue(start.addingTimeInterval(19 * 3600), trigger: .background))
+        #expect(policy.isDue(start.addingTimeInterval(20 * 3600), trigger: .background))
+    }
+
+    @Test func xcodeServedRevisionsUpdateWheneverTheArchiveChanges() throws {
+        let suite = "UpdatePolicy.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let policy = AssetPackUpdatePolicy(packID: "test", defaults: defaults)
+        // Hosted versions only move forward.
+        #expect(policy.accepts(2, over: 1))
+        #expect(!policy.accepts(1, over: 1))
+        #expect(!policy.accepts(1, over: 2))
+        // Xcode-served packs are version 0, identified by negated archive size.
+        #expect(policy.accepts(-31_079_118, over: 0))
+        #expect(policy.accepts(-200, over: -100))
+        #expect(policy.accepts(-100, over: -200))
+        #expect(!policy.accepts(-100, over: -100))
+        #expect(policy.accepts(-100, over: nil))
+        policy.reject(-200)
+        #expect(!policy.accepts(-200, over: -100))
+    }
+}

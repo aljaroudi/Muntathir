@@ -37,8 +37,13 @@ enum HighlightTextContent {
         return rendered
     }
 
-    static func attributed(text: String, markdown: AttributedString?, arabic: Bool, hadith: Bool = false, size: CGFloat, alignment: NSTextAlignment) -> NSMutableAttributedString {
-        let font = arabic ? UIFont(name: hadith ? "Lateef-Light" : "KFGQPCHAFSUthmanicScript-Regula", size: size) ?? .systemFont(ofSize: size) : .systemFont(ofSize: size)
+    static func attributed(text: String, markdown: AttributedString?, arabic: Bool, hadith: Bool = false, heading: Int? = nil, size: CGFloat, alignment: NSTextAlignment) -> NSMutableAttributedString {
+        var font = arabic ? UIFont(name: hadith ? "Lateef-Light" : "KFGQPCHAFSUthmanicScript-Regula", size: size) ?? .systemFont(ofSize: size) : .systemFont(ofSize: size)
+        if let heading {
+            // Matches the markdown heading scale below for plain-text headings.
+            let headingSize = size * (heading <= 2 ? 1.3 : 1.1)
+            font = UIFont(descriptor: font.fontDescriptor.withSymbolicTraits(.traitBold) ?? font.fontDescriptor, size: headingSize)
+        }
         let style = NSMutableParagraphStyle()
         style.alignment = alignment
         style.baseWritingDirection = arabic ? .rightToLeft : .natural
@@ -82,6 +87,88 @@ enum HighlightTextContent {
     }
 }
 
+/// A slice of a long highlightable block. Saved ranges stay relative to the whole block, so splitting
+/// long passages into lazily rendered views never changes what a highlight points to.
+struct HighlightSegment: Identifiable, Sendable {
+    let id: Int
+    let text: String
+    var markdown: AttributedString?
+    /// UTF-16 offset of `text` within the block's full text.
+    let offset: Int
+
+    /// Roughly how much text one view lays out; long readers otherwise lay out and diff the entire passage on every update.
+    static let length = 2000
+
+    static func split(_ text: String) -> [Self] {
+        var result: [Self] = []
+        var start: String.Index?
+        var end = text.startIndex
+        func close() {
+            guard let first = start else { return }
+            result.append(Self(id: result.count, text: String(text[first ..< end]), offset: text.utf16.distance(from: text.startIndex, to: first)))
+            start = nil
+        }
+        for line in text.split(separator: "\n", omittingEmptySubsequences: true) {
+            if start == nil { start = line.startIndex }
+            end = line.endIndex
+            if text.utf16.distance(from: start ?? end, to: end) >= length { close() }
+        }
+        close()
+        return result
+    }
+
+    static func split(markdown: AttributedString) -> [Self] {
+        var result: [Self] = []
+        var start: AttributedString.Index?
+        var end = markdown.startIndex
+        var characters = 0
+        var offset = 0
+        func close() {
+            guard let first = start else { return }
+            let chunk = AttributedString(markdown[first ..< end])
+            let text = HighlightTextContent.canonical(chunk)
+            result.append(Self(id: result.count, text: text, markdown: chunk, offset: offset))
+            // `canonical` joins paragraphs with a blank line.
+            offset += text.utf16.count + 2
+            start = nil
+            characters = 0
+        }
+        for (_, range) in markdown.runs[\.presentationIntent] {
+            if start == nil { start = range.lowerBound }
+            end = range.upperBound
+            characters += markdown.characters.distance(from: range.lowerBound, to: range.upperBound)
+            if characters >= length { close() }
+        }
+        close()
+        return result
+    }
+}
+
+/// A whole highlightable passage and the segments it is displayed in.
+struct HighlightBlock: Identifiable, Sendable {
+    let id: String
+    let text: String
+    let segments: [HighlightSegment]
+
+    init(id: String, markdown: AttributedString) {
+        self.id = id
+        text = HighlightTextContent.canonical(markdown)
+        segments = HighlightSegment.split(markdown: markdown)
+    }
+
+    init(id: String, plain: String) {
+        self.id = id
+        text = plain
+        segments = HighlightSegment.split(plain)
+    }
+
+    /// The segment a saved highlight starts in, so readers can scroll a lazy stack to it.
+    func segment(for highlight: ReadingHighlight?) -> HighlightSegment? {
+        guard let highlight, highlight.block == id, let location = highlight.ranges(in: text, block: id).first?.location else { return nil }
+        return segments.last { $0.offset <= location }
+    }
+}
+
 struct HighlightText: View {
     let text: String
     let source: String
@@ -92,6 +179,11 @@ struct HighlightText: View {
     var centered = false
     var markdown: AttributedString?
     var focusWholeItem = false
+    var ruling: Rulings.ID?
+    var heading: Int?
+    /// When `text` is a segment, the whole block it belongs to and where it starts.
+    var blockText: String?
+    var offset = 0
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiate
     @Environment(\.quranUserStore) private var store
     @Environment(\.focusedHighlight) private var focused
@@ -106,17 +198,21 @@ struct HighlightText: View {
 
     var body: some View {
         let size = (arabic ? arabicSize : bodySize) * CGFloat(min(160, max(80, percent))) / 100
-        let highlights = store?.highlights(for: source, isHadith: isHadith) ?? []
-        let passage = HighlightTextContent.attributed(text: text, markdown: markdown, arabic: arabic, hadith: isHadith,
-                                                      size: size, alignment: centered ? .center : .natural)
+        let highlights = store?.highlights(for: source, isHadith: isHadith, ruling: ruling) ?? []
+        let passage = HighlightTextContent.attributed(text: text, markdown: markdown, arabic: arabic, hadith: isHadith || ruling != nil,
+                                                      heading: heading, size: size, alignment: centered ? .center : .natural)
         let display = ArabicDisplay(SearchMatch.applying(to: passage, query: searchQuery), showMarks: showMarks)
+        let ranges = Dictionary(uniqueKeysWithValues: highlights.map { ($0.id, displayRanges(of: $0, display: display)) })
         SelectableHighlightText(
             attributed: display.attributed,
-            highlights: highlights, block: block, focused: focused?.source == source && focused?.isHadith == isHadith && (focused?.block != nil || block == "arabic" || focusWholeItem) ? focused : nil,
+            highlights: highlights, block: block, focused: focused?.source == source && focused?.isHadith == isHadith && focused?.ruling == ruling && (focused?.block != nil || block == "arabic" || focusWholeItem) ? focused : nil,
             differentiate: differentiate, select: { ranges in
-                let saved = ranges.compactMap { HighlightRange(display.sourceRange($0), in: text) }
+                let saved = ranges.compactMap {
+                    let range = display.sourceRange($0)
+                    return HighlightRange(NSRange(location: range.location + offset, length: range.length), in: blockText ?? text)
+                }
                 guard !saved.isEmpty, !source.isEmpty else { return }
-                editing = ReadingHighlight(source: source, isHadith: isHadith, block: block, ranges: saved,
+                editing = ReadingHighlight(source: source, isHadith: isHadith, ruling: ruling, block: block, ranges: saved,
                                            excerpt: saved.map(\.quote).joined(separator: " … "), reference: reference.isEmpty ? source : reference)
             }, tap: { matches in
                 if matches.count == 1 {
@@ -125,9 +221,7 @@ struct HighlightText: View {
                     tappedHighlights = matches
                     choosingHighlight = true
                 }
-            }, mappedRanges: showMarks ? nil : Dictionary(uniqueKeysWithValues: highlights.map {
-                ($0.id, $0.ranges(in: text, block: block).map(display.displayRange))
-            })
+            }, mappedRanges: ranges
         )
         .frame(maxWidth: .infinity)
         .fixedSize(horizontal: false, vertical: true)
@@ -139,7 +233,7 @@ struct HighlightText: View {
             }
         }
         .accessibilityActions {
-            ForEach(highlights.filter { !$0.ranges(in: text, block: block).isEmpty }) { highlight in
+            ForEach(highlights.filter { ranges[$0.id]?.isEmpty == false }) { highlight in
                 Button(highlight.note.isEmpty ? String(highlight.excerpt.prefix(60)) : String(localized: "Highlight note") + ": " + String(highlight.note.prefix(60))) {
                     editing = highlight
                 }
@@ -147,6 +241,17 @@ struct HighlightText: View {
         }
         .sheet(item: $editing) { value in
             HighlightEditor(highlight: value, existing: highlights.contains { $0.id == value.id })
+        }
+    }
+
+    /// Validates against the whole block, then keeps the part inside this segment in display coordinates.
+    private func displayRanges(of highlight: ReadingHighlight, display: ArabicDisplay) -> [NSRange] {
+        let length = text.utf16.count
+        return highlight.ranges(in: blockText ?? text, block: block).compactMap { range in
+            let start = max(range.location - offset, 0), end = min(NSMaxRange(range) - offset, length)
+            guard start < end else { return nil }
+            let local = NSRange(location: start, length: end - start)
+            return showMarks ? local : display.displayRange(local)
         }
     }
 }

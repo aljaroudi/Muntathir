@@ -22,9 +22,9 @@ struct ContentView: View {
     @State private var selectedTab: AppTab = .today
     @State private var toolPaths: [AppTool: NavigationPath] = [:]
     @State private var toolsPath: [FigureRoute] = []
-    @State private var hadithAssets = HadithAssetStore(defaults: ContentView.defaults)
-    @State private var supplicationAssets = HadithAssetStore(backend: AppleAssetPackBackend(identifier: "supplications", resourcePath: "Supplications/supplications.db"), packID: "supplications", defaults: ContentView.defaults)
-    @State private var rulingsAssets = RulingsAssetStore()
+    @State private var hadithAssets = AssetPackUpdates.shared.hadith
+    @State private var supplicationAssets = AssetPackUpdates.shared.supplications
+    @State private var rulingsAssets = AssetPackUpdates.shared.rulings
     @State private var translations = QuranTranslationStore.shared
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -84,13 +84,10 @@ struct ContentView: View {
         }
         .task { model.reschedule() }
         .task { await rulingsAssets.monitor() }
-        .task { await rulingsAssets.refresh(); await rulingsAssets.checkForUpdates() }
         .task { await hadithAssets.monitor() }
         .task { await supplicationAssets.monitor() }
         .task { await QuranTranslationStore.shared.monitor() }
-        .task { await QuranTranslationStore.shared.refresh(); await QuranTranslationStore.shared.checkForUpdates() }
-        .task { await hadithAssets.refresh(); await hadithAssets.checkForUpdates() }
-        .task { await supplicationAssets.refresh(); await supplicationAssets.checkForUpdates() }
+        .task { await AssetPackUpdates.shared.run(.launch) }
         .onChange(of: model.locationService.current) { _, location in
             if model.liveLocation != nil, let location {
                 model.applyLive(location)
@@ -104,14 +101,7 @@ struct ContentView: View {
             }
             if phase == .active {
                 model.reschedule()
-                Task {
-                    await rulingsAssets.refresh(); await hadithAssets.refresh(); await supplicationAssets.refresh(); await QuranTranslationStore.shared.refresh()
-                    // Each check is throttled to once per day and keeps current content readable while updating.
-                    await rulingsAssets.checkForUpdates()
-                    await hadithAssets.checkForUpdates()
-                    await supplicationAssets.checkForUpdates()
-                    await QuranTranslationStore.shared.checkForUpdates()
-                }
+                Task { await AssetPackUpdates.shared.run(.foreground) }
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in model.reschedule() }
