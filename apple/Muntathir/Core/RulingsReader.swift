@@ -94,6 +94,14 @@ actor RulingsReader {
         }
     }
 
+    /// The number of questions in each of an authority's languages, keyed by language code.
+    func questionCounts(authority: String) throws -> [String: Int] {
+        let rows = try connection().query("SELECT language_code, COUNT(*) FROM question WHERE authority_code = ? GROUP BY language_code", parameters: [authority]) {
+            (Self.text($0, 0), Int(sqlite3_column_int64($0, 1)))
+        }
+        return Dictionary(rows, uniquingKeysWith: { first, _ in first })
+    }
+
     static func preferredLanguage(saved: String?, locale: String, available: [RulingsLanguage]) -> String? {
         if let saved, available.contains(where: { $0.id == saved }) {
             return saved

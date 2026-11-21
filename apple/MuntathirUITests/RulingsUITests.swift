@@ -13,9 +13,9 @@ final class RulingsUITests: XCTestCase {
         XCTAssertTrue(app.buttons["rulings-authority"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["rulings-authority"].label.contains("Sistani"))
         XCTAssertTrue(app.descendants(matching: .any)["rulings-notice"].firstMatch.exists)
+        XCTAssertTrue(app.staticTexts["rulings-language-en"].waitForExistence(timeout: 5))
         let result = app.buttons["rulings-question-42"]
-        XCTAssertTrue(result.waitForExistence(timeout: 5))
-        XCTAssertFalse(app.staticTexts["Original answer"].exists)
+        XCTAssertFalse(result.exists)
         let search = app.searchFields.firstMatch
         search.tap()
         search.typeText("Prayer\n")

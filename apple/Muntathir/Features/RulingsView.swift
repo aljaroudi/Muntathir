@@ -61,20 +61,19 @@ private struct RulingsBrowser: View {
     let reader: RulingsReader
     @Environment(\.locale) private var locale
     @AppStorage("rulings.authority") private var authority = "sistani"
-    @AppStorage("rulings.languages.v2") private var savedLanguages = Data()
-    @State private var results = RulingsResultsState()
-    @State private var contents: [RulingsSection] = []
+    @State private var search = RulingsSearchState()
+    @State private var contents: [String: [RulingsSection]] = [:]
+    @State private var counts: [String: Int] = [:]
     @State private var authorities: [RulingsAuthority] = []
     @State private var languages: [RulingsLanguage] = []
-    @State private var language = ""
     @State private var submitted = ""
     @State private var query = ""
     @State private var failed = false
     @State private var loading = true
     @State private var retry = 0
 
-    private var languagePreferences: [String: String] {
-        (try? JSONDecoder().decode([String: String].self, from: savedLanguages)) ?? [:]
+    private var authorityName: String {
+        authorities.first(where: { $0.id == authority }).map { locale.language.languageCode?.identifier == "ar" ? $0.arabic : $0.english } ?? authority
     }
 
     var body: some View {
@@ -87,30 +86,49 @@ private struct RulingsBrowser: View {
                     }
                 }
                 .accessibilityIdentifier("rulings-authority")
-                if !loading {
-                    Picker("Language", selection: $language) {
-                        ForEach(languages) { Text($0.name).tag($0.id) }
-                    }
-                    .accessibilityIdentifier("rulings-language")
-                }
             }
             if loading {
                 ProgressView()
             } else if failed {
                 Button("Try again") { retry += 1 }
-            } else if let selected = languages.first(where: { $0.id == language }) {
-                if submitted.isEmpty {
-                    ForEach(contents) { section in
-                        NavigationLink(section.title) {
-                            RulingsSectionView(reader: reader, authority: authority,
-                                               authorityName: authorities.first(where: { $0.id == authority }).map { locale.language.languageCode?.identifier == "ar" ? $0.arabic : $0.english } ?? authority,
-                                               language: selected, section: section)
+            } else if submitted.isEmpty {
+                ForEach(languages) { language in
+                    if let sections = contents[language.id], !sections.isEmpty {
+                        Section {
+                            ForEach(sections) { section in
+                                NavigationLink(section.title) {
+                                    RulingsSectionView(reader: reader, authority: authority, authorityName: authorityName,
+                                                       language: language, section: section)
+                                }
+                            }
+                        } header: {
+                            LabeledContent {
+                                if let count = counts[language.id] {
+                                    Text(count, format: .number)
+                                }
+                            } label: {
+                                Text(language.name).accessibilityIdentifier("rulings-language-\(language.id)")
+                            }
                         }
                     }
                 }
-                RulingsResults(reader: reader, authority: authority, authorityName: authorities.first(where: { $0.id == authority }).map { locale.language.languageCode?.identifier == "ar" ? $0.arabic : $0.english } ?? authority, language: selected, query: submitted, state: results)
+            } else if search.failed {
+                Button("Try again") { search.retry += 1 }
+            } else if search.groups.isEmpty {
+                if search.loading {
+                    ProgressView().frame(maxWidth: .infinity)
+                } else {
+                    ContentUnavailableView("No Results", systemImage: "magnifyingglass")
+                }
             } else {
-                Text("Choose a language")
+                if search.loading {
+                    // Earlier results stay visible below until the next search replaces them.
+                    ProgressView().frame(maxWidth: .infinity)
+                }
+                ForEach(search.groups) { group in
+                    RulingsResults(reader: reader, authorityName: authorityName, language: group.language, query: submitted,
+                                   questions: group.questions, header: group.language.name) { search.retry += 1 }
+                }
             }
         }
         .navigationTitle("Rulings")
@@ -120,40 +138,31 @@ private struct RulingsBrowser: View {
         .submitsSearch($query, submitted: $submitted)
         .autocorrectionDisabled()
         .scrollDismissesKeyboard(.interactively)
-        .task(id: [authority, language, submitted, String(results.retry)]) {
-            contents = []
-            guard !language.isEmpty else { return }
-            do {
-                let found = try await reader.contents(authority: authority, language: language)
-                try Task.checkCancellation()
-                contents = found
-            } catch {
-                if !Task.isCancelled {
-                    results.failed = true
-                }; return
-            }
-            await results.load(reader: reader, authority: authority, language: language, query: submitted, online: !submitted.isEmpty)
-        }
-        .onChange(of: language) { _, value in
-            guard !value.isEmpty else { return }
-            var preferences = languagePreferences
-            preferences[authority] = value
-            if let data = try? JSONEncoder().encode(preferences) {
-                savedLanguages = data
-            }
+        .task(id: [authority, submitted, String(search.retry), languages.map(\.id).joined(separator: ",")]) {
+            guard !submitted.isEmpty, !languages.isEmpty else { search.clear(); return }
+            await search.load(reader: reader, authority: authority, languages: languages, query: submitted)
         }
         .task(id: "\(authority)|\(locale.identifier)|\(retry)") {
             loading = true
-            language = ""
             languages = []
+            contents = [:]
+            counts = [:]
             failed = false
             do {
                 let choices = try await reader.authorities()
                 let available = try await reader.languages(authority: authority)
+                let totals = try await reader.questionCounts(authority: authority)
+                var found: [String: [RulingsSection]] = [:]
+                for language in available {
+                    found[language.id] = try await reader.contents(authority: authority, language: language.id)
+                }
                 try Task.checkCancellation()
                 authorities = choices
-                languages = available
-                language = RulingsReader.preferredLanguage(saved: languagePreferences[authority], locale: locale.identifier, available: available) ?? available.first?.id ?? ""
+                // The app's language leads; the rest keep the pack's order.
+                let preferred = RulingsReader.preferredLanguage(saved: nil, locale: locale.identifier, available: available)
+                languages = available.filter { $0.id == preferred } + available.filter { $0.id != preferred }
+                contents = found
+                counts = totals
                 loading = false
             } catch {
                 guard !Task.isCancelled else { return }
@@ -167,24 +176,37 @@ private struct RulingsBrowser: View {
 private struct RulingsResults: View {
     @AppStorage("showArabicDiacritics") private var showMarks = true
     let reader: RulingsReader
-    let authority: String
     let authorityName: String
     let language: RulingsLanguage
     var query = ""
-    let state: RulingsResultsState
+    let questions: [Rulings]
+    var loading = false
+    var failed = false
+    var header: String?
+    let retry: () -> Void
 
     var body: some View {
         Section {
-            if state.loading {
-                // Earlier results stay visible below until the next search replaces them.
+            if loading {
                 ProgressView().frame(maxWidth: .infinity)
-                rows(state.questions)
-            } else if state.failed {
-                Button("Try again") { state.retry += 1 }
+                rows(questions)
+            } else if failed {
+                Button("Try again", action: retry)
             } else {
-                rows(state.questions)
-                if state.questions.isEmpty {
+                rows(questions)
+                if questions.isEmpty {
                     ContentUnavailableView("No Results", systemImage: "magnifyingglass")
+                }
+            }
+        } header: {
+            if let header {
+                LabeledContent {
+                    // The count of rows shown; hidden until they've loaded.
+                    if !loading, !failed {
+                        Text(questions.count, format: .number)
+                    }
+                } label: {
+                    Text(header)
                 }
             }
         }
@@ -214,52 +236,82 @@ private struct RulingsResults: View {
     var loading = true
     var failed = false
     var retry = 0
-    private var loadedSource = ""
 
-    private func search(reader: RulingsReader, authority: String, language: String, query: String) async throws -> [Rulings] {
-        if !query.isEmpty {
-            do {
-                guard let client = SemanticSearchClient.configured else { throw URLError(.unsupportedURL) }
-                let results = try await client.search(query, kind: "rulings", sources: [authority], languages: [language])
-                var found: [Rulings] = []
-                var seen: Set<Rulings.ID> = []
-                for result in results {
-                    guard case let .rulings(source, code, id) = result.reference,
-                          source == authority, code == language else { continue }
-                    let key = Rulings.ID(authority: source, language: code, siteID: id)
-                    guard let value = try await reader.question(key) else { continue }
-                    if seen.insert(key).inserted {
-                        found.append(value)
-                    }
-                }
-                let local = try await reader.questions(authority: authority, language: language, query: query)
-                return found + local.filter { !seen.contains($0.id) }
-            } catch {
-                try Task.checkCancellation()
-            }
-        }
-        return try await reader.questions(authority: authority, language: language, query: query)
-    }
-
-    func load(reader: RulingsReader, authority: String, language: String, query: String = "", online: Bool = false, section: RulingsSection? = nil) async {
+    func load(reader: RulingsReader, authority: String, language: String, section: RulingsSection) async {
         loading = true
         failed = false
-        // Results from another authority or language shouldn't linger while the new ones load.
-        let source = authority + "|" + language
-        if source != loadedSource {
-            questions = []
-            loadedSource = source
+        do {
+            let found = try await reader.questions(authority: authority, language: language, section: section)
+            try Task.checkCancellation()
+            questions = found
+            loading = false
+        } catch {
+            guard !Task.isCancelled else { return }
+            failed = true
+            loading = false
+        }
+    }
+}
+
+private struct RulingsGroup: Identifiable {
+    let language: RulingsLanguage
+    let questions: [Rulings]
+    var id: String { language.id }
+}
+
+/// Searches every language of an authority, grouping matches by language.
+@MainActor @Observable private final class RulingsSearchState {
+    var groups: [RulingsGroup] = []
+    var loading = false
+    var failed = false
+    var retry = 0
+    private var loadedAuthority = ""
+
+    func clear() {
+        groups = []
+        loading = false
+        failed = false
+    }
+
+    func load(reader: RulingsReader, authority: String, languages: [RulingsLanguage], query: String) async {
+        loading = true
+        failed = false
+        // Results from another authority shouldn't linger while the new ones load.
+        if authority != loadedAuthority {
+            groups = []
+            loadedAuthority = authority
         }
         do {
-            let foundQuestions: [Rulings] = if let section {
-                try await reader.questions(authority: authority, language: language, section: section)
-            } else if online {
-                try await search(reader: reader, authority: authority, language: language, query: query)
-            } else {
-                try await reader.questions(authority: authority, language: language, query: query)
+            // Semantic matches lead each language, in ranked order; local matches fill in after them.
+            var ranked: [String: [Rulings]] = [:]
+            var seen: Set<Rulings.ID> = []
+            do {
+                guard let client = SemanticSearchClient.configured else { throw URLError(.unsupportedURL) }
+                let codes = Set(languages.map(\.id))
+                let results = try await client.search(query, kind: "rulings", sources: [authority], languages: languages.map(\.id))
+                for result in results {
+                    guard case let .rulings(source, code, id) = result.reference,
+                          source == authority, codes.contains(code) else { continue }
+                    let key = Rulings.ID(authority: source, language: code, siteID: id)
+                    guard !seen.contains(key), let value = try await reader.question(key) else { continue }
+                    seen.insert(key)
+                    ranked[code, default: []].append(value)
+                }
+            } catch {
+                try Task.checkCancellation()
+                ranked = [:]
+                seen = []
+            }
+            var found: [RulingsGroup] = []
+            for language in languages {
+                let local = try await reader.questions(authority: authority, language: language.id, query: query)
+                let questions = (ranked[language.id] ?? []) + local.filter { !seen.contains($0.id) }
+                if !questions.isEmpty {
+                    found.append(RulingsGroup(language: language, questions: questions))
+                }
             }
             try Task.checkCancellation()
-            questions = foundQuestions
+            groups = found
             loading = false
         } catch {
             guard !Task.isCancelled else { return }
@@ -287,7 +339,9 @@ private struct RulingsSectionView: View {
                 }
             }
             if children.isEmpty || !results.questions.isEmpty {
-                RulingsResults(reader: reader, authority: authority, authorityName: authorityName, language: language, state: results)
+                RulingsResults(reader: reader, authorityName: authorityName, language: language, questions: results.questions,
+                               loading: results.loading, failed: results.failed,
+                               header: String(localized: "Questions")) { results.retry += 1 }
             }
         }
         .navigationTitle(section.title)
