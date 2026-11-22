@@ -57,3 +57,4 @@ backend/api/node_modules/
 /telegram/.env*
 /telegram/node_modules/
 /telegram/dist/
+/telegram/.data/
