@@ -160,10 +160,14 @@ final class QuranScreenshotRefreshTests: XCTestCase {
         app.launchArguments += ["--ui-testing", "--ui-testing-mecca", "--marketing-capture", "--marketing-local-translations", "--screenshot-verse",
                                 "--ui-testing-weather", "--sky-date", "2026-10-23T06:00:00Z", "-AppleInterfaceStyle", "Light"]
         app.launch()
+        // With a sidebar there's no Tools tab.
         let tools = try app.buttons[marketingLabels()[2]].firstMatch
-        XCTAssertTrue(tools.waitForExistence(timeout: 15))
-        tools.tap()
-        app.buttons["holy-quran"].tap()
+        let quran = app.buttons["holy-quran"].firstMatch
+        XCTAssertTrue(tools.waitForExistence(timeout: 15) || quran.exists)
+        if tools.exists {
+            tools.tap()
+        }
+        quran.tap()
         XCTAssertTrue(app.buttons["quran-reading-options"].waitForExistence(timeout: 10))
         try selectMarketingTranslation(in: app)
         let result = app.buttons["quran-result-94:6"]

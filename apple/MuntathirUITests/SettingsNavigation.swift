@@ -11,6 +11,12 @@ extension XCUIApplication {
     }
 
     @MainActor func openSettingsFromTools() {
+        // With a sidebar, Settings is its own tab.
+        let sidebarSettings = buttons["settings-tab"].firstMatch
+        if sidebarSettings.waitForExistence(timeout: 2) {
+            sidebarSettings.tap()
+            return
+        }
         selectMainTab("square.grid.2x2")
         let settings = buttons["settings"]
         for _ in 0 ..< 5 where !settings.isHittable {
@@ -21,7 +27,9 @@ extension XCUIApplication {
     }
 
     @MainActor func leaveSettings(for tab: String = "sun.max") {
-        navigationBars.buttons.element(boundBy: 0).tap()
+        if !buttons["settings-tab"].exists {
+            navigationBars.buttons.element(boundBy: 0).tap()
+        }
         selectMainTab(tab)
     }
 }

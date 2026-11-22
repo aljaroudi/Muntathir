@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TabsSettingsView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.isShowingTabSidebar) private var isShowingTabSidebar
 
     var body: some View {
         List {
@@ -10,7 +11,7 @@ struct TabsSettingsView: View {
             }
             Section {
                 ForEach(model.preferences.tabShortcuts) { tool in
-                    Label { Text(tool.title) } icon: { tool.listIcon }
+                    Label { Text(tool.title) } icon: { Image(systemName: tool.symbol) }
                         .accessibilityIdentifier("tab-shortcut-\(tool.rawValue)")
                 }
                 .onDelete { indices in
@@ -22,7 +23,11 @@ struct TabsSettingsView: View {
             } header: {
                 Text("Tabs")
             } footer: {
-                Text("Choose up to three tabs. Everything else stays in Tools.")
+                if isShowingTabSidebar {
+                    Text("Tap Edit in the sidebar to choose which tools appear in the tab bar.")
+                } else {
+                    Text("Choose up to three tabs. Everything else stays in Tools.")
+                }
             }
             Section {
                 Label("Tools", systemImage: "square.grid.2x2")

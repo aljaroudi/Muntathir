@@ -13,7 +13,7 @@ bundle install
 | `just version X.Y.Z` | Set the shared marketing version |
 | `just lane ios beta` | Upload a build to the Public TestFlight group |
 | `just lane ios release` | Submit an existing TestFlight build for App Review |
-| `just lane android beta` | Upload a build to Play internal testing |
+| `just lane android beta` | Upload a build to Play closed testing |
 
 Promote Android builds to production manually in Play Console.
 
@@ -30,7 +30,7 @@ Promote Android builds to production manually in Play Console.
 - Upload key: `android/local.properties` or Gradle properties (`UPLOAD_STORE_FILE`, `UPLOAD_STORE_PASSWORD`, `UPLOAD_KEY_ALIAS`, `UPLOAD_KEY_PASSWORD`).
 - Play service account JSON: `~/.android/muntathir-upload/play-publisher.json`, or set `SUPPLY_JSON_KEY`.
 
-`beta` stages the asset packs, builds a signed AAB and publishes it to internal testing. It skips listing metadata and screenshots (listing text is in `fastlane/android/metadata/`).
+`beta` stages the asset packs, builds a signed AAB and publishes it to the closed testing track (`alpha`, Play's default closed track; pass `track:<name>` for a custom closed track or `track:internal`). It skips listing metadata and screenshots (listing text is in `fastlane/android/metadata/`).
 
 ```sh
 just lane android beta aab:/absolute/path/app-release.aab validate_only:true

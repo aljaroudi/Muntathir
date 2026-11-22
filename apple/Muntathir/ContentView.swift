@@ -1,16 +1,5 @@
 import SwiftUI
 
-extension AppTool {
-    @ViewBuilder var listIcon: some View {
-        if let emoji {
-            Text(verbatim: emoji)
-                .accessibilityHidden(true)
-        } else {
-            Image(systemName: symbol)
-        }
-    }
-}
-
 struct ContentView: View {
     private static var defaults: UserDefaults {
         ProcessInfo.processInfo.arguments.contains("--ui-testing") ? UserDefaults(suiteName: "Muntathir.UITests")! : .standard
@@ -19,7 +8,10 @@ struct ContentView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
     @State private var hadithSession = HadithSession(defaults: ContentView.defaults)
+    @AppStorage("tabViewCustomization") private var tabCustomization = TabViewCustomization()
     @State private var selectedTab: AppTab = .today
+    /// Driven by `isTabViewSidebarAvailable` rather than size class, which can be regular without a sidebar.
+    @State private var isSidebarAvailable = false
     @State private var toolPaths: [AppTool: NavigationPath] = [:]
     @State private var toolsPath: [FigureRoute] = []
     @State private var hadithAssets = AssetPackUpdates.shared.hadith
@@ -31,51 +23,41 @@ struct ContentView: View {
             Tab("Today", systemImage: "sun.max", value: AppTab.today) {
                 shell { TodayView(referenceDate: skyTestDate) }
             }
-            ForEach(model.preferences.tabShortcuts) { tool in
-                Tab(value: AppTab.tool(tool)) {
-                    toolShell(tool)
-                } label: {
-                    Label { Text(tool.title) } icon: { Image(systemName: tool.symbol) }
-                }
-            }
-            Tab("Tools", systemImage: "square.grid.2x2", value: AppTab.tools) {
-                NavigationStack(path: $toolsPath) {
-                    List {
-                        ForEach(AppTool.groups.indices, id: \.self) { index in
-                            let tools = AppTool.groups[index].filter { !model.preferences.tabShortcuts.contains($0) }
-                            if !tools.isEmpty {
-                                Section {
-                                    ForEach(tools) { tool in
-                                        NavigationLink(value: FigureRoute.tool(tool)) {
-                                            Label { Text(tool.title) } icon: { tool.listIcon }
-                                        }
-                                        .accessibilityIdentifier(tool.accessibilityID)
-                                    }
-                                }
-                            }
-                        }
-                        Section {
-                            NavigationLink {
-                                SettingsView()
-                            } label: {
-                                Label("Settings", systemImage: "gearshape")
-                            }
-                            .accessibilityIdentifier("settings")
-                        }
-                    }
-                    .navigationTitle("Tools")
-                    .figureDestinations(hadithAssets: hadithAssets, supplicationAssets: supplicationAssets)
-                }
+            .customizationBehavior(.disabled, for: .sidebar, .tabBar)
+            if isSidebarAvailable {
+                sidebarTabs
+            } else {
+                compactTabs
             }
         }
+        .tabViewStyle(.sidebarAdaptable)
+        .tabViewCustomization($tabCustomization)
+        .tabViewSidebarBottomBar {
+            if isSidebarAvailable {
+                Button {
+                    selectedTab = .settings
+                } label: {
+                    Label("Settings", systemImage: "gearshape")
+                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        .contentShape(.rect)
+                }
+                .buttonStyle(.borderless)
+                .padding()
+                .accessibilityIdentifier("settings-tab")
+            }
+        }
+        .environment(\.isShowingTabSidebar, isSidebarAvailable)
         .environment(\.rulingsAssets, rulingsAssets)
         .environment(\.hadithAssets, hadithAssets)
         .environment(\.supplicationAssets, supplicationAssets)
         .environment(\.hadithSession, hadithSession)
         .task { updateReadingRoute() }
         .onChange(of: model.preferences.tabShortcuts) { _, shortcuts in
-            selectedTab = selectedTab.available(in: shortcuts)
+            if !isSidebarAvailable {
+                selectedTab = selectedTab.available(in: shortcuts)
+            }
         }
+        .onChange(of: isSidebarAvailable) { _, available in adaptSelection(sidebar: available) }
         .onChange(of: selectedTab) { _, _ in updateReadingRoute() }
         .onChange(of: toolsPath) { _, _ in updateReadingRoute() }
         .tint(.accentColor)
@@ -135,6 +117,98 @@ struct ContentView: View {
         return nil
     }
 
+    /// Shortcuts start in the tab bar; other tools stay in the sidebar until added via Edit.
+    @TabContentBuilder<AppTab> private var sidebarTabs: some TabContent<AppTab> {
+        ForEach(model.preferences.tabShortcuts) { tool in
+            toolTab(tool)
+        }
+        ForEach(AppTool.groups) { group in
+            TabSection {
+                ForEach(group.tools.filter { !model.preferences.tabShortcuts.contains($0) }) { tool in
+                    toolTab(tool)
+                }
+            } header: {
+                Text(group.title)
+            }
+            .customizationID("section.\(group.id)")
+            .defaultVisibility(.hidden, for: .tabBar)
+        }
+        // Opened from the sidebar's bottom bar.
+        Tab(value: AppTab.settings) {
+            shell { SettingsView() }
+        } label: {
+            Label("Settings", systemImage: "gearshape")
+        }
+        .tabPlacement(.sidebarOnly)
+        .defaultVisibility(.hidden, for: .sidebar)
+        .customizationBehavior(.disabled, for: .sidebar, .tabBar)
+    }
+
+    /// Tab-bar buttons keep the system's symbol identifier so they don't clash with the matching row in Tools.
+    private func toolTab(_ tool: AppTool, sidebar: Bool = true) -> some TabContent<AppTab> {
+        Tab(value: AppTab.tool(tool)) {
+            toolShell(tool)
+        } label: {
+            Label { Text(tool.title) } icon: { Image(systemName: tool.symbol) }
+                .accessibilityIdentifier(sidebar ? tool.accessibilityID : tool.symbol)
+        }
+        .customizationID(tool.customizationID)
+    }
+
+    @TabContentBuilder<AppTab> private var compactTabs: some TabContent<AppTab> {
+        ForEach(model.preferences.tabShortcuts) { tool in
+            toolTab(tool, sidebar: false)
+        }
+        Tab("Tools", systemImage: "square.grid.2x2", value: AppTab.tools) {
+            NavigationStack(path: $toolsPath) {
+                List {
+                    ForEach(AppTool.groups) { group in
+                        let tools = group.tools.filter { !model.preferences.tabShortcuts.contains($0) }
+                        if !tools.isEmpty {
+                            Section(group.title) {
+                                ForEach(tools) { tool in
+                                    NavigationLink(value: FigureRoute.tool(tool)) {
+                                        Label { Text(tool.title) } icon: { Image(systemName: tool.symbol) }
+                                    }
+                                    .accessibilityIdentifier(tool.accessibilityID)
+                                }
+                            }
+                        }
+                    }
+                    Section {
+                        NavigationLink {
+                            SettingsView()
+                        } label: {
+                            Label("Settings", systemImage: "gearshape")
+                        }
+                        .accessibilityIdentifier("settings")
+                    }
+                }
+                .navigationTitle("Tools")
+                .figureDestinations(hadithAssets: hadithAssets, supplicationAssets: supplicationAssets)
+            }
+            .reportsTabSidebarAvailability($isSidebarAvailable)
+        }
+    }
+
+    /// Keeps the open tool selected when the sidebar appears or goes away.
+    private func adaptSelection(sidebar: Bool) {
+        if sidebar {
+            let root = toolsPath.first
+            selectedTab = selectedTab.withSidebar(toolsRoot: root)
+            if case let .tool(tool) = root {
+                toolPaths[tool] = NavigationPath(toolsPath.dropFirst())
+            }
+            toolsPath = []
+        } else {
+            let shortcuts = model.preferences.tabShortcuts
+            if case let .tool(tool) = selectedTab, !shortcuts.contains(tool) {
+                toolsPath = [.tool(tool)]
+            }
+            selectedTab = selectedTab.withoutSidebar(shortcuts: shortcuts)
+        }
+    }
+
     private func updateReadingRoute() {
         hadithSession.state.active = selectedTab == .tool(.hadith)
             || (selectedTab == .tools && (toolsPath.contains(.hadith) || toolsPath.contains(.tool(.hadith))))
@@ -144,6 +218,7 @@ struct ContentView: View {
         NavigationStack {
             content()
         }
+        .reportsTabSidebarAvailability($isSidebarAvailable)
     }
 
     private func toolShell(_ tool: AppTool) -> some View {
@@ -156,7 +231,59 @@ struct ContentView: View {
                 .figureDestinations(hadithAssets: hadithAssets, supplicationAssets: supplicationAssets)
         }
         .id(tool)
+        .reportsTabSidebarAvailability($isSidebarAvailable)
     }
+}
+
+private extension View {
+    /// `isTabViewSidebarAvailable` is only meaningful inside tab content, so tabs report it upward.
+    func reportsTabSidebarAvailability(_ isAvailable: Binding<Bool>) -> some View {
+        modifier(TabSidebarAvailabilityReporter(isAvailable: isAvailable))
+    }
+}
+
+private struct TabSidebarAvailabilityReporter: ViewModifier {
+    @Binding var isAvailable: Bool
+
+    func body(content: Content) -> some View {
+        if #available(iOS 27, *) {
+            content.modifier(SidebarAvailabilityReader(isAvailable: $isAvailable))
+        } else {
+            // Before iOS 27, regular width implies a sidebar.
+            content.modifier(SizeClassSidebarReader(isAvailable: $isAvailable))
+        }
+    }
+}
+
+@available(iOS 27, *)
+private struct SidebarAvailabilityReader: ViewModifier {
+    @Binding var isAvailable: Bool
+    @Environment(\.isTabViewSidebarAvailable) private var isTabViewSidebarAvailable
+
+    func body(content: Content) -> some View {
+        content.onChange(of: isTabViewSidebarAvailable, initial: true) { _, available in
+            if isAvailable != available {
+                isAvailable = available
+            }
+        }
+    }
+}
+
+private struct SizeClassSidebarReader: ViewModifier {
+    @Binding var isAvailable: Bool
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    func body(content: Content) -> some View {
+        content.onChange(of: horizontalSizeClass, initial: true) { _, sizeClass in
+            if isAvailable != (sizeClass == .regular) {
+                isAvailable = sizeClass == .regular
+            }
+        }
+    }
+}
+
+extension EnvironmentValues {
+    @Entry var isShowingTabSidebar = false
 }
 
 struct Card<Content: View>: View {

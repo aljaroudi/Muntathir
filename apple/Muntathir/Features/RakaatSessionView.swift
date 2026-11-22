@@ -21,7 +21,9 @@ struct RakaatSessionView: View {
     @State private var denied = false
     @State private var failed = false
     @State private var oldIdleState: Bool?
-    @State private var oldBrightness: CGFloat?
+    @State private var screen: UIScreen?
+    /// Kept so brightness is restored on the same screen after the view leaves its window.
+    @State private var dimmed: (screen: UIScreen, brightness: CGFloat)?
 
     init(target: Int, prayer: PrayerName?) {
         _target = State(initialValue: target)
@@ -39,6 +41,7 @@ struct RakaatSessionView: View {
     var body: some View {
         prayerView
             .background { RakaatHeadingOrientation(onChange: qibla.orientHeading).allowsHitTesting(false) }
+            .background { WindowScreenReader { screen = $0 }.allowsHitTesting(false) }
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar(.hidden, for: .tabBar)
             .task(id: session) {
@@ -294,8 +297,8 @@ struct RakaatSessionView: View {
         UIApplication.shared.isIdleTimerDisabled = true
         // Dim before the camera locks exposure and measures its baseline; changing screen light after
         // calibration would shift the measured light.
-        if let screen = activeScreen {
-            oldBrightness = screen.brightness
+        if let screen {
+            dimmed = (screen, screen.brightness)
             screen.brightness = min(screen.brightness, 0.2)
         }
         do {
@@ -334,20 +337,15 @@ struct RakaatSessionView: View {
         }
     }
 
-    private var activeScreen: UIScreen? {
-        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
-        return (scenes.first { $0.activationState == .foregroundActive } ?? scenes.first)?.screen
-    }
-
     private func restoreScreen() {
         if let oldIdleState {
             UIApplication.shared.isIdleTimerDisabled = oldIdleState
         }
         oldIdleState = nil
-        if let oldBrightness {
-            activeScreen?.brightness = oldBrightness
+        if let dimmed {
+            dimmed.screen.brightness = dimmed.brightness
         }
-        oldBrightness = nil
+        dimmed = nil
     }
 
     private func returnToSelection() async {
@@ -355,5 +353,29 @@ struct RakaatSessionView: View {
         await camera.stop()
         restoreScreen()
         dismiss()
+    }
+}
+
+/// Reports the screen of this view's own window scene.
+private struct WindowScreenReader: UIViewRepresentable {
+    let onChange: (UIScreen?) -> Void
+
+    func makeUIView(context _: Context) -> ReaderView {
+        let view = ReaderView()
+        view.onChange = onChange
+        return view
+    }
+
+    func updateUIView(_ view: ReaderView, context _: Context) {
+        view.onChange = onChange
+    }
+
+    final class ReaderView: UIView {
+        var onChange: ((UIScreen?) -> Void)?
+
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            onChange?(window?.windowScene?.screen)
+        }
     }
 }

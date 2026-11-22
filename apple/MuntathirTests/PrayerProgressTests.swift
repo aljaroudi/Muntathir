@@ -13,7 +13,7 @@ struct PrayerProgressTests {
         #expect(PrayerProgress.followUp(after: .maghrib) == .isha)
         #expect([PrayerName.fajr, .asr, .isha].allSatisfy { PrayerProgress.followUp(after: $0) == nil })
         #expect(AppTool.normalized(["prayerProgress"]) == [.prayerProgress])
-        #expect(AppTool.groups.flatMap(\.self).contains(.prayerProgress))
+        #expect(AppTool.groups.flatMap(\.tools).contains(.prayerProgress))
     }
 
     @Test func suggestionFollowsOnTimeWindowsAndHistory() throws {

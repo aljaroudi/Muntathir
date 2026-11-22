@@ -136,7 +136,12 @@ final class TabsAndEventsUITests: XCTestCase {
     @MainActor func testArabicEventsAndTabsAtAccessibilitySize() {
         let app = launch(language: "ar", largeText: true)
         app.buttons["الأدوات"].firstMatch.tap()
-        app.buttons["events"].tap()
+        // Section headers push Events below the fold at accessibility sizes.
+        let events = app.buttons["events"]
+        for _ in 0 ..< 5 where !events.isHittable {
+            app.swipeUp()
+        }
+        events.tap()
         let month = app.staticTexts["events-month-1"]
         XCTAssertTrue(month.waitForExistence(timeout: 5))
         XCTAssertTrue(month.label.contains("محرم"))

@@ -294,7 +294,7 @@ platform :android do
     (codes.max || 0) + 1
   end
 
-  desc "Build and publish a signed AAB to Google Play internal testing"
+  desc "Build and publish a signed AAB to Google Play closed testing (alpha track; override with track:)"
   lane :beta do |options|
     root = File.expand_path("..", __dir__)
     credentials = File.expand_path(ENV.fetch("SUPPLY_JSON_KEY", "~/.android/muntathir-upload/play-publisher.json"), root)
@@ -320,7 +320,7 @@ platform :android do
       package_name: package_name,
       json_key: credentials,
       aab: bundle,
-      track: "internal",
+      track: options[:track] || "alpha", # "alpha" is Play's default closed testing track
       release_status: options[:draft] == true ? "draft" : "completed",
       validate_only: options[:validate_only] == true,
       skip_upload_apk: true,

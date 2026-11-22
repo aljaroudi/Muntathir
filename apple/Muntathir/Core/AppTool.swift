@@ -41,17 +41,6 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    var emoji: String? {
-        switch self {
-        case .supplications: "🙏"
-        case .calendar: "🗓️"
-        case .tasbih: "📿"
-        case .rakaat: "🧎"
-        case .qibla: "🕋"
-        default: nil
-        }
-    }
-
     var accessibilityID: String {
         switch self {
         case .quran: "holy-quran"
@@ -61,9 +50,22 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    var customizationID: String {
+        "tool.\(rawValue)"
+    }
+
+    struct ToolGroup: Identifiable, Sendable {
+        let id: String
+        let title: LocalizedStringResource
+        let tools: [AppTool]
+    }
+
     static let maximumShortcuts = 3
-    static let groups: [[AppTool]] = [
-        [.quran, .hadith, .supplications, .sermons], [.rulings], [.calendar, .events, .figures], [.qibla, .rakaat, .tasbih, .prayerProgress],
+    static let groups: [ToolGroup] = [
+        ToolGroup(id: "library", title: "Library", tools: [.quran, .hadith, .supplications, .sermons]),
+        ToolGroup(id: "rulings", title: "Rulings", tools: [.rulings]),
+        ToolGroup(id: "calendar", title: "Calendar", tools: [.calendar, .events, .figures]),
+        ToolGroup(id: "practice", title: "Practice", tools: [.qibla, .rakaat, .tasbih, .prayerProgress]),
     ]
 
     static func normalized(_ identifiers: [String]) -> [AppTool] {
