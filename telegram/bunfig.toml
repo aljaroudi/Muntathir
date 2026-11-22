@@ -1,0 +1,5 @@
+[install]
+exact = true
+# Two weeks, so a freshly compromised release isn't picked up.
+minimumReleaseAge = 1209600
+ignoreScripts = true
