@@ -6,9 +6,11 @@ Bot and Mini App: prayer times, Qibla, Hijri calendar and events, daily ayah, se
 Telegram ── long polling ──┐
                            ├─ com.muntathir.telegram: one Bun process on 127.0.0.1:8790
 tg.xn--pgbou4cf.com ───────┘    ├─ Mini App + /api, same origin
-  com.muntathir.telegram-tunnel ├─ read-only SQLite content
-                                └─ POST 127.0.0.1:8788/v1/search (backend, unchanged)
+  existing muntathir-search     ├─ read-only SQLite content
+  tunnel, second hostname       └─ POST 127.0.0.1:8788/v1/search (backend, unchanged)
 ```
+
+The bot needs nothing inbound. The Mini App does: Telegram only gives clients its URL, and each user's phone loads it over HTTPS.
 
 ## Develop
 
@@ -35,7 +37,7 @@ Don't run `src/main.ts` with the production token: a second poller stops the liv
 
 ## Hosting
 
-Everything live is in `~/Library/Application Support/Muntathir/telegram/`: `.env`, `tunnel.yml`, `logs/`, `releases/<sha>-<data>`, and `current`. Switching branches or deleting the checkout doesn't affect it.
+Everything live is in `~/Library/Application Support/Muntathir/telegram/`: `.env`, `logs/`, `releases/<sha>-<data>`, and `current`. Switching branches or deleting the checkout doesn't affect it.
 
 `.env` (mode 600):
 
@@ -46,13 +48,18 @@ TELEGRAM_BOT_TOKEN=
 
 First setup:
 
-1. Create `.env`, and run `cloudflared tunnel login`.
+1. Create `.env`.
 2. `just telegram-release` (builds only, while the service isn't installed)
-3. `just telegram-install --tunnel --apply` creates the tunnel and DNS record. Never create `~/.cloudflared/config.yml`.
-4. `just telegram-install --agents --apply`
+3. `just telegram-install --apply`
+4. In the Cloudflare dashboard, open the `muntathir-search` tunnel and add a public hostname (published application route): subdomain `tg`, domain `منتظر.com`, service `http://127.0.0.1:8790`. It creates the DNS record; no login, token or restart is needed.
 5. `just telegram-configure`, then `just telegram-configure --apply`.
 6. In @BotFather: disable groups, set the Main Mini App to `https://tg.xn--pgbou4cf.com/` (needed for share links) and the privacy URL to `https://xn--pgbou4cf.com/privacy/`. Leave origin protection on.
 
 Afterwards `just telegram-release` builds from a clean commit, smoke-tests without polling, switches, and rolls back if unhealthy. `just telegram-release --rollback` returns to the previous release. Two are kept.
 
-Both agents start after login (FileVault), so log in after a reboot.
+The agent starts after login (FileVault), so log in after a reboot.
+
+The tunnel is shared with search:
+
+- `backend/cloudflare_setup.py` replaces the tunnel's whole ingress list. After rerunning it, add the Telegram hostname again.
+- It runs under `com.muntathir.search`, so a backend deploy briefly interrupts the Mini App. The bot keeps answering.

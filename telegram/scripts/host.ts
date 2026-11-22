@@ -5,8 +5,6 @@ export const HOST = 'tg.xn--pgbou4cf.com'
 export const PUBLIC_URL = `https://${HOST}`
 export const PORT = 8790
 export const SERVICE = 'com.muntathir.telegram'
-export const TUNNEL_SERVICE = 'com.muntathir.telegram-tunnel'
-export const TUNNEL_NAME = 'muntathir-telegram'
 
 // The override exists to test releases without touching the live directory.
 export const root =
@@ -17,8 +15,6 @@ export const paths = {
   previous: join(root, 'previous'),
   releases: join(root, 'releases'),
   logs: join(root, 'logs'),
-  tunnelConfig: join(root, 'tunnel.yml'),
-  tunnelCredentials: join(root, 'tunnel.json'),
 }
 
 /** What the service needs from [release]. The token comes only from `.env`. */

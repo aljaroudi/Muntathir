@@ -169,8 +169,8 @@ telegram-release *args:
     cd telegram && bun scripts/release.ts "$@"
 
 [positional-arguments]
-[arg("args", help="--tunnel | --agents | --apply")]
-[doc("Provision the Telegram tunnel and launch agents (dry run without --apply)")]
+[arg("args", help="--apply")]
+[doc("Install the Telegram bot's launch agent (dry run without --apply)")]
 telegram-install *args:
     cd telegram && bun scripts/install.ts "$@"
 
