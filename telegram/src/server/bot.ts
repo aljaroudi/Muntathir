@@ -278,6 +278,7 @@ export function createBot(options: Options) {
         lines.push(
           '',
           `${index + 1}. ${excerpt(pick(item.title, locale), 100)}`,
+          ...(item.context ? [excerpt(item.context, 100)] : []),
           excerpt(pick(item.text, locale), RESULT_EXCERPT),
         )
         if (index && index % 4 === 0) keyboard.row()

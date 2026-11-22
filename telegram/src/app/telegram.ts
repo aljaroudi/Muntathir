@@ -63,29 +63,44 @@ function local<T>(action: (storage: globalThis.Storage) => T): T | null {
   }
 }
 
-/** A Telegram store, with localStorage for clients that don't have it. */
+/**
+ * A Telegram store, mirrored in localStorage for clients without one or that answer slowly.
+ * [late] receives an answer that arrived after the mirror was used.
+ */
 function store(minimum: string, select: (app: WebApp) => Storage) {
   const native = () => (webApp && supports(minimum) ? select(webApp) : null)
+  // A late answer mustn't undo a change made since the read.
+  const changed = new Set<string>()
+  const parse = <T>(raw: string | null | undefined): T | null => {
+    try {
+      return raw ? (JSON.parse(raw) as T) : null
+    } catch {
+      return null
+    }
+  }
+  const mirrored = (key: string) => local(storage => storage.getItem(key))
+  const mirror = (key: string, raw: string) => local(storage => storage.setItem(key, raw))
+
   return {
-    get<T>(key: string): Promise<T | null> {
+    get<T>(key: string, late?: (value: T) => void): Promise<T | null> {
       return new Promise(resolve => {
-        const finish = (raw: string | null | undefined) => {
-          try {
-            resolve(raw ? (JSON.parse(raw) as T) : null)
-          } catch {
-            resolve(null)
-          }
-        }
-        const fallback = () => finish(local(storage => storage.getItem(key)))
+        const fallback = () => resolve(parse<T>(mirrored(key)))
         const storage = native()
         if (!storage) return fallback()
-        // Some clients never answer.
-        const timer = setTimeout(fallback, STORAGE_TIMEOUT_MS)
+        let timedOut = false
+        const timer = setTimeout(() => {
+          timedOut = true
+          fallback()
+        }, STORAGE_TIMEOUT_MS)
         try {
-          storage.getItem(key, (error, value) => {
+          storage.getItem(key, (error, raw) => {
             clearTimeout(timer)
-            if (error) fallback()
-            else finish(value)
+            if (changed.has(key)) return fallback()
+            const value = error ? null : parse<T>(raw)
+            if (value === null) return fallback()
+            mirror(key, raw!)
+            if (timedOut) late?.(value)
+            else resolve(value)
           })
         } catch {
           clearTimeout(timer)
@@ -95,18 +110,16 @@ function store(minimum: string, select: (app: WebApp) => Storage) {
     },
     set(key: string, value: unknown) {
       const raw = JSON.stringify(value)
-      const fallback = () => local(storage => storage.setItem(key, raw))
-      const storage = native()
-      if (!storage) return void fallback()
+      changed.add(key)
+      mirror(key, raw)
       try {
-        storage.setItem(key, raw, error => {
-          if (error) fallback()
-        })
+        native()?.setItem(key, raw)
       } catch {
-        fallback()
+        // The mirror has it.
       }
     },
     remove(key: string) {
+      changed.add(key)
       local(storage => storage.removeItem(key))
       try {
         native()?.removeItem(key)

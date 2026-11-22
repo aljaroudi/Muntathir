@@ -29,17 +29,28 @@ function setDocument(locale: Locale) {
   document.title = strings[locale].name
 }
 
-async function loadSaved(): Promise<Saved> {
+const isLocale = (value: unknown): value is Locale => value === 'ar' || value === 'en'
+const validSaved = (place: SavedPlace | null): place is SavedPlace =>
+  !!place && validPlace(place) && isZone(place.zone)
+
+/** [late] gets any setting Telegram returned after the timeout. */
+async function loadSaved(late: (change: Partial<Saved>) => void): Promise<Saved> {
+  const changes: Partial<Saved> = {}
+  const apply = (change: Partial<Saved>) => {
+    Object.assign(changes, change)
+    late(change)
+  }
   const [locale, method, place] = await Promise.all([
-    cloud.get<Locale>(KEYS.locale),
-    cloud.get<Method>(KEYS.method),
-    device.get<SavedPlace>(KEYS.place),
+    cloud.get<Locale>(KEYS.locale, value => isLocale(value) && apply({ locale: value })),
+    cloud.get<Method>(KEYS.method, value => isMethod(value) && apply({ method: value })),
+    device.get<SavedPlace>(KEYS.place, value => validSaved(value) && apply({ place: value })),
     library.loadPosition(),
   ])
   return {
-    locale: locale === 'ar' || locale === 'en' ? locale : userLocale,
+    locale: isLocale(locale) ? locale : userLocale,
     method: isMethod(method) ? method : DEFAULT_METHOD,
-    place: place && validPlace(place) && isZone(place.zone) ? place : null,
+    place: validSaved(place) ? place : null,
+    ...changes,
   }
 }
 
@@ -86,6 +97,9 @@ function Shell({ data, saved }: { data: Bootstrap; saved: Saved }) {
   const [stack, setStack] = useState<Route[]>(initial.route ? [initial.route] : [])
   const offsets = useRef<number[]>([])
   const restore = useRef<number | null>(null)
+  useEffect(() => setLocale(saved.locale), [saved.locale])
+  useEffect(() => setMethod(saved.method), [saved.method])
+  useEffect(() => setPlace(saved.place), [saved.place])
 
   const app = useMemo<App>(
     () => ({
@@ -171,7 +185,8 @@ function Root() {
   const bootstrap = useGet<Bootstrap>(initData ? 'bootstrap' : null)
   const [saved, setSaved] = useState<Saved>()
   useEffect(() => {
-    if (initData) void loadSaved().then(setSaved)
+    if (initData)
+      void loadSaved(change => setSaved(value => value && { ...value, ...change })).then(setSaved)
   }, [])
   if (!initData) return <main class="status"><h1>{t.name}</h1><p>{t.outside}</p></main>
   if (bootstrap.failure)

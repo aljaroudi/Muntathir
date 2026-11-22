@@ -58,9 +58,10 @@ export function External({ url, children }: { url: string; children: ComponentCh
   )
 }
 
-export function Row({ to, title, detail, trailing }: {
+export function Row({ to, title, detail, context, trailing }: {
   to: Route
   title: string
+  context?: string
   detail?: string
   trailing?: string | number
 }) {
@@ -69,6 +70,7 @@ export function Row({ to, title, detail, trailing }: {
     <li>
       <button class="row" onClick={() => push(to)}>
         <span class="row-text">
+          {context && <span class="row-context" dir="auto">{context}</span>}
           <span class="row-title" dir="auto">{title}</span>
           {detail && <span class="row-detail" dir="auto">{detail}</span>}
         </span>
@@ -91,6 +93,7 @@ export function Previews({ items, titled = true }: { items: Preview[]; titled?: 
             to={routeFor(item.id)!}
             title={titled ? title : body || title}
             detail={titled ? body : undefined}
+            context={item.context}
           />
         )
       })}

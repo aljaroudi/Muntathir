@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import geomagnetism from 'geomagnetism'
-import { androidHeading, headingError, isAligned, trueHeading, webkitHeading } from '../src/core/compass.ts'
+import { androidHeading, headingError, isAligned, screenHeading, trueHeading, webkitHeading } from '../src/core/compass.ts'
 
 test('Android alpha is the negated azimuth', () => {
   const event = { absolute: true, beta: 0, gamma: 0 }
@@ -15,6 +15,10 @@ test('WebKit headings need a good accuracy', () => {
   expect(webkitHeading(90, 10)).toBe(90)
   for (const [heading, accuracy] of [[90, -1], [90, 11], [-1, 5], [undefined, 5], [90, undefined]])
     expect(webkitHeading(heading, accuracy)).toBeNull()
+})
+
+test('the dial follows the top of the screen', () => {
+  expect([0, 90, 180, 270, -90].map(angle => screenHeading(300, angle))).toEqual([300, 30, 120, 210, 210])
 })
 
 test('declination and turn direction', () => {

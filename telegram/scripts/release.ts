@@ -88,7 +88,10 @@ async function point(link: string, to: string) {
 }
 
 async function restart(release: string): Promise<boolean> {
-  await run('launchctl', 'kickstart', '-k', `${domain()}/${SERVICE}`)
+  const service = `${domain()}/${SERVICE}`
+  // SIGTERM lets replies in progress finish, then KeepAlive starts the new release. It fails when
+  // the job isn't running, and then it only needs starting.
+  await run('launchctl', 'kill', 'SIGTERM', service).catch(() => run('launchctl', 'kickstart', service))
   const id = basename(release)
   if (!(await waitFor(() => serving(PORT, id), 60_000))) return false
   await Bun.sleep(STEADY_MS)

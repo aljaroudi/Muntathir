@@ -45,6 +45,7 @@ export function Search() {
     const controller = new AbortController()
     running = controller
     setBusy(true)
+    saved.outcome = null
     setOutcome(null)
     const result = await search(
       {
@@ -121,7 +122,7 @@ export function Search() {
               <label>
                 {t.language}
                 <select value={input.language} onChange={event => void submit(edit({ language: event.currentTarget.value }))}>
-                  <option value="">العربية + English</option>
+                  <option value="">{t.allLanguages}</option>
                   {languages.map(item => <option key={item.code} value={item.code}>{item.name}</option>)}
                 </select>
               </label>

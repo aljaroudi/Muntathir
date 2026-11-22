@@ -86,7 +86,7 @@ describe.if(installed)('api', () => {
   })
   const handle = createHandler({
     token: TOKEN,
-    username: 'test_bot',
+    username: () => 'test_bot',
     content,
     calendar: new CalendarSource(),
     search,

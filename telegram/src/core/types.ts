@@ -4,7 +4,8 @@ import type { CalendarData } from './calendar.ts'
 export type Text = { ar: string; en: string }
 
 export type Kind = 'quran' | 'hadith' | 'dua' | 'rulings' | 'introduction'
-export type Preview = { id: string; kind: Kind; title: Text; text: Text }
+/** `context` says where a ruling sits; without it many rows read identically. */
+export type Preview = { id: string; kind: Kind; title: Text; text: Text; context?: string }
 export type Page<T> = { items: T[]; next?: number }
 
 export type Bootstrap = { calendar: CalendarData; username: string }

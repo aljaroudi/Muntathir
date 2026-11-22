@@ -31,7 +31,8 @@ export type Asset = { body: Uint8Array<ArrayBuffer>; type: string; immutable: bo
 
 type Dependencies = {
   token: string
-  username: string
+  /** Empty until Telegram has answered getMe. */
+  username: () => string
   content: Content
   calendar: CalendarSource
   search: Search
@@ -75,7 +76,7 @@ export function createHandler({
     const id = isPublicID(first) && !second ? first : null
     switch (resource) {
       case 'bootstrap':
-        return first ? null : { calendar: calendar.current(now()), username }
+        return first ? null : { calendar: calendar.current(now()), username: username() }
       case 'daily':
         return /^\d{1,3}$/.test(first) && !second ? content.dailyVerse(Number(first)) : null
       case 'verse':

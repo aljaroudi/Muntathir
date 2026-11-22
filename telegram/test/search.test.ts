@@ -97,6 +97,49 @@ describe('search', () => {
     expect(peak).toBe(4)
   })
 
+  test('rulings search every language unless one is chosen', async () => {
+    const { search, sent } = setup(ok)
+    await search.run(1, { query: 'x', scope: 'rulings', authority: 'khorasani' })
+    await search.run(1, { query: 'x', scope: 'library' })
+    expect(JSON.parse(sent[0]!.body as string).languages).toBeUndefined()
+    expect(JSON.parse(sent[1]!.body as string).languages).toEqual(['ar', 'en'])
+  })
+
+  test("one user can't take search down, and refusals aren't charged", async () => {
+    let open!: () => void
+    const gate = new Promise<void>(resolve => (open = resolve))
+    const { search, sent } = setup(async () => {
+      await gate
+      return ok()
+    }, { dailyPerUser: 4 })
+    const run = (user: number) => search.run(user, { query: 'x', scope: 'library' })
+    const flood = Array.from({ length: 24 }, () => run(1))
+    const other = run(2)
+    await Bun.sleep(5)
+    expect(sent).toHaveLength(4)
+    open()
+    expect((await Promise.all(flood)).filter(result => 'items' in result)).toHaveLength(3)
+    expect(await other).toEqual({ items: [hit] })
+    // Only three of the four were used up.
+    expect(await run(1)).toEqual({ items: [hit] })
+    expect(await run(1)).toEqual({ problem: 'limited' })
+  })
+
+  test('waiting has a deadline and gives its place back', async () => {
+    let open!: () => void
+    const gate = new Promise<void>(resolve => (open = resolve))
+    const { search } = setup(async () => {
+      await gate
+      return ok()
+    }, { maxWait: 5 })
+    const run = (user: number) => search.run(user, { query: 'x', scope: 'library' })
+    const busy = [1, 2, 3, 4].map(run)
+    expect(await run(5)).toEqual({ problem: 'unavailable' })
+    open()
+    await Promise.all(busy)
+    expect(await run(5)).toEqual({ items: [hit] })
+  })
+
   test('only a loopback service is accepted', () => {
     expect(() => new Search({ url: 'https://example.com/v1/search', hydrate: () => [] })).toThrow()
   })

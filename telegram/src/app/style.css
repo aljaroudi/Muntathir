@@ -93,7 +93,8 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round
 .row { display: flex; width: 100%; min-height: 54px; align-items: center; gap: 12px; padding: 12px 16px; border: 0; background: none; text-align: start; }
 .row:active { background: color-mix(in srgb, var(--accent) 10%, transparent); }
 .row-text { flex: 1; min-width: 0; }
-.row-title, .row-detail { display: block; text-align: start; }
+.row-title, .row-detail, .row-context { display: block; text-align: start; }
+.row-context { color: var(--muted); font-size: 0.78rem; }
 .row-detail {
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -114,7 +115,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round
 .basmala { text-align: center; }
 .translation { margin: 10px 0; color: var(--muted); line-height: 1.7; text-align: start; }
 .verses { margin: 0; padding: 0; list-style: none; }
-.verses li { padding: 12px 4px; border-bottom: 1px solid var(--line); }
+.verses li { scroll-margin-top: 72px; padding: 12px 4px; border-bottom: 1px solid var(--line); }
 .verse-number { color: var(--gold); font: 0.85rem system-ui; }
 .markup { line-height: 1.9; }
 .markup.arabic { line-height: 2.15; }

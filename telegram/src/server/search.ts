@@ -10,7 +10,10 @@ const KINDS: Record<Scope, string[]> = {
 }
 const MAX_QUERY = 512
 const MAX_IN_FLIGHT = 4
-const MAX_WAITING = 20
+/** Fewer than the slots, so one user can't hold them all. */
+const MAX_PER_USER = 3
+const MAX_WAITING = 60
+const MAX_WAIT_MS = 8000
 /** Retrieval plus up to 14 s of reranking. */
 const TIMEOUT_MS = 18_000
 
@@ -29,6 +32,7 @@ type Options = {
   hydrate: (references: unknown[]) => Preview[]
   daily?: number
   dailyPerUser?: number
+  maxWait?: number
   request?: (url: string, init: RequestInit) => Promise<Response>
   now?: () => number
 }
@@ -50,6 +54,8 @@ export class Search {
   private day = -1
   private active = 0
   private readonly waiting: (() => void)[] = []
+  /** Active and waiting searches per user, for only as long as they run. */
+  private readonly pending = new Map<string, number>()
 
   constructor(private readonly options: Options) {
     const { hostname } = new URL(options.url)
@@ -89,8 +95,17 @@ export class Search {
     }
     if (this.waiting.length >= MAX_WAITING) return false
     // release() hands its slot straight to the next waiter.
-    await new Promise<void>(resolve => this.waiting.push(resolve))
-    return true
+    return new Promise<boolean>(resolve => {
+      const admit = () => {
+        clearTimeout(timer)
+        resolve(true)
+      }
+      const timer = setTimeout(() => {
+        this.waiting.splice(this.waiting.indexOf(admit), 1)
+        resolve(false)
+      }, this.options.maxWait ?? MAX_WAIT_MS)
+      this.waiting.push(admit)
+    })
   }
 
   private release() {
@@ -104,9 +119,16 @@ export class Search {
     if (!query) return { problem: 'empty' }
     if ([...query].length > MAX_QUERY) return { problem: 'long' }
     const now = (this.options.now ?? Date.now)()
-    if (!this.allow(user, now)) return { problem: 'limited' }
-    if (!(await this.acquire())) return { problem: 'unavailable' }
+    const key = this.hmac(`pending:${user}`)
+    const pending = this.pending.get(key) ?? 0
+    if (pending >= MAX_PER_USER) return { problem: 'limited' }
+    this.pending.set(key, pending + 1)
+    let admitted = false
     try {
+      admitted = await this.acquire()
+      if (!admitted) return { problem: 'unavailable' }
+      // Charged only once admitted, so refused searches don't use up anyone's day.
+      if (!this.allow(user, now)) return { problem: 'limited' }
       const response = await (this.options.request ?? fetch)(this.options.url, {
         method: 'POST',
         redirect: 'error',
@@ -118,7 +140,12 @@ export class Search {
         body: JSON.stringify({
           query,
           kinds: KINDS[input.scope],
-          languages: input.language ? [input.language] : ['ar', 'en'],
+          // Nearly half the rulings are in other languages, and one authority is Persian only.
+          ...(input.language
+            ? { languages: [input.language] }
+            : input.scope === 'rulings'
+              ? {}
+              : { languages: ['ar', 'en'] }),
           ...(input.scope === 'rulings' && input.authority ? { sources: [input.authority] } : {}),
           limit: input.limit ?? 20,
         }),
@@ -132,7 +159,10 @@ export class Search {
     } catch {
       return { problem: 'unavailable' }
     } finally {
-      this.release()
+      if (admitted) this.release()
+      const left = this.pending.get(key)! - 1
+      if (left) this.pending.set(key, left)
+      else this.pending.delete(key)
     }
   }
 }

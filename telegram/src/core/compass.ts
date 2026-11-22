@@ -33,6 +33,14 @@ export function webkitHeading(heading: unknown, accuracy: unknown): number | nul
   return wrap(heading)
 }
 
+/**
+ * Both clients report the top edge of the device, but the dial is drawn against the top of the
+ * screen. [angle] is how far the screen is turned: 0, 90, 180 or 270 (or -90).
+ */
+export function screenHeading(heading: number, angle: number): number {
+  return wrap(heading + angle)
+}
+
 /** [declination] is east-positive. */
 export function trueHeading(magnetic: number, declination: number): number {
   return wrap(magnetic + declination)

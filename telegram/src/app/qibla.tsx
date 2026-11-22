@@ -1,6 +1,6 @@
 import geomagnetism from 'geomagnetism'
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
-import { androidHeading, headingError, isAligned, trueHeading, webkitHeading } from '../core/compass.ts'
+import { androidHeading, headingError, isAligned, screenHeading, trueHeading, webkitHeading } from '../core/compass.ts'
 import { qibla } from '../core/prayer.ts'
 import { LocationForm } from './settings.tsx'
 import { useApp } from './state.ts'
@@ -18,6 +18,11 @@ function source(): 'telegram' | 'webkit' | null {
   return null
 }
 
+/** `window.orientation` covers WebViews older than the Screen Orientation API. */
+function screenAngle(): number {
+  return screen.orientation?.angle ?? (window as { orientation?: number }).orientation ?? 0
+}
+
 /** If no heading arrives in this long, there's no compass. */
 const FIRST_READING_MS = 6000
 
@@ -29,6 +34,8 @@ function useMagneticHeading() {
   useEffect(() => {
     if (compass !== 'on') return
     let seen = false
+    const update = (magnetic: number | null) =>
+      setHeading(magnetic === null ? null : screenHeading(magnetic, screenAngle()))
     const timer = setTimeout(() => {
       if (!seen) setCompass('none')
     }, FIRST_READING_MS)
@@ -37,7 +44,7 @@ function useMagneticHeading() {
       const sensor = webApp!.DeviceOrientation
       const changed = () => {
         seen ||= sensor.absolute
-        setHeading(androidHeading(sensor))
+        update(androidHeading(sensor))
       }
       webApp!.onEvent('deviceOrientationChanged', changed)
       sensor.start({ need_absolute: true, refresh_rate: 100 }, started => {
@@ -52,7 +59,7 @@ function useMagneticHeading() {
 
     const changed = (event: WebKitEvent) => {
       seen ||= typeof event.webkitCompassHeading === 'number'
-      setHeading(webkitHeading(event.webkitCompassHeading, event.webkitCompassAccuracy))
+      update(webkitHeading(event.webkitCompassHeading, event.webkitCompassAccuracy))
     }
     window.addEventListener('deviceorientation', changed)
     return () => {

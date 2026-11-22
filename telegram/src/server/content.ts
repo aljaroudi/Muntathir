@@ -49,7 +49,7 @@ type IntroductionRow = {
   author: string
   author_ar: string
 }
-type QuestionRow = { id: number; question: string; answer: string; kind: string }
+type QuestionRow = { id: number; question: string; answer: string; kind: string; context: string }
 
 const HADITH_JOINS = `FROM hadith h
   JOIN book b ON b.id = h.book_id
@@ -577,7 +577,7 @@ export class Content {
     )!
     const rows = this.all<QuestionRow & { position: number }>(
       this.rulings,
-      `SELECT q.id, q.question, substr(q.answer, 1, ${PREVIEW_SOURCE}) AS answer, q.kind, p.position
+      `SELECT q.id, q.question, substr(q.answer, 1, ${PREVIEW_SOURCE}) AS answer, q.kind, q.context, p.position
        FROM placement p JOIN question q ON q.id = p.question_id
        WHERE p.topic_id = ? AND p.position > ? ORDER BY p.position LIMIT ?`,
       rowID,
@@ -594,7 +594,13 @@ export class Content {
 
   private rulingPreview(row: QuestionRow, authority: T.Text): T.Preview {
     const body = excerpt(questionPreview(row) || row.answer)
-    return { id: this.rulingIDs.id(row.id), kind: 'rulings', title: authority, text: text(body, body) }
+    return {
+      id: this.rulingIDs.id(row.id),
+      kind: 'rulings',
+      title: authority,
+      text: text(body, body),
+      ...(row.context ? { context: row.context } : {}),
+    }
   }
 
   ruling(id: string): T.Ruling | null {
@@ -697,7 +703,7 @@ export class Content {
         return this.rulingPreview(
           this.get<QuestionRow>(
             this.rulings,
-            `SELECT id, question, substr(answer, 1, ${PREVIEW_SOURCE}) AS answer, kind FROM question WHERE id = ?`,
+            `SELECT id, question, substr(answer, 1, ${PREVIEW_SOURCE}) AS answer, kind, context FROM question WHERE id = ?`,
             row,
           )!,
           authority.name,

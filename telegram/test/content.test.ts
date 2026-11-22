@@ -171,6 +171,16 @@ describe.if(installed)('content', () => {
     expect(found.footnotes.some(note => !note.chapter)).toBe(true)
   }, 120_000)
 
+  test('ruling previews say where they sit', () => {
+    const row = rulings()
+      .query<{ authority: string; language: string; id: string; context: string }, []>(
+        `SELECT authority_code AS authority, language_code AS language, site_id AS id, context
+         FROM entry WHERE language_code = 'fa' LIMIT 1`,
+      )
+      .get()!
+    expect(content.hydrate([{ kind: 'rulings', ...row }])[0]!.context).toBe(row.context)
+  })
+
   test('unresolvable references are dropped', () => {
     expect(
       content.hydrate([

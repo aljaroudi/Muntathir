@@ -11,8 +11,10 @@ type Position = { surah: number; verse: number }
 let position: Position | null = null
 
 export async function loadPosition() {
-  const saved = await device.get<Position>(POSITION)
-  if (Number.isInteger(saved?.surah) && Number.isInteger(saved?.verse)) position = saved
+  const use = (saved: Position | null) => {
+    if (Number.isInteger(saved?.surah) && Number.isInteger(saved?.verse)) position = saved
+  }
+  use(await device.get<Position>(POSITION, use))
 }
 
 export function Library() {
@@ -73,8 +75,12 @@ export function Surah({ number, verse }: { number: number; verse?: number }) {
   const list = useRef<HTMLOListElement>(null)
   // An invalid verse just opens the surah.
   const wanted = verse && head && verse <= head.surah.verses ? verse : undefined
-  const reached = !wanted || items.some(item => item.number === wanted)
+  // Some verses past it too, so it can scroll to the top.
+  const through = wanted && Math.min(head!.surah.verses, wanted + 10)
+  const reached = !through || items.some(item => item.number === through)
   const jumped = useRef(false)
+  // Where the jump left the page: that scroll isn't reading, and near the end it can't reach the verse.
+  const landed = useRef<number | null>(null)
 
   useEffect(() => {
     if (!reached && hasMore && !loading && !failure) void more()
@@ -86,13 +92,19 @@ export function Surah({ number, verse }: { number: number; verse?: number }) {
     if (!target) return
     jumped.current = true
     // After the screen's own scroll restoration.
-    requestAnimationFrame(() => target.scrollIntoView({ block: 'center' }))
+    requestAnimationFrame(() => {
+      target.scrollIntoView({ block: 'start' })
+      landed.current = window.scrollY
+    })
   }, [wanted, reached])
 
   useEffect(() => {
     if (!list.current || !reached) return
     let timer: ReturnType<typeof setTimeout> | undefined
     const save = () => {
+      if (wanted && landed.current === null) return
+      if (landed.current !== null && Math.abs(window.scrollY - landed.current) < 4) return
+      landed.current = -Infinity
       clearTimeout(timer)
       timer = setTimeout(() => {
         const top = [...(list.current?.children ?? [])].find(row => row.getBoundingClientRect().bottom > 80)
@@ -173,6 +185,9 @@ export function Collections() {
   )
 }
 
+// Kept outside the screen, so Back from a chapter finds its volume still open.
+const openVolumes = new Set<string>()
+
 export function Collection({ id }: { id: string }) {
   const { t } = useApp()
   const text = useText()
@@ -203,7 +218,15 @@ export function Collection({ id }: { id: string }) {
         return data.books.length === 1 ? (
           <div key={book.id}>{chapters}</div>
         ) : (
-          <details key={book.id} class="volume">
+          <details
+            key={book.id}
+            class="volume"
+            open={openVolumes.has(book.id)}
+            onToggle={event => {
+              if (event.currentTarget.open) openVolumes.add(book.id)
+              else openVolumes.delete(book.id)
+            }}
+          >
             <summary dir="auto">{text(book.name)}</summary>
             {chapters}
           </details>

@@ -1,4 +1,4 @@
-import { run } from '@grammyjs/runner'
+import { run, type RunnerHandle } from '@grammyjs/runner'
 import { isAbsolute, join, resolve } from 'node:path'
 import { createHandler, type Asset } from './server/api.ts'
 import { createBot } from './server/bot.ts'
@@ -22,6 +22,8 @@ const PRIVACY = {
 }
 const HOUR = 3_600_000
 const SHUTDOWN_MS = 20_000
+/** Fixed: the library's default backoff doubles without a cap, so a long outage doubled in length. */
+const RETRY_MS = 5000
 
 /** Only files that exist at startup are servable, so a path can't escape the directory. */
 async function loadAssets(directory: string): Promise<Map<string, Asset>> {
@@ -67,11 +69,10 @@ async function main() {
   const polling = env.TELEGRAM_POLLING !== 'false'
 
   const bot = createBot({ token, publicURL, privacy: PRIVACY, content, calendar, search })
-  if (polling) await bot.init()
 
   const handler = createHandler({
     token,
-    username: polling ? bot.botInfo.username : '',
+    username: () => (bot.isInited() ? bot.botInfo.username : ''),
     content,
     calendar,
     search,
@@ -90,12 +91,7 @@ async function main() {
 
   if (polling) void calendar.refresh()
   const refresh = setInterval(() => void calendar.refresh(), HOUR)
-  const runner = polling
-    ? run(bot, {
-        runner: { silent: true, fetch: { allowed_updates: ['message', 'callback_query'] } },
-      })
-    : null
-
+  let runner: RunnerHandle | null = null
   let stopping = false
   async function stop(status: number) {
     if (stopping) return
@@ -103,7 +99,11 @@ async function main() {
     clearInterval(refresh)
     setTimeout(() => process.exit(1), SHUTDOWN_MS).unref()
     try {
-      if (runner?.isRunning()) await runner.stop()
+      if (runner) {
+        if (runner.isRunning()) await runner.stop()
+        // Telegram already counts these updates as delivered, so finish replying.
+        while (runner.size()) await Bun.sleep(100)
+      }
       await server.stop()
     } catch (error) {
       log('service.stop_failed', error)
@@ -114,15 +114,37 @@ async function main() {
   process.on('SIGTERM', () => void stop(0))
   process.on('SIGINT', () => void stop(0))
   // Without this the web server would keep a dead bot's process alive after a 401 or 409.
+  if (!polling) return log('service.started_without_polling')
+
+  // The Mini App is already served, so being offline here only delays the bot.
+  while (!bot.isInited() && !stopping) {
+    try {
+      bot.botInfo = await bot.api.getMe()
+    } catch (error) {
+      const { error_code: code, parameters } = error as {
+        error_code?: number
+        parameters?: { retry_after?: number }
+      }
+      if (code === 401 || code === 404) {
+        log('bot.token_rejected', error)
+        return stop(1)
+      }
+      log('bot.connect_failed', error)
+      await Bun.sleep(Math.max(RETRY_MS, (parameters?.retry_after ?? 0) * 1000))
+    }
+  }
+  if (stopping) return
+  runner = run(bot, {
+    runner: { silent: true, retryInterval: RETRY_MS, fetch: { allowed_updates: ['message', 'callback_query'] } },
+  })
   runner
-    ?.task()
+    .task()
     ?.then(() => stop(stopping ? 0 : 1))
     .catch(error => {
       log('bot.polling_failed', error)
       void stop(1)
     })
-
-  log(polling ? 'service.started' : 'service.started_without_polling')
+  log('service.started')
 }
 
 main().catch(error => {
