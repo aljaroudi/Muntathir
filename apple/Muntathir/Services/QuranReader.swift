@@ -46,6 +46,9 @@ actor QuranReader {
     private var ranked: (key: RankKey, ids: [Int])?
     private(set) var relatedIDs: Set<String> = []
 
+    /// Shared by the Quran list and the readers it opens, so their caches stay warm across screens.
+    static let shared = QuranReader()
+
     init(database: QuranDatabase = QuranDatabase()) {
         self.database = database
     }

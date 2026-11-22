@@ -11,6 +11,7 @@ struct RulingsView: View {
             } else {
                 List { RulingsIntroSection(); RulingsDownloadSection(assets: assets) }
                     .navigationTitle("Rulings")
+                    .splitFallbackStack()
             }
         }
     }
@@ -74,7 +75,19 @@ private struct RulingsBrowser: View {
     }
 
     var body: some View {
-        List {
+        AdaptiveSplit(restorationKey: "rulings", defaultSelection: firstSection, scope: authority) { selection in
+            browser(selection: selection)
+        }
+    }
+
+    /// The first top-level section of the leading language.
+    private var firstSection: FigureRoute? {
+        guard let language = languages.first, let section = contents[language.id]?.first else { return nil }
+        return .rulings(.section(authority: authority, language: language.id, id: section.id, title: section.title))
+    }
+
+    private func browser(selection: Binding<FigureRoute?>) -> some View {
+        AdaptiveList(selection: selection) {
             RulingsIntroSection()
             Section {
                 Picker("Religious authority", selection: $authority) {
@@ -93,9 +106,10 @@ private struct RulingsBrowser: View {
                     if let sections = contents[language.id], !sections.isEmpty {
                         Section {
                             ForEach(sections) { section in
-                                NavigationLink(section.title) {
-                                    RulingsSectionView(reader: reader, authority: authority, authorityName: authorityName,
-                                                       language: language, section: section)
+                                AdaptiveLink(route: .rulings(.section(authority: authority, language: language.id, id: section.id,
+                                                                      title: section.title)))
+                                {
+                                    Text(section.title)
                                 }
                             }
                         } header: {
@@ -211,10 +225,7 @@ private struct RulingsResults: View {
 
     private func rows(_ values: [Rulings]) -> some View {
         ForEach(values) { value in
-            NavigationLink {
-                RulingsDetailView(reader: reader, rulings: value, authorityName: authorityName, language: language)
-                    .recordSearchOnOpen(query, area: .rulings)
-            } label: {
+            AdaptiveLink(route: .rulings(.question(value.id)), search: (query, .rulings)) {
                 VStack(alignment: .leading) {
                     if !value.context.isEmpty {
                         Text(value.context).font(.caption)
@@ -333,9 +344,8 @@ private struct RulingsSectionView: View {
     var body: some View {
         List {
             ForEach(children) { child in
-                NavigationLink(child.title) {
-                    RulingsSectionView(reader: reader, authority: authority, authorityName: authorityName, language: language, section: child)
-                }
+                NavigationLink(child.title, value: FigureRoute.rulings(.section(authority: authority, language: language.id, id: child.id,
+                                                                                title: child.title)))
             }
             if children.isEmpty || !results.questions.isEmpty {
                 RulingsResults(reader: reader, authorityName: authorityName, language: language, questions: results.questions,
@@ -467,9 +477,9 @@ private struct RulingsDetailView: View {
         if !sections.isEmpty {
             Section {
                 ForEach(sections) { section in
-                    NavigationLink {
-                        RulingsSectionView(reader: reader, authority: rulings.id.authority, authorityName: authorityName, language: language, section: section)
-                    } label: {
+                    NavigationLink(value: FigureRoute.rulings(.section(authority: rulings.id.authority, language: language.id, id: section.id,
+                                                                       title: section.title)))
+                    {
                         Label(section.title, systemImage: "tag")
                             .environment(\.layoutDirection, language.rightToLeft ? .rightToLeft : .leftToRight)
                     }
@@ -491,6 +501,73 @@ private struct RulingsDetailView: View {
     }
 }
 
+/// A rulings screen opened by route, pushed in a stack or shown in a split view's detail column.
+enum RulingsRoute: Hashable, Codable, Sendable {
+    case section(authority: String, language: String, id: Int64, title: String)
+    case question(Rulings.ID)
+    case saved
+}
+
+struct RulingsRouteView: View {
+    let route: RulingsRoute
+    @Environment(\.rulingsAssets) private var assets
+    @Environment(\.locale) private var locale
+    @State private var loaded: Loaded?
+    @State private var failed = false
+
+    /// What the screens need beyond the route, looked up from the pack.
+    private struct Loaded {
+        let authorityName: String
+        let language: RulingsLanguage
+        let question: Rulings?
+    }
+
+    var body: some View {
+        if case .saved = route {
+            RulingsSavedView()
+        } else if let assets, let loaded {
+            switch route {
+            case let .section(authority, _, id, title):
+                RulingsSectionView(reader: assets.reader, authority: authority, authorityName: loaded.authorityName,
+                                   language: loaded.language, section: RulingsSection(id: id, title: title))
+            case .question:
+                if let question = loaded.question {
+                    RulingsDetailView(reader: assets.reader, rulings: question, authorityName: loaded.authorityName, language: loaded.language)
+                }
+            case .saved:
+                EmptyView()
+            }
+        } else if failed {
+            ContentUnavailableView("Rulings unavailable", systemImage: "exclamationmark.triangle")
+        } else {
+            ProgressView().task { await load() }
+        }
+    }
+
+    private func load() async {
+        guard let reader = assets?.reader else { failed = true; return }
+        let (authority, languageID): (String, String) = switch route {
+        case let .section(authority, language, _, _): (authority, language)
+        case let .question(id): (id.authority, id.language)
+        case .saved: ("", "")
+        }
+        do {
+            let authorities = try await reader.authorities()
+            let languages = try await reader.languages(authority: authority)
+            var question: Rulings?
+            if case let .question(id) = route {
+                question = try await reader.question(id)
+            }
+            guard let language = languages.first(where: { $0.id == languageID }) else { failed = true; return }
+            let name = authorities.first { $0.id == authority }
+                .map { locale.language.languageCode?.identifier == "ar" ? $0.arabic : $0.english } ?? authority
+            loaded = Loaded(authorityName: name, language: language, question: question)
+        } catch {
+            failed = true
+        }
+    }
+}
+
 private struct RulingsIntroSection: View {
     var body: some View {
         Section {
@@ -498,7 +575,7 @@ private struct RulingsIntroSection: View {
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .accessibilityIdentifier("rulings-notice")
-            NavigationLink { RulingsSavedView() } label: { Label("Saved", systemImage: "bookmark") }
+            AdaptiveLink(route: .rulings(.saved)) { Label("Saved", systemImage: "bookmark") }
                 .accessibilityIdentifier("rulings-saved")
         }
     }

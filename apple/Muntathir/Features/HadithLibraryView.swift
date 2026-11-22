@@ -62,6 +62,7 @@ struct HadithLibraryView: View {
             .alert("Unable to finish storage cleanup", isPresented: $assets.storageError) {
                 Button("OK", role: .cancel) {}
             } message: { Text(assets.storageErrorMessage) }
+            .splitFallbackStack()
         }
     }
 }

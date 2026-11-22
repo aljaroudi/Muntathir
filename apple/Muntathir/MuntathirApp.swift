@@ -80,13 +80,13 @@ struct MuntathirApp: App {
             // Mac apps keep settings in a separate window opened with ⌘, rather than a sidebar item.
             Settings {
                 appData {
-                    NavigationStack { SettingsView() }
+                    SettingsSplitView()
                         .environment(\.isShowingTabSidebar, true)
                         .environment(\.rulingsAssets, AssetPackUpdates.shared.rulings)
                         .environment(\.hadithAssets, AssetPackUpdates.shared.hadith)
                         .environment(\.supplicationAssets, AssetPackUpdates.shared.supplications)
                 }
-                .frame(minWidth: 520, minHeight: 560)
+                .frame(minWidth: 720, minHeight: 560)
             }
         #endif
     }

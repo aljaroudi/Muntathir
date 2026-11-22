@@ -3,6 +3,7 @@ import SwiftUI
 struct MonthAdjustmentsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.isSplitDetailRoot) private var isSplitDetailRoot
     @State private var month: HijriMonth
     @State private var offset: Int
     @State private var error: String?
@@ -58,7 +59,12 @@ struct MonthAdjustmentsView: View {
     }
 
     private func save(_ days: Int) {
-        do { try model.correct(month: month, offset: days); dismiss() }
-        catch { self.error = error.localizedDescription }
+        do {
+            try model.correct(month: month, offset: days)
+            // As a settings page it stays open; the stepper already shows the saved value.
+            if !isSplitDetailRoot {
+                dismiss()
+            }
+        } catch { self.error = error.localizedDescription }
     }
 }

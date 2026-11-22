@@ -14,11 +14,15 @@ struct ContentView: View {
     #if os(macOS)
         /// Mac windows always show the sidebar.
         @State private var isSidebarAvailable = true
+        @State private var isSidebarShowing = true
     #else
         @State private var isSidebarAvailable = false
+        /// Whether the sidebar is expanded rather than collapsed into the floating tab bar.
+        @State private var isSidebarShowing = false
     #endif
-    @State private var toolPaths: [AppTool: NavigationPath] = [:]
+    @State private var toolPaths: [AppTool: [FigureRoute]] = [:]
     @State private var toolsPath: [FigureRoute] = []
+    @State private var splitSelections = SplitSelections()
     @State private var hadithAssets = AssetPackUpdates.shared.hadith
     @State private var supplicationAssets = AssetPackUpdates.shared.supplications
     @State private var rulingsAssets = AssetPackUpdates.shared.rulings
@@ -26,7 +30,7 @@ struct ContentView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             Tab("Today", systemImage: "sun.max", value: AppTab.today) {
-                shell { TodayView(referenceDate: skyTestDate) }
+                shell(.today) { TodayView(referenceDate: skyTestDate) }
             }
             #if os(iOS)
             .customizationBehavior(.disabled, for: .sidebar, .tabBar)
@@ -61,15 +65,12 @@ struct ContentView: View {
             .environment(\.hadithAssets, hadithAssets)
             .environment(\.supplicationAssets, supplicationAssets)
             .environment(\.hadithSession, hadithSession)
-            .task { updateReadingRoute() }
             .onChange(of: model.preferences.tabShortcuts) { _, shortcuts in
                 if !isSidebarAvailable {
                     selectedTab = selectedTab.available(in: shortcuts)
                 }
             }
-            .onChange(of: isSidebarAvailable) { _, available in adaptSelection(sidebar: available) }
-            .onChange(of: selectedTab) { _, _ in updateReadingRoute() }
-            .onChange(of: toolsPath) { _, _ in updateReadingRoute() }
+            .onChange(of: layout) { old, new in adapt(from: old, to: new) }
             .tint(.accentColor)
             .sheet(item: $translations.downloadRequest) { translation in
                 QuranDownloadView(requested: translation.id)
@@ -146,7 +147,14 @@ struct ContentView: View {
         #if os(iOS)
             // Opened from the sidebar's bottom bar.
             Tab(value: AppTab.settings) {
-                shell { SettingsView() }
+                Group {
+                    if splitsActive {
+                        SettingsSplitView()
+                    } else {
+                        NavigationStack { SettingsView() }
+                    }
+                }
+                .reportsTabSidebar(available: $isSidebarAvailable, showing: $isSidebarShowing, active: selectedTab == .settings)
             } label: {
                 Label("Settings", systemImage: "gearshape")
             }
@@ -199,7 +207,34 @@ struct ContentView: View {
                 .navigationTitle("Tools")
                 .figureDestinations(hadithAssets: hadithAssets, supplicationAssets: supplicationAssets)
             }
-            .reportsTabSidebarAvailability($isSidebarAvailable)
+            .reportsTabSidebar(available: $isSidebarAvailable, showing: $isSidebarShowing, active: selectedTab == .tools)
+        }
+    }
+
+    private struct Layout: Equatable {
+        var sidebar: Bool
+        var splits: Bool
+    }
+
+    private var layout: Layout {
+        Layout(sidebar: isSidebarAvailable, splits: splitsActive)
+    }
+
+    /// Split views only fit beside an expanded sidebar; under the floating tab bar, tools push as on iPhone.
+    private var splitsActive: Bool {
+        isSidebarAvailable && isSidebarShowing
+    }
+
+    /// Carries what's open across layouts: split selections become stack paths before the tabs change, and back after.
+    private func adapt(from old: Layout, to new: Layout) {
+        if old.splits, !new.splits {
+            handOffSplits()
+        }
+        if old.sidebar != new.sidebar {
+            adaptSelection(sidebar: new.sidebar)
+        }
+        if !old.splits, new.splits {
+            adoptSplits()
         }
     }
 
@@ -209,64 +244,89 @@ struct ContentView: View {
             let root = toolsPath.first
             selectedTab = selectedTab.withSidebar(toolsRoot: root)
             if case let .tool(tool) = root {
-                toolPaths[tool] = NavigationPath(toolsPath.dropFirst())
+                toolPaths[tool] = Array(toolsPath.dropFirst())
             }
             toolsPath = []
         } else {
             let shortcuts = model.preferences.tabShortcuts
             if case let .tool(tool) = selectedTab, !shortcuts.contains(tool) {
-                toolsPath = [.tool(tool)]
+                toolsPath = [.tool(tool)] + (tool.isSplitCapable ? toolPaths.removeValue(forKey: tool) ?? [] : [])
             }
             selectedTab = selectedTab.withoutSidebar(shortcuts: shortcuts)
         }
     }
 
-    private func updateReadingRoute() {
-        hadithSession.state.active = selectedTab == .tool(.hadith)
-            || (selectedTab == .tools && (toolsPath.contains(.hadith) || toolsPath.contains(.tool(.hadith))))
+    /// A split tool hands what the person opened to its stack; automatic picks aren't pushed.
+    private func handOffSplits() {
+        for tool in AppTool.available where tool.isSplitCapable {
+            toolPaths[tool] = splitSelections.state(for: tool).handOff()
+        }
     }
 
-    private func shell(@ViewBuilder content: () -> some View) -> some View {
+    /// A split tool shows the first screen pushed in its stack as the selection.
+    private func adoptSplits() {
+        for tool in AppTool.available where tool.isSplitCapable {
+            if let path = toolPaths.removeValue(forKey: tool) {
+                splitSelections.state(for: tool).adopt(path)
+            }
+        }
+    }
+
+    private func shell(_ tab: AppTab, @ViewBuilder content: () -> some View) -> some View {
         NavigationStack {
             content()
         }
-        .reportsTabSidebarAvailability($isSidebarAvailable)
+        .reportsTabSidebar(available: $isSidebarAvailable, showing: $isSidebarShowing, active: selectedTab == tab)
     }
 
     private func toolShell(_ tool: AppTool) -> some View {
-        let path = Binding<NavigationPath>(
-            get: { toolPaths[tool] ?? NavigationPath() },
+        let path = Binding<[FigureRoute]>(
+            get: { toolPaths[tool] ?? [] },
             set: { toolPaths[tool] = $0 }
         )
-        return NavigationStack(path: path) {
-            ToolDestination(tool: tool)
-                .figureDestinations(hadithAssets: hadithAssets, supplicationAssets: supplicationAssets)
+        return Group {
+            // A split view brings its own stacks and can't sit inside another one.
+            if splitsActive, tool.isSplitCapable {
+                ToolDestination(tool: tool)
+                    .environment(\.splitState, splitSelections.state(for: tool))
+            } else {
+                NavigationStack(path: path) {
+                    ToolDestination(tool: tool)
+                        .figureDestinations(hadithAssets: hadithAssets, supplicationAssets: supplicationAssets)
+                }
+            }
         }
         .id(tool)
-        .reportsTabSidebarAvailability($isSidebarAvailable)
+        .reportsTabSidebar(available: $isSidebarAvailable, showing: $isSidebarShowing, active: selectedTab == .tool(tool))
     }
 }
 
 private extension View {
-    /// `isTabViewSidebarAvailable` is only meaningful inside tab content, so tabs report it upward.
-    func reportsTabSidebarAvailability(_ isAvailable: Binding<Bool>) -> some View {
-        modifier(TabSidebarAvailabilityReporter(isAvailable: isAvailable))
+    /// `isTabViewSidebarAvailable` and `tabBarPlacement` are only meaningful inside tab content, so tabs report them upward.
+    /// Only the selected tab reports; tabs in the background can hold stale values.
+    func reportsTabSidebar(available: Binding<Bool>, showing: Binding<Bool>, active: Bool) -> some View {
+        modifier(TabSidebarAvailabilityReporter(isAvailable: available, isShowing: showing, isActive: active))
     }
 }
 
 private struct TabSidebarAvailabilityReporter: ViewModifier {
     @Binding var isAvailable: Bool
+    @Binding var isShowing: Bool
+    let isActive: Bool
 
     func body(content: Content) -> some View {
         #if os(macOS)
             content
         #else
-            if #available(iOS 27, *) {
-                content.modifier(SidebarAvailabilityReader(isAvailable: $isAvailable))
-            } else {
-                // Before iOS 27, regular width implies a sidebar.
-                content.modifier(SizeClassSidebarReader(isAvailable: $isAvailable))
+            Group {
+                if #available(iOS 27, *) {
+                    content.modifier(SidebarAvailabilityReader(isAvailable: $isAvailable, isActive: isActive))
+                } else {
+                    // Before iOS 27, regular width implies a sidebar.
+                    content.modifier(SizeClassSidebarReader(isAvailable: $isAvailable, isActive: isActive))
+                }
             }
+            .modifier(SidebarPlacementReader(isShowing: $isShowing, isActive: isActive))
         #endif
     }
 }
@@ -275,25 +335,49 @@ private struct TabSidebarAvailabilityReporter: ViewModifier {
     @available(iOS 27, *)
     private struct SidebarAvailabilityReader: ViewModifier {
         @Binding var isAvailable: Bool
+        let isActive: Bool
         @Environment(\.isTabViewSidebarAvailable) private var isTabViewSidebarAvailable
 
         func body(content: Content) -> some View {
-            content.onChange(of: isTabViewSidebarAvailable, initial: true) { _, available in
-                if isAvailable != available {
-                    isAvailable = available
-                }
-            }
+            content.modifier(ActiveTabReporter(value: isTabViewSidebarAvailable, isActive: isActive, target: $isAvailable))
+        }
+    }
+
+    private struct SidebarPlacementReader: ViewModifier {
+        @Binding var isShowing: Bool
+        let isActive: Bool
+        @Environment(\.tabBarPlacement) private var tabBarPlacement
+
+        func body(content: Content) -> some View {
+            content.modifier(ActiveTabReporter(value: tabBarPlacement == .sidebar, isActive: isActive, target: $isShowing))
         }
     }
 
     private struct SizeClassSidebarReader: ViewModifier {
         @Binding var isAvailable: Bool
+        let isActive: Bool
         @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
         func body(content: Content) -> some View {
-            content.onChange(of: horizontalSizeClass, initial: true) { _, sizeClass in
-                if isAvailable != (sizeClass == .regular) {
-                    isAvailable = sizeClass == .regular
+            content.modifier(ActiveTabReporter(value: horizontalSizeClass == .regular, isActive: isActive, target: $isAvailable))
+        }
+    }
+
+    /// Copies `value` into `target` while this tab is selected, including when it becomes selected.
+    private struct ActiveTabReporter: ViewModifier {
+        let value: Bool
+        let isActive: Bool
+        @Binding var target: Bool
+
+        private struct Reading: Equatable {
+            let value: Bool
+            let isActive: Bool
+        }
+
+        func body(content: Content) -> some View {
+            content.onChange(of: Reading(value: value, isActive: isActive), initial: true) { _, reading in
+                if reading.isActive, target != reading.value {
+                    target = reading.value
                 }
             }
         }

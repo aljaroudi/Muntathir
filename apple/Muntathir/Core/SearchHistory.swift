@@ -3,7 +3,7 @@ import Observation
 
 @MainActor @Observable
 final class SearchHistory {
-    enum Area: String, CaseIterable {
+    enum Area: String, CaseIterable, Codable, Sendable {
         case quran, hadith, supplications, rulings, saved, figures, locations
     }
 

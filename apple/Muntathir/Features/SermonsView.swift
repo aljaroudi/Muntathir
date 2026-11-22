@@ -28,6 +28,10 @@ private struct Sermon: Identifiable {
 
     let id, title, speakerID: String
 
+    var route: FigureRoute {
+        .sermon(id: id, title: title, speakerID: speakerID)
+    }
+
     /// Lists sermons without their text, so the list stays cheap as sermons are added.
     @concurrent static func load() async throws -> [Self] {
         try open().query("SELECT id, title, speaker_id FROM sermon ORDER BY id") { row in
@@ -68,21 +72,28 @@ struct SermonsView: View {
     @State private var failed = false
 
     var body: some View {
+        AdaptiveSplit(restorationKey: "sermons", defaultSelection: sermons?.first.map(\.route)) { selection in
+            list(selection: selection)
+        }
+    }
+
+    private func list(selection: Binding<FigureRoute?>) -> some View {
         Group {
             if let sermons {
-                List(sermons) { sermon in
-                    let speaker = figures?.byID[sermon.speakerID]
-                    // Value-based so the reader lives in the stack's path; a view-based push gets
-                    // re-pushed when the speaker link appends a figure profile to the path.
-                    NavigationLink(value: FigureRoute.sermon(id: sermon.id, title: sermon.title, speakerID: sermon.speakerID)) {
-                        VStack(alignment: .leading) {
-                            Text(verbatim: sermon.title)
-                            if let speaker {
-                                Text(verbatim: speaker.title(locale)).foregroundStyle(.secondary)
+                AdaptiveList(selection: selection) {
+                    ForEach(sermons) { sermon in
+                        // Value-based so the reader lives in the stack's path; a view-based push gets
+                        // re-pushed when the speaker link appends a figure profile to the path.
+                        AdaptiveLink(route: sermon.route) {
+                            VStack(alignment: .leading) {
+                                Text(verbatim: sermon.title)
+                                if let speaker = figures?.byID[sermon.speakerID] {
+                                    Text(verbatim: speaker.title(locale)).foregroundStyle(.secondary)
+                                }
                             }
                         }
+                        .accessibilityIdentifier("sermon-\(sermon.id)")
                     }
-                    .accessibilityIdentifier("sermon-\(sermon.id)")
                 }
             } else if failed {
                 Text("Sermons unavailable")

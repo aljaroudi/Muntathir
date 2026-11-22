@@ -63,6 +63,14 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
         #endif
     }
 
+    /// Tools that show their list beside the open item when the tab sidebar is available.
+    var isSplitCapable: Bool {
+        switch self {
+        case .quran, .supplications, .sermons, .figures, .rulings: true
+        default: false
+        }
+    }
+
     static var available: [AppTool] {
         allCases.filter(\.isAvailable)
     }

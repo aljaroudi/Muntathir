@@ -25,14 +25,21 @@ struct SupplicationsView: View {
     }
 
     var body: some View {
+        AdaptiveSplit(restorationKey: "supplications", defaultSelection: firstPrayer) { selection in
+            list(selection: selection)
+        }
+    }
+
+    private var firstPrayer: FigureRoute? {
+        prayers.first.map { .supplication(id: $0.id, query: "") }
+    }
+
+    private func list(selection: Binding<FigureRoute?>) -> some View {
         let terms = QuranSearchText.queryTerms(resultQuery)
-        List {
+        return AdaptiveList(selection: selection) {
             if submitted.isEmpty {
                 Section {
-                    NavigationLink {
-                        HadithSavedView(reader: reader, supplications: true)
-                            .environment(\.hadithSession, nil)
-                    } label: {
+                    AdaptiveLink(route: .supplicationsSaved) {
                         Label("Saved", systemImage: "bookmark")
                     }
                     .accessibilityIdentifier("supplication-saved")
@@ -61,12 +68,7 @@ struct SupplicationsView: View {
                     if let first = collectionPrayers.first {
                         Section(resultQuery.isEmpty ? first.chapter.bookTitle(locale: locale) : "") {
                             ForEach(collectionPrayers) { prayer in
-                                NavigationLink {
-                                    HadithDetailView(initialID: prayer.id, reader: reader, query: resultQuery,
-                                                     orderedFallback: false, supplication: true)
-                                        .environment(\.hadithSession, nil)
-                                        .recordSearchOnOpen(resultQuery, area: .supplications)
-                                } label: {
+                                AdaptiveLink(route: .supplication(id: prayer.id, query: resultQuery), search: (resultQuery, .supplications)) {
                                     VStack(alignment: .leading, spacing: 8) {
                                         Text(prayer.chapter.chapterTitle(locale: locale))
                                             .font(.headline)

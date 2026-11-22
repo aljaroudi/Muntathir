@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct QuranView: View {
-    @State private var reader = QuranReader()
+    private let reader = QuranReader.shared
     @State private var query = Self.initialQuery
     @State private var submittedQuery = Self.initialQuery
 
@@ -18,7 +18,13 @@ struct QuranView: View {
     }
 
     var body: some View {
-        QuranSearchContent(submittedQuery: submittedQuery, reader: reader)
+        AdaptiveSplit(restorationKey: "quran", defaultSelection: .quran(.surah(1))) { selection in
+            list(selection: selection)
+        }
+    }
+
+    private func list(selection: Binding<FigureRoute?>) -> some View {
+        QuranSearchContent(submittedQuery: submittedQuery, reader: reader, selection: selection)
             .readingBackground()
             .navigationTitle("Holy Quran")
             .searchable(text: $query, placement: .alwaysVisible, prompt: "Surah, 2:255, or Quran text")
@@ -35,6 +41,35 @@ struct QuranView: View {
                         .appTip(.translations)
                 }
             }
+    }
+}
+
+/// What the Quran list opens: pushed in a stack, or beside the list in a split view.
+enum QuranSelection: Hashable, Codable, Sendable {
+    case saved
+    case surah(Int)
+    case verse(surah: Int, verse: Int, query: String)
+}
+
+/// The reader for a Quran list selection.
+struct QuranSelectionDetail: View {
+    let selection: QuranSelection
+    private let reader = QuranReader.shared
+    private let surahs = QuranSurah.bundled
+
+    var body: some View {
+        switch selection {
+        case .saved:
+            QuranSavedVersesView(reader: reader, surahs: surahs)
+        case let .surah(id):
+            if let surah = surahs.first(where: { $0.id == id }) {
+                QuranReadingView(surah: surah, reader: reader)
+            }
+        case let .verse(id, verse, query):
+            if let surah = surahs.first(where: { $0.id == id }) {
+                QuranReadingView(surah: surah, initialVerse: verse, reader: reader, searchQuery: query)
+            }
+        }
     }
 }
 
