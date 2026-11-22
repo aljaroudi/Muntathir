@@ -83,7 +83,9 @@ class SermonsTest {
         val title = "خطبة الزهراء"
         compose.waitUntil(10_000) { compose.onAllNodes(hasText(title)).fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText(title).performClick()
-        compose.waitUntil(10_000) { compose.onAllNodes(hasTestTag("sermon-speaker")).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(
+            10_000,
+        ) { compose.onAllNodes(hasTestTag("sermon-speaker")).fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithTag("sermon-speaker").performClick()
         compose.waitUntil(10_000) {
             compose.onAllNodes(hasTestTag("figure-profile-fatima-al-zahra")).fetchSemanticsNodes().isNotEmpty()

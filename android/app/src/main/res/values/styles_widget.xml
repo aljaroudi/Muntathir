@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Text in home screen widgets. Glance can't load app fonts, so widget text is a RemoteViews TextView
+<!-- Text in home and lock screen widgets. Glance can't load app fonts, so widget text is a RemoteViews TextView
      (widgets/WidgetText.kt) whose layout carries the font and a color that follows dark mode. -->
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Widget.Muntathir.Text" parent="">

@@ -64,6 +64,8 @@ The phased port (P0–P8) is done; the checklist was retired. For new work:
 - **IBM Plex Sans Arabic is the app font** (iOS uses the system font), four weights bundled in `res/font` so it works offline, on first launch and in widgets. Reader bodies keep their fonts (`ReaderBodyFont`): Hafs for Quran text everywhere, Lateef for Hadith/supplication Arabic, system font for translations.
 - **Glance lays out widgets; widget text is RemoteViews** (`widgets/WidgetText` XML layouts carrying font and dark-aware color), because Glance `Text` can't use app fonts. Rows mixing RemoteViews children use one XML layout, since Glance rows of them collapse.
 - **Widgets read app state directly** (single process, Hilt entry point): no App Group mirror or Glance state store. One `WidgetUpdater` re-renders on change and keeps one alarm for the next prayer, sunset or midnight. Countdown is a launcher-driven `Chronometer`.
+- **Lock screen widgets are the same three providers** (`home_screen|keyguard`): with a keyguard host category they show iOS's accessory content (next prayer, Hijri day and month, verse only). Android only offers them in the swipe-in hub, not under the clock; iOS's separate countdown widget isn't ported. RemoteViews can't measure, so `lockScreenTextRoom` stands in for `ViewThatFits`.
+- **Not yet checked in the real lock screen hub** (the Play emulator image has `config_glanceableHubEnabled=false` and no root): picker listing, resizing, unlock-on-tap, refresh while locked, minified build. Check on a Pixel. `LockScreenWidgetTest` covers content and fit.
 
 ### Release (P7)
 - **Play Console answers live in [PLAY_DATA_SAFETY.md](PLAY_DATA_SAFETY.md).**

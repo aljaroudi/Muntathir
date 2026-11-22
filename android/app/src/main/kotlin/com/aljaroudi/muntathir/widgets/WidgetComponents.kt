@@ -1,5 +1,7 @@
 package com.aljaroudi.muntathir.widgets
 
+import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProviderInfo
 import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
@@ -12,15 +14,19 @@ import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
 import androidx.glance.ImageProvider
 import androidx.glance.LocalContext
+import androidx.glance.LocalSize
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.AndroidRemoteViews
+import androidx.glance.appwidget.LocalAppWidgetOptions
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.appWidgetBackground
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
+import androidx.glance.layout.Column
 import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.padding
 import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.app.AppModel
@@ -52,6 +58,8 @@ interface WidgetEntryPoint {
 fun Context.widgetDeps(): WidgetEntryPoint =
     EntryPointAccessors.fromApplication(applicationContext, WidgetEntryPoint::class.java)
 
+private val WIDGET_PADDING = 14.dp
+
 /** The language widget strings resolve in (the per-app language on Android 13+). */
 val Context.widgetLocale: Locale get() = resources.configuration.locales[0]
 
@@ -61,6 +69,7 @@ enum class WidgetFont(
 ) {
     Body(R.layout.widget_text),
     Strong(R.layout.widget_text_strong),
+    StrongCentered(R.layout.widget_text_strong_centered),
     Secondary(R.layout.widget_text_secondary),
     Centered(R.layout.widget_text_centered),
     Quran(R.layout.widget_text_quran),
@@ -100,6 +109,32 @@ fun WidgetCountdown(
     AndroidRemoteViews(views, modifier)
 }
 
+/** Whether the lock screen hosts this widget: Android's hub binds widgets with the keyguard category. */
+@Composable
+fun isOnLockScreen(): Boolean {
+    val host = LocalAppWidgetOptions.current.getInt(AppWidgetManager.OPTION_APPWIDGET_HOST_CATEGORY)
+    return (host and AppWidgetProviderInfo.WIDGET_CATEGORY_KEYGUARD) != 0
+}
+
+/** Swift's accessory families: a centered column on the plain surface, which stays legible on any wallpaper. */
+@Composable
+fun LockScreenSurface(
+    open: Intent,
+    content: @Composable () -> Unit,
+) {
+    WidgetSurface(R.drawable.widget_background, open, Alignment.Center) {
+        Column(GlanceModifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) { content() }
+    }
+}
+
+/**
+ * The height a lock screen card has for text, in sp. RemoteViews can't measure, so layouts choose their lines
+ * and sizes from this where Swift uses `ViewThatFits`.
+ */
+@Composable
+fun lockScreenTextRoom(): Float =
+    (LocalSize.current.height - WIDGET_PADDING * 2).value / LocalContext.current.resources.configuration.fontScale
+
 /** The widget container: [background] with launcher corners, opening [open] when tapped. */
 @Composable
 fun WidgetSurface(
@@ -115,7 +150,7 @@ fun WidgetSurface(
             .background(ImageProvider(background))
             .cornerRadius(R.dimen.widget_radius)
             .clickable(actionStartActivity(open))
-            .padding(14.dp),
+            .padding(WIDGET_PADDING),
         contentAlignment = contentAlignment,
     ) { content() }
 }

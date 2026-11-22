@@ -52,7 +52,7 @@
                 android:resource="@xml/shortcuts" />
         </activity>
 
-        <!-- Home screen widgets; WidgetUpdater keeps them current. -->
+        <!-- Home and lock screen widgets; WidgetUpdater keeps them current. -->
         <receiver
             android:name=".widgets.PrayerWidgetReceiver"
             android:exported="true"

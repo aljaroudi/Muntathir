@@ -29,7 +29,7 @@ Spec paths are relative to `apple/Muntathir/` unless noted. Read the listed Swif
 | Activity | `Core/PrayerProgress.swift`, `Core/ProgressActivity.swift`, `Persistence/ProgressStore.swift`, `Features/ProgressView.swift`, `ReadingActivity.swift` | Room. Max-not-sum merge. Timers pause in background or after 5 idle min. |
 | Tips | `Features/AppTips.swift` | Material `RichTooltip` + DataStore flags |
 | Credits | `Settings.bundle/Credits.plist`, `Resources/*CREDITS*`, `*LICENSE*` | In-app Sources and licenses screen (`ui/settings/CreditsScreen`) |
-| Widgets | `apple/MuntathirWidgets/*.swift` | Glance: prayer (Chronometer countdown), daily ayah, Hijri date (no weather). Refresh at prayer boundaries/midnight. |
+| Widgets | `apple/MuntathirWidgets/*.swift` | Glance: prayer (Chronometer countdown), daily ayah, Hijri date (no weather). The same three have Lock Screen layouts for Android's lock screen hub. Refresh at prayer boundaries/midnight. |
 | Strings | `Localizable.xcstrings` (15 locales) | Generated `values-*/strings.xml` + plurals |
 | Watch | `apple/MuntathirWatch/`, `apple/MuntathirWatchWidgets/`, `Core/WatchSettings.swift`, `Services/WatchConnectivityService.swift` | `:wear` (Wear Compose M3 list, 3 complications, ProtoLayout tile); `core/wear/WatchSnapshot` + `WatchTimeline`; phone `app/wear/WatchSync` over the Data Layer |
-| Not ported | WeatherKit, CarPlay, iCloud KVS/CloudKit, Lock Screen widgets | — |
+| Not ported | WeatherKit, CarPlay, iCloud KVS/CloudKit, Lock Screen prayer countdown | — |

@@ -198,7 +198,10 @@ fun SermonsScreen(
             }
     }
     val reading by settings.state.collectAsStateWithLifecycle()
-    val library = figures.library.collectAsStateWithLifecycle().value.library
+    val library =
+        figures.library
+            .collectAsStateWithLifecycle()
+            .value.library
     val sermon = sermons?.firstOrNull { it.id == id }
     var selection by rememberSaveable(id) { mutableStateOf<String?>(null) }
     var showEditions by rememberSaveable(id) { mutableStateOf(false) }
@@ -224,7 +227,14 @@ fun SermonsScreen(
             }
 
             sermon != null -> {
-                Reader(sermon, library?.byID?.get(sermon.speakerId), modifier, edition, reading.readingSizePercent, open)
+                Reader(
+                    sermon,
+                    library?.byID?.get(sermon.speakerId),
+                    modifier,
+                    edition,
+                    reading.readingSizePercent,
+                    open,
+                )
                 if (showEditions) EditionsDialog(sermon, edition, { showEditions = false }, { selection = it })
             }
 
