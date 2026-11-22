@@ -9,6 +9,9 @@ import { publicID } from '../src/server/ids.ts'
 import { Search } from '../src/server/search.ts'
 import { zoneAt } from '../src/server/timezone.ts'
 import { Database } from 'bun:sqlite'
+import { mkdtempSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { Languages } from '../src/server/languages.ts'
 
 const directory = resolve(import.meta.dir, '../.data')
 const installed = existsSync(`${directory}/rulings.db`)
@@ -63,6 +66,7 @@ describe.if(installed)('bot', () => {
     content,
     calendar: new CalendarSource(),
     search,
+    languages: new Languages(mkdtempSync(`${tmpdir()}/bot-languages-`)),
     now: () => NOW,
     config: {
       botInfo: {
@@ -154,7 +158,6 @@ describe.if(installed)('bot', () => {
     for (const text of ['/today', '/verse']) {
       await message({ text })
       expect(texts()).toContain('Riyadh')
-      expect(texts()).toContain('Tanzil')
       expectDeliverable()
       expect(buttons().find(button => button.url).url).toStartWith('https://t.me/share/url?')
     }
@@ -198,12 +201,12 @@ describe.if(installed)('bot', () => {
     expectDeliverable()
   })
 
-  test('translations in chat carry their credit', async () => {
+  test('supplications open with their translation', async () => {
     const item = content
       .supplicationList()
       .find(preview => content.supplication(preview.id)!.translations.some(value => value.language === 'en'))!
     await press(`o:${item.id}`)
-    expect(texts()).toContain('Duas.org')
+    expect(texts().split('\n\n').length).toBeGreaterThan(2)
     expectDeliverable()
   })
 
@@ -221,10 +224,42 @@ describe.if(installed)('bot', () => {
     }
   })
 
+  test('/language switches replies and can return to Telegram language', async () => {
+    await message({ text: '/language' })
+    expect(buttons().map(button => button.callback_data)).toEqual(['l:ar', 'l:en', 'l:auto'])
+    await press('l:ar')
+    expect(calls.map(call => call.method)).toEqual(['answerCallbackQuery', 'editMessageText', 'sendMessage'])
+    await message({ text: '/today' })
+    expect(texts()).toContain('الرياض')
+    await press('l:auto')
+    await message({ text: '/today' })
+    expect(texts()).toContain('Riyadh')
+  })
+
   test('groups and channels are ignored', async () => {
     for (const type of ['group', 'supergroup']) {
       await message({ text: '/today' }, 'en', type)
       expect(calls).toHaveLength(0)
     }
+  })
+})
+
+describe('languages', () => {
+  const { Languages } = require('../src/server/languages.ts') as typeof import('../src/server/languages.ts')
+  const { mkdtempSync, readFileSync, statSync } = require('node:fs') as typeof import('node:fs')
+  const { tmpdir } = require('node:os') as typeof import('node:os')
+
+  test('choices survive a restart, are hashed, and can be forgotten', () => {
+    const directory = mkdtempSync(`${tmpdir()}/languages-`)
+    const first = new Languages(directory)
+    first.set(987654321, 'ar')
+    first.set(5, 'en')
+    const raw = readFileSync(`${directory}/languages.json`, 'utf8')
+    expect(raw).not.toContain('987654321')
+    expect(statSync(`${directory}/languages.json`).mode & 0o777).toBe(0o600)
+    const second = new Languages(directory)
+    expect([second.get(987654321), second.get(5), second.get(6)]).toEqual(['ar', 'en', undefined])
+    second.set(987654321, null)
+    expect(new Languages(directory).get(987654321)).toBeUndefined()
   })
 })

@@ -63,7 +63,6 @@ export function Quran() {
           ))}
         </ul>
       )}
-      <p class="note"><External url="https://tanzil.net/">{t.quranCredit}</External></p>
     </>
   )
 }
@@ -135,23 +134,12 @@ export function Surah({ number, verse }: { number: number; verse?: number }) {
         ))}
       </ol>
       <More show={hasMore} loading={loading} failure={failure} load={more} />
-      {head && (
-        <p class="note">
-          <External url="https://tanzil.net/">{t.quranCredit}</External>
-          {locale === 'en' && (
-            <>
-              <br />
-              <External url="https://tanzil.net/trans/en.qarai">{t.translationCredit}</External>
-            </>
-          )}
-        </p>
-      )}
     </>
   )
 }
 
 export function VersePage({ id }: { id: string }) {
-  const { t, locale } = useApp()
+  const { t } = useApp()
   const { data, failure, retry } = useGet<T.Verse>(`verse/${id}`)
   return (
     <>
@@ -159,10 +147,6 @@ export function VersePage({ id }: { id: string }) {
       {failure && <Failed failure={failure} retry={retry} />}
       {!data && !failure && <Loading />}
       {data && <VerseCard verse={data} />}
-      <p class="note">
-        <External url="https://tanzil.net/">{t.quranCredit}</External>
-        {locale === 'en' && <><br />{t.translationCredit}</>}
-      </p>
     </>
   )
 }
@@ -322,11 +306,6 @@ export function SupplicationPage({ id }: { id: string }) {
         >
           <summary>{t.translation} · {languageName(translation.language, locale)}</summary>
           <Markup html={translation.html} lang={translation.language} />
-          <p class="note" dir="auto">
-            {translation.url ? <External url={translation.url}>{translation.attribution}</External> : translation.attribution}
-            <br />
-            {translation.license}
-          </p>
         </details>
       ))}
       {data.url && <External url={data.url}>{t.source}</External>}

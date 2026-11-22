@@ -129,20 +129,9 @@ export function Settings() {
           <LocationForm onSaved={() => setChanging(false)} />
         )}
       </section>
-      <section class="card credits">
-        <h2>{t.credits}</h2>
-        <p>
-          <External url="https://tanzil.net/">{t.quranCredit}</External>
-          {' · '}
-          <External url="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</External>
-        </p>
-        <p><External url="https://tanzil.net/trans/en.qarai">{t.translationCredit}</External></p>
-        <p><External url="https://thaqalayn.net/">Thaqalayn</External></p>
-        <p><External url="https://github.com/OpenITI">OpenITI</External></p>
-        <p><External url="https://www.duas.org/">Duas.org</External></p>
-        <p><External url="https://github.com/batoulapps/adhan-js">Adhan (MIT)</External></p>
-        <p><External url={`${location.origin}/licenses.txt`}>Open source licenses</External></p>
+      <section class="card">
         <p><External url={privacy}>{t.privacy}</External></p>
+        <p><External url={`${location.origin}/licenses.txt`}>Open source licenses</External></p>
       </section>
     </>
   )

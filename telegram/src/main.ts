@@ -1,9 +1,10 @@
 import { run, type RunnerHandle } from '@grammyjs/runner'
-import { isAbsolute, join, resolve } from 'node:path'
+import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { createHandler, type Asset } from './server/api.ts'
 import { createBot } from './server/bot.ts'
 import { CalendarSource } from './server/calendar.ts'
 import { Content } from './server/content.ts'
+import { Languages } from './server/languages.ts'
 import { log } from './server/log.ts'
 import { Search } from './server/search.ts'
 import { zoneAt } from './server/timezone.ts'
@@ -68,7 +69,12 @@ async function main() {
   // Release smoke tests serve without polling, so they never compete with the live bot.
   const polling = env.TELEGRAM_POLLING !== 'false'
 
-  const bot = createBot({ token, publicURL, privacy: PRIVACY, content, calendar, search })
+  // Outside releases, so a choice survives updates: <root>/releases/<id>/RELEASE → <root>/state.
+  const state = env.TELEGRAM_RELEASE
+    ? join(dirname(dirname(dirname(env.TELEGRAM_RELEASE))), 'state')
+    : resolve(import.meta.dir, '../.state')
+  const languages = new Languages(state)
+  const bot = createBot({ token, publicURL, privacy: PRIVACY, content, calendar, search, languages })
 
   const handler = createHandler({
     token,

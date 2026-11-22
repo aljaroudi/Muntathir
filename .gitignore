@@ -58,3 +58,4 @@ backend/api/node_modules/
 /telegram/node_modules/
 /telegram/dist/
 /telegram/.data/
+/telegram/.state/

@@ -11,7 +11,7 @@ const en = {
   intro:
     'Prayer times, Qibla, the Hijri calendar, the daily ayah, and a library of Quran, Hadith, supplications and rulings.',
   helpText:
-    'Share your location for prayer times and Qibla, or send any words to search the Quran and Hadith.\n\n/prayers Prayer times\n/qibla Qibla\n/today Date, event and ayah\n/verse Daily ayah\n/search Search\n/rulings Search rulings\n/privacy Privacy\n\nYour location is used for the reply and never stored by Muntathir.',
+    'Share your location for prayer times and Qibla, or send any words to search the Quran and Hadith.\n\n/prayers Prayer times\n/qibla Qibla\n/today Date, event and ayah\n/verse Daily ayah\n/search Search\n/rulings Search rulings\n/language Language\n/privacy Privacy\n\nYour location is used for the reply and never stored by Muntathir.',
   open: 'Open Muntathir',
   shareLocation: 'Share location',
   askLocation:
@@ -57,9 +57,10 @@ const en = {
   officialSource: 'Official source',
   footnotes: 'Footnotes',
   translation: 'Translation',
-  translationCredit: 'Translation: Ali Quli Qara’i, via Tanzil',
-  quranCredit: 'Quran text: Tanzil Project (tanzil.net)',
   privacy: 'Privacy policy',
+  chooseLanguage: 'Choose the language for replies in this chat.',
+  telegramLanguage: 'Use my Telegram language',
+  languageSaved: 'Language saved.',
   failed: 'Something went wrong. Try again.',
   // Mini App
   retry: 'Try again',
@@ -93,7 +94,6 @@ const en = {
   turnRight: 'Turn right',
   introduction: 'Introduction',
   gradings: 'Gradings',
-  credits: 'Credits',
   previousMonth: 'Previous month',
   nextMonth: 'Next month',
   verses: 'verses',
@@ -105,7 +105,7 @@ const ar: Record<keyof typeof en, string> = {
   intro:
     'أوقات الصلاة والقبلة والتقويم الهجري وآية اليوم، ومكتبة للقرآن والحديث والأدعية والأحكام.',
   helpText:
-    'شارك موقعك لمعرفة أوقات الصلاة والقبلة، أو أرسل أي كلمات للبحث في القرآن والحديث.\n\n/prayers أوقات الصلاة\n/qibla القبلة\n/today التاريخ والمناسبة والآية\n/verse آية اليوم\n/search البحث\n/rulings البحث في الأحكام\n/privacy الخصوصية\n\nيُستخدم موقعك للرد فقط، ولا يحفظه منتظِر.',
+    'شارك موقعك لمعرفة أوقات الصلاة والقبلة، أو أرسل أي كلمات للبحث في القرآن والحديث.\n\n/prayers أوقات الصلاة\n/qibla القبلة\n/today التاريخ والمناسبة والآية\n/verse آية اليوم\n/search البحث\n/rulings البحث في الأحكام\n/language اللغة\n/privacy الخصوصية\n\nيُستخدم موقعك للرد فقط، ولا يحفظه منتظِر.',
   open: 'افتح منتظِر',
   shareLocation: 'مشاركة الموقع',
   askLocation:
@@ -151,9 +151,10 @@ const ar: Record<keyof typeof en, string> = {
   officialSource: 'المصدر الرسمي',
   footnotes: 'الهوامش',
   translation: 'الترجمة',
-  translationCredit: 'الترجمة: علي قلي قرائي، عبر مشروع تنزيل',
-  quranCredit: 'نص القرآن: مشروع تنزيل (tanzil.net)',
   privacy: 'سياسة الخصوصية',
+  chooseLanguage: 'اختر لغة الردود في هذه المحادثة.',
+  telegramLanguage: 'استخدام لغة تيليجرام',
+  languageSaved: 'تم حفظ اللغة.',
   failed: 'حدث خطأ. حاول مجددًا.',
   retry: 'حاول مجددًا',
   reopen: 'افتح التطبيق مجددًا من البوت.',
@@ -186,7 +187,6 @@ const ar: Record<keyof typeof en, string> = {
   turnRight: 'اتجه يمينًا',
   introduction: 'المقدمة',
   gradings: 'درجات الحديث',
-  credits: 'المصادر',
   previousMonth: 'الشهر السابق',
   nextMonth: 'الشهر التالي',
   verses: 'آية',

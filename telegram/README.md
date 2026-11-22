@@ -1,6 +1,6 @@
 # Muntathir on Telegram
 
-Bot and Mini App: prayer times, Qibla, Hijri calendar and events, daily ayah, search, and readers for Quran, Hadith, supplications and rulings. Arabic and English. Private chats only, no reminders, no user database.
+Bot and Mini App: prayer times, Qibla, Hijri calendar and events, daily ayah, search, and readers for Quran, Hadith, supplications and rulings. Arabic and English. Private chats only, no reminders. The only stored user data is a `/language` choice, keyed by a keyed hash of the account ID.
 
 ```text
 Telegram ── long polling ──┐
@@ -37,7 +37,7 @@ Don't run `src/main.ts` with the production token: a second poller stops the liv
 
 ## Hosting
 
-Everything live is in `~/Library/Application Support/Muntathir/telegram/`: `.env`, `logs/`, `releases/<sha>-<data>`, and `current`. Switching branches or deleting the checkout doesn't affect it.
+Everything live is in `~/Library/Application Support/Muntathir/telegram/`: `.env`, `logs/`, `state/` (language choices; deleting it resets them), `releases/<sha>-<data>`, and `current`. Switching branches or deleting the checkout doesn't affect it.
 
 `.env` (mode 600):
 

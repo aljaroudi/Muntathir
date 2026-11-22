@@ -30,6 +30,7 @@ import type { CalendarSource } from './calendar.ts'
 import type { Content } from './content.ts'
 import { isPublicID, PREFIX } from './ids.ts'
 import { log } from './log.ts'
+import type { Languages } from './languages.ts'
 import type { Search } from './search.ts'
 import { zoneAt } from './timezone.ts'
 
@@ -57,6 +58,8 @@ type Options = {
   content: Content
   calendar: CalendarSource
   search: Search
+  /** Chosen chat languages; without it the bot follows each user's Telegram language. */
+  languages?: Languages
   now?: () => number
   config?: BotConfig<Context>
 }
@@ -72,10 +75,11 @@ export function queryOf(text: string): string {
 }
 
 export function createBot(options: Options) {
-  const { content, calendar, search, now = Date.now } = options
+  const { content, calendar, search, languages, now = Date.now } = options
   const bot = new Bot(options.token, options.config)
   const privateChat = bot.chatType('private')
-  const localeFor = (context: Context) => localeOf(context.from?.language_code)
+  const localeFor = (context: Context) =>
+    (context.from && languages?.get(context.from.id)) ?? localeOf(context.from?.language_code)
   const username = (context: Context) => options.username ?? context.me.username
   const plain = { link_preview_options: { is_disabled: true } } as const
 
@@ -149,12 +153,8 @@ export function createBot(options: Options) {
   }
 
   function verseText(locale: Locale, verse: Verse): string {
-    const t = strings[locale]
     const lines = [`${pick(verse.name, locale)} ${verse.surah}:${verse.number}`, '', verse.text.ar]
-    const translated = locale === 'en' && verse.text.en
-    if (translated) lines.push('', verse.text.en)
-    lines.push('', t.quranCredit)
-    if (translated) lines.push(t.translationCredit)
+    if (locale === 'en' && verse.text.en) lines.push('', verse.text.en)
     return lines.join('\n')
   }
 
@@ -225,10 +225,7 @@ export function createBot(options: Options) {
     if (id.startsWith(PREFIX.dua)) {
       const item = content.supplicationText(id, locale)
       if (item) {
-        const body = [pick(item.title, locale)]
-        // The credit comes before the text, so it survives when a long text is cut.
-        if (item.translation) body.push(`${t.translation}: ${item.translation.credit}`)
-        body.push(item.arabic)
+        const body = [pick(item.title, locale), item.arabic]
         if (item.translation) body.push(item.translation.body)
         return sendLong(context, id, body.join('\n\n'), item.url)
       }
@@ -346,6 +343,16 @@ export function createBot(options: Options) {
     await startSearch(context, query, 'rulings')
   })
 
+  privateChat.command('language', async context => {
+    const t = strings[localeFor(context)]
+    const keyboard = new InlineKeyboard()
+      .text('العربية', 'l:ar')
+      .text('English', 'l:en')
+      .row()
+      .text(t.telegramLanguage, 'l:auto')
+    await context.reply(t.chooseLanguage, { reply_markup: keyboard })
+  })
+
   privateChat.command('privacy', async context => {
     const locale = localeFor(context)
     await context.reply(`${strings[locale].privacy}\n${options.privacy[locale]}`, plain)
@@ -389,6 +396,17 @@ export function createBot(options: Options) {
       const method = METHODS.find(item => METHOD_CODES[item] === placeButton[1])!
       const { text, keyboard } = placeMessage(locale, place, method)
       await context.editMessageText(text, { reply_markup: keyboard })
+      return
+    }
+
+    const language = /^l:(ar|en|auto)$/.exec(data)?.[1]
+    if (language) {
+      await answer()
+      if (!languages) return
+      languages.set(context.from.id, language === 'auto' ? null : (language as Locale))
+      const chosen = localeFor(context)
+      await context.editMessageText(strings[chosen].languageSaved)
+      await context.reply(strings[chosen].helpText, { reply_markup: openButton(chosen) })
       return
     }
 
