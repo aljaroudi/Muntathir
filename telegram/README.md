@@ -47,7 +47,7 @@ TELEGRAM_BOT_TOKEN=
 First setup:
 
 1. Create `.env`, and run `cloudflared tunnel login`.
-2. `just telegram-release --build-only`
+2. `just telegram-release` (builds only, while the service isn't installed)
 3. `just telegram-install --tunnel --apply` creates the tunnel and DNS record. Never create `~/.cloudflared/config.yml`.
 4. `just telegram-install --agents --apply`
 5. `just telegram-configure`, then `just telegram-configure --apply`.

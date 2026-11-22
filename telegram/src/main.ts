@@ -6,6 +6,7 @@ import { CalendarSource } from './server/calendar.ts'
 import { Content } from './server/content.ts'
 import { log } from './server/log.ts'
 import { Search } from './server/search.ts'
+import { zoneAt } from './server/timezone.ts'
 
 const TYPES: Record<string, string> = {
   html: 'text/html; charset=utf-8',
@@ -48,6 +49,10 @@ async function main() {
   const publicURL = env.TELEGRAM_PUBLIC_URL ?? 'https://tg.xn--pgbou4cf.com'
   const directory = (value: string | undefined, fallback: string) =>
     value && isAbsolute(value) ? value : resolve(import.meta.dir, value ?? fallback)
+  // A bundle can't find geo-tz's data by itself, so fail at startup rather than on a user's message.
+  if (zoneAt({ latitude: 24.7136, longitude: 46.6753 }) !== 'Asia/Riyadh')
+    throw new Error('Time zone data is missing')
+  const release = env.TELEGRAM_RELEASE ? (await Bun.file(env.TELEGRAM_RELEASE).text()).trim() : undefined
   const content = new Content(directory(env.TELEGRAM_DATA, '../.data'))
   const assets = await loadAssets(directory(env.TELEGRAM_APP, '../dist/app'))
   const calendar = new CalendarSource()
@@ -71,6 +76,7 @@ async function main() {
     calendar,
     search,
     assets,
+    release,
   })
   const server = Bun.serve({
     hostname: '127.0.0.1',

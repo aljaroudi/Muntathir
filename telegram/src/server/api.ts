@@ -36,6 +36,8 @@ type Dependencies = {
   calendar: CalendarSource
   search: Search
   assets: Map<string, Asset>
+  /** Reported by /healthz, so a release can tell that it's the one answering. */
+  release?: string
   now?: () => number
 }
 
@@ -63,6 +65,7 @@ export function createHandler({
   calendar,
   search,
   assets,
+  release = 'development',
   now = Date.now,
 }: Dependencies) {
   function read(url: URL): unknown {
@@ -136,7 +139,7 @@ export function createHandler({
   return async (request: Request): Promise<Response> => {
     try {
       const url = new URL(request.url)
-      if (url.pathname === '/healthz' && request.method === 'GET') return reply(200, { status: 'ready' })
+      if (url.pathname === '/healthz' && request.method === 'GET') return reply(200, { status: 'ready', release })
 
       if (!url.pathname.startsWith('/api/')) {
         const asset = assets.get(url.pathname === '/' ? '/index.html' : url.pathname)

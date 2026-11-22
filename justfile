@@ -163,7 +163,7 @@ telegram-check:
     cd telegram && bun run check && bun run scripts/build.ts && bun test
 
 [positional-arguments]
-[arg("args", help="--build-only | --rollback")]
+[arg("args", help="--rollback")]
 [doc("Release the committed Telegram bot on the hosting Mac")]
 telegram-release *args:
     cd telegram && bun scripts/release.ts "$@"
