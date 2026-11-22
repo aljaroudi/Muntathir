@@ -7,7 +7,7 @@ export type Kind = 'quran' | 'hadith' | 'dua' | 'rulings' | 'introduction'
 export type Preview = { id: string; kind: Kind; title: Text; text: Text }
 export type Page<T> = { items: T[]; next?: number }
 
-export type Bootstrap = { calendar: CalendarData }
+export type Bootstrap = { calendar: CalendarData; username: string }
 
 export type Surah = { number: number; name: Text; verses: number }
 export type Verse = { id: string; surah: number; number: number; name: Text; text: Text }
