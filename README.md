@@ -8,6 +8,7 @@ Prayer times, Hijri calendar, daily Quran verses, and Qibla, localized into 15 l
 - [`android/`](android/docs/README.md): Kotlin + Jetpack Compose port (in progress).
 - [`web/`](web/README.md): Astro landing page.
 - [`backend/`](backend/README.md): semantic search service.
+- [`telegram/`](telegram/README.md): Telegram bot and Mini App.
 - [`shared/fixtures/`](shared/fixtures/): test fixtures for both platforms.
 - [`shared/figures/`](shared/figures/): religious-figure dataset.
 

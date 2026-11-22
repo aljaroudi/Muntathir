@@ -154,6 +154,32 @@ backend-check:
 backend-deploy: backend-check backend-test
     launchctl kickstart -k "gui/$(id -u)/com.muntathir.search"
 
+# Clone the content databases for local Telegram development and tests
+telegram-data:
+    cd telegram && bun scripts/data.ts
+
+[doc("Typecheck, build and test the Telegram bot and Mini App")]
+telegram-check:
+    cd telegram && bun run check && bun run scripts/build.ts && bun test
+
+[positional-arguments]
+[arg("args", help="--build-only | --rollback")]
+[doc("Release the committed Telegram bot on the hosting Mac")]
+telegram-release *args:
+    cd telegram && bun scripts/release.ts "$@"
+
+[positional-arguments]
+[arg("args", help="--tunnel | --agents | --apply")]
+[doc("Provision the Telegram tunnel and launch agents (dry run without --apply)")]
+telegram-install *args:
+    cd telegram && bun scripts/install.ts "$@"
+
+[positional-arguments]
+[arg("args", help="--apply")]
+[doc("Show the bot's settings, or apply commands and menu with --apply")]
+telegram-configure *args:
+    cd telegram && bun scripts/configure.ts "$@"
+
 [arg("args", help="flags for build/build.py: --dry-run | --assets-only | --max-budget USD")]
 [doc("Rebuild reader databases, package assets, and refresh search")]
 data-build *args:

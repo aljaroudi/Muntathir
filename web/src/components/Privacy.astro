@@ -17,6 +17,15 @@ const paragraphs = arabic ? [
   "Submitting a public-library search sends your query to our search service, which uses Google to find relevant passages and may send the query and candidate passages to Typesafe AI’s Jev service for ranking. If online search is unavailable, the app searches on your device. Cloudflare carries the request and processes connection information, including your IP address. Our service temporarily caches query embeddings and search results, uses hashed IP identifiers for rate limits, and records operational metrics without raw query text. Your reading notes and favorites are not sent with searches. Avoid including personal information in search queries.",
   "If you contact us through the support form, we use the information you voluntarily submit only to reply. Google hosts the form under its privacy policy.",
 ];
+const telegram = arabic ? [
+  "بوت منتظِر وتطبيقه المصغّر في تيليجرام اختياريان، ويخضع استخدامهما لسياسة خصوصية تيليجرام أيضًا. تيليجرام يزوّدنا بمعرّف حسابك واسمك ولغتك وما ترسله إلى البوت. لا نحتفظ بقاعدة بيانات للمستخدمين، ولا نرسل رسائل مجدولة، ولا نستخدم بياناتك للإعلانات أو التتبّع.",
+  "إذا شاركت موقعك مع البوت، نعالجه في الذاكرة للرد ولا نحفظه. تحمل أزرار الرد إحداثيات مقرّبة إلى نحو 110 أمتار، وتبقى مع رسائلك في محادثتك على تيليجرام إلى أن تحذفها. أما في التطبيق المصغّر فتُحسب أوقات الصلاة والقبلة على جهازك ولا يصل موقعك إلى خادمنا. يُحفظ الموقع وموضع القراءة على جهازك، وتُحفظ طريقة الحساب واللغة في التخزين السحابي لدى تيليجرام.",
+  "يُرسل نص البحث من تيليجرام إلى خدمة البحث نفسها، وقد تعالجه Google وخدمة Jev كما هو موضح أعلاه، ولا يتوفر هنا بحث على الجهاز. نستخدم معرّفات مؤقتة مشتقة من معرّف حسابك لتحديد عدد الطلبات، وقد تحفظ خدمة البحث تجزئتها ونتائج البحث لمدة قصيرة. تنقل Cloudflare طلبات التطبيق المصغّر وتعالج عنوان IP. لا تتضمن سجلاتنا معرّفك أو موقعك أو نصوصك. لا نحتفظ ببيانات حساب يلزم حذفها، ويمكنك حذف المحادثة وإيقاف البوت من تيليجرام في أي وقت.",
+] : [
+  "Muntathir’s Telegram bot and Mini App are optional, and Telegram’s privacy policy also applies to them. Telegram gives us your account ID, name, language, and what you send the bot. We keep no user database, send no scheduled messages, and don’t use your data for advertising or tracking.",
+  "If you share your location with the bot, we process it in memory to reply and don’t store it. Reply buttons carry coordinates rounded to about 110 m, and these stay with your messages in your Telegram chat until you delete them. In the Mini App, prayer times and Qibla are calculated on your device and your location never reaches our server. Location and reading position are saved on your device; calculation method and language are saved in Telegram’s cloud storage.",
+  "Searches from Telegram go to the same search service and may be processed by Google and Jev as described above; there is no on-device search here. We use temporary identifiers derived from your account ID for rate limits, and the search service may briefly keep hashes of them along with cached results. Cloudflare carries Mini App requests and processes your IP address. Our logs contain no account IDs, locations, or text. We hold no account data to delete, and you can delete the chat and stop the bot in Telegram at any time.",
+];
 ---
 <!doctype html>
 <html lang={locale} dir={arabic ? "rtl" : "ltr"}>
@@ -32,6 +41,10 @@ const paragraphs = arabic ? [
       <a href={arabic ? "/" : "/en/"} class="underline">{arabic ? "منتظِر" : "Muntathir"}</a>
       <h1 class="my-8 text-3xl font-medium">{title}</h1>
       {paragraphs.map(text => <p class="my-5 leading-loose">{text}</p>)}
+      <section id="telegram" aria-labelledby="telegram-title">
+        <h2 id="telegram-title" class="mb-4 mt-10 text-xl font-medium">{arabic ? "تيليجرام" : "Telegram"}</h2>
+        {telegram.map(text => <p class="my-5 leading-loose">{text}</p>)}
+      </section>
       <nav class="mt-10 flex gap-6" aria-label={arabic ? "روابط" : "Links"}>
         <a class="underline" href="/support/">{arabic ? "الدعم" : "Support"}</a>
         <a class="underline" href={arabic ? "/en/privacy/" : "/privacy/"} lang={arabic ? "en" : "ar"}>{arabic ? "English" : "العربية"}</a>
