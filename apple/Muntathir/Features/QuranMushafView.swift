@@ -65,9 +65,9 @@ struct QuranMushafView: View {
         }
         .readingBackground()
         .navigationTitle(title)
-        .navigationBarTitleDisplayMode(.inline)
+        .inlineNavigationTitle()
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .trailingBar) {
                 Menu {
                     QuranReadingModePicker()
                     QuranTranslationPicker()

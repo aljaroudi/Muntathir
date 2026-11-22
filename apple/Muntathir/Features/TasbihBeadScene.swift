@@ -33,7 +33,7 @@ final class TasbihBeadScene {
         let mesh = MeshResource.generateSphere(radius: 0.088)
         for index in 0 ..< Self.beadCount {
             let shade = CGFloat(index % 4) * 0.025
-            let material = SimpleMaterial(color: UIColor(red: 0.43 + shade, green: 0.24 + shade, blue: 0.12 + shade, alpha: 1), roughness: 0.32, isMetallic: false)
+            let material = SimpleMaterial(color: PlatformColor(red: 0.43 + shade, green: 0.24 + shade, blue: 0.12 + shade, alpha: 1), roughness: 0.32, isMetallic: false)
             let bead = ModelEntity(mesh: mesh, materials: [material])
             bead.position = Self.position(Float(index) / Float(Self.beadCount))
             beads.append(addLayers(bead))

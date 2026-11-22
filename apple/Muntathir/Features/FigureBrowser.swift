@@ -85,7 +85,7 @@ struct FigureBrowser: View {
                 ProgressView()
             }
         }
-        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always))
+        .searchable(text: $query, placement: .alwaysVisible)
         .searchHistory($query, area: .figures)
         .submitsSearch($query, submitted: $submitted)
         .onChange(of: LocalFilter(query: submitted, locale: locale, loaded: library != nil), initial: true) { refreshLocalMatches() }

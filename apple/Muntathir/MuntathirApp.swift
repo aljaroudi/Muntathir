@@ -56,17 +56,13 @@ struct MuntathirApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ProgressDataView(store: progressStore) {
-                QuranUserDataView(store: quranStore) {
-                    if model.onboardingCompleted {
-                        ContentView().modifier(ReleaseNotesPrompt())
-                    } else {
-                        OnboardingView().modifier(FreshInstallReleaseMarker())
-                    }
+            appData {
+                if model.onboardingCompleted {
+                    ContentView().modifier(ReleaseNotesPrompt())
+                } else {
+                    OnboardingView().modifier(FreshInstallReleaseMarker())
                 }
             }
-            .defaultAppStorage(ProcessInfo.processInfo.arguments.contains("--ui-testing") ? UserDefaults(suiteName: "Muntathir.UITests")! : .standard)
-            .environment(model)
             .task(id: "\(scenePhase)-\(locale.identifier)") {
                 guard scenePhase == .active else { return }
                 QuranTranslationStore.shared.activate(languages: Locale.preferredLanguages)
@@ -76,5 +72,33 @@ struct MuntathirApp: App {
                 await model.refreshInBackground()
             }
         }
+        #if os(macOS)
+        .defaultSize(width: 1100, height: 760)
+        #endif
+
+        #if os(macOS)
+            // Mac apps keep settings in a separate window opened with ⌘, rather than a sidebar item.
+            Settings {
+                appData {
+                    NavigationStack { SettingsView() }
+                        .environment(\.isShowingTabSidebar, true)
+                        .environment(\.rulingsAssets, AssetPackUpdates.shared.rulings)
+                        .environment(\.hadithAssets, AssetPackUpdates.shared.hadith)
+                        .environment(\.supplicationAssets, AssetPackUpdates.shared.supplications)
+                }
+                .frame(minWidth: 520, minHeight: 560)
+            }
+        #endif
+    }
+
+    /// The stores and settings every scene reads from.
+    private func appData(@ViewBuilder content: () -> some View) -> some View {
+        ProgressDataView(store: progressStore) {
+            QuranUserDataView(store: quranStore) {
+                content()
+            }
+        }
+        .defaultAppStorage(ProcessInfo.processInfo.arguments.contains("--ui-testing") ? UserDefaults(suiteName: "Muntathir.UITests")! : .standard)
+        .environment(model)
     }
 }

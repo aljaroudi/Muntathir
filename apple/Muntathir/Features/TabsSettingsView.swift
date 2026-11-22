@@ -34,7 +34,7 @@ struct TabsSettingsView: View {
             }
             Section("Available tabs") {
                 // Distinct IDs prevent available rows from carrying their non-editable state into shortcuts.
-                ForEach(AppTool.allCases.filter { !model.preferences.tabShortcuts.contains($0) }, id: \.self) { tool in
+                ForEach(AppTool.available.filter { !model.preferences.tabShortcuts.contains($0) }, id: \.self) { tool in
                     Button {
                         model.update { $0.tabShortcuts.append(tool) }
                     } label: {
@@ -45,8 +45,11 @@ struct TabsSettingsView: View {
                 }
             }
         }
+        #if os(iOS)
+        // Show reorder handles; Mac lists reorder by dragging without an edit mode.
         .environment(\.editMode, .constant(.active))
+        #endif
         .navigationTitle("Tabs")
-        .navigationBarTitleDisplayMode(.inline)
+        .inlineNavigationTitle()
     }
 }

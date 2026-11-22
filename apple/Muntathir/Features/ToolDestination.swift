@@ -24,9 +24,15 @@ struct ToolDestination: View {
         case .sermons: SermonsView()
         case .figures: FigureBrowser()
         case .tasbih: TasbihView()
-        case .rakaat: RakaatTrackerView()
+        case .rakaat:
+            #if os(iOS)
+                RakaatTrackerView()
+            #endif
         case .prayerProgress: ActivityProgressView()
-        case .qibla: QiblaView()
+        case .qibla:
+            #if os(iOS)
+                QiblaView()
+            #endif
         }
     }
 }

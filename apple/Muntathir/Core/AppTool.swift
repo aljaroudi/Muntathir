@@ -54,6 +54,19 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
         "tool.\(rawValue)"
     }
 
+    /// Qibla and Rakaat rely on a compass and front camera that Macs don't have.
+    var isAvailable: Bool {
+        #if os(macOS)
+            self != .qibla && self != .rakaat
+        #else
+            true
+        #endif
+    }
+
+    static var available: [AppTool] {
+        allCases.filter(\.isAvailable)
+    }
+
     struct ToolGroup: Identifiable, Sendable {
         let id: String
         let title: LocalizedStringResource
@@ -66,12 +79,12 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
         ToolGroup(id: "rulings", title: "Rulings", tools: [.rulings]),
         ToolGroup(id: "calendar", title: "Calendar", tools: [.calendar, .events, .figures]),
         ToolGroup(id: "practice", title: "Practice", tools: [.qibla, .rakaat, .tasbih, .prayerProgress]),
-    ]
+    ].map { ToolGroup(id: $0.id, title: $0.title, tools: $0.tools.filter(\.isAvailable)) }
 
     static func normalized(_ identifiers: [String]) -> [AppTool] {
         var seen: Set<AppTool> = []
         return Array(identifiers.compactMap { identifier in
-            guard let tool = AppTool(rawValue: identifier), seen.insert(tool).inserted else { return nil }
+            guard let tool = AppTool(rawValue: identifier), tool.isAvailable, seen.insert(tool).inserted else { return nil }
             return tool
         }.prefix(maximumShortcuts))
     }

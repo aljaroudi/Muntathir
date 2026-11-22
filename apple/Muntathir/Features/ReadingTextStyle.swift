@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 struct ReadingTextStyle: ViewModifier {
     var arabic = false
@@ -14,8 +13,8 @@ struct ReadingTextStyle: ViewModifier {
         let scale = adjustable ? Double(min(160, max(80, percent))) / 100 : 1
         let size = (arabic ? arabicSize : bodySize) * scale * (heading.map { $0 <= 2 ? 1.3 : 1.1 } ?? 1)
         let font = arabic
-            ? UIFont(name: hadith ? "Lateef-Light" : "KFGQPCHAFSUthmanicScript-Regula", size: size) ?? UIFont.systemFont(ofSize: size)
-            : UIFont.systemFont(ofSize: size, weight: heading == nil ? .regular : .semibold)
+            ? PlatformFont(name: hadith ? "Lateef-Light" : "KFGQPCHAFSUthmanicScript-Regula", size: size) ?? PlatformFont.systemFont(ofSize: size)
+            : PlatformFont.systemFont(ofSize: size, weight: heading == nil ? .regular : .semibold)
         content
             .font(Font(font))
             // Subtract native leading; never compress the font’s diacritics below its natural line height.

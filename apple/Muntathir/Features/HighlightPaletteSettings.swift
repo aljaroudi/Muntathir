@@ -33,7 +33,10 @@ struct HighlightPaletteSettings: View {
                 Text("Drag colors to reorder them. The first colors appear in the picker.")
             }
         }
+        #if os(iOS)
+        // Show reorder handles; Mac lists reorder by dragging without an edit mode.
         .environment(\.editMode, .constant(.active))
+        #endif
         .navigationTitle("Highlight colors")
     }
 }

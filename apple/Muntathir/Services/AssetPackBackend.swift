@@ -163,7 +163,7 @@ struct AppleAssetPackBackend: AssetPackBackend {
         log.notice("Requesting asset manifest: \(identifier, privacy: .public).")
         let pack = try await remotePack()
         log.notice("Manifest resolved; requesting local availability.")
-        if #available(iOS 26.4, *) {
+        if #available(iOS 26.4, macOS 26.4, *) {
             try await manager.ensureLocalAvailability(of: pack, requireLatestVersion: true)
         } else {
             try await manager.ensureLocalAvailability(of: pack)
@@ -178,7 +178,7 @@ struct AppleAssetPackBackend: AssetPackBackend {
 
     private func remotePack() async throws -> AssetPack {
         let manager = AssetPackManager.shared
-        if #available(iOS 27, *) {
+        if #available(iOS 27, macOS 27, *) {
             guard let value = try await manager.manifest.assetPack(withID: identifier) else {
                 throw HadithDatabaseError.unavailable
             }
@@ -194,7 +194,7 @@ struct AppleAssetPackBackend: AssetPackBackend {
             }
         #endif
         let downloaded = UserDefaults.standard.object(forKey: downloadedVersionKey) as? Int
-        if #available(iOS 27.2, *) {
+        if #available(iOS 27.2, macOS 27.2, *) {
             guard let version = try? AssetPackManager.shared.localVersion(ofAssetPackWithID: identifier) else { return nil }
             // Xcode-served packs report version 0; their size-based revision is known from the download.
             return version > 0 ? version : downloaded.flatMap { $0 <= 0 ? $0 : nil }

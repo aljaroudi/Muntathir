@@ -130,7 +130,7 @@ private struct RulingsBrowser: View {
         }
         .navigationTitle("Rulings")
         .readingBackground()
-        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always))
+        .searchable(text: $query, placement: .alwaysVisible)
         .searchHistory($query, area: .rulings)
         .submitsSearch($query, submitted: $submitted)
         .autocorrectionDisabled()

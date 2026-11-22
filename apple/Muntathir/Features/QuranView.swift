@@ -21,12 +21,12 @@ struct QuranView: View {
         QuranSearchContent(submittedQuery: submittedQuery, reader: reader)
             .readingBackground()
             .navigationTitle("Holy Quran")
-            .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Surah, 2:255, or Quran text")
+            .searchable(text: $query, placement: .alwaysVisible, prompt: "Surah, 2:255, or Quran text")
             .searchHistory($query, area: .quran)
             .submitsSearch($query, submitted: $submittedQuery)
             .autocorrectionDisabled()
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .trailingBar) {
                     Menu {
                         QuranTranslationPicker()
                     } label: {

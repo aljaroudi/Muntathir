@@ -170,14 +170,14 @@ struct HadithDetailView: View {
         }
         .navigationTitle(detail?.narration.displayNumber.map { isSupplication ? String(localized: "Supplication \($0)") : String(localized: "Narration \($0)") }
             ?? String(localized: isSupplication ? "Supplications" : "Hadith"))
-        .navigationBarTitleDisplayMode(.inline)
+        .inlineNavigationTitle()
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .trailingBar) {
                 if let detail {
                     HadithBookmarkButton(narration: detail.narration, failed: $bookmarkFailed)
                 }
             }
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .trailingBar) {
                 if let detail {
                     HadithActions(textSizePresented: $textSizePresented, narration: detail.narration, translationLanguages: translationLanguages)
                         .readingSizePresentation(isPresented: $textSizePresented, compact: sizeClass != .regular)

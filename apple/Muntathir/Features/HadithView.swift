@@ -261,8 +261,8 @@ struct HadithView: View {
         }
         .readingBackground()
         .navigationTitle(navigationTitle)
-        .navigationBarTitleDisplayMode(.inline)
-        .searchable(text: $searchText, isPresented: $searchPresented, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search Hadith")
+        .inlineNavigationTitle()
+        .searchable(text: $searchText, isPresented: $searchPresented, placement: .alwaysVisible, prompt: "Search Hadith")
         .searchHistory($searchText, area: .hadith)
         .modifier(HadithGroupScopes(enabled: request.collectionID == nil, group: groupScope))
         .onChange(of: searchText) { _, value in
@@ -290,7 +290,7 @@ struct HadithView: View {
         .scrollDismissesKeyboard(.interactively)
         .autocorrectionDisabled()
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .trailingBar) {
                 Menu { TranslationPicker() } label: {
                     Label("Hadith actions", systemImage: "ellipsis.circle")
                 }
@@ -715,7 +715,7 @@ struct HadithSavedView: View {
         .overlay {
             if store?.unavailable != false || loading || failed {
                 ZStack {
-                    Color(uiColor: .systemGroupedBackground).ignoresSafeArea()
+                    Color.groupedBackground.ignoresSafeArea()
                     Group {
                         if store?.unavailable != false {
                             ContentUnavailableView {

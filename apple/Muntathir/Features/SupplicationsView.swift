@@ -105,7 +105,7 @@ struct SupplicationsView: View {
             }
         }
         .navigationTitle("Supplications")
-        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search supplications")
+        .searchable(text: $query, placement: .alwaysVisible, prompt: "Search supplications")
         .searchHistory($query, area: .supplications)
         .submitsSearch($query, submitted: $submitted)
         .autocorrectionDisabled()

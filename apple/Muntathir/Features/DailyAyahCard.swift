@@ -125,16 +125,24 @@ struct ShareArtwork<Content: View>: View {
     }
 
     static func canShare(_ artwork: some View, locale: Locale) -> Bool {
-        let host = UIHostingController(rootView: prepared(artwork, locale: locale))
+        #if os(macOS)
+            let host = NSHostingController(rootView: prepared(artwork, locale: locale))
+        #else
+            let host = UIHostingController(rootView: prepared(artwork, locale: locale))
+        #endif
         return fits(height: host.sizeThatFits(in: CGSize(width: width, height: .greatestFiniteMagnitude)).height)
     }
 
-    static func image(_ artwork: some View, locale: Locale) -> UIImage? {
+    static func image(_ artwork: some View, locale: Locale) -> PlatformImage? {
         guard canShare(artwork, locale: locale) else { return nil }
         let renderer = ImageRenderer(content: prepared(artwork, locale: locale))
         renderer.scale = 2
         renderer.isOpaque = true
-        guard let image = renderer.uiImage, image.size.height * image.scale <= 1920 else { return nil }
+        #if os(macOS)
+            guard let image = renderer.nsImage, image.size.height * renderer.scale <= 1920 else { return nil }
+        #else
+            guard let image = renderer.uiImage, image.size.height * image.scale <= 1920 else { return nil }
+        #endif
         return image
     }
 }
@@ -144,32 +152,68 @@ struct ShareArtwork<Content: View>: View {
         ShareImageRenderer.canShare(AyahShareArtwork(ayah: ayah, translation: translation, highlights: highlights), locale: locale)
     }
 
-    static func image(for ayah: Ayah, locale: Locale, translation: QuranTranslation? = nil, highlights: [ReadingHighlight] = []) -> UIImage? {
+    static func image(for ayah: Ayah, locale: Locale, translation: QuranTranslation? = nil, highlights: [ReadingHighlight] = []) -> PlatformImage? {
         ShareImageRenderer.image(AyahShareArtwork(ayah: ayah, translation: translation, highlights: highlights), locale: locale)
     }
 }
 
 struct SharedAyah: Identifiable {
     let id = UUID()
-    let image: UIImage
+    let image: PlatformImage
 }
 
-struct AyahShareSheet: UIViewControllerRepresentable {
-    let items: [Any]
-    init(items: [Any]) {
-        self.items = items
-    }
+#if os(macOS)
+    /// macOS has no activity sheet; show what's being shared with a standard share button.
+    struct AyahShareSheet: View {
+        let items: [Any]
+        @Environment(\.dismiss) private var dismiss
 
-    init(image: UIImage) {
-        self.init(items: [image])
-    }
+        init(items: [Any]) {
+            self.items = items
+        }
 
-    func makeUIViewController(context _: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: items, applicationActivities: nil)
-    }
+        init(image: NSImage) {
+            self.init(items: [image])
+        }
 
-    func updateUIViewController(_: UIActivityViewController, context _: Context) {}
-}
+        var body: some View {
+            VStack(spacing: 16) {
+                if let image = items.first(where: { $0 is NSImage }) as? NSImage {
+                    let preview = Image(nsImage: image)
+                    preview.resizable().scaledToFit().frame(maxWidth: 360, maxHeight: 480)
+                    ShareLink(item: preview, preview: SharePreview(Text("Muntathir"), image: preview))
+                } else if let text = items.first(where: { $0 is String }) as? String {
+                    ScrollView { Text(text).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading) }
+                        .frame(width: 360, height: 240)
+                    ShareLink(item: text)
+                }
+            }
+            .padding(24)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+#else
+    struct AyahShareSheet: UIViewControllerRepresentable {
+        let items: [Any]
+        init(items: [Any]) {
+            self.items = items
+        }
+
+        init(image: UIImage) {
+            self.init(items: [image])
+        }
+
+        func makeUIViewController(context _: Context) -> UIActivityViewController {
+            UIActivityViewController(activityItems: items, applicationActivities: nil)
+        }
+
+        func updateUIViewController(_: UIActivityViewController, context _: Context) {}
+    }
+#endif
 
 #if DEBUG
     let exampleAyah = Ayah(

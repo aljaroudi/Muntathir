@@ -38,7 +38,7 @@ struct QuranReadingView: View {
         .environment(\.searchMatchQuery, searchQuery)
         .readingBackground()
         .searchable(text: $query, isPresented: $searchPresented,
-                    placement: .navigationBarDrawer(displayMode: .always), prompt: "Verse number or Quran text")
+                    placement: .alwaysVisible, prompt: "Verse number or Quran text")
         .searchHistory($query, area: .quran)
         .submitsSearch($query, submitted: $submittedQuery)
         .onSubmit(of: .search) { searchFocused = false }

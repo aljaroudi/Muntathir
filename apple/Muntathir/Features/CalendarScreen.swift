@@ -35,7 +35,7 @@ struct CalendarScreen: View {
                     CalendarMonthSection(month: month, now: now)
                 }
             }
-            .listStyle(.insetGrouped)
+            .groupedListStyle()
             // Scrolling to a Section aligns its first row with the top of the content area; this
             // margin keeps the (non-sticky) month header visible above it instead of under the bar.
             .safeAreaPadding(.top, 44)
@@ -53,7 +53,7 @@ struct CalendarScreen: View {
             }
             .navigationTitle("Calendar")
             .navigationSubtitle(Text("\(year.formatted(.number.grouping(.never).locale(locale))) AH"))
-            .navigationBarTitleDisplayMode(.inline)
+            .inlineNavigationTitle()
             .toolbarTitleMenu {
                 ControlGroup {
                     Button("Previous year", systemImage: "chevron.backward") { selectedYear = year - 1 }
@@ -70,7 +70,7 @@ struct CalendarScreen: View {
                 }
             }
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .trailingBar) {
                     Button("Today") {
                         if year == currentMonth.year {
                             scrollToStart(year: currentMonth.year, engine: engine, proxy: proxy, animated: true)
@@ -78,7 +78,7 @@ struct CalendarScreen: View {
                         selectedYear = nil
                     }.accessibilityIdentifier("calendar-today")
                 }
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .trailingBar) {
                     Button("Jump to date", systemImage: "calendar") {
                         pickerMonth = year == currentMonth.year ? currentMonth : months[0]
                     }.labelStyle(.iconOnly).accessibilityIdentifier("calendar-jump")
@@ -143,7 +143,7 @@ struct CalendarScreen: View {
                     }
                 }.padding()
             }
-            .navigationTitle("Jump to date").navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("Jump to date").inlineNavigationTitle()
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { pickerMonth = nil } } }
         }
         .presentationDetents([.large])
@@ -381,7 +381,7 @@ private struct CalendarMonthSection: View {
 
     /// Today's rows get an accent tint over the standard grouped cell background.
     private func rowBackground(isToday: Bool) -> some View {
-        Color(.secondarySystemGroupedBackground)
+        Color.secondaryGroupedBackground
             .overlay(isToday ? Color.accentColor.opacity(0.1) : .clear)
     }
 }

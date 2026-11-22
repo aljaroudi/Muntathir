@@ -244,7 +244,7 @@ struct LocationPicker: View {
         }
         .navigationTitle("Choose a location").searchable(
             text: $query,
-            placement: .navigationBarDrawer(displayMode: .always),
+            placement: .alwaysVisible,
             prompt: "Search for a city"
         )
         .searchHistory($query, area: .locations)
@@ -292,7 +292,12 @@ struct PrayerNotificationSettings: View {
                     Label("Time Sensitive", systemImage: "bell.badge")
                 }
                 Button("System notification settings", systemImage: "gear") {
-                    if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+                    #if os(macOS)
+                        let url = URL(string: "x-apple.systempreferences:com.apple.Notifications-Settings.extension")
+                    #else
+                        let url = URL(string: UIApplication.openNotificationSettingsURLString)
+                    #endif
+                    if let url {
                         openURL(url)
                     }
                 }

@@ -207,30 +207,34 @@ struct TodayView: View {
                                        mirrored: (model.location?.latitude ?? 0) < 0)
                 }
             }
+            #if os(iOS)
             .toolbarBackground(sun == nil ? .automatic : .hidden, for: .navigationBar)
             .toolbarColorScheme(sun == nil ? nil : .dark, for: .navigationBar)
+            #endif
             .navigationTitle(sun == nil ? title(now, engine: engine) : "")
-            .navigationBarTitleDisplayMode(sun == nil ? .large : .inline)
-            .task(id: "\(engine.timeZone.identifier)-\(verseDay.month.index)-\(verseDay.day)-\(translationStore.revision)-\(String(describing: model.location))") {
-                #if DEBUG
-                    dailyAyah = ProcessInfo.processInfo.arguments.contains("--marketing-capture")
-                        ? (ProcessInfo.processInfo.arguments.contains("--screenshot-verse")
-                            ? (try? QuranDatabase().verse(surah: 94, number: 6)) : exampleAyah) : ContentLibrary().verse(on: verseDay)
-                #else
-                    dailyAyah = ContentLibrary().verse(on: verseDay)
-                #endif
-                guard referenceDate == nil,
-                      let boundary = versePrayerSettings.dailyVerseTimelineDates(from: now, engine: engine).dropFirst().first else { return }
-                let midnight = engine.addingDays(1, to: engine.gregorian.startOfDay(for: now))
-                do {
-                    if midnight < boundary {
-                        try await Task.sleep(for: .seconds(max(0, midnight.timeIntervalSinceNow)))
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(sun == nil ? .large : .inline)
+            #endif
+                .task(id: "\(engine.timeZone.identifier)-\(verseDay.month.index)-\(verseDay.day)-\(translationStore.revision)-\(String(describing: model.location))") {
+                    #if DEBUG
+                        dailyAyah = ProcessInfo.processInfo.arguments.contains("--marketing-capture")
+                            ? (ProcessInfo.processInfo.arguments.contains("--screenshot-verse")
+                                ? (try? QuranDatabase().verse(surah: 94, number: 6)) : exampleAyah) : ContentLibrary().verse(on: verseDay)
+                    #else
+                        dailyAyah = ContentLibrary().verse(on: verseDay)
+                    #endif
+                    guard referenceDate == nil,
+                          let boundary = versePrayerSettings.dailyVerseTimelineDates(from: now, engine: engine).dropFirst().first else { return }
+                    let midnight = engine.addingDays(1, to: engine.gregorian.startOfDay(for: now))
+                    do {
+                        if midnight < boundary {
+                            try await Task.sleep(for: .seconds(max(0, midnight.timeIntervalSinceNow)))
+                            refreshedAt = .now
+                        }
+                        try await Task.sleep(for: .seconds(max(0, boundary.timeIntervalSinceNow)))
                         refreshedAt = .now
-                    }
-                    try await Task.sleep(for: .seconds(max(0, boundary.timeIntervalSinceNow)))
-                    refreshedAt = .now
-                } catch {}
-            }
+                    } catch {}
+                }
         }
         .task(id: "\(scenePhase)-\(String(describing: model.location))") {
             guard scenePhase == .active else { return }
@@ -325,9 +329,11 @@ struct TodayView: View {
         .padding(.vertical, 6)
         .foregroundStyle(isNext ? Color.accentColor : Color.primary)
         .accessibilityElement(children: .combine)
-        .contentShape(.contextMenuPreview, .rect(cornerRadius: 14))
-        .accessibilityIdentifier("prayer-\(prayer.name.rawValue)")
-        .contextMenu { prayerMenu(prayer.name) }
+        #if os(iOS)
+            .contentShape(.contextMenuPreview, .rect(cornerRadius: 14))
+        #endif
+            .accessibilityIdentifier("prayer-\(prayer.name.rawValue)")
+            .contextMenu { prayerMenu(prayer.name) }
     }
 
     private func displayDate(_ date: Date) -> Date {

@@ -175,9 +175,9 @@ private struct SermonReader: View {
             do { content = try await sermon.content() } catch { failed = true }
         }
         .navigationTitle(sermon.title)
-        .navigationBarTitleDisplayMode(.inline)
+        .inlineNavigationTitle()
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .trailingBar) {
                 Menu {
                     Picker(selection: $selection) {
                         Text(verbatim: "العربية").tag(String?.none)
@@ -202,7 +202,7 @@ private struct SermonReader: View {
                 }
                 .accessibilityIdentifier("sermon-edition")
             }
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .trailingBar) {
                 Menu {
                     ReadingSizeMenu(isPresented: $textSizePresented)
                     ArabicDiacriticsToggle()

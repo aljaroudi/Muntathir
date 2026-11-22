@@ -49,7 +49,7 @@ struct MonthAdjustmentsView: View {
             Button("Reset adjustment", role: .destructive) { save(0) }
         }
         .navigationTitle("Adjust month")
-        .navigationBarTitleDisplayMode(.inline)
+        .inlineNavigationTitle()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Save", systemImage: "checkmark") { save(offset) }.labelStyle(.iconOnly)

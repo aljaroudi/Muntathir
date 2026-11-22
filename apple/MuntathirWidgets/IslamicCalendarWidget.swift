@@ -53,13 +53,20 @@ struct IslamicDateWidgetView: View {
     let entry: IslamicDateEntry
     @Environment(\.widgetFamily) private var family
     @Environment(\.locale) private var locale
+    private var isInline: Bool {
+        #if os(iOS)
+            family == .accessoryInline
+        #else
+            false
+        #endif
+    }
 
     var body: some View {
         let engine = entry.settings.engine
         let day = engine.resolve(entry.date)
         let month = monthName(day.month, engine: engine)
         Group {
-            if family == .accessoryInline {
+            if isInline {
                 Text("\(day.day, format: .number) \(month)")
             } else if family == .systemSmall {
                 calendarCard
@@ -109,13 +116,19 @@ struct IslamicDateWidgetView: View {
 }
 
 struct IslamicCalendarWidget: Widget {
+    #if os(iOS)
+        static let families: [WidgetFamily] = [.systemSmall, .accessoryInline, .accessoryCircular, .accessoryRectangular]
+    #else
+        static let families: [WidgetFamily] = [.systemSmall]
+    #endif
+
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "IslamicCalendar", provider: IslamicDateProvider()) {
             IslamicDateWidgetView(entry: $0)
         }
         .configurationDisplayName("Islamic calendar")
         .description("Hijri and Gregorian dates.")
-        .supportedFamilies([.systemSmall, .accessoryInline, .accessoryCircular, .accessoryRectangular])
+        .supportedFamilies(Self.families)
     }
 }
 
@@ -199,21 +212,23 @@ struct WeatherDateProvider: AppIntentTimelineProvider {
     IslamicCalendarWidget()
 } timeline: { IslamicDateProvider.preview() }
 
-#Preview("Calendar · Inline", as: .accessoryInline) {
-    IslamicCalendarWidget()
-} timeline: { IslamicDateEntry(date: .now) }
+#if os(iOS)
+    #Preview("Calendar · Inline", as: .accessoryInline) {
+        IslamicCalendarWidget()
+    } timeline: { IslamicDateEntry(date: .now) }
 
-#Preview("Calendar · Circular", as: .accessoryCircular) {
-    IslamicCalendarWidget()
-} timeline: { IslamicDateEntry(date: .now) }
+    #Preview("Calendar · Circular", as: .accessoryCircular) {
+        IslamicCalendarWidget()
+    } timeline: { IslamicDateEntry(date: .now) }
 
-#Preview("Calendar · Rectangular", as: .accessoryRectangular) {
-    IslamicCalendarWidget()
-} timeline: { IslamicDateEntry(date: .now) }
+    #Preview("Calendar · Rectangular", as: .accessoryRectangular) {
+        IslamicCalendarWidget()
+    } timeline: { IslamicDateEntry(date: .now) }
+#endif
 
 private struct IslamicCalendarWidgetTextSizePreviews: PreviewProvider {
     static var previews: some View {
-        ForEach([WidgetFamily.systemSmall, .accessoryInline, .accessoryCircular, .accessoryRectangular], id: \.self) { family in
+        ForEach(IslamicCalendarWidget.families, id: \.self) { family in
             ForEach([DynamicTypeSize.large, .xxxLarge, .accessibility3], id: \.self) { size in
                 ForEach(["en_US", "ar_SA"], id: \.self) { language in
                     IslamicDateWidgetView(entry: IslamicDateProvider.preview())
@@ -254,7 +269,11 @@ struct CalendarWeatherWidget: Widget {
         StaticConfiguration(kind: "CalendarWeather", provider: CalendarWeatherProvider()) { entry in
             CalendarWeatherCard(date: entry.date, settings: entry.settings, weather: entry.currentWeather)
                 .containerBackground(for: .widget) {
-                    Color(.systemBackground)
+                    #if os(macOS)
+                        Color(nsColor: .windowBackgroundColor)
+                    #else
+                        Color(.systemBackground)
+                    #endif
                     LinearGradient(colors: [.cyan.opacity(0.08), .clear], startPoint: .topTrailing, endPoint: .bottomLeading)
                 }
         }

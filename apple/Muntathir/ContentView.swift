@@ -10,8 +10,13 @@ struct ContentView: View {
     @State private var hadithSession = HadithSession(defaults: ContentView.defaults)
     @AppStorage("tabViewCustomization") private var tabCustomization = TabViewCustomization()
     @State private var selectedTab: AppTab = .today
-    /// Driven by `isTabViewSidebarAvailable` rather than size class, which can be regular without a sidebar.
-    @State private var isSidebarAvailable = false
+    // Driven by `isTabViewSidebarAvailable` rather than size class, which can be regular without a sidebar.
+    #if os(macOS)
+        /// Mac windows always show the sidebar.
+        @State private var isSidebarAvailable = true
+    #else
+        @State private var isSidebarAvailable = false
+    #endif
     @State private var toolPaths: [AppTool: NavigationPath] = [:]
     @State private var toolsPath: [FigureRoute] = []
     @State private var hadithAssets = AssetPackUpdates.shared.hadith
@@ -23,7 +28,9 @@ struct ContentView: View {
             Tab("Today", systemImage: "sun.max", value: AppTab.today) {
                 shell { TodayView(referenceDate: skyTestDate) }
             }
+            #if os(iOS)
             .customizationBehavior(.disabled, for: .sidebar, .tabBar)
+            #endif
             if isSidebarAvailable {
                 sidebarTabs
             } else {
@@ -32,77 +39,80 @@ struct ContentView: View {
         }
         .tabViewStyle(.sidebarAdaptable)
         .tabViewCustomization($tabCustomization)
-        .tabViewSidebarBottomBar {
-            if isSidebarAvailable {
-                Button {
-                    selectedTab = .settings
-                } label: {
-                    Label("Settings", systemImage: "gearshape")
-                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                        .contentShape(.rect)
-                }
-                .buttonStyle(.borderless)
-                .padding()
-                .accessibilityIdentifier("settings-tab")
-            }
-        }
-        .environment(\.isShowingTabSidebar, isSidebarAvailable)
-        .environment(\.rulingsAssets, rulingsAssets)
-        .environment(\.hadithAssets, hadithAssets)
-        .environment(\.supplicationAssets, supplicationAssets)
-        .environment(\.hadithSession, hadithSession)
-        .task { updateReadingRoute() }
-        .onChange(of: model.preferences.tabShortcuts) { _, shortcuts in
-            if !isSidebarAvailable {
-                selectedTab = selectedTab.available(in: shortcuts)
-            }
-        }
-        .onChange(of: isSidebarAvailable) { _, available in adaptSelection(sidebar: available) }
-        .onChange(of: selectedTab) { _, _ in updateReadingRoute() }
-        .onChange(of: toolsPath) { _, _ in updateReadingRoute() }
-        .tint(.accentColor)
-        .sheet(item: $translations.downloadRequest) { translation in
-            QuranDownloadView(requested: translation.id)
-        }
-        .task { model.reschedule() }
-        .task { await rulingsAssets.monitor() }
-        .task { await hadithAssets.monitor() }
-        .task { await supplicationAssets.monitor() }
-        .task { await QuranTranslationStore.shared.monitor() }
-        .task { await AssetPackUpdates.shared.run(.launch) }
-        .onChange(of: model.locationService.current) { _, location in
-            if model.liveLocation != nil, let location {
-                model.applyLive(location)
-            }
-        }
-        .onChange(of: scenePhase) { _, phase in
-            if phase == .background {
-                hadithSession.save()
-                hadithAssets.cancelIntegrityCheck()
-                supplicationAssets.cancelIntegrityCheck()
-            }
-            if phase == .active {
-                model.reschedule()
-                Task { await AssetPackUpdates.shared.run(.foreground) }
-            }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in model.reschedule() }
-        .onReceive(NotificationCenter.default.publisher(for: .NSSystemTimeZoneDidChange)) { _ in model.reschedule() }
-        .alert(
-            "Unable to update",
-            isPresented: Binding(
-                get: { model.error != nil },
-                set: {
-                    if !$0 {
-                        model.error = nil
+        #if os(iOS)
+            // On macOS, Settings is its own window (⌘,) instead of a sidebar item.
+            .tabViewSidebarBottomBar {
+                if isSidebarAvailable {
+                    Button {
+                        selectedTab = .settings
+                    } label: {
+                        Label("Settings", systemImage: "gearshape")
+                            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                            .contentShape(.rect)
                     }
+                    .buttonStyle(.borderless)
+                    .padding()
+                    .accessibilityIdentifier("settings-tab")
                 }
-            )
-        ) {
-            Button("OK") { model.error = nil }
-        } message: {
-            Text(model.error ?? "")
-        }
+            }
+        #endif
+            .environment(\.isShowingTabSidebar, isSidebarAvailable)
+            .environment(\.rulingsAssets, rulingsAssets)
+            .environment(\.hadithAssets, hadithAssets)
+            .environment(\.supplicationAssets, supplicationAssets)
+            .environment(\.hadithSession, hadithSession)
+            .task { updateReadingRoute() }
+            .onChange(of: model.preferences.tabShortcuts) { _, shortcuts in
+                if !isSidebarAvailable {
+                    selectedTab = selectedTab.available(in: shortcuts)
+                }
+            }
+            .onChange(of: isSidebarAvailable) { _, available in adaptSelection(sidebar: available) }
+            .onChange(of: selectedTab) { _, _ in updateReadingRoute() }
+            .onChange(of: toolsPath) { _, _ in updateReadingRoute() }
+            .tint(.accentColor)
+            .sheet(item: $translations.downloadRequest) { translation in
+                QuranDownloadView(requested: translation.id)
+            }
+            .task { model.reschedule() }
+            .task { await rulingsAssets.monitor() }
+            .task { await hadithAssets.monitor() }
+            .task { await supplicationAssets.monitor() }
+            .task { await QuranTranslationStore.shared.monitor() }
+            .task { await AssetPackUpdates.shared.run(.launch) }
+            .onChange(of: model.locationService.current) { _, location in
+                if model.liveLocation != nil, let location {
+                    model.applyLive(location)
+                }
+            }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .background {
+                    hadithSession.save()
+                    hadithAssets.cancelIntegrityCheck()
+                    supplicationAssets.cancelIntegrityCheck()
+                }
+                if phase == .active {
+                    model.reschedule()
+                    Task { await AssetPackUpdates.shared.run(.foreground) }
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in model.reschedule() }
+            .onReceive(NotificationCenter.default.publisher(for: .NSSystemTimeZoneDidChange)) { _ in model.reschedule() }
+            .alert(
+                "Unable to update",
+                isPresented: Binding(
+                    get: { model.error != nil },
+                    set: {
+                        if !$0 {
+                            model.error = nil
+                        }
+                    }
+                )
+            ) {
+                Button("OK") { model.error = nil }
+            } message: {
+                Text(model.error ?? "")
+            }
     }
 
     private var skyTestDate: Date? {
@@ -133,15 +143,17 @@ struct ContentView: View {
             .customizationID("section.\(group.id)")
             .defaultVisibility(.hidden, for: .tabBar)
         }
-        // Opened from the sidebar's bottom bar.
-        Tab(value: AppTab.settings) {
-            shell { SettingsView() }
-        } label: {
-            Label("Settings", systemImage: "gearshape")
-        }
-        .tabPlacement(.sidebarOnly)
-        .defaultVisibility(.hidden, for: .sidebar)
-        .customizationBehavior(.disabled, for: .sidebar, .tabBar)
+        #if os(iOS)
+            // Opened from the sidebar's bottom bar.
+            Tab(value: AppTab.settings) {
+                shell { SettingsView() }
+            } label: {
+                Label("Settings", systemImage: "gearshape")
+            }
+            .tabPlacement(.sidebarOnly)
+            .defaultVisibility(.hidden, for: .sidebar)
+            .customizationBehavior(.disabled, for: .sidebar, .tabBar)
+        #endif
     }
 
     /// Tab-bar buttons keep the system's symbol identifier so they don't clash with the matching row in Tools.
@@ -246,41 +258,47 @@ private struct TabSidebarAvailabilityReporter: ViewModifier {
     @Binding var isAvailable: Bool
 
     func body(content: Content) -> some View {
-        if #available(iOS 27, *) {
-            content.modifier(SidebarAvailabilityReader(isAvailable: $isAvailable))
-        } else {
-            // Before iOS 27, regular width implies a sidebar.
-            content.modifier(SizeClassSidebarReader(isAvailable: $isAvailable))
-        }
+        #if os(macOS)
+            content
+        #else
+            if #available(iOS 27, *) {
+                content.modifier(SidebarAvailabilityReader(isAvailable: $isAvailable))
+            } else {
+                // Before iOS 27, regular width implies a sidebar.
+                content.modifier(SizeClassSidebarReader(isAvailable: $isAvailable))
+            }
+        #endif
     }
 }
 
-@available(iOS 27, *)
-private struct SidebarAvailabilityReader: ViewModifier {
-    @Binding var isAvailable: Bool
-    @Environment(\.isTabViewSidebarAvailable) private var isTabViewSidebarAvailable
+#if os(iOS)
+    @available(iOS 27, *)
+    private struct SidebarAvailabilityReader: ViewModifier {
+        @Binding var isAvailable: Bool
+        @Environment(\.isTabViewSidebarAvailable) private var isTabViewSidebarAvailable
 
-    func body(content: Content) -> some View {
-        content.onChange(of: isTabViewSidebarAvailable, initial: true) { _, available in
-            if isAvailable != available {
-                isAvailable = available
+        func body(content: Content) -> some View {
+            content.onChange(of: isTabViewSidebarAvailable, initial: true) { _, available in
+                if isAvailable != available {
+                    isAvailable = available
+                }
             }
         }
     }
-}
 
-private struct SizeClassSidebarReader: ViewModifier {
-    @Binding var isAvailable: Bool
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    private struct SizeClassSidebarReader: ViewModifier {
+        @Binding var isAvailable: Bool
+        @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
-    func body(content: Content) -> some View {
-        content.onChange(of: horizontalSizeClass, initial: true) { _, sizeClass in
-            if isAvailable != (sizeClass == .regular) {
-                isAvailable = sizeClass == .regular
+        func body(content: Content) -> some View {
+            content.onChange(of: horizontalSizeClass, initial: true) { _, sizeClass in
+                if isAvailable != (sizeClass == .regular) {
+                    isAvailable = sizeClass == .regular
+                }
             }
         }
     }
-}
+#endif
 
 extension EnvironmentValues {
     @Entry var isShowingTabSidebar = false
@@ -313,7 +331,7 @@ struct Page<Content: View>: View {
                 .padding()
                 .frame(maxWidth: .infinity)
         }
-        .background(transparentBackground ? Color.clear : Color(.systemGroupedBackground))
+        .background(transparentBackground ? Color.clear : Color.groupedBackground)
     }
 }
 

@@ -67,19 +67,21 @@ struct DownloadsSettingsView: View {
             } header: { Text("Quran translations") }
         }
         .navigationTitle("Downloads")
-        .toolbar { EditButton() }
-        .task { await quran.refresh() }
-        .onChange(of: quran.downloadState) { _, state in
-            if state == .idle {
-                requestedTranslation = nil
+        #if os(iOS)
+            .toolbar { EditButton() }
+        #endif
+            .task { await quran.refresh() }
+            .onChange(of: quran.downloadState) { _, state in
+                if state == .idle {
+                    requestedTranslation = nil
+                }
             }
-        }
-        .alert("Unable to finish storage cleanup", isPresented: $quran.storageError) {
-            Button("Try again") { Task { await quran.refresh() } }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Some files remain on this device. Please try again.")
-        }
+            .alert("Unable to finish storage cleanup", isPresented: $quran.storageError) {
+                Button("Try again") { Task { await quran.refresh() } }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Some files remain on this device. Please try again.")
+            }
     }
 
     @ViewBuilder private var translationDownloadStatus: some View {
@@ -98,7 +100,9 @@ struct DownloadsSettingsView: View {
 /// one-tap minus button asks for confirmation. (A destructive swipe button that
 /// doesn't remove its row makes the List animate the row out and crash.)
 private struct RemoveDownloadControl: ViewModifier {
-    @Environment(\.editMode) private var editMode
+    #if os(iOS)
+        @Environment(\.editMode) private var editMode
+    #endif
     let title: LocalizedStringKey
     let id: String
     let isRemovable: Bool
@@ -108,7 +112,7 @@ private struct RemoveDownloadControl: ViewModifier {
 
     func body(content: Content) -> some View {
         HStack {
-            if isRemovable, editMode?.wrappedValue.isEditing == true {
+            if isRemovable, isEditing {
                 Button(role: .destructive) { confirming = true } label: {
                     Image(systemName: "minus.circle.fill")
                 }
@@ -120,7 +124,7 @@ private struct RemoveDownloadControl: ViewModifier {
             }
             content
         }
-        .animation(.default, value: editMode?.wrappedValue.isEditing)
+        .animation(.default, value: isEditing)
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             if isRemovable {
                 Button(title, systemImage: "trash", role: .destructive, action: action)
@@ -128,9 +132,26 @@ private struct RemoveDownloadControl: ViewModifier {
                     .disabled(disabled)
             }
         }
+        #if os(macOS)
+        // Mac lists have no edit mode; a context menu is the expected way to remove a row.
+        .contextMenu {
+            if isRemovable {
+                Button(title, systemImage: "trash", role: .destructive) { confirming = true }
+                    .disabled(disabled)
+            }
+        }
+        #endif
         .confirmationDialog(title, isPresented: $confirming, titleVisibility: .visible) {
             Button(title, role: .destructive, action: action)
         }
+    }
+
+    private var isEditing: Bool {
+        #if os(iOS)
+            editMode?.wrappedValue.isEditing == true
+        #else
+            false
+        #endif
     }
 }
 

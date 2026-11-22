@@ -249,7 +249,9 @@ struct Preferences: Codable, Equatable, Sendable {
                                               manual: manual, confirmed: confirmations.map(\.correction))
         let prayersChanged = WidgetPrayerStore.write(prayers)
         let calendarChanged = calendar.write()
-        WatchConnectivityService.shared.send(.init(prayers: prayers, calendar: calendar))
+        #if canImport(WatchConnectivity)
+            WatchConnectivityService.shared.send(.init(prayers: prayers, calendar: calendar))
+        #endif
         if prayersChanged || calendarChanged {
             WidgetCenter.shared.reloadAllTimelines()
         }

@@ -47,7 +47,7 @@ struct QuranSavedVersesView: View {
         .overlay {
             if store?.unavailable != false || loading || failed {
                 ZStack {
-                    Color(uiColor: .systemGroupedBackground).ignoresSafeArea()
+                    Color.groupedBackground.ignoresSafeArea()
                     Group {
                         if store?.unavailable != false {
                             ContentUnavailableView {

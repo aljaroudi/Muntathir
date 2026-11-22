@@ -6892,6 +6892,100 @@
         }
       }
     },
+    "Choose your preferred language in System Settings. Return here to continue setup." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اختر لغتك المفضلة في إعدادات النظام. ثم عُد إلى هنا لمتابعة الإعداد."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle deine Sprache in den Systemeinstellungen. Kehre hierher zurück, um die Einrichtung fortzusetzen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose your preferred language in System Settings. Return here to continue setup."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige tu idioma en Ajustes del Sistema. Vuelve aquí para continuar la configuración."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "زبان دلخواه را در تنظیمات سیستم انتخاب کنید. برای ادامهٔ راه‌اندازی به اینجا برگردید."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez votre langue dans Réglages Système. Revenez ici pour poursuivre la configuration."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih bahasa di Pengaturan Sistem. Kembali ke sini untuk melanjutkan penyiapan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli la lingua in Impostazioni di Sistema. Torna qui per continuare la configurazione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム設定で希望する言語を選び、ここに戻って設定を続けてください。"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih bahasa dalam Seting Sistem. Kembali ke sini untuk meneruskan persediaan."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите нужный язык в Системных настройках. Вернитесь сюда для продолжения настройки."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistem Ayarları’ndan tercih ettiğiniz dili seçin. Kuruluma devam etmek için buraya dönün."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سسٹم سیٹنگز میں اپنی زبان منتخب کریں۔ ابتدائی ترتیب جاری رکھنے کے لیے یہاں واپس آئیں۔"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在“系统设置”中选择您的首选语言。然后返回这里继续设置。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在「系統設定」中選擇您的偏好語言。然後返回這裡繼續設定。"
+          }
+        }
+      }
+    },
     "Clear history" : {
       "localizations" : {
         "ar" : {

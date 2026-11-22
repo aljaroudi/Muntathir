@@ -77,7 +77,7 @@ struct HadithIntroductionView: View {
         .environment(\.focusedHighlight, highlight)
         .readingBackground()
         .navigationTitle("Introduction")
-        .navigationBarTitleDisplayMode(.inline)
+        .inlineNavigationTitle()
         .accessibilityIdentifier("hadith-introduction-reader")
         .toolbar {
             Menu {

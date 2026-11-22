@@ -87,9 +87,9 @@ struct SavedList<Destination: View>: View {
                 }
             }
         }
-        .listStyle(.insetGrouped)
+        .groupedListStyle()
         .navigationTitle("Saved")
-        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: (bookmarksOnly || showingBookmarks) ? "Search bookmarks" : "Search highlights")
+        .searchable(text: $query, placement: .alwaysVisible, prompt: (bookmarksOnly || showingBookmarks) ? "Search bookmarks" : "Search highlights")
         .searchHistory($query, area: .saved)
         .submitsSearch($query, submitted: $submitted)
         .onChange(
