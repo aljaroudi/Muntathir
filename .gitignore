@@ -52,3 +52,8 @@ backend/api/node_modules/
 # Sermon sources and offline reader builder
 !/build/sermons/**
 /build/sermons/**/__pycache__/
+
+# Telegram bot secrets and build output
+/telegram/.env*
+/telegram/node_modules/
+/telegram/dist/
