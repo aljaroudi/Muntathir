@@ -44,7 +44,7 @@ main {
 }
 
 .header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin: 8px 0 18px; }
-.header > div { min-width: 0; }
+.header > div { flex: 1; min-width: 0; }
 .header h1 { margin: 0; font-size: 1.5rem; line-height: 1.35; text-align: start; }
 .header p { margin: 4px 0 0; text-align: start; }
 h2 { margin: 18px 4px 8px; font-size: 1.05rem; line-height: 1.6; }

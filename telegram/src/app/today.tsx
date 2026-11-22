@@ -93,7 +93,7 @@ export function Today() {
         <>
           {next && (
             <section class="hero">
-              <p>{t.next}</p>
+              <p>{dayIn(next.at, zone) > today ? `${t.next} · ${t.tomorrow}` : t.next}</p>
               <p class="hero-name">
                 {TIME_NAMES[locale][next.name]} <bdi>{formatTime(next.at, zone, locale)}</bdi>
               </p>
