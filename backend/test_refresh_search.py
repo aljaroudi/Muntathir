@@ -1,10 +1,11 @@
 from decimal import Decimal
+import io
 from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
-from refresh_search import alias, authorize, keys, preserve_other_sources, promote, reusable_workdirs
+from refresh_search import alias, authorize, keys, preserve_other_sources, promote, public_results, reusable_workdirs
 
 
 def corpus(revision, kind="dua"):
@@ -77,3 +78,8 @@ class RefreshTests(unittest.TestCase):
                 promote(client, "previous", "target", Path(temp), activate, {})
             activate.assert_called_once()
             rollback.assert_called_once_with(client, "previous")
+
+    def test_public_requests_identify_the_client_to_cloudflare(self):
+        with patch("refresh_search.urllib.request.urlopen", return_value=io.BytesIO(b'{"results": []}')) as send:
+            self.assertEqual(public_results({}, {"query": "test"}), [])
+        self.assertEqual(send.call_args.args[0].get_header("User-agent"), "Muntathir/1.0")

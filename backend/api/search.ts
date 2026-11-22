@@ -13,9 +13,8 @@ export type Point = {
   payload: { item_id: string; ref: Reference; text?: string; search_text?: string }
   vector?: number[]
 }
-/** Literal-match tiers, best first: the whole query as consecutive words, every word, meaning only. */
-export const PHRASE = 2,
-  WORDS = 1,
+/** Match tiers, best first: the whole query as consecutive words, then everything else. */
+export const PHRASE = 1,
   MEANING = 0
 export function words(text: string): string[] {
   return normalize(text).match(/[\p{L}\p{N}]+/gu) ?? []
@@ -128,6 +127,8 @@ export function cosine(a: number[], b: number[]): number {
   if (!aa || !bb) throw new Error('Zero vector')
   return Math.max(-1, Math.min(1, dot / Math.sqrt(aa * bb)))
 }
+/** Best score first. Qdrant orders ties arbitrarily, so break them by ID to keep fusion repeatable. */
+const byScore = (a: Point, b: Point) => b.score - a.score || a.id.localeCompare(b.id)
 export function fuse(
   semantic: Point[],
   lexical: Point[],
@@ -180,7 +181,7 @@ export function fuse(
       })
     }
   }
-  // Exact phrases first, then every word, then meaning; fusion rank orders each tier.
+  // Exact phrases first; fusion rank orders each tier.
   return [...items.values()]
     .sort((a, b) => b.tier - a.tier || b.rank - a.rank || a.id.localeCompare(b.id))
     .slice(0, limit)
@@ -241,7 +242,7 @@ export async function retrieve(
     with_payload: ['item_id', 'ref'],
     with_vector: false,
   }
-  const [rawSemantic, lexical] = await Promise.all([
+  const [rawSemantic, rawLexical] = await Promise.all([
     vector ? db.query(collection, {
       ...common,
       query: vector,
@@ -258,8 +259,9 @@ export async function retrieve(
     }),
   ])
   let semantic = (rawSemantic ?? [])
-    .sort((a, b) => b.score - a.score || a.id.localeCompare(b.id))
+    .sort(byScore)
     .slice(0, 100)
+  const lexical = rawLexical.sort(byScore)
   const scores = new Map(semantic.map((p) => [p.id, p.score]))
   let degraded = rawSemantic === null
   const missing = lexical.filter((p) => !scores.has(p.id)).map((p) => p.id)
@@ -277,12 +279,12 @@ export async function retrieve(
       degraded = true
     }
   }
-  // Keyword hits contain every word; those with the whole query in order are exact phrases.
+  // Only whole phrases outrank fusion: long passages often contain every query word by chance.
   const query = words(input.query)
   const tiers = new Map(
     lexical.map((p) => [
       p.id,
-      containsPhrase(query, words(p.payload.search_text ?? '')) ? PHRASE : WORDS,
+      containsPhrase(query, words(p.payload.search_text ?? '')) ? PHRASE : MEANING,
     ]),
   )
   const ranked = fuse(semantic, lexical, degraded ? null : scores, input.limit, tiers)

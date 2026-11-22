@@ -15,7 +15,7 @@ credentials never ship in the app):
 ```
 
 - `limit`: default 20, max 50. Query 1–512 Unicode characters; body ≤ 8 KiB.
-- `sources` (stable source/book IDs) and `languages` filter before ranking.
+- `sources` (stable source/book IDs, max 256) and `languages` (max 20) filter before ranking.
 - `chapter`:
   - Hadith: a stable chapter file (e.g. `1.json`); requires `kinds: ["hadith"]` and
     exactly one `sources` entry.
@@ -34,7 +34,8 @@ credentials never ship in the app):
 - `score` is cosine similarity (max over the item's passages), not confidence; null for
   explicit references and keyword-only hits. Order is hybrid RRF rank, optionally
   reranked, so scores need not decrease. No default threshold.
-- Keyword candidates must contain every normalized query term; BM25 ranks them.
+- Keyword candidates must contain every normalized query term; BM25 ranks them. Exact
+  phrases come first; other keyword matches compete with meaning through RRF.
 - Translations/passages collapse to one content item.
 - Errors: 400/413 invalid input, 429 quota, 503 unavailable. An empty success is final;
   clients fall back to local search only on failure.

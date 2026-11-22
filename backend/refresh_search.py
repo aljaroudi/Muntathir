@@ -120,7 +120,9 @@ def alias(client, collection):
 
 def public_results(env, body):
     url = env.get("SEARCH_PUBLIC_URL", "https://search.xn--pgbou4cf.com/v1/search")
-    req = urllib.request.Request(url, json.dumps(body).encode(), {"Content-Type": "application/json"})
+    # Cloudflare rejects urllib's default user agent (error 1010).
+    req = urllib.request.Request(url, json.dumps(body).encode(),
+                                 {"Content-Type": "application/json", "User-Agent": "Muntathir/1.0"})
     with urllib.request.urlopen(req, timeout=20) as response:
         return json.load(response)["results"]
 

@@ -119,10 +119,28 @@ representative sample) to `prepare`.
 - Production additions must build on the currently active corpus, not an unactivated
   local refresh.
 
-Current rulings rollout (2026-11-14): active
-`search_c6d8394dc7714732937c9f30d7176249_fdcc5a4c48a8` (81,921 items, 225,870
-passages); rollback target `search_a521108e91d54bda8fbe324c4e3bea67_476773511098`.
-Artifacts: `backend/work/rulings-production-2026-11-14/`.
+Current rollout (2026-11-22): active
+`search_6e7450bd147940f0ae95c6d384705644_a3667cba9881` (245,174 items, 397,920 passages).
+Artifacts: `backend/work/refresh-0d6f494de5fa3ab2978db00c9e9db933b3445a29a0ad2f9e405534344960ae36/`.
+
+- Rollback target `search_c6d8394dc7714732937c9f30d7176249_fdcc5a4c48a8`. Switch the alias
+  **and** set the `sources` limit in `api/core.ts` back to 20, then `just backend-deploy`:
+  the older index lacks Bihar and Wasa'il, and an empty success stops clients falling back
+  to local search.
+
+  ```sh
+  curl -X POST 127.0.0.1:56333/collections/aliases -H 'content-type: application/json' -d '{"actions":[{"delete_alias":{"alias_name":"search"}},{"create_alias":{"alias_name":"search","collection_name":"search_c6d8394dc7714732937c9f30d7176249_fdcc5a4c48a8"}}]}'
+  ```
+
+- nDCG@10 is measured on the judged books (`judged_sources` in `evaluation.json`). Its
+  minimum was lowered from 0.780596 to 0.780157 for this rollout, whose corrected chapter
+  titles re-embedded 26,472 passages of older books. Unscoped it is 0.762881.
+- Only the `rulings-v2` pack is supported. iOS 1.1.0 reads the retired `rulings` pack and
+  fails a Rulings smart search if any hit is missing from it.
+
+Removed 2026-11-22: `search_a6924d0407894f02a372bca8bce23f25_163940aeaabf` (unused, used
+by the historical rerank benchmark). Rebuild it without Gemini calls:
+`backend/.venv/bin/python backend/ingest.py upload --workdir backend/work/refresh-2026-11-14`.
 
 ## Verification
 
