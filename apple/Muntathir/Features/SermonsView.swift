@@ -72,9 +72,9 @@ struct SermonsView: View {
             if let sermons {
                 List(sermons) { sermon in
                     let speaker = figures?.byID[sermon.speakerID]
-                    NavigationLink {
-                        SermonReader(sermon: sermon, speaker: speaker)
-                    } label: {
+                    // Value-based so the reader lives in the stack's path; a view-based push gets
+                    // re-pushed when the speaker link appends a figure profile to the path.
+                    NavigationLink(value: FigureRoute.sermon(id: sermon.id, title: sermon.title, speakerID: sermon.speakerID)) {
                         VStack(alignment: .leading) {
                             Text(verbatim: sermon.title)
                             if let speaker {
@@ -95,6 +95,18 @@ struct SermonsView: View {
             do { sermons = try await Sermon.load() } catch { failed = true }
             figures = try? await FigureStore.shared.load().get()
         }
+    }
+}
+
+struct SermonDestination: View {
+    let id, title, speakerID: String
+    @State private var speaker: Figure?
+
+    var body: some View {
+        SermonReader(sermon: Sermon(id: id, title: title, speakerID: speakerID), speaker: speaker)
+            .task {
+                speaker = try? await FigureStore.shared.load().get().byID[speakerID]
+            }
     }
 }
 

@@ -8,6 +8,7 @@ enum FigureRoute: Hashable {
     case observance(eventID: String, figureIDs: [String])
     case hadith
     case supplications
+    case sermon(id: String, title: String, speakerID: String)
 }
 
 struct FigureBrowser: View {
@@ -135,6 +136,7 @@ extension View {
             case let .profile(id): FigureDestination(id: id)
             case let .tree(id): FigureDestination(id: id, showsTree: true)
             case let .observance(_, figureIDs): ObservanceFigurePicker(figureIDs: figureIDs)
+            case let .sermon(id, title, speakerID): SermonDestination(id: id, title: title, speakerID: speakerID)
             case .hadith:
                 if let hadithAssets {
                     HadithLibraryView(assets: hadithAssets)

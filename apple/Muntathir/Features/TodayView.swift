@@ -375,7 +375,19 @@ private struct HorizontalPrayerTimes<Card: View>: View {
                 // Dividers span the tallest column instead of the scroll view's height.
                 .fixedSize(horizontal: false, vertical: true)
             }
-            .onAppear { reveal(with: proxy, animated: false) }
+            // The row may not have its final width when it first appears, so yield once for layout to settle.
+            // The visible slide from the first card also hints that the row scrolls.
+            .task {
+                await Task.yield()
+                reveal(with: proxy, animated: !reduceMotion)
+            }
+            // Geometry changes aren't reported for the initial layout, so this covers later width changes
+            // (rotation, Dynamic Type, hidden prayers).
+            .onScrollGeometryChange(for: CGSize.self) {
+                CGSize(width: $0.containerSize.width, height: $0.contentSize.width)
+            } action: { _, _ in
+                reveal(with: proxy, animated: false)
+            }
             .onChange(of: next) { reveal(with: proxy, animated: !reduceMotion) }
         }
     }

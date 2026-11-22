@@ -211,7 +211,12 @@ platform :ios do
   lane :beta do |options|
     MuntathirRelease.with_release_lock do
       context = prepare_release(app_store: false, force: options[:force], skip_tests: options[:skip_tests])
-      build = archive_and_upload(context)
+      # Pass build_number to distribute a build that uploaded but timed out while processing.
+      build = if options[:build_number].to_s.strip.empty?
+                archive_and_upload(context)
+              else
+                MuntathirRelease.existing_valid_build(context.fetch(:app).id, context.fetch(:version), build_number: options[:build_number])
+              end
       config = context.fetch(:config)
       notes = context.fetch(:beta_notes)
       beta_app_info = MuntathirRelease::LOCALES.to_h do |locale|

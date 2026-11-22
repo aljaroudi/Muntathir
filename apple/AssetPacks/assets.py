@@ -167,7 +167,8 @@ def check_bundle(path):
     expected = {'quran.db', 'en.qarai.db'}
     app_databases = {Path(f).name for f in files if f.endswith('.db') and '.appex/' not in f and '.xctest/' not in f and '/Watch/' not in f}
     widget_databases = {Path(f).name for f in files if f.endswith('.db') and 'MuntathirWidgets.appex/' in f}
-    assert app_databases == expected, f'Unexpected app databases: {app_databases}'
+    # The Sermons section reads its small database straight from the app bundle.
+    assert app_databases == expected | {'sermons.db'}, f'Unexpected app databases: {app_databases}'
     assert widget_databases == expected, f'Unexpected widget databases: {widget_databases}'
     assert any('Extensions/MuntathirAssetDownloader.appex/' in f for f in files), 'Missing Hadith downloader extension'
     def metadata(relative):

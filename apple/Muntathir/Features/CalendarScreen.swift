@@ -10,6 +10,8 @@ struct CalendarScreen: View {
     @State private var selectedYear: Int?
     @State private var pickerMonth: HijriMonth?
     @State private var pendingDay: ResolvedDay?
+    /// The year whose initial scroll already ran, so returning to the screen keeps the user's position.
+    @State private var positionedYear: Int?
 
     init() {
         #if DEBUG
@@ -25,56 +27,58 @@ struct CalendarScreen: View {
         let currentMonth = engine.resolve(now).month
         let year = selectedYear ?? currentMonth.year
         let months = (1 ... 12).map { HijriMonth(year: year, month: $0) }
+        // The List is the screen's root scroll view so the navigation bar tracks it and it
+        // receives swipes across the full width (including iPad margins).
         ScrollViewReader { proxy in
-            VStack(spacing: 0) {
-                HStack {
-                    Button("Previous year", systemImage: "chevron.backward") { selectedYear = year - 1 }
-                        .labelStyle(.iconOnly).frame(minWidth: 44, minHeight: 44).disabled(year <= 1350)
-                    Spacer()
-                    Menu {
-                        ForEach(months, id: \.self) { month in
-                            Button(monthTitle(month, engine: engine, includeYear: false)) {
-                                scroll(to: Self.monthID(month), proxy: proxy)
-                            }
-                            .accessibilityIdentifier("calendar-jump-month-\(month.month)")
-                        }
-                    } label: {
-                        HStack(spacing: 6) {
-                            Text("\(year.formatted(.number.grouping(.never).locale(locale))) AH")
-                            Image(systemName: "chevron.down").font(.caption2).accessibilityHidden(true)
-                        }.font(.subheadline.weight(.semibold))
-                    }
-                    .foregroundStyle(.primary)
-                    .accessibilityIdentifier("calendar-year")
-                    Spacer()
-                    Button("Next year", systemImage: "chevron.forward") { selectedYear = year + 1 }
-                        .labelStyle(.iconOnly).frame(minWidth: 44, minHeight: 44).disabled(year >= 1500)
-                }.padding(.horizontal, 20).padding(.vertical, 8)
-                List {
-                    ForEach(months, id: \.self) { month in
-                        CalendarMonthSection(month: month, now: now) { pickerMonth = month }
-                    }
+            List {
+                ForEach(months, id: \.self) { month in
+                    CalendarMonthSection(month: month, now: now)
                 }
-                .listStyle(.plain)
-                .listSectionSpacing(24)
-                .scrollContentBackground(.hidden)
-                .contentMargins(.top, 8, for: .scrollContent)
-                .id(year)
-                .task(id: year) {
-                    await Task.yield()
-                    if !Task.isCancelled, pendingDay == nil, year == currentMonth.year {
-                        scrollToStart(year: year, engine: engine, proxy: proxy)
+            }
+            .listStyle(.insetGrouped)
+            // Scrolling to a Section aligns its first row with the top of the content area; this
+            // margin keeps the (non-sticky) month header visible above it instead of under the bar.
+            .safeAreaPadding(.top, 44)
+            .task(id: year) {
+                // `task` reruns whenever the List reappears (tab switch, popping a profile);
+                // only position each year once so the user's scroll position isn't thrown away.
+                guard positionedYear != year else { return }
+                await Task.yield()
+                guard !Task.isCancelled else { return }
+                // A day picked in the jump sheet scrolls on dismiss instead.
+                if pendingDay == nil {
+                    scrollToStart(year: year, engine: engine, proxy: proxy, animated: false)
+                }
+                positionedYear = year
+            }
+            .navigationTitle("Calendar")
+            .navigationSubtitle(Text("\(year.formatted(.number.grouping(.never).locale(locale))) AH"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarTitleMenu {
+                ControlGroup {
+                    Button("Previous year", systemImage: "chevron.backward") { selectedYear = year - 1 }
+                        .disabled(year <= 1350)
+                    Button("Next year", systemImage: "chevron.forward") { selectedYear = year + 1 }
+                        .disabled(year >= 1500)
+                }
+                Section {
+                    ForEach(months, id: \.self) { month in
+                        Button(monthTitle(month, engine: engine, includeYear: false)) {
+                            scroll(to: Self.monthID(month), proxy: proxy)
+                        }
                     }
                 }
             }
             .toolbar {
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    Button("Today", systemImage: "arrow.uturn.backward") {
-                        selectedYear = nil
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Today") {
                         if year == currentMonth.year {
-                            scrollToStart(year: currentMonth.year, engine: engine, proxy: proxy)
+                            scrollToStart(year: currentMonth.year, engine: engine, proxy: proxy, animated: true)
                         }
-                    }.labelStyle(.iconOnly).accessibilityIdentifier("calendar-today")
+                        selectedYear = nil
+                    }.accessibilityIdentifier("calendar-today")
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     Button("Jump to date", systemImage: "calendar") {
                         pickerMonth = year == currentMonth.year ? currentMonth : months[0]
                     }.labelStyle(.iconOnly).accessibilityIdentifier("calendar-jump")
@@ -95,10 +99,6 @@ struct CalendarScreen: View {
                 }
             }
         }
-        .frame(maxWidth: 760).frame(maxWidth: .infinity)
-        .background(Color(.systemGroupedBackground))
-        .navigationTitle("Calendar")
-        .navigationBarTitleDisplayMode(.inline)
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in now = currentDate }
         .onChange(of: scenePhase) {
             _, phase in if phase == .active {
@@ -113,13 +113,15 @@ struct CalendarScreen: View {
                 VStack(spacing: 20) {
                     HStack {
                         Button("Previous month", systemImage: "chevron.backward") { pickerMonth = month.advanced(-1) }
-                            .labelStyle(.iconOnly).disabled(month == HijriMonth(year: 1350, month: 1))
+                            .labelStyle(.iconOnly).frame(minWidth: 44, minHeight: 44).contentShape(.rect)
+                            .disabled(month == HijriMonth(year: 1350, month: 1))
                         Spacer()
                         Text(monthTitle(month, engine: engine)).font(.headline).multilineTextAlignment(.center)
                             .accessibilityIdentifier("calendar-month-title")
                         Spacer()
                         Button("Next month", systemImage: "chevron.forward") { pickerMonth = month.advanced(1) }
-                            .labelStyle(.iconOnly).disabled(month == HijriMonth(year: 1500, month: 12))
+                            .labelStyle(.iconOnly).frame(minWidth: 44, minHeight: 44).contentShape(.rect)
+                            .disabled(month == HijriMonth(year: 1500, month: 12))
                     }
                     if isExpected(month, engine: engine) {
                         Text("Future dates are estimates until the month’s moonsighting is confirmed or the month begins.")
@@ -134,7 +136,8 @@ struct CalendarScreen: View {
                                 Text(weekday(index, engine: engine)).font(.caption2).foregroundStyle(.secondary)
                             }
                             let blanks = (engine.gregorian.component(.weekday, from: days[0]) - engine.gregorian.firstWeekday + 7) % 7
-                            ForEach(0 ..< blanks, id: \.self) { _ in Color.clear.frame(height: 48).accessibilityHidden(true) }
+                            // Offset past the weekday header IDs (0–6) so every grid child has a unique ID.
+                            ForEach(7 ..< 7 + blanks, id: \.self) { _ in Color.clear.frame(height: 48).accessibilityHidden(true) }
                             ForEach(days, id: \.self) { date in dayButton(date, engine: engine) }
                         }
                     }
@@ -142,7 +145,9 @@ struct CalendarScreen: View {
             }
             .navigationTitle("Jump to date").navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { pickerMonth = nil } } }
-        }.presentationDetents([.large])
+        }
+        .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
     }
 
     private func dayButton(_ date: Date, engine: CalendarEngine) -> some View {
@@ -195,13 +200,21 @@ struct CalendarScreen: View {
         return dayID(nextDay.month, nextDay.day)
     }
 
-    private func scrollToStart(year: Int, engine: CalendarEngine, proxy: ScrollViewProxy) {
-        let nextDay = model.content.nextEventDate(onOrAfter: now, engine: engine).map { engine.resolve($0) }
-        scroll(to: Self.initialTarget(year: year, currentMonth: engine.resolve(now).month, nextDay: nextDay), proxy: proxy)
+    private func scrollToStart(year: Int, engine: CalendarEngine, proxy: ScrollViewProxy, animated: Bool) {
+        // Today always has a row (its events, or a "No events" placeholder), followed by the next event.
+        let today = engine.resolve(engine.gregorian.startOfDay(for: now))
+        scroll(to: Self.initialTarget(year: year, currentMonth: today.month, nextDay: today), proxy: proxy, animated: animated)
     }
 
-    private func scroll(to id: String, proxy: ScrollViewProxy) {
-        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) { proxy.scrollTo(id, anchor: .top) }
+    private func scroll(to id: String, proxy: ScrollViewProxy, animated: Bool = true) {
+        let animation: Animation? = reduceMotion || !animated ? nil : .easeInOut(duration: 0.25)
+        withAnimation(animation) { proxy.scrollTo(id, anchor: .top) }
+        // Rows far from the viewport only have estimated heights, so a long jump can land short.
+        // Repeat once the rows around the target have been measured.
+        Task {
+            try? await Task.sleep(for: .milliseconds(300))
+            withAnimation(animation) { proxy.scrollTo(id, anchor: .top) }
+        }
     }
 
     static func countdownText(days: Int, locale: Locale) -> String {
@@ -250,47 +263,45 @@ private struct CalendarMonthSection: View {
     @Environment(\.locale) private var locale
     let month: HijriMonth
     let now: Date
-    let selectMonth: () -> Void
 
     var body: some View {
         let engine = model.engine
+        // Event days, plus today even when it has no events so users can see where they are.
         let dates = engine.days(in: month).compactMap { date -> EventDay? in
             let day = engine.resolve(date)
-            return model.content.events(on: day).isEmpty ? nil : EventDay(date: date, day: day)
+            let isToday = engine.gregorian.isDate(date, inSameDayAs: now)
+            return model.content.events(on: day).isEmpty && !isToday ? nil : EventDay(date: date, day: day)
         }
         let expected = CalendarScreen.isExpected(month, now: now, engine: engine, confirmations: model.confirmations.map(\.correction))
         let nextEvent = model.content.nextEventDate(onOrAfter: now, engine: engine)
         Section {
             if dates.isEmpty {
-                Text("No events").font(.subheadline).foregroundStyle(.secondary)
-                    .padding().frame(maxWidth: .infinity, alignment: .leading)
+                Text("No events").foregroundStyle(.secondary)
             } else {
                 ForEach(dates) { entry in
                     let events = model.content.events(on: entry.day)
+                    let background = rowBackground(isToday: engine.gregorian.isDate(entry.date, inSameDayAs: now))
                     eventRow(entry.date, day: entry.day, firstEvent: events.first, engine: engine, nextEvent: nextEvent, expected: expected)
-                        .listRowInsets(EdgeInsets(top: 16, leading: 20, bottom: 16, trailing: 20))
-                        .listRowBackground(entry.date == nextEvent ? Color.accentColor.opacity(0.06) : Color(.secondarySystemGroupedBackground))
+                        .listRowBackground(background)
                         .id(entry.id)
                     ForEach(events.dropFirst()) { event in
                         FigureObservanceRow(event: event)
-                            .listRowBackground(entry.date == nextEvent ? Color.accentColor.opacity(0.06) : Color(.secondarySystemGroupedBackground))
+                            .listRowBackground(background)
                     }
                 }
             }
         } header: {
-            Button(action: selectMonth) {
-                HStack {
-                    Text(monthTitle(month, engine: engine, includeYear: false)).font(.headline)
-                    Spacer(minLength: 8)
-                    if expected {
-                        Text("Expected").font(.caption.weight(.medium)).foregroundStyle(.secondary)
-                    }
-                    Image(systemName: "calendar").font(.body).foregroundStyle(.secondary)
-                }.foregroundStyle(.primary).padding(.vertical, 4)
-                    .contentShape(Rectangle())
+            HStack(alignment: .firstTextBaseline) {
+                Text(monthTitle(month, engine: engine, includeYear: false))
+                    .font(.headline).foregroundStyle(.primary)
+                Spacer(minLength: 8)
+                if expected {
+                    Text("Expected").font(.footnote)
+                }
             }
-            .buttonStyle(.plain)
             .textCase(nil)
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isHeader)
             .accessibilityIdentifier(CalendarScreen.monthID(month))
         }
         .id(CalendarScreen.monthID(month))
@@ -300,8 +311,20 @@ private struct CalendarMonthSection: View {
         let isToday = engine.gregorian.isDate(date, inSameDayAs: now)
         let isNext = date == nextEvent
         let dateText = date.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).locale(locale).inZone(model.zone))
-        let hijriDate = Text(verbatim: day.day.formatted(.number.locale(locale)) + " " + monthTitle(day.month, engine: engine, includeYear: false))
-            .font(.subheadline.weight(.medium))
+        let hijriText = Text(verbatim: day.day.formatted(.number.locale(locale)) + " " + monthTitle(day.month, engine: engine, includeYear: false))
+            .font(.subheadline.weight(isToday ? .semibold : .medium))
+            .foregroundStyle(isToday ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(.secondary))
+        let hijriDate = HStack(alignment: .firstTextBaseline, spacing: 8) {
+            hijriText
+            if isToday {
+                Text("Today")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color.accentColor)
+                    .padding(.horizontal, 8).padding(.vertical, 2)
+                    .background(Color.accentColor.opacity(0.15), in: .capsule)
+                    .accessibilityIdentifier(isNext ? "calendar-countdown" : "calendar-today-badge")
+            }
+        }
         let civilDate = Group {
             if expected {
                 Text("Expected: \(dateText)")
@@ -309,32 +332,27 @@ private struct CalendarMonthSection: View {
                 Text(verbatim: dateText)
             }
         }.font(.caption)
-        let stackedDates = VStack(alignment: .leading, spacing: 4) {
-            hijriDate
-            civilDate
-        }
-        return VStack(alignment: .leading, spacing: 10) {
+        return VStack(alignment: .leading, spacing: 8) {
             Group {
                 if typeSize.isAccessibilitySize {
-                    stackedDates
+                    VStack(alignment: .leading, spacing: 4) {
+                        hijriDate
+                        civilDate
+                    }
                 } else {
-                    ViewThatFits(in: .horizontal) {
-                        HStack(alignment: .firstTextBaseline, spacing: 16) {
-                            hijriDate
-                            Spacer(minLength: 0)
-                            civilDate
-                        }
-                        stackedDates
+                    HStack(alignment: .firstTextBaseline, spacing: 12) {
+                        hijriDate
+                        Spacer(minLength: 0)
+                        civilDate.multilineTextAlignment(.trailing)
                     }
                 }
             }
             .foregroundStyle(.secondary)
-            if isNext {
+            // Today's badge already says "Today", so the countdown only appears on later days.
+            if isNext, !isToday {
                 let countdown = CalendarScreen.countdownText(days: engine.distance(engine.gregorian.startOfDay(for: now), date), locale: locale)
                 Group {
-                    if isToday {
-                        Text("Today")
-                    } else if expected {
+                    if expected {
                         Text("Expected: \(countdown)")
                     } else {
                         Text(verbatim: countdown)
@@ -344,9 +362,12 @@ private struct CalendarMonthSection: View {
             }
             if let firstEvent {
                 FigureObservanceRow(event: firstEvent)
+            } else {
+                // Only today's placeholder row has no event; its badge already says "Today".
+                Text("No events").foregroundStyle(.secondary)
             }
         }
-        .fixedSize(horizontal: false, vertical: true)
+        .padding(.vertical, 4)
         .frame(maxWidth: .infinity, alignment: .leading)
         .foregroundStyle(.primary)
         .accessibilityElement(children: .contain)
@@ -356,6 +377,12 @@ private struct CalendarMonthSection: View {
 
     private func monthTitle(_ month: HijriMonth, engine: CalendarEngine, includeYear: Bool = true) -> String {
         calendarMonthTitle(month, engine: engine, locale: locale, includeYear: includeYear)
+    }
+
+    /// Today's rows get an accent tint over the standard grouped cell background.
+    private func rowBackground(isToday: Bool) -> some View {
+        Color(.secondarySystemGroupedBackground)
+            .overlay(isToday ? Color.accentColor.opacity(0.1) : .clear)
     }
 }
 

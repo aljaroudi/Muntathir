@@ -64,15 +64,10 @@ final class MarketingScreenshotTests: XCTestCase {
         app.buttons[labels[0]].firstMatch.tap()
         XCTAssertTrue(app.buttons["calendar-jump"].waitForExistence(timeout: 5))
         // The fixed capture date is 1448-05; show Sha'ban for the store listing.
-        let month = app.buttons["calendar-month-1448-8"]
-        for _ in 0 ..< 8 {
-            if month.exists, month.isHittable {
-                break
-            }
-            app.swipeUp()
+        app.buttons["calendar-jump"].tap()
+        for _ in 0 ..< 3 {
+            app.buttons[labels[1]].tap()
         }
-        XCTAssertTrue(month.isHittable)
-        month.tap()
         let day = app.buttons["calendar-day-1448-8-1"]
         for _ in 0 ..< 6 {
             if day.exists, day.isHittable {
