@@ -59,14 +59,14 @@ private struct SolarArc: View {
                     .stroke(.white.opacity(0.18), style: StrokeStyle(lineWidth: 1, dash: [2, 5]))
                 }
                 if let moon, let moonProgress = moon.visibleProgress {
-                    MoonDisc(fraction: moon.illuminatedFraction, waxing: moon.isWaxing)
+                    MoonDisc(moon: moon, sun: sun)
                         .frame(width: 20, height: 20)
                         .opacity(progress == nil ? 0.9 : 0.65)
                         .position(SolarArcLayout.point(progress: moonProgress, elevation: moon.elevation, in: bounds, mirrored: mirrored))
                 }
                 if let progress {
                     let center = SolarArcLayout.point(progress: progress, elevation: sun.elevation, in: bounds, mirrored: mirrored)
-                    SunDisc(warm: sun.elevation < 10)
+                    SunDisc(elevation: sun.elevation, animated: true, hdr: true)
                         .frame(width: 30, height: 30)
                         .position(center)
 

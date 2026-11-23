@@ -5,7 +5,8 @@ import re
 from pathlib import Path
 
 APPLE = Path(__file__).resolve().parents[1]
-LOCALES = {"ar", "en", "fr", "de", "id", "it", "ja", "ms", "fa", "ru", "es", "tr", "ur", "zh-Hans", "zh-Hant"}
+# English is the source language, so translatable entries need no "en" localization.
+LOCALES = {"ar", "fr", "de", "id", "it", "ja", "ms", "fa", "ru", "es", "tr", "ur", "zh-Hans", "zh-Hant"}
 
 
 def strings(value):

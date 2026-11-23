@@ -222,12 +222,6 @@
             "value" : "%@ AH"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ AH"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -314,12 +308,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ Überlieferungen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ narrations"
           }
         },
         "es" : {
@@ -520,12 +508,6 @@
             "value" : "%lld n. H."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld AH"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -612,12 +594,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld Rakʿa"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld rakaat"
           }
         },
         "es" : {
@@ -886,12 +862,6 @@
             "value" : "Ein Begleiter für deine tägliche Glaubenspraxis."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A companion for your daily worship."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -978,12 +948,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ungefähr %@"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "About %@"
           }
         },
         "es" : {
@@ -1074,12 +1038,6 @@
             "value" : "Noch etwa %@"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "About %@ remaining"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1166,12 +1124,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aktionen für Vers %@"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actions for verse %@"
           }
         },
         "es" : {
@@ -1262,12 +1214,6 @@
             "value" : "Aktivität"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activity"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1354,12 +1300,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notiz hinzufügen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add note"
           }
         },
         "es" : {
@@ -1450,12 +1390,6 @@
             "value" : "Monat anpassen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adjust month"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1544,12 +1478,6 @@
             "value" : "n. H."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AH"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1633,12 +1561,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Al-Sarraf"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Al-Sarraf"
@@ -1732,12 +1654,6 @@
             "value" : "Alarm einschalten"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alert"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1824,12 +1740,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hinweise werden für bis zu 10 Tage geplant. Öffne die App regelmäßig, um sie zu aktualisieren."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alerts are scheduled for up to 10 days. Open the app regularly to refresh them."
           }
         },
         "es" : {
@@ -1920,12 +1830,6 @@
             "value" : "Hinweise folgen veröffentlichten Monatsbekanntgaben nach erfolgreicher Aktualisierung; die Zustellung erfolgt nicht sofort."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alerts follow published month announcements after a successful refresh; delivery is not immediate."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2009,12 +1913,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alhalwachi"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alhalwachi"
@@ -2108,12 +2006,6 @@
             "value" : "Ali Mulla"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ali Mulla"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2200,12 +2092,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zur Kaaba ausgerichtet"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aligned with Kaaba"
           }
         },
         "es" : {
@@ -2298,12 +2184,6 @@
             "value" : "Alle"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -2390,12 +2270,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Erlaube den Kamerazugriff in den Einstellungen, um Niederwerfungen zu zählen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Allow camera access in Settings to count sujood."
           }
         },
         "es" : {
@@ -2486,12 +2360,6 @@
             "value" : "Erlaube den Standortzugriff und den genauen Standort in den Einstellungen, um die Qibla zu finden."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Allow location access and Precise Location in Settings to find Qibla."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2578,12 +2446,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Erlaube zeitkritische Hinweise in Einstellungen und Fokus. Der Ton richtet sich nach Stummmodus und Klingel- und Hinweislautstärke."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Allow Time Sensitive alerts in Settings and Focus. Sound follows Silent mode and your Ringtone and Alerts volume."
           }
         },
         "es" : {
@@ -2674,12 +2536,6 @@
             "value" : "Benachrichtigungen zu Bekanntgaben"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Announcement notifications"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2766,12 +2622,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "App-Sprache"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App language"
           }
         },
         "es" : {
@@ -2862,12 +2712,6 @@
             "value" : "Quellenangabe für Apple Weather"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apple Weather attribution"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2951,12 +2795,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Asr"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Asr"
@@ -3050,12 +2888,6 @@
             "value" : "Asr-Gebet"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Asr prayer"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3142,12 +2974,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Automatisch"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Auto"
           }
         },
         "es" : {
@@ -3238,12 +3064,6 @@
             "value" : "Verfügbare Tabs"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Available tabs"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3330,12 +3150,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zurück"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Back"
           }
         },
         "es" : {
@@ -3426,12 +3240,6 @@
             "value" : "Zur ersten Person zurück"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Back to original figure"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3518,12 +3326,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "v. Chr."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BCE"
           }
         },
         "es" : {
@@ -3614,12 +3416,6 @@
             "value" : "Gezählte Perlen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Beads counted"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3706,12 +3502,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Glocke"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bell"
           }
         },
         "es" : {
@@ -3802,12 +3592,6 @@
             "value" : "v. H."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BH"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3894,12 +3678,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Geburtsdaten"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Birth dates"
           }
         },
         "es" : {
@@ -3990,12 +3768,6 @@
             "value" : "Blau"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Blue"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4082,12 +3854,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lesezeichen setzen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bookmark"
           }
         },
         "es" : {
@@ -4178,12 +3944,6 @@
             "value" : "Setze ein Lesezeichen für einen Rechtsspruch, um ihn unter Gespeichert wiederzufinden."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bookmark a ruling to find it again in Saved."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4270,12 +4030,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lesezeichen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bookmarks"
           }
         },
         "es" : {
@@ -4366,12 +4120,6 @@
             "value" : "Bücher"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Books"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4458,12 +4206,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Braun"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Brown"
           }
         },
         "es" : {
@@ -4554,12 +4296,6 @@
             "value" : "Berechnet — Umm al-Qura"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Calculated — Umm al-Qura"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4646,12 +4382,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kalender"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Calendar"
           }
         },
         "es" : {
@@ -4742,12 +4472,6 @@
             "value" : "Kalender und Wetter"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Calendar & Weather"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4834,12 +4558,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kalenderereignisse"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Calendar events"
           }
         },
         "es" : {
@@ -4930,12 +4648,6 @@
             "value" : "Die Kameraaufnahme wurde beendet. Starte eine neue Sitzung, um es erneut zu versuchen."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Camera capture ended. Start a new session to try again."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5022,12 +4734,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kamera nicht verfügbar"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Camera unavailable"
           }
         },
         "es" : {
@@ -5118,12 +4824,6 @@
             "value" : "Abbrechen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5210,12 +4910,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "n. Chr."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CE"
           }
         },
         "es" : {
@@ -5306,12 +5000,6 @@
             "value" : "Kapitelnotiz"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chapter note"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5398,12 +5086,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hadith-Download wird geprüft…"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Checking Hadith download…"
           }
         },
         "es" : {
@@ -5494,12 +5176,6 @@
             "value" : "Bittgebete-Download wird geprüft…"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Checking supplications download…"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5586,12 +5262,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kinder"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Children"
           }
         },
         "es" : {
@@ -5682,12 +5352,6 @@
             "value" : "Kinder mit %@"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Children with %@"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5774,12 +5438,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Klangspiel"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chime"
           }
         },
         "es" : {
@@ -5870,12 +5528,6 @@
             "value" : "Wähle eine Stadt oder verwende den Gerätestandort, um Gebetszeiten und Qibla zu berechnen."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose a city or use your device location to calculate prayer times and Qibla."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5962,12 +5614,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Standort wählen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose a location"
           }
         },
         "es" : {
@@ -6058,12 +5704,6 @@
             "value" : "Standort in Muntathir wählen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose a location in Muntathir"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6152,12 +5792,6 @@
             "value" : "Abstammungsbericht wählen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose a parentage report"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6244,12 +5878,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wähle eine Übersetzung, die neben dem arabischen Text angezeigt wird."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose a translation to read alongside Arabic."
           }
         },
         "es" : {
@@ -6342,12 +5970,6 @@
             "value" : "Gebet wählen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose prayer"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6434,12 +6056,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wähle deine Berechnungsmethode. Du kannst sie später in den Einstellungen ändern."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose the calculation method you follow. You can change it later in Settings."
           }
         },
         "es" : {
@@ -6530,12 +6146,6 @@
             "value" : "Wähle bis zu drei Tabs. Alles andere bleibt unter Werkzeuge."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose up to three tabs. Everything else stays in Tools."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6622,12 +6232,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wähle deine App-Sprache"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose your app language"
           }
         },
         "es" : {
@@ -6718,12 +6322,6 @@
             "value" : "Wähle deinen Standort"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose your location"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6810,12 +6408,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wähle deine Sprache in den iOS-Einstellungen. Kehre hierher zurück, um die Einrichtung fortzusetzen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose your preferred language in iOS Settings. Return here to continue setup."
           }
         },
         "es" : {
@@ -6906,12 +6498,6 @@
             "value" : "Wähle deine Sprache in den Systemeinstellungen. Kehre hierher zurück, um die Einrichtung fortzusetzen."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose your preferred language in System Settings. Return here to continue setup."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6998,12 +6584,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verlauf löschen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clear history"
           }
         },
         "es" : {
@@ -7094,12 +6674,6 @@
             "value" : "Angezeigte Farben"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Colors shown"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7186,12 +6760,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kompass nicht verfügbar"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Compass unavailable"
           }
         },
         "es" : {
@@ -7282,12 +6850,6 @@
             "value" : "Kompass nicht verfügbar. Verwende die Peilung vom geografischen Norden."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Compass unavailable. Use the bearing from true north."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7374,12 +6936,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bestätigter Monat"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Confirmed month"
           }
         },
         "es" : {
@@ -7470,12 +7026,6 @@
             "value" : "Weiter"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Continue"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7562,12 +7112,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Text kopieren"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copy text"
           }
         },
         "es" : {
@@ -7658,12 +7202,6 @@
             "value" : "Dein Standort wurde nicht gefunden. Suche stattdessen nach einer Stadt."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Could not find your location. Search for a city instead."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7750,12 +7288,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Der genaue aktuelle Standort konnte nicht ermittelt werden. Versuche es im Freien erneut."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Could not get a precise current location. Try again outdoors."
           }
         },
         "es" : {
@@ -7846,12 +7378,6 @@
             "value" : "Zählung abgeschlossen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Count complete"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7938,12 +7464,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eine Perle zählen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Count one bead"
           }
         },
         "es" : {
@@ -8034,12 +7554,6 @@
             "value" : "Aktueller Standort und Richtung zur Kaaba"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Current location and direction to the Kaaba"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8126,12 +7640,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aktuelles Wetter mit Wochentag und Datum."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Current weather with the weekday and date."
           }
         },
         "es" : {
@@ -8222,12 +7730,6 @@
             "value" : "Vers des Tages"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Daily ayah"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8314,12 +7816,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tagesanpassung"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day adjustment"
           }
         },
         "es" : {
@@ -8410,12 +7906,6 @@
             "value" : "Sterbedaten"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Death dates"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8502,12 +7992,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Text verkleinern"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Decrease text size"
           }
         },
         "es" : {
@@ -8598,12 +8082,6 @@
             "value" : "Markierung löschen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete highlight"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8690,12 +8168,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Diese Markierung löschen?"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete this highlight?"
           }
         },
         "es" : {
@@ -8786,12 +8258,6 @@
             "value" : "Geräterichtung"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Device direction"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8878,12 +8344,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gerätestandort"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Device location"
           }
         },
         "es" : {
@@ -8974,12 +8434,6 @@
             "value" : "Der Gerätestandort bleibt auf diesem Gerät."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Device location stays on this device."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9063,12 +8517,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dhuhr"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dhuhr"
@@ -9162,12 +8610,6 @@
             "value" : "Dhuhr-Gebet"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dhuhr prayer"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9254,12 +8696,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Änderungen verwerfen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Discard changes"
           }
         },
         "es" : {
@@ -9350,12 +8786,6 @@
             "value" : "Fertig"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Done"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9442,12 +8872,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Herunterladen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Download"
           }
         },
         "es" : {
@@ -9538,12 +8962,6 @@
             "value" : "%@ herunterladen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Download %@"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9630,12 +9048,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Übersetzungen zum Offline-Lesen herunterladen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Download translations to read offline."
           }
         },
         "es" : {
@@ -9726,12 +9138,6 @@
             "value" : "Wird geladen…"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Downloading…"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9815,12 +9221,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Downloads"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Downloads"
@@ -9914,12 +9314,6 @@
             "value" : "Ziehe die Farben, um sie neu anzuordnen. Die ersten Farben erscheinen in der Auswahl."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Drag colors to reorder them. The first colors appear in the picker."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10006,12 +9400,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Markierung bearbeiten"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit highlight"
           }
         },
         "es" : {
@@ -10102,12 +9490,6 @@
             "value" : "Benachrichtigungen aktivieren"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enable notifications"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10194,12 +9576,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aktiviere Benachrichtigungen für deine gewählten Gebete. Erinnerungen kannst du in den Einstellungen anpassen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enable notifications for your selected prayers. You can adjust reminders in Settings."
           }
         },
         "es" : {
@@ -10290,12 +9666,6 @@
             "value" : "Englisch"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "English"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10382,12 +9752,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gib Sure und Vers ein, zum Beispiel 2:255."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter a chapter and verse such as 2:255."
           }
         },
         "es" : {
@@ -10478,12 +9842,6 @@
             "value" : "Gib eine gültige Versnummer dieser Sure ein."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter a valid verse number in this chapter."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10570,12 +9928,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Geschätztes Alter"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Estimated age"
           }
         },
         "es" : {
@@ -10666,12 +10018,6 @@
             "value" : "Geschätzte Lesezeit: %@"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Estimated reading time: %@"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10758,12 +10104,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Geschätzte Größe: %@"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Estimated size: %@"
           }
         },
         "es" : {
@@ -10854,12 +10194,6 @@
             "value" : "Ereignisse"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Events"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10946,12 +10280,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Voraussichtlich"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Expected"
           }
         },
         "es" : {
@@ -11042,12 +10370,6 @@
             "value" : "Voraussichtlich: %@"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Expected: %@"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11131,12 +10453,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fajr"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fajr"
@@ -11230,12 +10546,6 @@
             "value" : "Fajr-Gebet"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fajr prayer"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11322,12 +10632,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Stammbaum"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Family tree"
           }
         },
         "es" : {
@@ -11418,12 +10722,6 @@
             "value" : "Vater"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Father"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11510,12 +10808,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Persönlichkeiten"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Figures"
           }
         },
         "es" : {
@@ -11606,12 +10898,6 @@
             "value" : "Personen nicht verfügbar"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Figures unavailable"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11698,12 +10984,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Qibla-Richtung finden"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Find the direction of Qibla"
           }
         },
         "es" : {
@@ -11794,12 +11074,6 @@
             "value" : "Dein genauer aktueller Standort wird ermittelt…"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Finding your precise current location…"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11886,12 +11160,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Einrichtung abschließen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Finish setup"
           }
         },
         "es" : {
@@ -11982,12 +11250,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Erste Niederwerfung"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "First sujood"
           }
         },
         "es" : {
@@ -12172,12 +11434,6 @@
             "value" : "Vollgeschwister"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Full siblings"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12264,12 +11520,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zukünftige Daten sind Schätzungen, bis die Mondsichtung für den Monat bestätigt ist oder der Monat beginnt."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Future dates are estimates until the month’s moonsighting is confirmed or the month begins."
           }
         },
         "es" : {
@@ -12450,12 +11700,6 @@
             "value" : "Loslegen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Get started"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12542,12 +11786,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Staatliche Bekanntgabe"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Government announcement"
           }
         },
         "es" : {
@@ -12638,12 +11876,6 @@
             "value" : "Einstufung"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grading"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12730,12 +11962,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Grün"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Green"
           }
         },
         "es" : {
@@ -12921,12 +12147,6 @@
             "value" : "Nach Datum gruppieren"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Group by Date"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13013,12 +12233,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nach Quelle gruppieren"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Group by Source"
           }
         },
         "es" : {
@@ -13109,12 +12323,6 @@
             "value" : "Gruppierung"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grouping"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13198,12 +12406,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hadith"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hadith"
@@ -13297,12 +12499,6 @@
             "value" : "Hadith-Aktionen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hadith actions"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13389,12 +12585,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Halbgeschwister"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Half-siblings"
           }
         },
         "es" : {
@@ -13485,12 +12675,6 @@
             "value" : "Ausblenden"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hide"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13577,12 +12761,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Das Ausblenden einer Zeit ändert ihre Benachrichtigungseinstellung nicht."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hiding a time does not change its notification setting."
           }
         },
         "es" : {
@@ -13673,12 +12851,6 @@
             "value" : "Markieren"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Highlight"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13765,12 +12937,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Markierungsfarben"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Highlight colors"
           }
         },
         "es" : {
@@ -13861,12 +13027,6 @@
             "value" : "Notiz zur Markierung"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Highlight note"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13953,12 +13113,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Markierte Passage nicht verfügbar"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Highlighted passage unavailable"
           }
         },
         "es" : {
@@ -14049,12 +13203,6 @@
             "value" : "Markierungen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Highlights"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14141,12 +13289,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Markierungen und Lesezeichen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Highlights and bookmarks"
           }
         },
         "es" : {
@@ -14237,12 +13379,6 @@
             "value" : "Hidschri"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hijri"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14329,12 +13465,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hidschri- und gregorianisches Datum mit aktuellem Wetter."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hijri and Gregorian dates with current weather."
           }
         },
         "es" : {
@@ -14425,12 +13555,6 @@
             "value" : "Hijri- und gregorianische Daten."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hijri and Gregorian dates."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14517,12 +13641,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hidschri-Kalender und Gedenktage"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hijri calendar and observances"
           }
         },
         "es" : {
@@ -14613,12 +13731,6 @@
             "value" : "Hidschri-Monat: %@ / %@"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hijri month: %@ / %@"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14702,12 +13814,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hizb %lld"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hizb %lld"
@@ -14803,12 +13909,6 @@
             "value" : "Der Heilige Koran"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Holy Quran"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14896,12 +13996,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Horizontales Layout"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Horizontal layout"
           }
         },
         "es" : {
@@ -14993,12 +14087,6 @@
             "value" : "Gebetszeiten nebeneinander"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Horizontal prayer times"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15087,12 +14175,6 @@
             "value" : "Stunden und Minuten bis zum nächsten Gebet."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hours and minutes until your next prayer."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15176,12 +14258,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Imsak"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Imsak"
@@ -15275,12 +14351,6 @@
             "value" : "Imsak vor Fajr"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Imsak before Fajr"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15371,12 +14441,6 @@
             "value" : "Imsak ist eine Vorsichtszeit vor dem berechneten Fajr."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Imsak is a precaution before calculated Fajr."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15463,12 +14527,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enthalten"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Included"
           }
         },
         "es" : {
@@ -15559,12 +14617,6 @@
             "value" : "Text vergrößern"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Increase text size"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15653,12 +14705,6 @@
             "value" : "Erhöhe die Beleuchtung und halte die Kamera frei. Versuche es dann erneut."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Increase the light and keep the camera uncovered, then try again."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15742,12 +14788,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Indigo"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Indigo"
@@ -15841,12 +14881,6 @@
             "value" : "Wird installiert…"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Installing…"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15933,12 +14967,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Einleitung"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Introduction"
           }
         },
         "es" : {
@@ -16029,12 +15057,6 @@
             "value" : "Ungültiges Kalenderdatum."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invalid calendar date."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16121,12 +15143,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ungültige Einstellungen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invalid preferences."
           }
         },
         "es" : {
@@ -16217,12 +15233,6 @@
             "value" : "Ungültige Versangabe"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invalid verse reference"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16309,12 +15319,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ischa"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Isha"
           }
         },
         "es" : {
@@ -16405,12 +15409,6 @@
             "value" : "Ischa-Gebet"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Isha prayer"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16497,12 +15495,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Islamischer Kalender"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Islamic calendar"
           }
         },
         "es" : {
@@ -16595,12 +15587,6 @@
             "value" : "Dschafari - Qom"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jafari - Qum"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16691,12 +15677,6 @@
             "value" : "Dschafari - Teheran"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jafari - Tehran"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16783,12 +15763,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Julianisch"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Julian"
           }
         },
         "es" : {
@@ -16879,12 +15853,6 @@
             "value" : "Zu Datum springen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jump to date"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16968,12 +15936,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Juz %lld"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Juz %lld"
@@ -17067,12 +16029,6 @@
             "value" : "Lass die Kamera während der Kalibrierung bei gleichmäßigem Licht unbedeckt."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keep the camera uncovered in steady light while it calibrates."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17159,12 +16115,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Halte das Telefon bei gleichmäßiger Beleuchtung still und versuche es erneut."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keep the phone still in steady light, then try again."
           }
         },
         "es" : {
@@ -17255,12 +16205,6 @@
             "value" : "Kunyas"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kunyas"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17344,12 +16288,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Laqabs"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Laqabs"
@@ -17445,12 +16383,6 @@
             "value" : "Bibliothek"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Library"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17537,12 +16469,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wörtlich"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Literal"
           }
         },
         "es" : {
@@ -17633,12 +16559,6 @@
             "value" : "Mehr laden"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Load more"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17725,12 +16645,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hadithe werden geladen…"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Loading Hadith…"
           }
         },
         "es" : {
@@ -17821,12 +16735,6 @@
             "value" : "Koran wird geladen…"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Loading Quran…"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17913,12 +16821,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lokale Sichtung mit bloßem Auge"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Local naked eye"
           }
         },
         "es" : {
@@ -18009,12 +16911,6 @@
             "value" : "Standort"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Location"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18101,12 +16997,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Standortzugriff deaktiviert. Suche stattdessen nach einer Stadt."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Location access is disabled. Search for a city instead."
           }
         },
         "es" : {
@@ -18199,12 +17089,6 @@
             "value" : "Maschinelle Übersetzungen können Fehler enthalten; ziehe den Originaltext heran."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Machine translations may be inaccurate; refer to the original text."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -18288,12 +17172,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Maghrib"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Maghrib"
@@ -18387,12 +17265,6 @@
             "value" : "Maghrib-Gebet"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Maghrib prayer"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18479,12 +17351,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Manuelle Monatskorrektur"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Manual month correction"
           }
         },
         "es" : {
@@ -18575,12 +17441,6 @@
             "value" : "Treffer"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Matches"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18667,12 +17527,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Methode"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Method"
           }
         },
         "es" : {
@@ -18765,12 +17619,6 @@
             "value" : "Mitternacht"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Midnight"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18857,12 +17705,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mintgrün"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mint"
           }
         },
         "es" : {
@@ -18953,12 +17795,6 @@
             "value" : "Monatsanpassungen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Month adjustments"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19045,12 +17881,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Monatsbestätigungen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Month confirmations"
           }
         },
         "es" : {
@@ -19141,12 +17971,6 @@
             "value" : "Monat bestätigt"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Month confirmed"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19233,12 +18057,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Monatsbeginn"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Month starts"
           }
         },
         "es" : {
@@ -19329,12 +18147,6 @@
             "value" : "Die Monatsanfänge müssen Monate mit 29 oder 30 Tagen erhalten."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Month starts must preserve 29 or 30 day months."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19423,12 +18235,6 @@
             "value" : "Mutter"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mother"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19512,12 +18318,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Muntathir"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Muntathir"
@@ -19613,12 +18413,6 @@
             "value" : "Mushaf"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mushaf"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19707,12 +18501,6 @@
             "value" : "Alarm ausschalten"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mute"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19796,12 +18584,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Name"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Name"
@@ -19895,12 +18677,6 @@
             "value" : "Überlieferung %lld"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Narration %lld"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19987,12 +18763,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Überlieferer"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Narrator"
           }
         },
         "es" : {
@@ -20083,12 +18853,6 @@
             "value" : "Weiter"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20175,12 +18939,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nächster Monat"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next month"
           }
         },
         "es" : {
@@ -20271,12 +19029,6 @@
             "value" : "Nächstes Gebet"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next prayer"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20363,12 +19115,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nächste Gebetszeit mit laufendem Countdown."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next prayer time and a live countdown."
           }
         },
         "es" : {
@@ -20459,12 +19205,6 @@
             "value" : "Nächstes Jahr"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next year"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20553,12 +19293,6 @@
             "value" : "Spitznamen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nicknames"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20642,12 +19376,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nisbas"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nisbas"
@@ -20741,12 +19469,6 @@
             "value" : "Noch keine Lesezeichen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No bookmarks yet"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20833,12 +19555,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keine Ereignisse"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No events"
           }
         },
         "es" : {
@@ -20929,12 +19645,6 @@
             "value" : "Keine genaue Wortfolge gefunden."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No exact phrase found."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21021,12 +19731,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keine Personen gefunden"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No figures found"
           }
         },
         "es" : {
@@ -21117,12 +19821,6 @@
             "value" : "Noch keine Markierungen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No highlights yet"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21209,12 +19907,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Heute keine Gedenktage"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No observances today"
           }
         },
         "es" : {
@@ -21305,12 +19997,6 @@
             "value" : "Keine Orte gefunden."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No places found."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21397,12 +20083,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Noch keine Gebete erfasst."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No recorded prayers yet."
           }
         },
         "es" : {
@@ -21493,12 +20173,6 @@
             "value" : "Keine Ergebnisse"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No Results"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21585,12 +20259,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keine Bittgebete gefunden"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No supplications found"
           }
         },
         "es" : {
@@ -21681,12 +20349,6 @@
             "value" : "Keine"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "None"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21773,12 +20435,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nicht jetzt"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not now"
           }
         },
         "es" : {
@@ -21869,12 +20525,6 @@
             "value" : "Nicht ausgewählt"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not selected"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21961,12 +20611,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notizen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notes"
           }
         },
         "es" : {
@@ -22057,12 +20701,6 @@
             "value" : "Benachrichtigungen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notifications"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22151,12 +20789,6 @@
             "value" : "Benachrichtigungen sind deaktiviert. Aktiviere sie in den Systemeinstellungen."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notifications are disabled. Enable them in system Settings."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22240,12 +20872,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "OK"
@@ -22339,12 +20965,6 @@
             "value" : "Pünktlich"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "On time"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22431,12 +21051,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pünktliche Gebete"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "On-time prayers"
           }
         },
         "es" : {
@@ -22527,12 +21141,6 @@
             "value" : "Pünktliche Gebete insgesamt"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "On-time totals"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22619,12 +21227,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Öffnen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open"
           }
         },
         "es" : {
@@ -22715,12 +21317,6 @@
             "value" : "Muntathir auf dem iPhone öffnen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open Muntathir on iPhone"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22807,12 +21403,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Öffne Muntathir auf deinem iPhone, um Standort und Einstellungen zu synchronisieren."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open Muntathir on your iPhone to sync your location and settings."
           }
         },
         "es" : {
@@ -22903,12 +21493,6 @@
             "value" : "Einstellungen öffnen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open Settings"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22992,12 +21576,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Orange"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Orange"
@@ -23091,12 +21669,6 @@
             "value" : "Andere"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Other"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23183,12 +21755,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Anderer Elternteil"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Other parent"
           }
         },
         "es" : {
@@ -23279,12 +21845,6 @@
             "value" : "Weitere Abstammungsberichte"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Other parentage reports"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23371,12 +21931,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Andere Zeiten"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Other Times"
           }
         },
         "es" : {
@@ -23467,12 +22021,6 @@
             "value" : "Eltern"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Parents"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23559,12 +22107,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Perle"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pearl"
           }
         },
         "es" : {
@@ -23655,12 +22197,6 @@
             "value" : "Vornamen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Personal names"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23747,12 +22283,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rosa"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pink"
           }
         },
         "es" : {
@@ -23843,12 +22373,6 @@
             "value" : "Geburtsort"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Place of birth"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23935,12 +22459,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sterbeort"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Place of death"
           }
         },
         "es" : {
@@ -24031,12 +22549,6 @@
             "value" : "Ortssuche nicht verfügbar. Versuche es mit Internetverbindung erneut."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Place search is unavailable. Try again when online."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24125,12 +22637,6 @@
             "value" : "Lege das Telefon mit dem Bildschirm nach oben hin. Die Frontkamera liegt bei der Niederwerfung knapp hinter der Position deines Mundes, sodass dein Gesicht sie bedeckt."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Place the phone screen-up, with the front camera just behind your mouth’s position during sujood, so your face covers it."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24217,12 +22723,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bitte versuche es erneut."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please try again."
           }
         },
         "es" : {
@@ -24315,12 +22815,6 @@
             "value" : "Praxis"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Practice"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24407,12 +22901,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gebet"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prayer"
           }
         },
         "es" : {
@@ -24503,12 +22991,6 @@
             "value" : "Gebetsberechnungen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prayer calculations"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24595,12 +23077,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gebetscountdown"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prayer countdown"
           }
         },
         "es" : {
@@ -24691,12 +23167,6 @@
             "value" : "Gebetsoptionen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prayer options"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24783,12 +23253,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gebetserinnerungen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prayer reminders"
           }
         },
         "es" : {
@@ -24879,12 +23343,6 @@
             "value" : "Gebetszeiten"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prayer times"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24971,12 +23429,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gebetszeiten für deinen Standort"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prayer times for your location"
           }
         },
         "es" : {
@@ -25067,12 +23519,6 @@
             "value" : "Gebetszeiten für deinen gespeicherten Standort."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prayer times for your saved location."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25159,12 +23605,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gebetszeiten nicht verfügbar"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prayer times unavailable"
           }
         },
         "es" : {
@@ -25257,12 +23697,6 @@
             "value" : "Gebetszeiten nicht verfügbar"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prayer Times Unavailable"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25353,12 +23787,6 @@
             "value" : "Gebetszeiten für diesen Standort und dieses Datum nicht verfügbar."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prayer times unavailable for this location and date."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25445,12 +23873,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gebete"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prayers"
           }
         },
         "es" : {
@@ -25541,12 +23963,6 @@
             "value" : "Genauer Standort erforderlich"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Precise location required"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25633,12 +24049,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Download wird vorbereitet…"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preparing download…"
           }
         },
         "es" : {
@@ -25729,12 +24139,6 @@
             "value" : "Halte eine Gebetszeit gedrückt, um ihre Benachrichtigung stummzuschalten. Optionale Zeiten lassen sich auch ausblenden."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Press and hold a prayer time to mute its alert. Optional times can also be hidden."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25821,12 +24225,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ton testen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preview sound"
           }
         },
         "es" : {
@@ -25917,12 +24315,6 @@
             "value" : "Zurück"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26009,12 +24401,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vorheriger Monat"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous month"
           }
         },
         "es" : {
@@ -26105,12 +24491,6 @@
             "value" : "Vorheriges Jahr"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous year"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26197,12 +24577,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Niederwerfung"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prostration"
           }
         },
         "es" : {
@@ -26293,12 +24667,6 @@
             "value" : "Ziehe eine Perle nach unten, um zu zählen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pull a bead down to count"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26387,12 +24755,6 @@
             "value" : "Lila"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Purple"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26476,12 +24838,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Qibla"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Qibla"
@@ -26577,12 +24933,6 @@
             "value" : "Fragen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Questions"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -26669,12 +25019,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Koranübersetzungen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quran translations"
           }
         },
         "es" : {
@@ -26767,12 +25111,6 @@
             "value" : "Rakʿa"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rakaat"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26859,12 +25197,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rakʿa-Zähler"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rakaat Tracker"
           }
         },
         "es" : {
@@ -26955,12 +25287,6 @@
             "value" : "Hadithe offline lesen und durchsuchen."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Read and search Hadith offline."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27047,12 +25373,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bittgebete offline lesen und durchsuchen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Read and search supplications offline."
           }
         },
         "es" : {
@@ -27145,12 +25465,6 @@
             "value" : "Lesemodus"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reading mode"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27237,12 +25551,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Leseoptionen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reading options"
           }
         },
         "es" : {
@@ -27333,12 +25641,6 @@
             "value" : "Letzte Suchanfragen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Recent searches"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27425,12 +25727,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Außerhalb der Zeit erfasst"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Recorded outside time"
           }
         },
         "es" : {
@@ -27521,12 +25817,6 @@
             "value" : "Rot"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Red"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27613,12 +25903,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ähnliche Treffer"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Related matches"
           }
         },
         "es" : {
@@ -27709,12 +25993,6 @@
             "value" : "Zugehörige Gedenktage"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Related observances"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27801,12 +26079,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Religiöse Autorität"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Religious authority"
           }
         },
         "es" : {
@@ -27897,12 +26169,6 @@
             "value" : "Alle Übersetzungen entfernen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove all translations"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27989,12 +26255,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lesezeichen entfernen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove Bookmark"
           }
         },
         "es" : {
@@ -28085,12 +26345,6 @@
             "value" : "Download entfernen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove download"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28177,12 +26431,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suchanfrage entfernen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove search"
           }
         },
         "es" : {
@@ -28273,12 +26521,6 @@
             "value" : "Zurücksetzen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28365,12 +26607,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Anpassung zurücksetzen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset adjustment"
           }
         },
         "es" : {
@@ -28461,12 +26697,6 @@
             "value" : "Zum Wiederherstellen eines Buches wird vorübergehend die gesamte Bibliothek heruntergeladen. Nur deine ausgewählten Bücher bleiben gespeichert."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Restoring a book downloads the full library temporarily. Only your selected books are kept."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28555,12 +26785,6 @@
             "value" : "Erneut versuchen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Retry"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28647,12 +26871,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Religiöse Regeln"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rulings"
           }
         },
         "es" : {
@@ -28833,12 +27051,6 @@
             "value" : "Sichern"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28925,12 +27137,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gespeichert"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saved"
           }
         },
         "es" : {
@@ -29021,12 +27227,6 @@
             "value" : "Gespeicherte Passage nicht verfügbar"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saved passage unavailable"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29113,12 +27313,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gespeicherte Inhalte nicht verfügbar"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saved unavailable"
           }
         },
         "es" : {
@@ -29209,12 +27403,6 @@
             "value" : "Alle Bücher durchsuchen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search all books"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29301,12 +27489,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lesezeichen durchsuchen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search bookmarks"
           }
         },
         "es" : {
@@ -29397,12 +27579,6 @@
             "value" : "Stadt suchen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search for a city"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29489,12 +27665,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hadithe durchsuchen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search Hadith"
           }
         },
         "es" : {
@@ -29585,12 +27755,6 @@
             "value" : "Markierungen durchsuchen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search highlights"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29677,12 +27841,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bittgebete suchen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search supplications"
           }
         },
         "es" : {
@@ -29773,12 +27931,6 @@
             "value" : "Wähle Text aus, um ihn zu markieren."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select text to highlight it."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29865,12 +28017,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wähle Text aus, um ihn zu markieren. Füge über die Aktionen der Textstelle ein Lesezeichen hinzu."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select text to highlight it. Use the passage actions to add a bookmark."
           }
         },
         "es" : {
@@ -29961,12 +28107,6 @@
             "value" : "Gewählter Standort"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Selected location"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30055,12 +28195,6 @@
             "value" : "Predigten"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sermons"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30147,12 +28281,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Predigten nicht verfügbar"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sermons unavailable"
           }
         },
         "es" : {
@@ -30245,12 +28373,6 @@
             "value" : "Lege einen Standort fest, um Gebetszeiten anzuzeigen."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Set a location to view prayer times."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30337,12 +28459,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Standort in der App festlegen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Set location in app"
           }
         },
         "es" : {
@@ -30433,12 +28549,6 @@
             "value" : "Muntathir einrichten"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Set up Muntathir"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30525,12 +28635,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Einstellungen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings"
           }
         },
         "es" : {
@@ -30621,12 +28725,6 @@
             "value" : "Einstellungen werden über iCloud synchronisiert, wenn verfügbar. GPS-Standort und Mitteilungsberechtigungen bleiben auf diesem Gerät."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings sync through iCloud when available. Live GPS and notification permissions stay on this device."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30713,12 +28811,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Teilen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Share"
           }
         },
         "es" : {
@@ -30809,12 +28901,6 @@
             "value" : "Als Bild teilen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Share as image"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30901,12 +28987,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Arabische Vokalzeichen anzeigen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show Arabic diacritics"
           }
         },
         "es" : {
@@ -30997,12 +29077,6 @@
             "value" : "Gefühlte Temperatur anzeigen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show feels-like temperature"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31089,12 +29163,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Weniger Beinamen anzeigen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show fewer laqabs"
           }
         },
         "es" : {
@@ -31185,12 +29253,6 @@
             "value" : "Mehr Beinamen anzeigen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show more laqabs"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31277,12 +29339,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Geschwister"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Siblings"
           }
         },
         "es" : {
@@ -31373,12 +29429,6 @@
             "value" : "Lautlos"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Silent"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31465,12 +29515,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Stille Erinnerungen bei Sonnenuntergang an Gedenktage, die heute Abend beginnen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Silent reminders at sunset for observances beginning this evening."
           }
         },
         "es" : {
@@ -31561,12 +29605,6 @@
             "value" : "Vereinfacht"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Simplified"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31653,12 +29691,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Einige Dateien bleiben auf diesem Gerät. Bitte erneut versuchen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Some files remain on this device. Please try again."
           }
         },
         "es" : {
@@ -31749,12 +29781,6 @@
             "value" : "Quelle"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Source"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31841,12 +29867,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ehepartner"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spouses"
           }
         },
         "es" : {
@@ -31939,12 +29959,6 @@
             "value" : "%@ beginnen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start %@"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32031,12 +30045,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tasbih beginnen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start Tasbih"
           }
         },
         "es" : {
@@ -32223,12 +30231,6 @@
             "value" : "Sonnenaufgang"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sunrise"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32315,12 +30317,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sonnenuntergang"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sunset"
           }
         },
         "es" : {
@@ -32411,12 +30407,6 @@
             "value" : "Bittgebet %lld"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supplication %lld"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32505,12 +30495,6 @@
             "value" : "Bittgebet-Aktionen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supplication actions"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32597,12 +30581,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bittgebete"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supplications"
           }
         },
         "es" : {
@@ -32695,12 +30673,6 @@
             "value" : "Sure, 2:255 oder Korantext"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Surah, 2:255, or Quran text"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32791,12 +30763,6 @@
             "value" : "Suren"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Surahs"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32883,12 +30849,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Familiennamen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Surnames"
           }
         },
         "es" : {
@@ -32979,12 +30939,6 @@
             "value" : "Systemkalender"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "System calendar"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33071,12 +31025,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "System-Mitteilungseinstellungen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "System notification settings"
           }
         },
         "es" : {
@@ -33167,12 +31115,6 @@
             "value" : "Systemton"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "System sound"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33256,12 +31198,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tabs"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tabs"
@@ -33355,12 +31291,6 @@
             "value" : "Tippe in der Seitenleiste auf „Bearbeiten“, um festzulegen, welche Werkzeuge in der Tableiste erscheinen."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tap Edit in the sidebar to choose which tools appear in the tab bar."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33444,12 +31374,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tasbih"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tasbih"
@@ -33543,12 +31467,6 @@
             "value" : "Blaugrün"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Teal"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33635,12 +31553,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Text kopiert"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Text copied"
           }
         },
         "es" : {
@@ -33731,12 +31643,6 @@
             "value" : "Textgröße"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Text size"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33823,12 +31729,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Die Vier"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The Four"
           }
         },
         "es" : {
@@ -33919,12 +31819,6 @@
             "value" : "Der Hidschri-Tag und -Monat."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The Hijri day and month."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34011,12 +31905,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Der Countdown zum nächsten Gebet neben deinem Gebetsplan."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The next prayer countdown alongside your prayer schedule."
           }
         },
         "es" : {
@@ -34107,12 +31995,6 @@
             "value" : "Die Sechs"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The Six"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34199,12 +32081,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Die Zeit deines nächsten Gebets."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The time of your next prayer."
           }
         },
         "es" : {
@@ -34295,12 +32171,6 @@
             "value" : "Diese App ist keine Quelle für religiöse Rechtsurteile. Ziehe offizielle Quellen heran."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This app is not a source of religious rulings. Refer to official sources."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34387,12 +32257,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dieser Download benötigt ein Update."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This download needs an update."
           }
         },
         "es" : {
@@ -34483,12 +32347,6 @@
             "value" : "Heute Abend"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This evening"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34575,12 +32433,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dieser Standort muss zur Berechnung der Gebetszeiten aktualisiert werden."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This location needs to be updated to calculate prayer times."
           }
         },
         "es" : {
@@ -34671,12 +32523,6 @@
             "value" : "Dieser Ort hat keine Zeitzone. Wähle eine nahe Stadt."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This place has no time zone. Choose a nearby city."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34763,12 +32609,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nach links neigen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tilt left"
           }
         },
         "es" : {
@@ -34859,12 +32699,6 @@
             "value" : "Nach rechts neigen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tilt right"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34951,12 +32785,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zeit für das Gebet"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Time for prayer"
           }
         },
         "es" : {
@@ -35047,12 +32875,6 @@
             "value" : "Zeit in der Leseansicht"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Time in reader"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35139,12 +32961,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zeitkritisch"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Time Sensitive"
           }
         },
         "es" : {
@@ -35235,12 +33051,6 @@
             "value" : "Zeit nicht verfügbar"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Timing unavailable"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35327,12 +33137,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Titel"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titles"
           }
         },
         "es" : {
@@ -35423,12 +33227,6 @@
             "value" : "Heute"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Today"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35515,12 +33313,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Der heutige Vers aus dem Koran."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Today's verse from the Quran."
           }
         },
         "es" : {
@@ -35612,12 +33404,6 @@
             "value" : "Heute Abend"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tonight"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35704,12 +33490,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zu dunkel für zuverlässiges Zählen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Too dark to count reliably"
           }
         },
         "es" : {
@@ -35800,12 +33580,6 @@
             "value" : "Werkzeuge"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tools"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35892,12 +33666,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gesamtgröße"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Total size"
           }
         },
         "es" : {
@@ -35990,12 +33758,6 @@
             "value" : "Übersetzen nach %@"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Translate to %@"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -36086,12 +33848,6 @@
             "value" : "Übersetzen …"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Translating…"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -36178,12 +33934,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Übersetzung"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Translation"
           }
         },
         "es" : {
@@ -36276,12 +34026,6 @@
             "value" : "Übersetzung · %@"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Translation · %@"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -36372,12 +34116,6 @@
             "value" : "Übersetzung nicht verfügbar"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Translation unavailable"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "machine_translated",
@@ -36464,12 +34202,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Übersetzungen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Translations"
           }
         },
         "es" : {
@@ -36560,12 +34292,6 @@
             "value" : "Erneut versuchen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Try again"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36652,12 +34378,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nach links drehen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Turn left"
           }
         },
         "es" : {
@@ -36748,12 +34468,6 @@
             "value" : "Nach rechts drehen"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Turn right"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36839,12 +34553,6 @@
           }
         },
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Umm al-Qura"
-          }
-        },
-        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Umm al-Qura"
@@ -36938,12 +34646,6 @@
             "value" : "Kalibrierung nicht möglich"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to calibrate"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37030,12 +34732,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bild konnte nicht erstellt werden"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to create image"
           }
         },
         "es" : {
@@ -37126,12 +34822,6 @@
             "value" : "Hadithe konnten nicht geladen werden. Prüfe deine Verbindung und versuche es erneut."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to download Hadith. Check your connection and try again."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37218,12 +34908,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bittgebetee konnten nicht geladen werden. Prüfe deine Verbindung und versuche es erneut."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to download supplications. Check your connection and try again."
           }
         },
         "es" : {
@@ -37314,12 +34998,6 @@
             "value" : "Download fehlgeschlagen. Bitte erneut versuchen."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to download. Please try again."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37406,12 +35084,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Speicherbereinigung nicht abgeschlossen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to finish storage cleanup"
           }
         },
         "es" : {
@@ -37502,12 +35174,6 @@
             "value" : "Hadithe konnten nicht geladen werden"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to load Hadith"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37594,12 +35260,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Koran konnte nicht geladen werden"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to load Quran"
           }
         },
         "es" : {
@@ -37690,12 +35350,6 @@
             "value" : "Bittgebete konnten nicht geladen werden"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to load supplications"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37782,12 +35436,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sichern nicht möglich"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to save"
           }
         },
         "es" : {
@@ -37878,12 +35526,6 @@
             "value" : "Lesezeichen konnte nicht gespeichert werden"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to save bookmark"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37970,12 +35612,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aktivität konnte nicht gespeichert oder geladen werden."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to save or load activity."
           }
         },
         "es" : {
@@ -38066,12 +35702,6 @@
             "value" : "Gebetsverlauf konnte nicht gespeichert oder geladen werden."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to save or load prayer history."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38158,12 +35788,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Einstellungen konnten nicht synchronisiert werden. Öffne Muntathir auf deinem iPhone."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to sync settings. Open Muntathir on your iPhone."
           }
         },
         "es" : {
@@ -38254,12 +35878,6 @@
             "value" : "Aktualisierung nicht möglich"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to update"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38346,12 +35964,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Anstehendes Gebet"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Upcoming prayer"
           }
         },
         "es" : {
@@ -38442,12 +36054,6 @@
             "value" : "Speichere eine Textstelle mit einem Lesezeichen."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use Bookmark to save a passage."
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38534,12 +36140,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gerätestandort verwenden"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use device location"
           }
         },
         "es" : {
@@ -38630,12 +36230,6 @@
             "value" : "Vers %@"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verse %@"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38722,12 +36316,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Versaktionen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verse actions"
           }
         },
         "es" : {
@@ -38818,12 +36406,6 @@
             "value" : "Versnummer oder Korantext"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verse number or Quran text"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38912,12 +36494,6 @@
             "value" : "Vers nicht verfügbar"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verse unavailable"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39004,12 +36580,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verse"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verses"
           }
         },
         "es" : {
@@ -39101,12 +36671,6 @@
             "value" : "Vertikales Layout"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vertical layout"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39193,12 +36757,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Profil ansehen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "View profile"
           }
         },
         "es" : {
@@ -39289,12 +36847,6 @@
             "value" : "Sichtbarkeit"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Visibility"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39381,12 +36933,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wetter"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Weather"
           }
         },
         "es" : {
@@ -39479,12 +37025,6 @@
             "value" : "Wetter nicht verfügbar"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Weather unavailable"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39571,12 +37111,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Willkommen bei Muntathir"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Welcome to Muntathir"
           }
         },
         "es" : {
@@ -39667,12 +37201,6 @@
             "value" : "Neuigkeiten"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "What’s New"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39759,12 +37287,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gelb"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yellow"
           }
         },
         "es" : {
@@ -39855,12 +37377,6 @@
             "value" : "Gestern"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yesterday"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39947,12 +37463,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deine gespeicherten Daten konnten nicht geöffnet werden. Bitte versuche es erneut."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your saved data could not be opened. Please try again."
           }
         },
         "es" : {
