@@ -41,6 +41,14 @@ describe.if(installed)('content', () => {
     }
   })
 
+  test('collections are grouped as in the iOS library', () => {
+    const groups = Object.fromEntries(content.collections.map(item => [item.id, item.group]))
+    for (const id of ['bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah']) expect(groups[id]).toBe('six')
+    for (const id of ['alkafi', 'additional-Man-La-Yahduruh-al-Faqih-Saduq', 'additional-Tahdhib-al-Ahkam-Tusi', 'additional-Al-Istibsar-Tusi'])
+      expect(groups[id]).toBe('four')
+    expect(groups['openiti-bihar']).toBe('other')
+  })
+
   test('every collection, chapter and narration is reachable', () => {
     const db = hadith()
     const expected = db.query<{ n: number }, []>('SELECT count(*) AS n FROM hadith').get()!.n

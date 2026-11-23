@@ -14,7 +14,10 @@ export type Surah = { number: number; name: Text; verses: number }
 export type Verse = { id: string; surah: number; number: number; name: Text; text: Text }
 export type SurahPage = Page<Verse> & { surah: Surah; basmala?: string }
 
-export type Collection = { id: string; name: Text; count: number }
+/** The library's sections, in display order, as `HadithBookGroup` on iOS. */
+export const COLLECTION_GROUPS = ['four', 'six', 'other'] as const
+export type CollectionGroup = (typeof COLLECTION_GROUPS)[number]
+export type Collection = { id: string; name: Text; count: number; group: CollectionGroup }
 export type Chapter = { id: string; name: Text; count: number }
 export type Book = { id: string; name: Text; chapters: Chapter[] }
 export type CollectionContents = {

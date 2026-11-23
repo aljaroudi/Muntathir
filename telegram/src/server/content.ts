@@ -18,6 +18,13 @@ const PREVIEW_SOURCE = 700
 // narrations by their printed source ID.
 const SOURCE_NUMBERED = ['openiti-wasail', 'openiti-bihar']
 const SAHIFA = 'openiti-Sahifa-Sajjadiyya'
+// HadithBookGroup in Hadith.swift.
+const FOUR = ['alkafi', 'additional-Man-La-Yahduruh-al-Faqih-Saduq', 'additional-Tahdhib-al-Ahkam-Tusi', 'additional-Al-Istibsar-Tusi']
+const SIX = ['bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah']
+
+export function collectionGroup(id: string): T.CollectionGroup {
+  return SIX.includes(id) ? 'six' : FOUR.includes(id) ? 'four' : 'other'
+}
 
 type Row<K extends string, V = string> = Record<K, V>
 type HadithRow = {
@@ -152,7 +159,7 @@ export class Content {
        FROM collection l JOIN book b ON b.collection_id = l.id JOIN hadith h ON h.book_id = b.id
        WHERE l.id NOT IN ('${SAHIFA}', 'mafatih-supplications')
        GROUP BY l.id ORDER BY l.sort_order, l.id`,
-    ).map(row => ({ id: row.id, name: localized(row.name_ar, row.name_en), count: row.count }))
+    ).map(row => ({ id: row.id, name: localized(row.name_ar, row.name_en), count: row.count, group: collectionGroup(row.id) }))
 
     const languages = this.all<{
       authority: string

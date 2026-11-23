@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'preact/hooks'
-import type * as T from '../core/types.ts'
+import * as T from '../core/types.ts'
 import { useGet, usePages } from './api.ts'
 import { useApp } from './state.ts'
 import { device } from './telegram.ts'
@@ -151,20 +151,33 @@ export function VersePage({ id }: { id: string }) {
   )
 }
 
+// Grouped and sorted by title as in the iOS library.
 export function Collections() {
-  const { t } = useApp()
+  const { t, locale } = useApp()
   const text = useText()
   const { data, failure, retry } = useGet<T.Collection[]>('hadith')
+  const collator = new Intl.Collator(locale, { numeric: true })
   return (
     <>
       <Header title={t.hadith} />
       {failure && <Failed failure={failure} retry={retry} />}
       {!data && !failure && <Loading />}
-      <ul class="list">
-        {data?.map(item => (
-          <Row key={item.id} to={{ page: 'collection', id: item.id }} title={text(item.name)} trailing={item.count} />
-        ))}
-      </ul>
+      {data &&
+        T.COLLECTION_GROUPS.map(group => {
+          const items = data.filter(item => item.group === group)
+          if (!items.length) return null
+          items.sort((a, b) => collator.compare(text(a.name), text(b.name)))
+          return (
+            <section key={group}>
+              <h2>{t[group]}</h2>
+              <ul class="list">
+                {items.map(item => (
+                  <Row key={item.id} to={{ page: 'collection', id: item.id }} title={text(item.name)} trailing={item.count} />
+                ))}
+              </ul>
+            </section>
+          )
+        })}
     </>
   )
 }
