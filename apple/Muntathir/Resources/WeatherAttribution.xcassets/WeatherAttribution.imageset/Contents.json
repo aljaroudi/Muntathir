@@ -1,0 +1,244 @@
+{
+  "images": [
+    {
+      "filename": "Apple_Weather_blk_en_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x"
+    },
+    {
+      "filename": "Apple_Weather_wht_en_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ]
+    },
+    {
+      "filename": "Apple_Weather_blk_ar_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "locale": "ar"
+    },
+    {
+      "filename": "Apple_Weather_wht_ar_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "locale": "ar"
+    },
+    {
+      "filename": "Apple_Weather_blk_de_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "locale": "de"
+    },
+    {
+      "filename": "Apple_Weather_wht_de_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "locale": "de"
+    },
+    {
+      "filename": "Apple_Weather_blk_es-419_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "locale": "es"
+    },
+    {
+      "filename": "Apple_Weather_wht_es-419_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "locale": "es"
+    },
+    {
+      "filename": "Apple_Weather_blk_fr-FR_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "locale": "fr"
+    },
+    {
+      "filename": "Apple_Weather_wht_fr-FR_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "locale": "fr"
+    },
+    {
+      "filename": "Apple_Weather_blk_id_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "locale": "id"
+    },
+    {
+      "filename": "Apple_Weather_wht_id_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "locale": "id"
+    },
+    {
+      "filename": "Apple_Weather_blk_it_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "locale": "it"
+    },
+    {
+      "filename": "Apple_Weather_wht_it_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "locale": "it"
+    },
+    {
+      "filename": "Apple_Weather_blk_ja_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "locale": "ja"
+    },
+    {
+      "filename": "Apple_Weather_wht_ja_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "locale": "ja"
+    },
+    {
+      "filename": "Apple_Weather_blk_ms_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "locale": "ms"
+    },
+    {
+      "filename": "Apple_Weather_wht_ms_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "locale": "ms"
+    },
+    {
+      "filename": "Apple_Weather_blk_ru_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "locale": "ru"
+    },
+    {
+      "filename": "Apple_Weather_wht_ru_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "locale": "ru"
+    },
+    {
+      "filename": "Apple_Weather_blk_tr_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "locale": "tr"
+    },
+    {
+      "filename": "Apple_Weather_wht_tr_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "locale": "tr"
+    },
+    {
+      "filename": "Apple_Weather_blk_zh-CN_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "locale": "zh-Hans"
+    },
+    {
+      "filename": "Apple_Weather_wht_zh-CN_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "locale": "zh-Hans"
+    },
+    {
+      "filename": "Apple_Weather_blk_zh-TW_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "locale": "zh-Hant"
+    },
+    {
+      "filename": "Apple_Weather_wht_zh-TW_3X_090122.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "locale": "zh-Hant"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  },
+  "properties": {
+    "localizable": true,
+    "template-rendering-intent": "original"
+  }
+}

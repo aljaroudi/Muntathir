@@ -219,7 +219,7 @@
                     } else {
                         if let prayer {
                             Text(prayer.title)
-                                .font(.title.bold())
+                                .font(.largeTitle.scaled(by: 1.25).bold())
                                 .shadow(color: .black.opacity(0.6), radius: 8)
                         }
                         count
