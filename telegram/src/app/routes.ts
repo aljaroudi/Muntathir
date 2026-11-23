@@ -1,4 +1,4 @@
-export const TABS = ['today', 'calendar', 'qibla', 'library', 'search'] as const
+export const TABS = ['today', 'calendar', 'library', 'search'] as const
 export type Tab = (typeof TABS)[number]
 
 export type Route =

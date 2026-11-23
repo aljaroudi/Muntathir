@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { baselineStart } from '../../web/src/calendar.ts'
 import { baseline, day, dayIn, hijri } from '../src/core/day.ts'
-import { nextPrayer, prayerTimes, qibla, type Method } from '../src/core/prayer.ts'
+import { nextPrayer, prayerTimes, type Method } from '../src/core/prayer.ts'
 
 const METHOD: Record<string, Method> = { Jafari: 'jafari', Tehran: 'tehran', UmmAlQura: 'ummAlQura' }
 
@@ -34,10 +34,6 @@ describe('prayer', () => {
     expect(nextPrayer(place, today, 'tehran', isha)).toEqual(
       prayerTimes(place, today + 1, 'tehran').find(moment => moment.name === 'fajr')!,
     )
-  })
-
-  test('qibla', () => {
-    expect(qibla({ latitude: 40.7128, longitude: -74.0059 })).toBeCloseTo(58.48, 1)
   })
 })
 

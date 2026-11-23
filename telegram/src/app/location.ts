@@ -35,7 +35,7 @@ function fromBrowser(): Promise<Place | null> {
   })
 }
 
-/** The fix stays in the app: prayer times and Qibla are calculated here, not on the server. */
+/** The fix stays in the app: prayer times are calculated here, not on the server. */
 export async function locate(): Promise<Place | null> {
   const place = (await fromTelegram()) ?? (await fromBrowser())
   return place && validPlace(place) ? place : null

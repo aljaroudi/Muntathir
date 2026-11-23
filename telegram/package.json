@@ -10,7 +10,6 @@
     "@grammyjs/runner": "2.0.3",
     "adhan": "4.4.6",
     "geo-tz": "8.1.10",
-    "geomagnetism": "0.2.0",
     "grammy": "1.46.0",
     "markdown-it": "15.0.3",
     "preact": "10.29.8"

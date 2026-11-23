@@ -1,6 +1,6 @@
 # Muntathir on Telegram
 
-Bot and Mini App: prayer times, Qibla, Hijri calendar and events, daily ayah, search, and readers for Quran, Hadith, supplications and rulings. Arabic and English. Private chats only, no reminders. The only stored user data is a `/language` choice, keyed by a keyed hash of the account ID.
+Bot and Mini App: prayer times, Hijri calendar and events, daily ayah, search, and readers for Quran, Hadith, supplications and rulings. Arabic and English. Private chats only, no reminders. The only stored user data is a `/language` choice, keyed by a keyed hash of the account ID.
 
 ```text
 Telegram ── long polling ──┐
@@ -31,7 +31,6 @@ Don't run `src/main.ts` with the production token: a second poller stops the liv
 - **Without a location** the bot uses Riyadh's civil date (labeled) and, like the website and unlike iOS, still applies confirmed sightings.
 - **Content:** readers follow `HadithReader.swift` and `RulingsReader.swift`. Never edit Quran text. Rulings are plain text, always with authority, notice and official link.
 - **IDs** are hashes of stable keys (`src/server/ids.ts`). Changing a key breaks shared links.
-- **Qibla:** each client reports headings differently; see `src/core/compass.ts` before touching it.
 - **Privacy:** log only through `src/server/log.ts`. No IDs, text, coordinates or token, and never raw grammY errors. Keep the Telegram section of the privacy page true.
 - **Search:** per-user limits use a synthetic loopback `CF-Connecting-IP`, which needs `SEARCH_TRUST_TUNNEL=true` in the backend. The global and daily embedding budgets are shared with the apps.
 

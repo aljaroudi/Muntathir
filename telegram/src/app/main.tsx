@@ -7,7 +7,6 @@ import type { Bootstrap } from '../core/types.ts'
 import { useGet } from './api.ts'
 import { Calendar } from './calendar.tsx'
 import * as library from './library.tsx'
-import { Qibla } from './qibla.tsx'
 import { launch, TABS, type Route, type Tab } from './routes.ts'
 import { Search } from './search.tsx'
 import { Settings } from './settings.tsx'
@@ -57,7 +56,6 @@ async function loadSaved(late: (change: Partial<Saved>) => void): Promise<Saved>
 const ICONS: Record<Tab, JSX.Element> = {
   today: <><circle cx="12" cy="12" r="4" /><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4m0-12.8L17 7M7 17l-1.4 1.4" /></>,
   calendar: <><rect x="4" y="5" width="16" height="15" rx="3" /><path d="M4 10h16M9 3v4m6-4v4" /></>,
-  qibla: <><circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2 5-5 2 2-5Z" /></>,
   library: <path d="M12 7c-3-2.5-6-2.5-8-1.5v13c2-1 5-1 8 1.5 3-2.5 6-2.5 8-1.5v-13c-2-1-5-1-8 1.5Zm0 0v13" />,
   search: <><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></>,
 }
@@ -84,7 +82,6 @@ function Page({ route }: { route: Route }) {
 const ROOTS: Record<Tab, () => JSX.Element> = {
   today: Today,
   calendar: Calendar,
-  qibla: Qibla,
   library: library.Library,
   search: Search,
 }

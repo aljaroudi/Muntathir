@@ -135,7 +135,7 @@ describe.if(installed)('bot', () => {
     expect(texts()).toContain('منتظِر')
   })
 
-  test('a location gets times, Qibla and date, and the method switches', async () => {
+  test('a location gets times and date, and the method switches', async () => {
     await message({ location: { latitude: 32.616012, longitude: 44.024912 } })
     expect(texts()).toContain('Jafari, Tehran')
     expect(texts()).toContain('Asia/Baghdad')

@@ -6,7 +6,6 @@ const COMMANDS: Record<Locale, [string, string][]> = {
   en: [
     ['start', 'Start'],
     ['prayers', 'Prayer times for your location'],
-    ['qibla', 'Qibla direction'],
     ['today', 'Date, event and ayah'],
     ['verse', 'Daily ayah'],
     ['search', 'Search the Quran and Hadith'],
@@ -18,7 +17,6 @@ const COMMANDS: Record<Locale, [string, string][]> = {
   ar: [
     ['start', 'البداية'],
     ['prayers', 'أوقات الصلاة في موقعك'],
-    ['qibla', 'اتجاه القبلة'],
     ['today', 'التاريخ والمناسبة والآية'],
     ['verse', 'آية اليوم'],
     ['search', 'البحث في القرآن والحديث'],
@@ -29,8 +27,8 @@ const COMMANDS: Record<Locale, [string, string][]> = {
   ],
 }
 const SHORT: Record<Locale, string> = {
-  en: 'Prayer times, Qibla, Hijri calendar, daily ayah, Quran, Hadith, supplications and rulings.',
-  ar: 'أوقات الصلاة والقبلة والتقويم الهجري وآية اليوم والقرآن والحديث والأدعية والأحكام.',
+  en: 'Prayer times, Hijri calendar, daily ayah, Quran, Hadith, supplications and rulings.',
+  ar: 'أوقات الصلاة والتقويم الهجري وآية اليوم والقرآن والحديث والأدعية والأحكام.',
 }
 // English is the default for every other language.
 const LANGUAGES = [

@@ -5,7 +5,6 @@ import {
   Madhab,
   PolarCircleResolution,
   PrayerTimes,
-  Qibla,
   type CalculationParameters,
 } from 'adhan'
 import { baseline, civil, hijri, type Day } from './day.ts'
@@ -129,9 +128,4 @@ export function nextPrayer(place: Place, today: Day, method: Method, now: number
 /** Sunset for religious-day rollover: always from a Jafari calculation, as in the apps. */
 export function religiousSunset(place: Place, value: Day): number | null {
   return prayerTimes(place, value, 'jafari').find(moment => moment.name === 'sunset')?.at ?? null
-}
-
-/** Degrees clockwise from true north. */
-export function qibla(place: Place): number {
-  return Qibla(new Coordinates(place.latitude, place.longitude))
 }

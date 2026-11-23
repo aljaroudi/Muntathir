@@ -19,7 +19,6 @@ import {
   METHODS,
   nextPrayer,
   prayerTimes,
-  qibla,
   validPlace,
   type Method,
   type Place,
@@ -131,7 +130,6 @@ export function createBot(options: Options) {
       const marker = next?.name === name && next.at === at ? ` ← ${t.next}` : ''
       lines.push(`${TIME_NAMES[locale][name]}: ${formatTime(at, zone, locale)}${marker}`)
     }
-    lines.push('', `${t.qibla}: ${qibla(place).toFixed(1)}° ${t.fromNorth}`)
     lines.push('', ...dateLines(locale, place, zone), '', zone)
 
     const keyboard = new InlineKeyboard()
@@ -141,7 +139,7 @@ export function createBot(options: Options) {
           .text(METHOD_NAMES[locale][other], `p:${METHOD_CODES[other]}:${coordinates(place)}`)
           .row()
     }
-    keyboard.text(t.dailyAyah, `v:${coordinates(place)}`).webApp(t.qibla, appURL('qibla'))
+    keyboard.text(t.dailyAyah, `v:${coordinates(place)}`)
     return { text: lines.join('\n'), keyboard }
   }
 
@@ -320,7 +318,7 @@ export function createBot(options: Options) {
     const locale = localeFor(context)
     await context.reply(strings[locale].helpText, { reply_markup: openButton(locale) })
   })
-  privateChat.command(['prayers', 'qibla'], askLocation)
+  privateChat.command('prayers', askLocation)
 
   privateChat.command('today', async context => {
     const locale = localeFor(context)

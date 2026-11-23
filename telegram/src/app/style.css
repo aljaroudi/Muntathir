@@ -134,14 +134,6 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round
 .event.is-today { background: color-mix(in srgb, var(--accent) 12%, transparent); }
 .event p { margin: 2px 0; }
 
-.dial { display: block; width: min(80vw, 330px, 48vh); margin: 12px auto; color: var(--accent); }
-.dial-ring { fill: var(--surface); stroke: var(--line); }
-.dial-tick { stroke: var(--muted); }
-.dial-north { fill: var(--muted); stroke: none; font-size: 16px; text-anchor: middle; }
-.dial-needle, .dial-center, .dial-mark { fill: currentColor; stroke: none; }
-.dial.aligned .dial-ring { stroke: currentColor; stroke-width: 7; }
-.direction { font-size: 1.2rem; }
-
 label { display: grid; gap: 4px; margin: 10px 0; color: var(--muted); font-size: 0.875rem; }
 input, select {
   width: 100%;
