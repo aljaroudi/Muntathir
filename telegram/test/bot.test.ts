@@ -59,6 +59,9 @@ describe.if(installed)('bot', () => {
   })
 
   let calls: { method: string; payload: any }[] = []
+  // Most tests read English; Arabic is the default for everyone else.
+  const languages = new Languages(mkdtempSync(`${tmpdir()}/bot-languages-`))
+  languages.set(42, 'en')
   const bot = createBot({
     token: '123456:TEST-token-not-a-real-one-0000000000000',
     publicURL: 'https://tg.example.test',
@@ -66,7 +69,7 @@ describe.if(installed)('bot', () => {
     content,
     calendar: new CalendarSource(),
     search,
-    languages: new Languages(mkdtempSync(`${tmpdir()}/bot-languages-`)),
+    languages,
     now: () => NOW,
     config: {
       botInfo: {
@@ -131,21 +134,18 @@ describe.if(installed)('bot', () => {
     await message({ text: '/start' })
     expect(buttons()[0].web_app.url).toBe('https://tg.example.test/')
     expect(calls[1]!.payload.reply_markup.keyboard[0][0].request_location).toBe(true)
-    await message({ text: '/start' }, 'ar')
+    languages.set(42, null)
+    await message({ text: '/start' }, 'en')
     expect(texts()).toContain('منتظِر')
+    languages.set(42, 'en')
   })
 
-  test('a location gets times and date, and the method switches', async () => {
+  test('a location gets times and date', async () => {
     await message({ location: { latitude: 32.616012, longitude: 44.024912 } })
-    expect(texts()).toContain('Jafari, Tehran')
-    expect(texts()).toContain('Asia/Baghdad')
+    expect(texts()).not.toContain('Asia/Baghdad')
     expect(texts()).toContain('11 Jumada II 1448')
+    expect(texts()).toMatch(/▸ \S+ +\d{1,2}:\d\d [AP]M · \d+ (minute|hour)s?$/m)
     expectDeliverable()
-    const other = buttons().find(button => button.callback_data?.startsWith('p:j:'))
-    expect(other.callback_data).toBe('p:j:32.616:44.025')
-    await press(other.callback_data)
-    expect(calls.map(call => call.method)).toEqual(['answerCallbackQuery', 'editMessageText'])
-    expect(texts()).toContain('Jafari, Qum')
   })
 
   test('no times at high latitude says so', async () => {
@@ -224,16 +224,21 @@ describe.if(installed)('bot', () => {
     }
   })
 
-  test('/language switches replies and can return to Telegram language', async () => {
+  test('/language switches replies, whatever the Telegram language', async () => {
     await message({ text: '/language' })
-    expect(buttons().map(button => button.callback_data)).toEqual(['l:ar', 'l:en', 'l:auto'])
+    expect(buttons().map(button => button.callback_data)).toEqual(['l:ar', 'l:en'])
     await press('l:ar')
     expect(calls.map(call => call.method)).toEqual(['answerCallbackQuery', 'editMessageText', 'sendMessage'])
-    await message({ text: '/today' })
+    expect(languages.get(42)).toBeUndefined()
+    await message({ text: '/today' }, 'en')
     expect(texts()).toContain('الرياض')
-    await press('l:auto')
-    await message({ text: '/today' })
+    await press('l:en')
+    await message({ text: '/today' }, 'ar')
     expect(texts()).toContain('Riyadh')
+    // Older messages still carry the Telegram-language button.
+    await press('l:auto')
+    expect(languages.get(42)).toBeUndefined()
+    languages.set(42, 'en')
   })
 
   test('groups and channels are ignored', async () => {

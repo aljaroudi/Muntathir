@@ -132,7 +132,7 @@ function store(minimum: string, select: (app: WebApp) => Storage) {
 
 /** Location and reading position: never leave the device. */
 export const device = store('9.0', app => app.DeviceStorage)
-/** Method and language: follow the user's Telegram account. */
+/** Language: follows the user's Telegram account. */
 export const cloud = store('6.9', app => app.CloudStorage)
 
 export function openLink(url: string) {

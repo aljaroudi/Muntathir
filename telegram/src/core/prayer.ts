@@ -13,7 +13,6 @@ import { baseline, civil, hijri, type Day } from './day.ts'
 export const METHODS = ['tehran', 'jafari', 'ummAlQura'] as const
 export type Method = (typeof METHODS)[number]
 export const DEFAULT_METHOD: Method = 'tehran'
-export const isMethod = (value: unknown): value is Method => METHODS.includes(value as Method)
 
 export const TIMES = [
   'imsak',

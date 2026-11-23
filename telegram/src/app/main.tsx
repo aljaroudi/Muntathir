@@ -1,8 +1,8 @@
 import { render, type JSX } from 'preact'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { isZone } from '../core/day.ts'
-import { localeOf, strings, type Locale } from '../core/i18n.ts'
-import { DEFAULT_METHOD, isMethod, validPlace, type Method } from '../core/prayer.ts'
+import { DEFAULT_LOCALE, strings, type Locale } from '../core/i18n.ts'
+import { validPlace } from '../core/prayer.ts'
 import type { Bootstrap } from '../core/types.ts'
 import { useGet } from './api.ts'
 import { Calendar } from './calendar.tsx'
@@ -14,10 +14,10 @@ import { AppContext, type App, type SavedPlace } from './state.ts'
 import { cloud, device, haptic, initData, supports, webApp } from './telegram.ts'
 import { Today } from './today.tsx'
 
-type Saved = { locale: Locale; method: Method; place: SavedPlace | null }
+type Saved = { locale: Locale; place: SavedPlace | null }
 
-const KEYS = { locale: 'language', method: 'method', place: 'location' }
-const userLocale = localeOf(webApp?.initDataUnsafe.user?.language_code ?? navigator.language)
+const KEYS = { locale: 'language', place: 'location' }
+const userLocale = DEFAULT_LOCALE
 const initial = launch(
   new URLSearchParams(location.search).get('open') ?? webApp?.initDataUnsafe.start_param ?? '',
 )
@@ -39,15 +39,13 @@ async function loadSaved(late: (change: Partial<Saved>) => void): Promise<Saved>
     Object.assign(changes, change)
     late(change)
   }
-  const [locale, method, place] = await Promise.all([
+  const [locale, place] = await Promise.all([
     cloud.get<Locale>(KEYS.locale, value => isLocale(value) && apply({ locale: value })),
-    cloud.get<Method>(KEYS.method, value => isMethod(value) && apply({ method: value })),
     device.get<SavedPlace>(KEYS.place, value => validSaved(value) && apply({ place: value })),
     library.loadPosition(),
   ])
   return {
     locale: isLocale(locale) ? locale : userLocale,
-    method: isMethod(method) ? method : DEFAULT_METHOD,
     place: validSaved(place) ? place : null,
     ...changes,
   }
@@ -88,14 +86,12 @@ const ROOTS: Record<Tab, () => JSX.Element> = {
 
 function Shell({ data, saved }: { data: Bootstrap; saved: Saved }) {
   const [locale, setLocale] = useState(saved.locale)
-  const [method, setMethod] = useState(saved.method)
   const [place, setPlace] = useState(saved.place)
   const [tab, setTab] = useState<Tab>(initial.tab)
   const [stack, setStack] = useState<Route[]>(initial.route ? [initial.route] : [])
   const offsets = useRef<number[]>([])
   const restore = useRef<number | null>(null)
   useEffect(() => setLocale(saved.locale), [saved.locale])
-  useEffect(() => setMethod(saved.method), [saved.method])
   useEffect(() => setPlace(saved.place), [saved.place])
 
   const app = useMemo<App>(
@@ -106,11 +102,6 @@ function Shell({ data, saved }: { data: Bootstrap; saved: Saved }) {
       setLocale(value) {
         setLocale(value)
         cloud.set(KEYS.locale, value)
-      },
-      method,
-      setMethod(value) {
-        setMethod(value)
-        cloud.set(KEYS.method, value)
       },
       place,
       setPlace(value) {
@@ -135,7 +126,7 @@ function Shell({ data, saved }: { data: Bootstrap; saved: Saved }) {
         setTab(value)
       },
     }),
-    [data, locale, method, place],
+    [data, locale, place],
   )
 
   useLayoutEffect(() => setDocument(locale), [locale])

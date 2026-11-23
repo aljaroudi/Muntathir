@@ -2,27 +2,19 @@ import { Bot, InlineKeyboard, Keyboard, type BotConfig, type Context } from 'gra
 import { upcomingEvent, religiousDay, verseIndex } from '../core/calendar.ts'
 import { dayIn, hijri } from '../core/day.ts'
 import {
+  DEFAULT_LOCALE,
+  formatCountdown,
   formatDay,
   formatHijri,
   formatTime,
   formatTiming,
-  localeOf,
-  METHOD_NAMES,
   pick,
   PROBLEMS,
   strings,
   TIME_NAMES,
   type Locale,
 } from '../core/i18n.ts'
-import {
-  DEFAULT_METHOD,
-  METHODS,
-  nextPrayer,
-  prayerTimes,
-  validPlace,
-  type Method,
-  type Place,
-} from '../core/prayer.ts'
+import { DEFAULT_METHOD, nextPrayer, prayerTimes, validPlace, type Place } from '../core/prayer.ts'
 import { excerpt, split } from '../core/text.ts'
 import { SCOPES, type Scope, type Verse } from '../core/types.ts'
 import type { CalendarSource } from './calendar.ts'
@@ -42,9 +34,7 @@ const MAX_SHARE_URL = 1900
 /** Without a location there's no time zone, so dates follow Riyadh and say so. */
 const DEFAULT_ZONE = 'Asia/Riyadh'
 
-const METHOD_CODES: Record<Method, string> = { tehran: 't', jafari: 'j', ummAlQura: 'u' }
 const COORDINATES = String.raw`(-?\d{1,2}\.\d{3}):(-?\d{1,3}\.\d{3})`
-const PLACE_BUTTON = new RegExp(`^p:([tju]):${COORDINATES}$`)
 const VERSE_BUTTON = new RegExp(`^v:${COORDINATES}$`)
 const SCOPE_BUTTON = /^s:([a-z]+)(?::([a-z]{1,20}))?$/
 
@@ -57,7 +47,7 @@ type Options = {
   content: Content
   calendar: CalendarSource
   search: Search
-  /** Chosen chat languages; without it the bot follows each user's Telegram language. */
+  /** Chosen chat languages; without it every chat is in Arabic. */
   languages?: Languages
   now?: () => number
   config?: BotConfig<Context>
@@ -78,7 +68,7 @@ export function createBot(options: Options) {
   const bot = new Bot(options.token, options.config)
   const privateChat = bot.chatType('private')
   const localeFor = (context: Context) =>
-    (context.from && languages?.get(context.from.id)) ?? localeOf(context.from?.language_code)
+    (context.from && languages?.get(context.from.id)) ?? DEFAULT_LOCALE
   const username = (context: Context) => options.username ?? context.me.username
   const plain = { link_preview_options: { is_disabled: true } } as const
 
@@ -99,47 +89,39 @@ export function createBot(options: Options) {
     })
   }
 
-  function dateLines(locale: Locale, place: Place | null, zone: string): string[] {
+  /** The Hijri and civil dates, then the next event's lines when there is one. */
+  function dateLines(locale: Locale, place: Place | null, zone: string): [string[], string[]] {
     const t = strings[locale]
     const instant = now()
     const data = calendar.current(instant)
     const today = dayIn(instant, zone)
     const date = hijri(data.months, today)
-    const lines = [date ? formatHijri(date, locale) : '', formatDay(today, locale)].filter(Boolean)
+    const dates = [date ? formatHijri(date, locale) : '', formatDay(today, locale)].filter(Boolean)
     const event = upcomingEvent(data, place, today, instant)
-    if (event) {
-      lines.push(
-        '',
-        `${t.nextEvent} · ${formatTiming(event.timing, locale)} · ${formatDay(event.day, locale, 'short')}`,
-        ...event.events.map(item => `• ${pick(item.title, locale)}`),
-      )
-    }
-    return lines
+    const events = event
+      ? [`${t.nextEvent} · ${formatTiming(event.timing, locale)}`, ...event.events.map(item => `• ${pick(item.title, locale)}`)]
+      : []
+    return [dates, events]
   }
 
-  function placeMessage(locale: Locale, place: Place, method: Method) {
+  function placeMessage(locale: Locale, place: Place) {
     const t = strings[locale]
     const instant = now()
     const zone = zoneAt(place)
     const today = dayIn(instant, zone)
-    const times = prayerTimes(place, today, method)
-    const next = nextPrayer(place, today, method, instant)
-    const lines = [`${t.prayers} · ${METHOD_NAMES[locale][method]}`, '']
+    const times = prayerTimes(place, today, DEFAULT_METHOD)
+    const next = nextPrayer(place, today, DEFAULT_METHOD, instant)
+    const [dates, events] = dateLines(locale, place, zone)
+    const lines = [...dates, '']
     if (!times.length) lines.push(t.prayersUnavailable)
     for (const { name, at } of times) {
-      const marker = next?.name === name && next.at === at ? ` ← ${t.next}` : ''
-      lines.push(`${TIME_NAMES[locale][name]}: ${formatTime(at, zone, locale)}${marker}`)
+      const line = `${TIME_NAMES[locale][name]}  ${formatTime(at, zone, locale)}`
+      // By name, as in the app: after Isha, today's Fajr row counts down to tomorrow's.
+      lines.push(next?.name === name ? `${locale === 'ar' ? '◂' : '▸'} ${line} · ${formatCountdown(next.at - instant, locale)}` : line)
     }
-    lines.push('', ...dateLines(locale, place, zone), '', zone)
+    if (events.length) lines.push('', ...events)
 
-    const keyboard = new InlineKeyboard()
-    for (const other of METHODS) {
-      if (other !== method)
-        keyboard
-          .text(METHOD_NAMES[locale][other], `p:${METHOD_CODES[other]}:${coordinates(place)}`)
-          .row()
-    }
-    keyboard.text(t.dailyAyah, `v:${coordinates(place)}`)
+    const keyboard = new InlineKeyboard().text(t.dailyAyah, `v:${coordinates(place)}`)
     return { text: lines.join('\n'), keyboard }
   }
 
@@ -322,7 +304,8 @@ export function createBot(options: Options) {
 
   privateChat.command('today', async context => {
     const locale = localeFor(context)
-    const before = [...dateLines(locale, null, DEFAULT_ZONE), '', strings[locale].riyadhNote, '']
+    const [dates, events] = dateLines(locale, null, DEFAULT_ZONE)
+    const before = [...dates, ...(events.length ? ['', ...events] : []), '', strings[locale].riyadhNote, '']
     await sendVerse(context, dailyVerse(null, DEFAULT_ZONE), before)
   })
   privateChat.command('verse', async context => {
@@ -346,8 +329,6 @@ export function createBot(options: Options) {
     const keyboard = new InlineKeyboard()
       .text('العربية', 'l:ar')
       .text('English', 'l:en')
-      .row()
-      .text(t.telegramLanguage, 'l:auto')
     await context.reply(t.chooseLanguage, { reply_markup: keyboard })
   })
 
@@ -359,7 +340,7 @@ export function createBot(options: Options) {
   privateChat.on('message:location', async context => {
     const locale = localeFor(context)
     const { latitude, longitude } = context.message.location
-    const { text, keyboard } = placeMessage(locale, { latitude, longitude }, DEFAULT_METHOD)
+    const { text, keyboard } = placeMessage(locale, { latitude, longitude })
     await context.reply(text, { reply_markup: keyboard })
   })
 
@@ -383,25 +364,21 @@ export function createBot(options: Options) {
         .answerCallbackQuery(text ? { text } : undefined)
         .catch(error => log('bot.answer_failed', error))
 
-    const placeButton = PLACE_BUTTON.exec(data)
     const verseButton = VERSE_BUTTON.exec(data)
-    if (placeButton || verseButton) {
-      const [latitude, longitude] = placeButton ? placeButton.slice(2) : verseButton!.slice(1)
+    if (verseButton) {
+      const [latitude, longitude] = verseButton.slice(1)
       const place = { latitude: Number(latitude), longitude: Number(longitude) }
       await answer()
       if (!validPlace(place)) return
-      if (!placeButton) return sendVerse(context, dailyVerse(place, zoneAt(place)))
-      const method = METHODS.find(item => METHOD_CODES[item] === placeButton[1])!
-      const { text, keyboard } = placeMessage(locale, place, method)
-      await context.editMessageText(text, { reply_markup: keyboard })
-      return
+      return sendVerse(context, dailyVerse(place, zoneAt(place)))
     }
 
     const language = /^l:(ar|en|auto)$/.exec(data)?.[1]
     if (language) {
       await answer()
       if (!languages) return
-      languages.set(context.from.id, language === 'auto' ? null : (language as Locale))
+      // Arabic is the default, so choosing it forgets the entry. "auto" is from older messages.
+      languages.set(context.from.id, language === 'en' ? 'en' : null)
       const chosen = localeFor(context)
       await context.editMessageText(strings[chosen].languageSaved)
       await context.reply(strings[chosen].helpText, { reply_markup: openButton(chosen) })

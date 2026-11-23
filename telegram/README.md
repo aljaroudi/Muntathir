@@ -1,6 +1,6 @@
 # Muntathir on Telegram
 
-Bot and Mini App: prayer times, Hijri calendar and events, daily ayah, search, and readers for Quran, Hadith, supplications and rulings. Arabic and English. Private chats only, no reminders. The only stored user data is a `/language` choice, keyed by a keyed hash of the account ID.
+Bot and Mini App: prayer times, Hijri calendar and events, daily ayah, search, and readers for Quran, Hadith, supplications and rulings. Arabic by default, English by choice (`/language`, or Settings in the Mini App). Private chats only, no reminders. The only stored user data is a `/language` choice, keyed by a keyed hash of the account ID.
 
 ```text
 Telegram ── long polling ──┐
@@ -54,7 +54,7 @@ First setup:
 5. `just telegram-configure`, then `just telegram-configure --apply`.
 6. In @BotFather: disable groups, set the Main Mini App to `https://tg.xn--pgbou4cf.com/` (needed for share links) and the privacy URL to `https://xn--pgbou4cf.com/privacy/`. Leave origin protection on.
 
-Afterwards `just telegram-release` builds from a clean commit, smoke-tests without polling, switches, and rolls back if unhealthy. `just telegram-release --rollback` returns to the previous release. Two are kept.
+Afterwards `just telegram-release` builds the working tree (a release with uncommitted changes is given a unique `-dirty` id), smoke-tests without polling, switches, and rolls back if unhealthy. `just telegram-release --rollback` returns to the previous release. Two are kept.
 
 The agent starts after login (FileVault), so log in after a reboot.
 

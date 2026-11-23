@@ -124,8 +124,9 @@ async function prune() {
 }
 
 async function release() {
-  const dirty = await run('git', 'status', '--porcelain', '--', ...INPUTS)
-  if (dirty) throw new Error(`Commit these first:\n${dirty}`)
+  // Uncommitted changes are built as they are; the id says so and is unique, since the commit alone doesn't name the content.
+  const dirty = !!(await run('git', 'status', '--porcelain', '--', ...INPUTS))
+  if (dirty) console.warn('Uncommitted changes are included in this release.')
   const { packageManager } = await Bun.file(join(repository, 'telegram/package.json')).json()
   // The copied binary is what runs live: a shim or another version would drift.
   if (packageManager !== `bun@${Bun.version}`) throw new Error(`Release with ${packageManager}`)
@@ -137,7 +138,7 @@ async function release() {
   try {
     await build(staging)
     const digest = await cloneData(join(staging, 'data'))
-    const id = `${await run('git', 'rev-parse', '--short=12', 'HEAD')}-${digest}`
+    const id = `${await run('git', 'rev-parse', '--short=12', 'HEAD')}${dirty ? `-dirty${Date.now().toString(36)}` : ''}-${digest}`
     await run('cp', '-c', process.execPath, join(staging, 'bun'))
     await Bun.write(join(staging, 'RELEASE'), id)
     await smoke(staging, id)

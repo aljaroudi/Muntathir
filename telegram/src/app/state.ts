@@ -1,11 +1,11 @@
 import { createContext } from 'preact'
 import { useContext, useEffect, useState } from 'preact/hooks'
 import type { Locale, strings } from '../core/i18n.ts'
-import type { Method, Place } from '../core/prayer.ts'
+import type { Place } from '../core/prayer.ts'
 import type { Bootstrap } from '../core/types.ts'
 import type { Route, Tab } from './routes.ts'
 
-/** The zone is the device's when the fix was taken, as on iOS, or the one typed with coordinates. */
+/** The zone is the device's when the fix was taken, as on iOS. */
 export type SavedPlace = Place & { zone: string }
 
 export type App = {
@@ -13,8 +13,6 @@ export type App = {
   locale: Locale
   t: (typeof strings)[Locale]
   setLocale: (locale: Locale) => void
-  method: Method
-  setMethod: (method: Method) => void
   place: SavedPlace | null
   setPlace: (place: SavedPlace | null) => void
   push: (route: Route) => void

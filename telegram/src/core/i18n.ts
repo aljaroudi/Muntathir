@@ -1,6 +1,6 @@
 import type { Timing } from './calendar.ts'
 import { civil, type Day, type HijriDate } from './day.ts'
-import type { Method, TimeName } from './prayer.ts'
+import type { TimeName } from './prayer.ts'
 import type { SearchProblem, Text } from './types.ts'
 
 export type Locale = 'ar' | 'en'
@@ -15,7 +15,7 @@ const en = {
   open: 'Open Muntathir',
   shareLocation: 'Share location',
   askLocation:
-    'Share your location to see its prayer times. It is used for the reply and not stored.\n\nOn a computer, open the app to enter coordinates.',
+    'Share your location to see its prayer times. It is used for the reply and not stored.',
   prayers: 'Prayer times',
   prayersUnavailable: 'Prayer times unavailable for this location and date.',
   today: 'Today',
@@ -60,7 +60,6 @@ const en = {
   translation: 'Translation',
   privacy: 'Privacy policy',
   chooseLanguage: 'Choose the language for replies in this chat.',
-  telegramLanguage: 'Use my Telegram language',
   languageSaved: 'Language saved.',
   failed: 'Something went wrong. Try again.',
   // Mini App
@@ -71,16 +70,10 @@ const en = {
   location: 'Location',
   useLocation: 'Use my location',
   changeLocation: 'Change location',
-  locationDenied: 'Location is unavailable. Allow it in settings or enter coordinates.',
+  locationDenied: 'Location is unavailable. Allow it in settings.',
   openSettings: 'Open settings',
   locationPrivate: 'Your location stays on this device.',
-  manual: 'Enter coordinates',
-  latitude: 'Latitude',
-  longitude: 'Longitude',
-  timeZone: 'Time zone',
   save: 'Save',
-  invalidLocation: 'Enter a valid latitude, longitude and time zone.',
-  method: 'Method',
   language: 'Language',
   settings: 'Settings',
   remove: 'Remove location',
@@ -104,7 +97,7 @@ const ar: Record<keyof typeof en, string> = {
   open: 'افتح منتظِر',
   shareLocation: 'مشاركة الموقع',
   askLocation:
-    'شارك موقعك لمعرفة أوقات الصلاة فيه. يُستخدم للرد ولا يُحفظ.\n\nعلى الحاسوب، افتح التطبيق لإدخال الإحداثيات.',
+    'شارك موقعك لمعرفة أوقات الصلاة فيه. يُستخدم للرد ولا يُحفظ.',
   prayers: 'أوقات الصلاة',
   prayersUnavailable: 'أوقات الصلاة غير متاحة لهذا الموقع والتاريخ',
   today: 'اليوم',
@@ -149,7 +142,6 @@ const ar: Record<keyof typeof en, string> = {
   translation: 'الترجمة',
   privacy: 'سياسة الخصوصية',
   chooseLanguage: 'اختر لغة الردود في هذه المحادثة.',
-  telegramLanguage: 'استخدام لغة تيليجرام',
   languageSaved: 'تم حفظ اللغة.',
   failed: 'حدث خطأ. حاول مجددًا.',
   retry: 'حاول مجددًا',
@@ -159,16 +151,10 @@ const ar: Record<keyof typeof en, string> = {
   location: 'الموقع',
   useLocation: 'استخدام موقعي',
   changeLocation: 'تغيير الموقع',
-  locationDenied: 'الموقع غير متاح. اسمح به في الإعدادات أو أدخل الإحداثيات.',
+  locationDenied: 'الموقع غير متاح. اسمح به في الإعدادات.',
   openSettings: 'فتح الإعدادات',
   locationPrivate: 'يبقى موقعك على هذا الجهاز.',
-  manual: 'إدخال الإحداثيات',
-  latitude: 'خط العرض',
-  longitude: 'خط الطول',
-  timeZone: 'المنطقة الزمنية',
   save: 'حفظ',
-  invalidLocation: 'أدخل خط عرض وخط طول ومنطقة زمنية صحيحة.',
-  method: 'الطريقة',
   language: 'اللغة',
   settings: 'الإعدادات',
   remove: 'إزالة الموقع',
@@ -210,11 +196,6 @@ export const TIME_NAMES: Record<Locale, Record<TimeName, string>> = {
   },
 }
 
-export const METHOD_NAMES: Record<Locale, Record<Method, string>> = {
-  en: { tehran: 'Jafari, Tehran', jafari: 'Jafari, Qum', ummAlQura: 'Umm al-Qura' },
-  ar: { tehran: 'جعفري - طهران', jafari: 'جعفري - قُم', ummAlQura: 'أم القرى' },
-}
-
 // Fixed here because WebView ICU varies.
 const MONTHS: Record<Locale, string[]> = {
   en: ['Muharram', 'Safar', 'Rabiʻ I', 'Rabiʻ II', 'Jumada I', 'Jumada II', 'Rajab', 'Shaʻban', 'Ramadan', 'Shawwal', 'Dhuʻl-Qiʻdah', 'Dhuʻl-Hijjah'],
@@ -238,9 +219,8 @@ export const PROBLEMS: Record<Locale, Record<SearchProblem, string>> = {
   },
 }
 
-export function localeOf(code: string | undefined): Locale {
-  return code?.toLowerCase().startsWith('ar') ? 'ar' : 'en'
-}
+/** Arabic unless English was chosen, whatever Telegram's language. */
+export const DEFAULT_LOCALE: Locale = 'ar'
 
 export function pick(value: Text, locale: Locale): string {
   return value[locale] || value.ar || value.en
@@ -267,12 +247,23 @@ export function formatDay(value: Day, locale: Locale, style: 'long' | 'short' = 
   }).format(Date.UTC(year, month - 1, date))
 }
 
-export function formatTime(instant: number, zone: string, locale: Locale): string {
-  return new Intl.DateTimeFormat(tag(locale), {
-    timeZone: zone,
-    hour: 'numeric',
-    minute: '2-digit',
-  }).format(instant)
+/** [period] false drops AM/PM, as the apps' prayer list does. */
+export function formatTime(instant: number, zone: string, locale: Locale, period = true): string {
+  const format = new Intl.DateTimeFormat(tag(locale), { timeZone: zone, hour: 'numeric', minute: '2-digit' })
+  if (period) return format.format(instant)
+  return format
+    .formatToParts(instant)
+    .filter(part => part.type !== 'dayPeriod')
+    .map(part => part.value)
+    .join('')
+    .trim()
+}
+
+/** Time left in one unit, minutes rounded up, like PrayerCountdownFormat: "2 hours", "35 minutes". */
+export function formatCountdown(milliseconds: number, locale: Locale): string {
+  const minutes = Math.max(0, Math.ceil(milliseconds / 60_000))
+  const [value, unit] = minutes < 60 ? [minutes, 'minute'] : [Math.round(minutes / 60), 'hour']
+  return new Intl.NumberFormat(`${locale}-u-nu-latn`, { style: 'unit', unit, unitDisplay: 'long' }).format(value)
 }
 
 export function formatTiming(timing: Timing, locale: Locale): string {
