@@ -153,6 +153,8 @@ struct HadithDetailView: View {
             .padding(.vertical)
         }
         .readingBackground()
+        .onscreenEntity(HadithEntity.self, id: isSupplication ? nil : detail?.narration.source?.key)
+        .onscreenEntity(SupplicationEntity.self, id: isSupplication ? detail?.narration.source?.key : nil)
         .trackReading(isSupplication ? .supplicationReading : .hadithReading, enabled: !loading && !failed && detail != nil && !textSizePresented)
         .textSelection(.enabled)
         .environment(\.focusedHighlight, highlight)

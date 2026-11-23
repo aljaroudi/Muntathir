@@ -586,6 +586,8 @@ struct HadithSessionState: Codable, Equatable {
         didSet { save() }
     }
 
+    /// Bumped when an App Intent replaces the session, so the Hadith screen rebuilds from it.
+    private(set) var generation = 0
     @ObservationIgnored private let defaults: UserDefaults
     private let key = "hadith.session.v1"
 
@@ -602,6 +604,11 @@ struct HadithSessionState: Codable, Equatable {
                 state.listRow = nil
             }
         }
+    }
+
+    func reset(to state: HadithSessionState) {
+        self.state = state
+        generation += 1
     }
 
     func save() {

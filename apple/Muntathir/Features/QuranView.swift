@@ -30,6 +30,7 @@ struct QuranView: View {
             .searchable(text: $query, placement: .alwaysVisible, prompt: "Surah, 2:255, or Quran text")
             .searchHistory($query, area: .quran)
             .submitsSearch($query, submitted: $submittedQuery)
+            .intentSearch(.quran) { query = $0; submittedQuery = $0 }
             .autocorrectionDisabled()
             .toolbar {
                 ToolbarItem(placement: .trailingBar) {
@@ -64,10 +65,12 @@ struct QuranSelectionDetail: View {
         case let .surah(id):
             if let surah = surahs.first(where: { $0.id == id }) {
                 QuranReadingView(surah: surah, reader: reader)
+                    .onscreenEntity(SurahEntity.self, id: id)
             }
         case let .verse(id, verse, query):
             if let surah = surahs.first(where: { $0.id == id }) {
                 QuranReadingView(surah: surah, initialVerse: verse, reader: reader, searchQuery: query)
+                    .onscreenEntity(SurahEntity.self, id: id)
             }
         }
     }

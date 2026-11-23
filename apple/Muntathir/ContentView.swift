@@ -27,6 +27,7 @@ struct ContentView: View {
     @State private var supplicationAssets = AssetPackUpdates.shared.supplications
     @State private var rulingsAssets = AssetPackUpdates.shared.rulings
     @State private var translations = QuranTranslationStore.shared
+    @State private var router = IntentRouter.shared
     var body: some View {
         TabView(selection: $selectedTab) {
             Tab("Today", systemImage: "sun.max", value: AppTab.today) {
@@ -71,6 +72,11 @@ struct ContentView: View {
                 }
             }
             .onChange(of: layout) { old, new in adapt(from: old, to: new) }
+            .onChange(of: router.pending, initial: true) { _, destination in
+                if let destination {
+                    open(destination)
+                }
+            }
             .tint(.accentColor)
             .sheet(item: $translations.downloadRequest) { translation in
                 QuranDownloadView(requested: translation.id)
@@ -81,6 +87,7 @@ struct ContentView: View {
             .task { await supplicationAssets.monitor() }
             .task { await QuranTranslationStore.shared.monitor() }
             .task { await AssetPackUpdates.shared.run(.launch) }
+            .task { await MuntathirShortcuts.refresh() }
             .onChange(of: model.locationService.current) { _, location in
                 if model.liveLocation != nil, let location {
                     model.applyLive(location)
@@ -272,6 +279,45 @@ struct ContentView: View {
         }
     }
 
+    /// Shows what an App Intent asked for, in whichever layout is active.
+    private func open(_ destination: IntentRouter.Destination) {
+        router.pending = nil
+        switch destination {
+        case let .tool(tool, path):
+            open(tool, path: path)
+        case let .hadith(source):
+            var state = HadithSessionState()
+            state.selection = source
+            hadithSession.reset(to: state)
+            open(.hadith, path: [])
+        case let .search(tool, term):
+            // Hadith restores its search from the session; the other tools read the router.
+            if tool == .hadith {
+                var state = HadithSessionState()
+                state.request.query = term
+                hadithSession.reset(to: state)
+            } else {
+                router.search = IntentRouter.Search(tool: tool, term: term)
+            }
+            open(tool, path: [])
+        }
+    }
+
+    /// Selects `tool` with `path` above its root, the way `adaptSelection(sidebar:)` places tools.
+    private func open(_ tool: AppTool, path: [FigureRoute]) {
+        guard tool.isAvailable else { return }
+        if splitsActive, tool.isSplitCapable {
+            splitSelections.state(for: tool).adopt(path)
+            selectedTab = .tool(tool)
+        } else if isSidebarAvailable || model.preferences.tabShortcuts.contains(tool) {
+            toolPaths[tool] = path
+            selectedTab = .tool(tool)
+        } else {
+            toolsPath = [.tool(tool)] + path
+            selectedTab = .tools
+        }
+    }
+
     private func shell(_ tab: AppTab, @ViewBuilder content: () -> some View) -> some View {
         NavigationStack {
             content()
@@ -444,6 +490,10 @@ struct HijriHeading: View {
     }
 
     var title: String {
+        Self.title(day: day, engine: engine, locale: locale)
+    }
+
+    nonisolated static func title(day: ResolvedDay, engine: CalendarEngine, locale: Locale) -> String {
         let formatter = DateFormatter()
         formatter.locale = locale
         formatter.calendar = engine.baseline

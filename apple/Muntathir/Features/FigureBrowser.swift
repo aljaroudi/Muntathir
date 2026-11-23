@@ -101,6 +101,7 @@ struct FigureBrowser: View {
         .searchable(text: $query, placement: .alwaysVisible)
         .searchHistory($query, area: .figures)
         .submitsSearch($query, submitted: $submitted)
+        .intentSearch(.figures) { query = $0; submitted = $0 }
         .onChange(of: LocalFilter(query: submitted, locale: locale, loaded: library != nil), initial: true) { refreshLocalMatches() }
         .navigationTitle("Figures")
         .task {
@@ -158,7 +159,7 @@ struct FigureRouteView: View {
         switch route {
         case let .tool(tool): ToolDestination(tool: tool)
         case .browser: FigureBrowser()
-        case let .profile(id): FigureDestination(id: id)
+        case let .profile(id): FigureDestination(id: id).onscreenEntity(FigureEntity.self, id: id)
         case let .tree(id): FigureDestination(id: id, showsTree: true)
         case let .observance(_, figureIDs): ObservanceFigurePicker(figureIDs: figureIDs)
         case let .sermon(id, title, speakerID): SermonDestination(id: id, title: title, speakerID: speakerID)

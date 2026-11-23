@@ -110,6 +110,7 @@ struct SupplicationsView: View {
         .searchable(text: $query, placement: .alwaysVisible, prompt: "Search supplications")
         .searchHistory($query, area: .supplications)
         .submitsSearch($query, submitted: $submitted)
+        .intentSearch(.supplications) { query = $0; submitted = $0 }
         .autocorrectionDisabled()
         .scrollDismissesKeyboard(.interactively)
         .toolbar {

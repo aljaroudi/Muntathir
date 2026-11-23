@@ -3,6 +3,7 @@ import SwiftUI
 struct HadithLibraryView: View {
     @Bindable var assets: HadithAssetStore
     var supplications = false
+    @Environment(\.hadithSession) private var session
     @State private var operation: Task<Void, Never>?
 
     var body: some View {
@@ -14,7 +15,7 @@ struct HadithLibraryView: View {
                     HadithView(reader: assets.reader)
                 }
             }
-            .id(assets.revision)
+            .id([assets.revision, session?.generation ?? 0])
         } else {
             ContentUnavailableView {
                 Label(LocalizedStringKey(supplications ? "Supplications" : "Hadith"), systemImage: "books.vertical")

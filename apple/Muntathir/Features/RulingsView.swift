@@ -147,6 +147,7 @@ private struct RulingsBrowser: View {
         .searchable(text: $query, placement: .alwaysVisible)
         .searchHistory($query, area: .rulings)
         .submitsSearch($query, submitted: $submitted)
+        .intentSearch(.rulings) { query = $0; submitted = $0 }
         .autocorrectionDisabled()
         .scrollDismissesKeyboard(.interactively)
         .task(id: [authority, submitted, String(search.retry), languages.map(\.id).joined(separator: ",")]) {
@@ -533,6 +534,7 @@ struct RulingsRouteView: View {
             case .question:
                 if let question = loaded.question {
                     RulingsDetailView(reader: assets.reader, rulings: question, authorityName: loaded.authorityName, language: loaded.language)
+                        .onscreenEntity(RulingEntity.self, id: question.id.key)
                 }
             case .saved:
                 EmptyView()
