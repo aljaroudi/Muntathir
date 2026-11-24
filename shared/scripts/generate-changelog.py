@@ -14,14 +14,14 @@ def main():
     lines = ["# Changelog", "", "<!-- Generated from shared/release-notes/changelog.json by just changelog. -->"]
     for entry in entries:
         dates = entry.get("releaseDates", {})
-        platform_names = {"ios": "iOS", "android": "Android"}
+        platform_names = {"ios": "iOS", "macos": "macOS", "android": "Android"}
 
         releases = [
             f"{platform_names[platform]} · {dates.get(platform) or 'Unreleased'}"
             for platform in entry["platforms"]
         ]
         lines.extend(["", f"## {entry['version']}", "", " · ".join(releases), ""])
-        lines.extend(line.replace("• ", "- ", 1) for line in entry["notes"]["en-US"].splitlines())
+        lines.extend(f"- {item}" for item in entry["notes"]["en-US"])
 
     (ROOT / "CHANGELOG.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 

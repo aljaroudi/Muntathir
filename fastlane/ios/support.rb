@@ -103,7 +103,7 @@ module MuntathirRelease
     entry = entries.find { |row| row.fetch("version") == version && row.fetch("platforms").include?(platform) }
     raise "Missing #{platform} release notes for #{version} in shared/release-notes/changelog.json" unless entry
 
-    entry.fetch("notes")
+    entry.fetch("notes").transform_values { |items| items.map { |item| "• #{item}" }.join("\n") }
   end
 
   def self.validate_metadata!(root = File.join(__dir__, "metadata"), locales: LOCALES)

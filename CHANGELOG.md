@@ -2,10 +2,15 @@
 
 <!-- Generated from shared/release-notes/changelog.json by just changelog. -->
 
-## 1.1.1
+## 1.2.0
 
-iOS · Unreleased
+iOS · Unreleased · macOS · Unreleased
 
+- Translate Hadiths and rulings on demand.
+- Explore newly added rulings.
+- Enjoy faster, smoother performance.
+- Discover the new Sermons section.
+- Meet the redesigned Today and Rakaat screens.
 - Smart Search is now the default and returns more relevant results.
 - Show or hide Arabic diacritics while reading.
 
