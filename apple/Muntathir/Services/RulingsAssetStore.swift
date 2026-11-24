@@ -72,7 +72,7 @@ extension LibraryPackStore where Reader == RulingsReader {
             guard policy.accepts(remote, over: installedVersion) else { return }
             if let installedVersion {
                 Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
-                    .notice("Updating \(packID) from \(installedVersion) to \(remote).")
+                    .notice("Updating \(self.packID) from \(installedVersion) to \(remote).")
             }
             if await backend.localVersion() != remote {
                 try await backend.download()
@@ -110,7 +110,7 @@ extension LibraryPackStore where Reader == RulingsReader {
             }
             // Without a copy to keep, the error surfaces as incompatible or failed.
             guard let local else { throw error }
-            log.error("Rejected \(packID) pack \(version ?? 0): \(String(describing: error), privacy: .public)")
+            log.error("Rejected \(self.packID) pack \(version ?? 0): \(String(describing: error), privacy: .public)")
             if let version {
                 policy.reject(version)
             }
@@ -135,7 +135,7 @@ extension LibraryPackStore where Reader == RulingsReader {
         if let version {
             defaults.set(version, forKey: installedVersionKey)
         }
-        log.notice("Installed \(packID) pack \(version ?? 0).")
+        log.notice("Installed \(self.packID) pack \(version ?? 0).")
         try? await backend.remove()
         return library
     }
@@ -211,7 +211,7 @@ extension LibraryPackStore where Reader == RulingsReader {
             // Discard it and fetch the hosted copy once.
             guard state == .incompatible || state == .failed, await (try? backend.localURL()) != nil else { return }
             Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
-                .notice("Replacing the unreadable \(packID) pack with a fresh download.")
+                .notice("Replacing the unreadable \(self.packID) pack with a fresh download.")
             downloading = true
             state = .downloading
             progress = nil

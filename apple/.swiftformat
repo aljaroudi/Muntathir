@@ -1,1 +1,2 @@
 --exclude build,vendor
+--selfrequired log,trace,debug,info,notice,warning,error,critical,fault
