@@ -11,8 +11,8 @@ actor DictionaryRootSuggester {
     private var cache: [String: String?] = [:]
 
     nonisolated static var isAvailable: Bool {
-        let model = SystemLanguageModel.default
-        return model.availability == .available && model.supportsLocale(Locale(identifier: "ar"))
+        // The model handles Arabic though it lists no Arabic locale.
+        SystemLanguageModel.default.availability == .available
     }
 
     func suggest(for word: String, candidates: [String]) async -> String? {

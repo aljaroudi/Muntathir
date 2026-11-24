@@ -195,6 +195,9 @@ struct DictionaryEntryView: View {
     @State private var failed = false
     @State private var lookup: Lookup?
     @AppStorage("lexicon.bookmarks") private var bookmarksData = Data()
+    /// Nil hides the summary; empty while it starts.
+    @State private var summary: [DictionarySummarizer.Passage]?
+    @AppStorage(DictionarySummarySection.setting) private var summaries = true
     private let assets = AssetPackUpdates.shared.dictionary
 
     private struct Lookup: Hashable {
@@ -215,6 +218,9 @@ struct DictionaryEntryView: View {
                         }
                     }
                 }
+            }
+            if summaries, let summary {
+                DictionarySummarySection(passages: summary) { summaries = false }
             }
             ForEach(definitions) { entry in
                 // A source filing the root under another spelling (سمو for سما) names that heading.
@@ -251,6 +257,52 @@ struct DictionaryEntryView: View {
                 }
             }
         }
+        .task(id: "\(root)|\(assets.revision)|\(definitions.count)|\(summaries)") {
+            summary = nil
+            guard summaries, !definitions.isEmpty, DictionarySummarizer.isAvailable else { return }
+            summary = []
+            let result = await DictionarySummarizer.shared.summarize(root: root, definitions: definitions, revision: assets.revision) { partial in
+                await MainActor.run {
+                    if !Task.isCancelled {
+                        summary = partial
+                    }
+                }
+            }
+            guard !Task.isCancelled else { return }
+            summary = result
+        }
+    }
+}
+
+/// Key passages of a root's definitions; `DictionaryEntryView` runs the summary so rows can change mid-stream.
+struct DictionarySummarySection: View {
+    static let setting = "lexicon.summaries"
+    let passages: [DictionarySummarizer.Passage]
+    let turnOff: () -> Void
+
+    var body: some View {
+        Section {
+            if passages.isEmpty {
+                ProgressView("Summarizing…")
+                    .frame(maxWidth: .infinity)
+            }
+            ForEach(Array(passages.enumerated()), id: \.offset) { _, passage in
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(verbatim: passage.text)
+                        .readingText(arabic: true, hadith: true, adjustable: false)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Text(verbatim: DictionaryReader.sources[passage.source])
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .contextMenu {
+                    Button("Turn Off Summaries", systemImage: "text.badge.xmark", action: turnOff)
+                }
+            }
+        } header: {
+            Text("Summary")
+        }
+        .accessibilityIdentifier("dictionary-summary")
     }
 }
 

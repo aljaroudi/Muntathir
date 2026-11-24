@@ -32,6 +32,7 @@ struct SettingsView: View {
                 }
                 .accessibilityIdentifier("settings-downloads")
             }
+            DictionarySummarySettingsSection()
             Section {
                 NavigationLink {
                     LocationPicker()
@@ -108,6 +109,22 @@ struct CurrentMonthAdjustments: View {
     var body: some View {
         let month = model.engine.resolve(settingsDate).month
         MonthAdjustmentsView(month: month, offset: model.preferences.monthOffsets.first { $0.month == month }?.days ?? 0)
+    }
+}
+
+/// Shown only where Apple Intelligence is available.
+struct DictionarySummarySettingsSection: View {
+    @AppStorage(DictionarySummarySection.setting) private var summaries = true
+
+    var body: some View {
+        if DictionarySummarizer.isAvailable {
+            Section {
+                Toggle("Summarize Dictionary Entries", isOn: $summaries)
+                    .accessibilityIdentifier("settings-dictionary-summaries")
+            } footer: {
+                Text("Apple Intelligence picks the key passages of each root’s definitions on this device.")
+            }
+        }
     }
 }
 
