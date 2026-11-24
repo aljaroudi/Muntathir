@@ -54,6 +54,29 @@ if check_media
   assert(!screenshot_config.fetch("brand").strip.empty?, "Screenshot brand is empty")
   store = screenshot_config.fetch("storeScreens")
   assert(store == %w[01-Today 02-Quran 03-Hadith 05-Supplications 06-Tasbih 07-Rakaat 09-Calendar 10-Qibla], "Store scene order changed")
+  assert(MuntathirRelease::MAC_SCREENS == %w[01-Today 02-Quran 03-Hadith 05-Supplications 06-Tasbih 09-Calendar], "Mac store scene order changed")
+  mac_tests = File.read("MuntathirMacUITests/MacMarketingScreenshotTests.swift")
+  assert(mac_tests.scan(/capture\(app, "([^"]+)"/).flatten.sort == MuntathirRelease::MAC_SCREENS, "Mac capture and store gallery disagree")
+  assert(MuntathirRelease::MAC_SCREENSHOT_SIZE == [2880, 1800], "Mac screenshots must use Apple's 2880×1800 size")
+  Dir.mktmpdir do |root|
+    started = Time.now - 1
+    sample = File.join(root, "sample.png")
+    MuntathirRelease.run!("magick", "-size", MuntathirRelease::MAC_SCREENSHOT_SIZE.join("x"), "xc:#10263f", "-alpha", "off", sample)
+    rejects("Missing Mac gallery accepted") { MuntathirRelease.validate_mac_media!(root) }
+    MuntathirRelease::SCREENSHOT_LOCALES.each do |locale|
+      directory = File.join(root, "build/marketing/mac/store", locale)
+      FileUtils.mkdir_p(directory)
+      MuntathirRelease::MAC_SCREENS.each { |screen| FileUtils.cp(sample, File.join(directory, "Mac-#{screen}.png")) }
+    end
+    MuntathirRelease.validate_mac_media!(root, since: started)
+    today = File.join(root, "build/marketing/mac/store/en-US/Mac-01-Today.png")
+    File.utime(started - 10, started - 10, today)
+    rejects("Stale Mac screenshot accepted") { MuntathirRelease.validate_mac_media!(root, since: started) }
+    MuntathirRelease.run!("magick", "-size", "1280x800", "xc:#10263f", "-alpha", "off", today)
+    rejects("Wrong-size Mac screenshot accepted") { MuntathirRelease.validate_mac_media!(root) }
+    FileUtils.rm_f(today)
+    rejects("Missing Mac screenshot accepted") { MuntathirRelease.validate_mac_media!(root) }
+  end
   play = screenshot_config.fetch("playLocales")
   listings = Dir.glob(File.join(__dir__, "../android/metadata/*/title.txt")).map { |path| File.basename(File.dirname(path)) }
   assert(play.keys.sort == listings.sort && play.values.sort == headlines.keys.sort, "Play locales must map every listing to its headlines")
@@ -281,8 +304,8 @@ Dir.mktmpdir do |dir|
     android.beta(aab: bundle)
     action, upload = android.calls.pop
     assert(action == :upload_to_play_store && upload[:aab] == bundle && upload[:json_key] == key &&
-           upload[:track] == "internal" && upload[:release_status] == "completed" && !upload[:validate_only],
-           "Android internal lane must publish by default")
+           upload[:track] == "alpha" && upload[:release_status] == "completed" && !upload[:validate_only],
+           "Android closed testing lane must publish by default")
     android.beta(aab: bundle, validate_only: true)
     assert(android.calls.pop.last[:validate_only], "Explicit validation must prevent publishing")
     android.beta(aab: bundle, draft: true)
@@ -396,6 +419,8 @@ unit = check.calls.find { |name, _| name == :run_tests }.last
 assert(unit[:testplan] == "Muntathir" && unit[:only_testing] == ["MuntathirTests"], "unit_only must run only MuntathirTests")
 
 MuntathirRelease.define_singleton_method(:validate_media!) { |**_| }
+validated_mac_media = 0
+MuntathirRelease.define_singleton_method(:validate_mac_media!) { |**_| validated_mac_media += 1 }
 config = { "submission_information" => { "export_compliance_uses_encryption" => false } }
 assert(MuntathirRelease.compliance!(config) == false, "Confirmed exemption lost")
 rejects("Unconfirmed compliance accepted") { MuntathirRelease.compliance!({}) }
@@ -406,8 +431,10 @@ context = { app: app, version: version, draft: draft_version, config: config, en
 synced_packs = 0
 synced_creatives = 0
 draft_localizations = [Struct.new(:locale, :id).new("en-US", "loc-en")]
-MuntathirRelease.define_singleton_method(:sync_asset_packs!) do
+synced_pack_platforms = nil
+MuntathirRelease.define_singleton_method(:sync_asset_packs!) do |platforms: ["IOS"]|
   synced_packs += 1
+  synced_pack_platforms = platforms
   [{ name: "hadith", version: "2", version_id: "pack-v2", store_version_id: "pack-v1", external_version_id: "pack-v2" },
    { name: "rulings-v2", version: "1", version_id: "rulings-v1", store_version_id: "rulings-v1", external_version_id: "rulings-v1" }]
 end
@@ -417,7 +444,10 @@ MuntathirRelease.define_singleton_method(:sync_creative_assets!) do |localizatio
 end
 draft_version.define_singleton_method(:get_app_store_version_localizations) { draft_localizations }
 check.define_singleton_method(:check) { |**_| }
-check.define_singleton_method(:release_context) { |**options| calls << [:release_context, options]; context }
+check.define_singleton_method(:release_context) do |**options|
+  calls << [:release_context, options]
+  options[:platform] ? context.merge(platform: options[:platform], release_notes: context.fetch(:release_notes).transform_values { |text| "Mac: #{text}" }) : context
+end
 
 Dir.mktmpdir do |root|
   declared_root = MuntathirRelease::ROOT
@@ -430,7 +460,8 @@ Dir.mktmpdir do |root|
     assert(args.first == "plutil" && args.last.end_with?("/Muntathir.app/Info.plist"), "Archive version must come from the built app")
     { "CFBundleShortVersionString" => version, "CFBundleVersion" => "1" }.to_plist
   end
-  MuntathirRelease.define_singleton_method(:wait_for_uploaded_build) do |app_id, app_version, previous_ids|
+  MuntathirRelease.define_singleton_method(:wait_for_uploaded_build) do |app_id, app_version, previous_ids, platform: "IOS"|
+    assert(platform == "IOS", "iOS archive polled another platform's uploads")
     assert([app_id, app_version, previous_ids] == ["6824304362", version, ["old"]], "Upload did not snapshot pre-existing build uploads")
     build
   end
@@ -453,8 +484,48 @@ Dir.mktmpdir do |root|
   end
 end
 
+# The Mac build archives for macOS and polls only Mac uploads.
+Dir.mktmpdir do |root|
+  declared_root = MuntathirRelease::ROOT
+  local_run = MuntathirRelease.method(:run!)
+  select_build = MuntathirRelease.method(:wait_for_uploaded_build)
+  uploads = MuntathirRelease.method(:build_uploads)
+  MuntathirRelease.send(:remove_const, :ROOT)
+  MuntathirRelease.const_set(:ROOT, root)
+  FileUtils.mkdir_p(File.join(root, "build"))
+  MuntathirRelease.define_singleton_method(:run!) do |*args|
+    assert(args.first == "plutil" && args.last.end_with?("/Muntathir.app/Contents/Info.plist"), "Mac archive version must come from Contents/Info.plist")
+    { "CFBundleShortVersionString" => version, "CFBundleVersion" => "1" }.to_plist
+  end
+  MuntathirRelease.define_singleton_method(:build_uploads) do |_, _, platform: "IOS"|
+    assert(platform == "MAC_OS", "Mac archive snapshotted iOS uploads")
+    [existing]
+  end
+  MuntathirRelease.define_singleton_method(:wait_for_uploaded_build) do |_, _, previous_ids, platform: "IOS"|
+    assert(platform == "MAC_OS" && previous_ids == ["old"], "Mac archive polled the wrong uploads")
+    build
+  end
+  key_env = %w[ASC_KEY_PATH ASC_KEY_ID ASC_ISSUER_ID].to_h { |key| [key, ENV[key]] }
+  key_env.each_key { |key| ENV[key] = "offline-check" }
+  begin
+    check.calls.clear
+    assert(check.archive_and_upload(context.merge(platform: :mac)) == build, "Mac archive lane did not return the processed build")
+    archive, bundle_check, export = check.calls.map(&:last)
+    assert(archive.include?("generic/platform=macOS") && archive.last == "archive", "Mac archive must target macOS")
+    assert(archive.any? { |argument| argument.include?("-mac-") && argument.end_with?(".xcarchive") }, "Mac archive must not share the iOS archive name")
+    assert(bundle_check.include?("check-bundle") && export.include?("-exportArchive"), "Mac bundle validation must precede the upload")
+  ensure
+    key_env.each { |key, value| ENV[key] = value }
+    MuntathirRelease.send(:remove_const, :ROOT)
+    MuntathirRelease.const_set(:ROOT, declared_root)
+    MuntathirRelease.define_singleton_method(:run!, &local_run)
+    MuntathirRelease.define_singleton_method(:wait_for_uploaded_build, &select_build)
+    MuntathirRelease.define_singleton_method(:build_uploads, &uploads)
+  end
+end
+
 MuntathirRelease.define_singleton_method(:with_release_lock) { |&block| block.call }
-check.define_singleton_method(:archive_and_upload) { |_| calls << [:archive_and_upload]; build }
+check.define_singleton_method(:archive_and_upload) { |release| calls << [:archive_and_upload, release[:platform]]; build }
 
 synced_packs = 0
 check.calls.clear
@@ -486,10 +557,11 @@ check.define_singleton_method(:upload_to_app_store) do |**options|
   draft_version.release_type = "AFTER_APPROVAL" if options[:automatic_release]
 end
 rows.replace([new_upload])
-check.release
-assert(synced_packs == 1, "App Store must sync Asset Packs")
+check.release(mac: "false")
+assert(synced_packs == 1 && synced_pack_platforms == ["IOS"], "App Store must sync Asset Packs")
 assert(synced_creatives == 1, "App Store must sync header and search creatives")
 assert(check.calls.none? { |name, _| name == :archive_and_upload }, "App Store must reuse the TestFlight build instead of uploading a new binary")
+assert(check.calls.none? { |name, options| name == :release_context && options[:platform] }, "mac:false must skip the Mac release")
 assert(MuntathirRelease.review_pack_versions == ["pack-v2"], "App Store review must attach only pack versions that differ from the live packs")
 assert(check.calls.assoc(:run_tests).last[:destination] == [iphone, ipad], "App Store must test on both devices")
 listing, review = check.calls.filter_map { |name, options| options if name == :upload_to_app_store }
@@ -524,8 +596,9 @@ validated_media = 0
 MuntathirRelease.define_singleton_method(:validate_media!) { |**_| validated_media += 1 }
 refresh = check.method(:refresh_screenshots)
 check.define_singleton_method(:refresh_screenshots) { |**_| raise "refresh_screenshots must be skipped" }
+validated_mac_media = 0
 check.release(force: "true", skip_tests: "true", skip_screenshots: "true")
-assert(validated_media == 1, "skip_screenshots must still validate existing store and creative assets")
+assert(validated_media == 1 && validated_mac_media == 1, "skip_screenshots must still validate existing iOS, Mac and creative assets")
 assert(synced_creatives == 1, "skip_screenshots must still sync creatives after listing upload")
 assert(check.calls.none? { |name, _| name == :run_tests }, "skip_tests must skip regressions")
 check.define_singleton_method(:refresh_screenshots, &refresh)
@@ -535,7 +608,8 @@ MuntathirRelease.define_singleton_method(:sync_creative_assets!) { |_| raise "cr
 check.calls.clear
 draft_version.release_type = "MANUAL"
 rejects("App Store ignored failing creative sync") { check.release }
-assert(check.calls.one? { |name, _| name == :upload_to_app_store }, "Creative failure must stop before review submit")
+assert(check.calls.count { |name, _| name == :upload_to_app_store } == 2, "Creative failure must stop after the iOS and Mac listings")
+assert(check.calls.none? { |name, options| name == :upload_to_app_store && options[:submit_for_review] }, "Creative failure must stop before review submit")
 assert(check.calls.assoc(:upload_to_app_store).last[:submit_for_review] != true, "Review submitted after creative failure")
 MuntathirRelease.define_singleton_method(:sync_creative_assets!) do |localizations|
   synced_creatives += 1
@@ -566,4 +640,45 @@ if check_media
   end
 end
 
-puts "Metadata, screenshots, build selection and both manual release lanes passed offline checks."
+# Each App Store release ships iOS and Mac together; the Mac build skips TestFlight.
+check.calls.clear
+check.mac_screenshots(languages: "ar,en")
+check.mac_style(languages: "ar,en")
+mac_scripts = check.calls.select { |name, _| name == :sh }.map { |_, args| args.last(2) }
+assert(mac_scripts == [[File.join(__dir__, "mac_screenshots.rb"), "ar,en"], [File.join(__dir__, "mac_style.rb"), "ar,en"]], "Mac screenshot lane options changed")
+assert(MuntathirRelease.release_notes("1.2.0", platform: "macos").keys.sort == MuntathirRelease.release_notes("1.2.0").keys.sort, "Mac release notes missing locales")
+
+check.calls.clear
+synced_packs = 0
+draft_version.release_type = "MANUAL"
+screenshot_galleries = []
+submitted_packs = []
+check.define_singleton_method(:upload_to_app_store) do |**options|
+  if options[:screenshots_path]
+    assert(Dir.children(options[:screenshots_path]).sort == MuntathirRelease::LOCALES.sort, "Unexpected upload locales")
+    screenshot_galleries << File.readlink(File.join(options[:screenshots_path], "en-US"))
+  end
+  submitted_packs << [options[:platform], MuntathirRelease.review_pack_versions.dup] if options[:submit_for_review]
+  calls << [:upload_to_app_store, options]
+  draft_version.release_type = "AFTER_APPROVAL" if options[:automatic_release]
+end
+check.release(skip_tests: "true")
+assert(check.calls.include?([:release_context, { platform: :mac, app_store: true, force: false }]), "Release must load the Mac App Store draft")
+assert(check.calls.select { |name, _| name == :archive_and_upload } == [[:archive_and_upload, :mac]], "Release must upload only the Mac build")
+assert(check.calls.none? { |name, _| name == :upload_to_testflight }, "The Mac build must skip TestFlight")
+assert(synced_pack_platforms == %w[IOS MAC_OS], "Release must require asset packs for iOS and macOS")
+refreshed = check.calls.select { |name, _| name == :sh }.map { |_, args| File.basename(args[-2].to_s) }
+assert((%w[mac_screenshots.rb mac_style.rb] - refreshed).empty?, "Release must refresh the Mac screenshots")
+deliveries = check.calls.filter_map { |name, options| options if name == :upload_to_app_store }
+assert(deliveries.map { |options| [options[:platform], options[:submit_for_review]] } == [["ios", false], ["osx", false], ["ios", true], ["osx", true]],
+       "Both listings must upload before either review submission")
+assert(screenshot_galleries.map { |path| path.delete_prefix(MuntathirRelease::ROOT + "/") } == %w[build/marketing/store/en-US build/marketing/mac/store/en-US],
+       "Each platform must upload its own screenshots")
+mac_listing = deliveries[1]
+assert(mac_listing[:metadata_path] == File.join(__dir__, "metadata") && mac_listing[:release_notes] == context.fetch(:release_notes).transform_values { |text| "Mac: #{text}" },
+       "Mac listing must reuse the shared metadata and Mac release notes")
+assert(deliveries.last[:build_number] == build.version && deliveries.all? { |options| options[:skip_binary_upload] }, "Mac review must submit the uploaded build without re-uploading")
+assert(check.calls.select { |name, _| name == :precheck }.map { |_, options| options[:platform] } == %w[ios osx], "Precheck must cover both platforms")
+assert(submitted_packs == [["ios", ["pack-v2"]], ["osx", []]], "Pack versions must join only the iOS review submission")
+
+puts "Metadata, screenshots, build selection and the combined iOS and Mac release lanes passed offline checks."

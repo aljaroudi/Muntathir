@@ -3,3 +3,5 @@ Durchsuche die Rechtsgutachten und prüfe, dass neu hinzugefügte Gutachten ersc
 Öffne den neuen Bereich „Predigten“. Prüfe, dass die Predigten laden und ein Tipp auf einen Redner dessen Profil öffnet.
 Prüfe die neu gestalteten Bildschirme „Heute“ und „Rakaat“ auf iPhone und iPad im hellen und dunklen Erscheinungsbild.
 Navigiere durch Koran, Hadith, Rechtsgutachten und Gespeichertes. Prüfe, dass Scrollen, Suchen und das Öffnen von Einträgen schnell und flüssig sind.
+Öffne „Heute“ und prüfe die neue Sonnen- und Mondanimation am Himmel sowie die Wetterquelle in deiner Sprache.
+Nutze auf dem iPad die Seitenleisten-Tabs. Prüfe, ob der Kalender seine Position behält und den heutigen Tag hervorhebt.

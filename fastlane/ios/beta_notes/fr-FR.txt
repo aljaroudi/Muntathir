@@ -3,3 +3,5 @@ Parcourez les avis juridiques et vérifiez que les nouveaux avis apparaissent et
 Ouvrez la nouvelle section Sermons. Vérifiez que les sermons se chargent et que toucher un orateur ouvre son profil.
 Vérifiez les écrans Aujourd’hui et Rakaat repensés sur iPhone et iPad, en apparence claire et sombre.
 Naviguez dans le Coran, les hadiths, les avis juridiques et les éléments enregistrés. Vérifiez que le défilement, la recherche et l’ouverture des éléments sont rapides et fluides.
+Ouvrez Aujourd’hui et vérifiez la nouvelle animation du soleil et de la lune dans le ciel, ainsi que la mention météo dans votre langue.
+Sur iPad, utilisez les onglets de la barre latérale. Vérifiez que le Calendrier conserve sa position et met en évidence aujourd’hui.

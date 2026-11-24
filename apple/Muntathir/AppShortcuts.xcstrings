@@ -1,0 +1,1156 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Daily ayah in ${applicationName}": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "ar": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "آية اليوم في ${applicationName}",
+              "الآية اليومية في ${applicationName}"
+            ]
+          }
+        },
+        "en": {
+          "stringSet": {
+            "state": "new",
+            "values": [
+              "Daily ayah in ${applicationName}",
+              "Today's verse in ${applicationName}"
+            ]
+          }
+        },
+        "de": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Vers des Tages in ${applicationName}",
+              "Heutiger Vers in ${applicationName}"
+            ]
+          }
+        },
+        "es": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Aleya del día en ${applicationName}",
+              "Versículo de hoy en ${applicationName}"
+            ]
+          }
+        },
+        "fa": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "آیه روز در ${applicationName}",
+              "آیه امروز در ${applicationName}"
+            ]
+          }
+        },
+        "fr": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Verset du jour dans ${applicationName}",
+              "Verset d’aujourd’hui dans ${applicationName}"
+            ]
+          }
+        },
+        "id": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Ayat harian di ${applicationName}",
+              "Ayat hari ini di ${applicationName}"
+            ]
+          }
+        },
+        "it": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Versetto del giorno in ${applicationName}",
+              "Versetto di oggi in ${applicationName}"
+            ]
+          }
+        },
+        "ja": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName}で今日の聖句",
+              "${applicationName}で今日のアーヤ"
+            ]
+          }
+        },
+        "ms": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Ayat harian dalam ${applicationName}",
+              "Ayat hari ini dalam ${applicationName}"
+            ]
+          }
+        },
+        "ru": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Аят дня в ${applicationName}",
+              "Сегодняшний аят в ${applicationName}"
+            ]
+          }
+        },
+        "tr": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName} içinde günün ayeti",
+              "${applicationName} uygulamasında günün ayeti"
+            ]
+          }
+        },
+        "ur": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName} میں روزانہ آیت",
+              "${applicationName} میں آج کی آیت"
+            ]
+          }
+        },
+        "zh-Hans": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "在${applicationName}中查看每日经文",
+              "在${applicationName}中查看今日经文"
+            ]
+          }
+        },
+        "zh-Hant": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "在${applicationName}中查看每日經文",
+              "在${applicationName}中查看今日經文"
+            ]
+          }
+        }
+      }
+    },
+    "Hijri date in ${applicationName}": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringSet": {
+            "state": "new",
+            "values": [
+              "Hijri date in ${applicationName}",
+              "What's the Hijri date in ${applicationName}"
+            ]
+          }
+        },
+        "ar": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "التاريخ الهجري في ${applicationName}",
+              "ما هو التاريخ الهجري في ${applicationName}"
+            ]
+          }
+        },
+        "de": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Hidschri-Datum in ${applicationName}",
+              "Wie lautet das Hidschri-Datum in ${applicationName}"
+            ]
+          }
+        },
+        "es": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Fecha hégira en ${applicationName}",
+              "Cuál es la fecha hégira en ${applicationName}"
+            ]
+          }
+        },
+        "fa": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "تاریخ هجری در ${applicationName}",
+              "تاریخ هجری در ${applicationName} چیست"
+            ]
+          }
+        },
+        "fr": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Date hégirienne dans ${applicationName}",
+              "Quelle est la date hégirienne dans ${applicationName}"
+            ]
+          }
+        },
+        "id": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Tanggal Hijriah di ${applicationName}",
+              "Berapa tanggal Hijriah di ${applicationName}"
+            ]
+          }
+        },
+        "it": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Data hijri in ${applicationName}",
+              "Qual è la data hijri in ${applicationName}"
+            ]
+          }
+        },
+        "ja": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName}でヒジュラ暦の日付",
+              "${applicationName}で今日のヒジュラ暦の日付は"
+            ]
+          }
+        },
+        "ms": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Tarikh Hijrah dalam ${applicationName}",
+              "Apakah tarikh Hijrah dalam ${applicationName}"
+            ]
+          }
+        },
+        "ru": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Дата по хиджре в ${applicationName}",
+              "Какая дата по хиджре в ${applicationName}"
+            ]
+          }
+        },
+        "tr": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName} içinde Hicri tarih",
+              "${applicationName} içinde bugünün Hicri tarihi nedir"
+            ]
+          }
+        },
+        "ur": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName} میں ہجری تاریخ",
+              "${applicationName} میں ہجری تاریخ کیا ہے"
+            ]
+          }
+        },
+        "zh-Hans": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "在${applicationName}中查看希吉拉日期",
+              "在${applicationName}中今天的希吉拉日期是什么"
+            ]
+          }
+        },
+        "zh-Hant": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "在${applicationName}中查看希吉拉日期",
+              "在${applicationName}中今天的希吉拉日期是什麼"
+            ]
+          }
+        }
+      }
+    },
+    "Next Islamic event in ${applicationName}": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringSet": {
+            "state": "new",
+            "values": [
+              "Next Islamic event in ${applicationName}",
+              "Next occasion in ${applicationName}"
+            ]
+          }
+        },
+        "ar": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "المناسبة الإسلامية القادمة في ${applicationName}",
+              "المناسبة القادمة في ${applicationName}"
+            ]
+          }
+        },
+        "de": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Nächstes islamisches Ereignis in ${applicationName}",
+              "Nächster Anlass in ${applicationName}"
+            ]
+          }
+        },
+        "es": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Próximo evento islámico en ${applicationName}",
+              "Próxima ocasión en ${applicationName}"
+            ]
+          }
+        },
+        "fa": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "رویداد اسلامی بعدی در ${applicationName}",
+              "مناسبت بعدی در ${applicationName}"
+            ]
+          }
+        },
+        "fr": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Prochain événement islamique dans ${applicationName}",
+              "Prochaine occasion dans ${applicationName}"
+            ]
+          }
+        },
+        "id": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Peristiwa Islam berikutnya di ${applicationName}",
+              "Acara berikutnya di ${applicationName}"
+            ]
+          }
+        },
+        "it": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Prossimo evento islamico in ${applicationName}",
+              "Prossima occasione in ${applicationName}"
+            ]
+          }
+        },
+        "ja": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName}で次のイスラム行事",
+              "${applicationName}で次の行事"
+            ]
+          }
+        },
+        "ms": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Peristiwa Islam seterusnya dalam ${applicationName}",
+              "Acara seterusnya dalam ${applicationName}"
+            ]
+          }
+        },
+        "ru": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Следующее исламское событие в ${applicationName}",
+              "Следующее событие в ${applicationName}"
+            ]
+          }
+        },
+        "tr": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName} içinde sonraki İslami olay",
+              "${applicationName} içinde sonraki etkinlik"
+            ]
+          }
+        },
+        "ur": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName} میں اگلا اسلامی واقعہ",
+              "${applicationName} میں اگلی مناسبت"
+            ]
+          }
+        },
+        "zh-Hans": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "在${applicationName}中下一个伊斯兰事件",
+              "在${applicationName}中下一个活动"
+            ]
+          }
+        },
+        "zh-Hant": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "在${applicationName}中下一個伊斯蘭事件",
+              "在${applicationName}中下一個活動"
+            ]
+          }
+        }
+      }
+    },
+    "Next prayer in ${applicationName}": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringSet": {
+            "state": "new",
+            "values": [
+              "Next prayer in ${applicationName}",
+              "When is the next prayer in ${applicationName}",
+              "When is ${prayer} in ${applicationName}"
+            ]
+          }
+        },
+        "ar": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "الصلاة القادمة في ${applicationName}",
+              "متى الصلاة القادمة في ${applicationName}",
+              "متى ${prayer} في ${applicationName}"
+            ]
+          }
+        },
+        "de": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Nächstes Gebet in ${applicationName}",
+              "Wann ist das nächste Gebet in ${applicationName}",
+              "Wann ist ${prayer} in ${applicationName}"
+            ]
+          }
+        },
+        "es": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Próxima oración en ${applicationName}",
+              "Cuándo es la próxima oración en ${applicationName}",
+              "Cuándo es ${prayer} en ${applicationName}"
+            ]
+          }
+        },
+        "fa": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "نماز بعدی در ${applicationName}",
+              "نماز بعدی چه زمانی است در ${applicationName}",
+              "زمان ${prayer} در ${applicationName}"
+            ]
+          }
+        },
+        "fr": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Prochaine prière dans ${applicationName}",
+              "Quand est la prochaine prière dans ${applicationName}",
+              "Quand est ${prayer} dans ${applicationName}"
+            ]
+          }
+        },
+        "id": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Salat berikutnya di ${applicationName}",
+              "Kapan salat berikutnya di ${applicationName}",
+              "Kapan ${prayer} di ${applicationName}"
+            ]
+          }
+        },
+        "it": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Prossima preghiera in ${applicationName}",
+              "Quand'è la prossima preghiera in ${applicationName}",
+              "Quand'è ${prayer} in ${applicationName}"
+            ]
+          }
+        },
+        "ja": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName}で次の礼拝",
+              "${applicationName}で次の礼拝はいつ",
+              "${applicationName}で${prayer}はいつ"
+            ]
+          }
+        },
+        "ms": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Solat seterusnya dalam ${applicationName}",
+              "Bilakah solat seterusnya dalam ${applicationName}",
+              "Bilakah ${prayer} dalam ${applicationName}"
+            ]
+          }
+        },
+        "ru": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Следующий намаз в ${applicationName}",
+              "Когда следующий намаз в ${applicationName}",
+              "Когда ${prayer} в ${applicationName}"
+            ]
+          }
+        },
+        "tr": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName} içinde sonraki namaz",
+              "${applicationName} içinde sonraki namaz ne zaman",
+              "${applicationName} içinde ${prayer} ne zaman"
+            ]
+          }
+        },
+        "ur": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName} میں اگلی نماز",
+              "${applicationName} میں اگلی نماز کب ہے",
+              "${applicationName} میں ${prayer} کب ہے"
+            ]
+          }
+        },
+        "zh-Hans": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "在${applicationName}中下次礼拜",
+              "在${applicationName}中下次礼拜是什么时候",
+              "在${applicationName}中${prayer}是什么时候"
+            ]
+          }
+        },
+        "zh-Hant": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "在${applicationName}中下次禮拜",
+              "在${applicationName}中下次禮拜是什麼時候",
+              "在${applicationName}中${prayer}是什麼時候"
+            ]
+          }
+        }
+      }
+    },
+    "Open ${target} in ${applicationName}": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringSet": {
+            "state": "new",
+            "values": [
+              "Open ${target} in ${applicationName}",
+              "Read ${target} in ${applicationName}",
+              "Open Surah ${target} in ${applicationName}"
+            ]
+          }
+        },
+        "ar": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "افتح ${target} في ${applicationName}",
+              "اقرأ ${target} في ${applicationName}",
+              "افتح سورة ${target} في ${applicationName}"
+            ]
+          }
+        },
+        "de": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Öffne ${target} in ${applicationName}",
+              "Lies ${target} in ${applicationName}",
+              "Öffne Sure ${target} in ${applicationName}"
+            ]
+          }
+        },
+        "es": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Abre ${target} en ${applicationName}",
+              "Lee ${target} en ${applicationName}",
+              "Abre la sura ${target} en ${applicationName}"
+            ]
+          }
+        },
+        "fa": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "باز کردن ${target} در ${applicationName}",
+              "خواندن ${target} در ${applicationName}",
+              "باز کردن سوره ${target} در ${applicationName}"
+            ]
+          }
+        },
+        "fr": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Ouvre ${target} dans ${applicationName}",
+              "Lis ${target} dans ${applicationName}",
+              "Ouvre la sourate ${target} dans ${applicationName}"
+            ]
+          }
+        },
+        "id": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Buka ${target} di ${applicationName}",
+              "Baca ${target} di ${applicationName}",
+              "Buka Surah ${target} di ${applicationName}"
+            ]
+          }
+        },
+        "it": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Apri ${target} in ${applicationName}",
+              "Leggi ${target} in ${applicationName}",
+              "Apri la sura ${target} in ${applicationName}"
+            ]
+          }
+        },
+        "ja": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName}で${target}を開く",
+              "${applicationName}で${target}を読む",
+              "${applicationName}でスーラ${target}を開く"
+            ]
+          }
+        },
+        "ms": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Buka ${target} dalam ${applicationName}",
+              "Baca ${target} dalam ${applicationName}",
+              "Buka Surah ${target} dalam ${applicationName}"
+            ]
+          }
+        },
+        "ru": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Открыть ${target} в ${applicationName}",
+              "Читать ${target} в ${applicationName}",
+              "Открыть суру ${target} в ${applicationName}"
+            ]
+          }
+        },
+        "tr": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName} içinde ${target} aç",
+              "${applicationName} içinde ${target} oku",
+              "${applicationName} içinde ${target} suresini aç"
+            ]
+          }
+        },
+        "ur": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName} میں ${target} کھولیں",
+              "${applicationName} میں ${target} پڑھیں",
+              "${applicationName} میں سورت ${target} کھولیں"
+            ]
+          }
+        },
+        "zh-Hans": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "在${applicationName}中打开${target}",
+              "在${applicationName}中阅读${target}",
+              "在${applicationName}中打开${target}章"
+            ]
+          }
+        },
+        "zh-Hant": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "在${applicationName}中開啟${target}",
+              "在${applicationName}中閱讀${target}",
+              "在${applicationName}中開啟${target}章"
+            ]
+          }
+        }
+      }
+    },
+    "Prayer times in ${applicationName}": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringSet": {
+            "state": "new",
+            "values": [
+              "Prayer times in ${applicationName}",
+              "Today's prayer times in ${applicationName}"
+            ]
+          }
+        },
+        "ar": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "أوقات الصلاة في ${applicationName}",
+              "أوقات صلاة اليوم في ${applicationName}"
+            ]
+          }
+        },
+        "de": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Gebetszeiten in ${applicationName}",
+              "Heutige Gebetszeiten in ${applicationName}"
+            ]
+          }
+        },
+        "es": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Horarios de oración en ${applicationName}",
+              "Horarios de oración de hoy en ${applicationName}"
+            ]
+          }
+        },
+        "fa": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "اوقات نماز در ${applicationName}",
+              "اوقات شرعی امروز در ${applicationName}"
+            ]
+          }
+        },
+        "fr": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Horaires de prière dans ${applicationName}",
+              "Horaires de prière d'aujourd'hui dans ${applicationName}"
+            ]
+          }
+        },
+        "id": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Waktu salat di ${applicationName}",
+              "Jadwal salat hari ini di ${applicationName}"
+            ]
+          }
+        },
+        "it": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Orari di preghiera in ${applicationName}",
+              "Orari di preghiera di oggi in ${applicationName}"
+            ]
+          }
+        },
+        "ja": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName}で礼拝時刻",
+              "${applicationName}で今日の礼拝時刻"
+            ]
+          }
+        },
+        "ms": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Waktu solat dalam ${applicationName}",
+              "Waktu solat hari ini dalam ${applicationName}"
+            ]
+          }
+        },
+        "ru": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Время намаза в ${applicationName}",
+              "Время намаза на сегодня в ${applicationName}"
+            ]
+          }
+        },
+        "tr": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName} içinde namaz vakitleri",
+              "${applicationName} içinde bugünkü namaz vakitleri"
+            ]
+          }
+        },
+        "ur": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName} میں نماز کے اوقات",
+              "${applicationName} میں آج کے نماز کے اوقات"
+            ]
+          }
+        },
+        "zh-Hans": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "在${applicationName}中查看礼拜时间",
+              "在${applicationName}中今天的礼拜时间"
+            ]
+          }
+        },
+        "zh-Hant": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "在${applicationName}中查看禮拜時間",
+              "在${applicationName}中今天的禮拜時間"
+            ]
+          }
+        }
+      }
+    },
+    "Search ${applicationName}": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringSet": {
+            "state": "new",
+            "values": [
+              "Search ${applicationName}",
+              "Search the Quran in ${applicationName}"
+            ]
+          }
+        },
+        "ar": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "ابحث في ${applicationName}",
+              "ابحث في القرآن في ${applicationName}"
+            ]
+          }
+        },
+        "de": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Suche in ${applicationName}",
+              "Koran durchsuchen in ${applicationName}"
+            ]
+          }
+        },
+        "es": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Buscar en ${applicationName}",
+              "Buscar en el Corán en ${applicationName}"
+            ]
+          }
+        },
+        "fa": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "جستجو در ${applicationName}",
+              "جستجو در قرآن در ${applicationName}"
+            ]
+          }
+        },
+        "fr": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Recherche dans ${applicationName}",
+              "Recherche dans le Coran dans ${applicationName}"
+            ]
+          }
+        },
+        "id": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Cari di ${applicationName}",
+              "Cari Al-Qur'an di ${applicationName}"
+            ]
+          }
+        },
+        "it": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Cerca in ${applicationName}",
+              "Cerca nel Corano in ${applicationName}"
+            ]
+          }
+        },
+        "ja": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName}で検索",
+              "${applicationName}でクルアーンを検索"
+            ]
+          }
+        },
+        "ms": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Cari dalam ${applicationName}",
+              "Cari al-Quran dalam ${applicationName}"
+            ]
+          }
+        },
+        "ru": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Поиск в ${applicationName}",
+              "Поиск в Коране в ${applicationName}"
+            ]
+          }
+        },
+        "tr": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName} içinde ara",
+              "${applicationName} içinde Kur'an'da ara"
+            ]
+          }
+        },
+        "ur": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName} میں تلاش کریں",
+              "${applicationName} میں قرآن تلاش کریں"
+            ]
+          }
+        },
+        "zh-Hans": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "在${applicationName}中搜索",
+              "在${applicationName}中搜索古兰经"
+            ]
+          }
+        },
+        "zh-Hant": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "在${applicationName}中搜尋",
+              "在${applicationName}中搜尋古蘭經"
+            ]
+          }
+        }
+      }
+    },
+    "Show ${target} in ${applicationName}": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringSet": {
+            "state": "new",
+            "values": [
+              "Show ${target} in ${applicationName}",
+              "Go to ${target} in ${applicationName}"
+            ]
+          }
+        },
+        "ar": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "اعرض ${target} في ${applicationName}",
+              "انتقل إلى ${target} في ${applicationName}"
+            ]
+          }
+        },
+        "de": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Zeige ${target} in ${applicationName}",
+              "Gehe zu ${target} in ${applicationName}"
+            ]
+          }
+        },
+        "es": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Muestra ${target} en ${applicationName}",
+              "Ir a ${target} en ${applicationName}"
+            ]
+          }
+        },
+        "fa": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "نمایش ${target} در ${applicationName}",
+              "رفتن به ${target} در ${applicationName}"
+            ]
+          }
+        },
+        "fr": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Affiche ${target} dans ${applicationName}",
+              "Va à ${target} dans ${applicationName}"
+            ]
+          }
+        },
+        "id": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Tampilkan ${target} di ${applicationName}",
+              "Buka ${target} di ${applicationName}"
+            ]
+          }
+        },
+        "it": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Mostra ${target} in ${applicationName}",
+              "Vai a ${target} in ${applicationName}"
+            ]
+          }
+        },
+        "ja": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName}で${target}を表示",
+              "${applicationName}で${target}へ移動"
+            ]
+          }
+        },
+        "ms": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Tunjukkan ${target} dalam ${applicationName}",
+              "Pergi ke ${target} dalam ${applicationName}"
+            ]
+          }
+        },
+        "ru": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "Показать ${target} в ${applicationName}",
+              "Перейти к ${target} в ${applicationName}"
+            ]
+          }
+        },
+        "tr": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName} içinde ${target} göster",
+              "${applicationName} içinde ${target} hedefine git"
+            ]
+          }
+        },
+        "ur": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "${applicationName} میں ${target} دکھائیں",
+              "${applicationName} میں ${target} پر جائیں"
+            ]
+          }
+        },
+        "zh-Hans": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "在${applicationName}中显示${target}",
+              "在${applicationName}中前往${target}"
+            ]
+          }
+        },
+        "zh-Hant": {
+          "stringSet": {
+            "state" : "machine_translated",
+            "values": [
+              "在${applicationName}中顯示${target}",
+              "在${applicationName}中前往${target}"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "version": "1.3"
+}

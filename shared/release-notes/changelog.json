@@ -77,7 +77,8 @@
   {
     "version": "1.2.0",
     "platforms": [
-      "ios"
+      "ios",
+      "macos"
     ],
     "notes": {
       "en-US": "• Translate Hadiths and rulings on demand.\n• Explore newly added rulings.\n• Enjoy faster, smoother performance.\n• Discover the new Sermons section.\n• Meet the redesigned Today and Rakaat screens.",

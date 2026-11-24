@@ -36,6 +36,7 @@
   "files": [
     { "path": "<PROJECT>/../shared/sermons/sermons.db", "target-membership": [ "Muntathir/resources" ] },
     { "path": "<PROJECT>/../shared/release-notes/changelog.json", "target-membership": [ "Muntathir/resources" ] },
+    { "path": "<PROJECT>/MuntathirUITests/MarketingLabels.swift", "target-membership": [ "MuntathirMacUITests/compile-sources" ] },
     {
       "path": "<PROJECT>/../shared/figures/figures.json",
       "target-membership": [
@@ -233,7 +234,9 @@
           ],
         },
       ],
-    }, {
+    },
+    { "kind": "folder", "path": "MuntathirMacUITests", "target-membership": [ "MuntathirMacUITests" ] },
+    {
       "kind": "group",
       "name": "Products",
       "children": [
@@ -244,6 +247,7 @@
         { "path": "<PRODUCTS>/MuntathirWidgets.appex", "id": "B20000000000000000000014", "type": "wrapper.app-extension", "target-membership": [ { "build-phase": "Muntathir/copy/Embed Foundation Extensions", "header-preservation": "remove-on-copy" } ] },
         { "path": "<PRODUCTS>/MuntathirTests.xctest", "id": "04457E6A308394FE00A8887D", "type": "wrapper.cfbundle", "index": false },
         { "path": "<PRODUCTS>/MuntathirUITests.xctest", "id": "04457E74308394FE00A8887D", "type": "wrapper.cfbundle", "index": false },
+        { "path": "<PRODUCTS>/MuntathirMacUITests.xctest", "id": "D40000000000000000000002", "type": "wrapper.cfbundle", "index": false },
       ],
     }, {
       "kind": "group",
@@ -614,6 +618,37 @@
         "SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY": "YES",
         "SWIFT_VERSION": "6.0",
         "TARGETED_DEVICE_FAMILY": "1,2",
+        "TEST_TARGET_NAME": "Muntathir",
+      },
+    }, {
+      "name": "MuntathirMacUITests",
+      "id": "D40000000000000000000001",
+      "product": "Products/MuntathirMacUITests.xctest",
+      "product-type": "bundle.ui-testing",
+      "test-host-target": "Muntathir",
+      "dependencies": [
+        "Muntathir",
+      ],
+      "build-phases": [
+        "compile-sources",
+        "frameworks",
+        "resources",
+      ],
+      "build-settings": {
+        "CODE_SIGN_STYLE": "Automatic",
+        "CURRENT_PROJECT_VERSION": "1",
+        "DEVELOPMENT_TEAM": "5VGKP2QV6H",
+        "GENERATE_INFOPLIST_FILE": "YES",
+        "MACOSX_DEPLOYMENT_TARGET": "26.0",
+        "PRODUCT_BUNDLE_IDENTIFIER": "com.aljaroudi.MuntathirMacUITests",
+        "PRODUCT_NAME": "$(TARGET_NAME)",
+        "SDKROOT": "macosx",
+        "STRING_CATALOG_GENERATE_SYMBOLS": "NO",
+        "SUPPORTED_PLATFORMS": "macosx",
+        "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
+        "SWIFT_EMIT_LOC_STRINGS": "NO",
+        "SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY": "YES",
+        "SWIFT_VERSION": "6.0",
         "TEST_TARGET_NAME": "Muntathir",
       },
     },

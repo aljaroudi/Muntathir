@@ -417,12 +417,12 @@ extension CalendarTests {
             let translation = try #require(bundle.url(forResource: "Localizable", withExtension: "strings", subdirectory: nil, localization: language))
             let contents = try Data(contentsOf: translation)
             let strings = try #require(try PropertyListSerialization.propertyList(from: contents, format: nil) as? [String: String])
+            // English is the source language, so its table only holds values that differ from their keys.
+            guard language != "en" else { continue }
             #expect(strings["Calendar"]?.isEmpty == false)
             #expect(strings["System calendar"]?.isEmpty == false)
             #expect(strings["Day adjustment"]?.isEmpty == false)
-            if language != "en" {
-                #expect(strings["System calendar"] != "System calendar")
-            }
+            #expect(strings["System calendar"] != "System calendar")
         }
     }
 }

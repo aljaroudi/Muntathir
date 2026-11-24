@@ -5,21 +5,27 @@ Releases run locally on the signing Mac, from the repository root, after the [sh
 ## Lanes
 
 - **`beta`** runs unit tests on the newest installed compatible iPhone simulator and submits to the external `Public` TestFlight group with localized What to Test. TestFlight invitations show screenshots from the latest App Store version ready for distribution ([Apple's rules](https://developer.apple.com/help/app-store-connect/test-a-beta-version/provide-test-information)).
-- **`release`** runs the full unit and UI suite on that iPhone and the configured iPad Pro, uploads screenshots and metadata, syncs Asset Packs, uploads header/search creatives to the App Asset Library, and submits the existing TestFlight build for automatic release after approval (no new binary). Existing preview videos are kept.
+- **`release`** ships iOS and Mac together. It runs the full unit and UI suite on that iPhone and the configured iPad Pro, refreshes the iOS, Watch and Mac screenshots, and syncs Asset Packs for both platforms. It then:
+  - archives and uploads the Mac build, which skips TestFlight;
+  - uploads both listings and the header/search creatives;
+  - submits the existing iOS TestFlight build and the new Mac build for automatic release after approval.
+
+  Existing preview videos are kept. Pass `mac:false` for an iOS-only release.
 - **`check`** validates localization, metadata, screenshot config and lane behavior offline.
 - **`tests`** runs the unit/UI regressions on one iPhone.
 - **`screenshots`**, **`watch_screenshots`**, **`style`** capture and compose iOS and Watch screens in all 15 locales (the upload picks the locales App Store Connect supports). `languages:ar,en,fa` limits locales; `workers:N` (default 2, max 8) sets screenshot workers.
+- **`mac_screenshots`** and **`mac_style`** capture the Mac app's window in each locale and compose it at 2880 × 1800. The Mac gallery has six screens: Today, Quran, Hadith, Supplications, Tasbih and Calendar. Qibla and Rakaat aren't on Mac.
 - **`previews`** makes optional videos; `previews devices:"iPhone Duo"` makes Duo videos for manual upload.
-- **`marketing`** refreshes screenshots and standard previews.
+- **`marketing`** refreshes iOS, Watch and Mac screenshots and standard previews.
 - **`web_media`** exports the website's phone-tour media (see [web/README.md](../../web/README.md)).
 - **`cleanup`** removes project-local disposable caches.
 
-Options: `force:true` allows intentionally unchanged notes (all other checks still run). `release skip_screenshots:true` reuses `apple/build/marketing/store` and `creative` from a successful local refresh instead of recapturing (~2 h).
+Options: `force:true` allows intentionally unchanged notes (all other checks still run). `release skip_screenshots:true` reuses `apple/build/marketing/store`, `mac/store` and `creative` from a successful local refresh instead of recapturing (~2 h).
 
 ## Before running
 
-1. `just version X.Y.Z`. For `release`, create the matching editable iOS draft in App Store Connect. Keep the project build number at `1`; Xcode assigns it on upload ([Apple's rules](https://developer.apple.com/documentation/xcode/preparing-your-app-for-distribution)).
-2. Update `fastlane/ios/beta_notes/<locale>.txt` (What to Test) or `shared/release-notes/changelog.json` (What's New; also bundled in the apps and rendered by `just changelog`). Add an entry per marketing version listing its shipping platforms. All 14 store locales must validate, and at least one note must differ from Apple's previous notes. App Store Connect rejects modifier letters such as `ʿ` in What's New; `check` catches them.
+1. `just version X.Y.Z`. For `release`, create the matching editable iOS and macOS drafts in App Store Connect, both set to release automatically after approval. Keep the project build number at `1`; Xcode assigns it on upload ([Apple's rules](https://developer.apple.com/documentation/xcode/preparing-your-app-for-distribution)).
+2. Update `fastlane/ios/beta_notes/<locale>.txt` (What to Test) or `shared/release-notes/changelog.json` (What's New; also bundled in the apps and rendered by `just changelog`). Add an entry per marketing version listing its shipping platforms (`ios`, `macos`). All 14 store locales must validate, and at least one note must differ from Apple's previous notes. App Store Connect rejects modifier letters such as `ʿ` in What's New; `check` catches them.
 3. Put the App Store Connect key in `~/.config/muntathir/fastlane.env` (template: `fastlane/.env.local.example`; override the path with `MUNTATHIR_FASTLANE_ENV_FILE`). Set `MUNTATHIR_REVIEW_CONFIG` to a private JSON for export compliance and review fields (see `fastlane/ios/review.example.json`). `chmod 600` both files. Automatic signing covers the app, Watch companion and extensions. The external group must be named `Public`, with its public link enabled.
 4. Install Apple Transporter. For `release`, also install the capture simulators and runtimes, a shut-down Apple Watch Series 12 (46mm) simulator, ImageMagick and FFmpeg. Build the content databases and run `just packs-check`.
 
@@ -55,3 +61,13 @@ Outputs (git-ignored, under `apple/build/marketing/`):
 Upload, processing (waits up to 30 minutes) and review submission are separate stages. On an upload or processing error, check **Build Uploads** in App Store Connect before retrying. If the build processed but a later step failed, finish the draft or Public distribution in App Store Connect using the version and build number the lane printed; rerunning creates a new build. An interrupted screenshot replacement may need finishing in App Store Connect.
 
 Failed runs keep the archive under `apple/build/`; successful processing saves dSYMs to `apple/build/symbols/<version>-<build>/` and removes the archive. Test and capture failures keep diagnostics.
+
+## Mac
+
+- **Signing:** automatic signing creates the Mac App Distribution and Mac Installer Distribution certificates during the archive.
+- **Captures:** `mac_screenshots` drives the real app on this Mac through the `MacScreenshots` test plan (`MuntathirMacUITests`). Fastlane snapshot only drives simulators.
+  - Before the first run, let macOS enable UI automation. Approve the prompt, or run `sudo automationmodetool enable-automationmode-without-authentication` once.
+  - Keep the Mac awake, unlocked and untouched during the run.
+  - With `--marketing-capture`, the app fixes the window at 1280 × 800 pt (`MuntathirApp.captureWindowSize`).
+  - The script stages the Hadith, Supplications and translation databases into `Contents/Resources`, then re-signs the Debug app so the sandboxed app still launches.
+- **Asset packs:** manifests list `iOS` and `macOS`. Running the Mac app from Xcode serves packs from `apple/build/AssetPacks/archives`, so run `just apple-packs` after changing a manifest. The release stops if Apple's processed pack version lacks either platform.

@@ -3,3 +3,5 @@ Explora los dictámenes y comprueba que los recién añadidos aparecen y se abre
 Abre la nueva sección de Sermones. Comprueba que los sermones cargan y que al tocar a un orador se abre su perfil.
 Revisa las pantallas Hoy y Rakaat rediseñadas en iPhone y iPad, con apariencia clara y oscura.
 Recorre Corán, Hadiz, Dictámenes y Guardados. Comprueba que el desplazamiento, la búsqueda y la apertura de elementos son rápidos y fluidos.
+Abre Hoy y comprueba la nueva animación del sol y la luna en el cielo, y que el crédito del tiempo aparece en tu idioma.
+En iPad, usa las pestañas de la barra lateral. Comprueba que el Calendario conserva su posición y resalta el día de hoy.

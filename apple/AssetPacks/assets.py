@@ -44,7 +44,9 @@ def archive_matches(archive, manifest, root, scratch):
             packed = Path(extracted)
             record = json.loads((packed / "Manifest.json").read_text())
             record.pop("toolsVersion", None)
-            return record == manifest and all(
+            # ba-package stores platforms as a set, so their order varies between runs.
+            ordered = lambda pack: {**pack, "platforms": sorted(pack.get("platforms", []))}
+            return ordered(record) == ordered(manifest) and all(
                 db_hash(packed / "Contents" / entry["fileDestination"])
                 == db_hash(root / entry["fileSource"]) for entry in manifest["fileSelectors"]
             )
@@ -59,7 +61,7 @@ def validate_quran(root=ROOT, manifests=MANIFESTS):
     pack = json.loads(path.read_text())
     assert pack['assetPackID'] == 'quran-translations'
     assert pack['downloadPolicy'] == {'onDemand': {}} and 'language' not in pack
-    assert pack['platforms'] == ['iOS']
+    assert pack['platforms'] == ['iOS', 'macOS']
     found = set()
     for selector in pack['fileSelectors']:
         source = (path.parent / pack['sourceRoot'] / selector['fileSource']).resolve()
@@ -89,7 +91,7 @@ def validate_hadith(pack_id="hadith", root=ROOT, manifests=MANIFESTS):
     else:
         assert pack['downloadPolicy'] == {'onDemand': {}}
     assert 'language' not in pack
-    assert pack['platforms'] == ['iOS']
+    assert pack['platforms'] == ['iOS', 'macOS']
     assert source == root / f'build/hadith/dist/{pack_id}.db'
     assert selector['fileDestination'] == f'{folder}/{pack_id}.db'
     with sqlite3.connect(source.as_uri() + '?mode=ro', uri=True) as db:
@@ -119,7 +121,7 @@ def validate_rulings(root=ROOT, manifests=MANIFESTS):
     source = (path.parent / pack['sourceRoot'] / selector['fileSource']).resolve()
     assert pack['assetPackID'] == 'rulings-v2'
     assert pack['downloadPolicy'] == {'onDemand': {}} and 'language' not in pack
-    assert pack['platforms'] == ['iOS']
+    assert pack['platforms'] == ['iOS', 'macOS']
     assert source == root / 'build/rulings/dist/rulings.db'
     assert selector['fileDestination'] == 'Rulings/rulings.db'
     with sqlite3.connect(source.as_uri() + '?mode=ro', uri=True) as db:
@@ -164,6 +166,10 @@ def check_bundle(path):
     else:
         assert path.is_dir() and path.suffix == '.app', 'Expected an .app directory or .ipa'
         files = [str(f.relative_to(path)) for f in path.rglob('*') if f.is_file()]
+    # Mac bundles keep Info.plist and extensions in Contents/ and resources in Contents/Resources/.
+    mac = path.suffix == '.app' and (path / 'Contents/Info.plist').is_file()
+    contents = path / 'Contents' if mac else path
+    resources = contents / 'Resources' if mac else path
     expected = {'quran.db', 'en.qarai.db'}
     app_databases = {Path(f).name for f in files if f.endswith('.db') and '.appex/' not in f and '.xctest/' not in f and '/Watch/' not in f}
     widget_databases = {Path(f).name for f in files if f.endswith('.db') and 'MuntathirWidgets.appex/' in f}
@@ -176,16 +182,16 @@ def check_bundle(path):
             with zipfile.ZipFile(path) as archive:
                 name, = [f for f in files if f.endswith('.app/' + relative) and '/Watch/' not in f and '.appex/' not in f.split('/' + relative)[0]]
                 return plistlib.loads(archive.read(name))
-        return plistlib.loads((path / relative).read_bytes())
+        return plistlib.loads((contents / relative).read_bytes())
     if path.suffix == '.ipa':
         with zipfile.ZipFile(path) as archive:
             size_file, = [f for f in files if f.endswith('.app/AssetDownloadSizes.json') and '/Watch/' not in f]
             sizes = json.loads(archive.read(size_file))
     else:
-        sizes = json.loads((path / 'AssetDownloadSizes.json').read_text())
+        sizes = json.loads((resources / 'AssetDownloadSizes.json').read_text())
     assert all(isinstance(sizes.get(pack), int) and sizes[pack] > 0 for pack in ('hadith', 'supplications', 'quran-translations', 'rulings-v2')), 'Missing download size estimates'
     info = metadata('Info.plist')
-    downloader = metadata('Extensions/MuntathirAssetDownloader.appex/Info.plist')
+    downloader = metadata('Extensions/MuntathirAssetDownloader.appex/' + ('Contents/Info.plist' if mac else 'Info.plist'))
     assert downloader.get('CFBundleDisplayName'), 'Missing downloader display name required by App Store validation'
     assert info.get('BAHasManagedAssetPacks') is True
     assert info.get('BAUsesAppleHosting') is True

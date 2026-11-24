@@ -35,7 +35,9 @@ module MuntathirRelease
     Dir.mktmpdir("muntathir-asset") do |directory|
       run!("xcrun", "aa", "extract", "-i", archive, "-d", directory)
       archived = JSON.parse(File.read(File.join(directory, "Manifest.json")))
-      return false unless archived.reject { |key, _| key == "toolsVersion" } == manifest
+      # ba-package stores platforms as a set, so their order varies between runs.
+      ordered = ->(pack) { pack.merge("platforms" => pack.fetch("platforms", []).sort) }
+      return false unless ordered.call(archived.reject { |key, _| key == "toolsVersion" }) == ordered.call(manifest)
 
       root = File.expand_path(manifest.fetch("sourceRoot"), File.dirname(manifest_path))
       manifest.fetch("fileSelectors").all? do |file|
@@ -56,7 +58,7 @@ module MuntathirRelease
     end
   end
 
-  def self.sync_asset_packs!
+  def self.sync_asset_packs!(platforms: ["IOS"])
     directory = File.join(ROOT, "build/AssetPacks/archives")
     REQUIRED_ASSET_PACKS.map do |name|
       archive = File.join(directory, "#{name}.aar")
@@ -90,7 +92,10 @@ module MuntathirRelease
           raise "Apple failed to process asset pack #{name}. Check App Store Connect before retrying."
         end
         if match && match.dig("attributes", "state") == "COMPLETE"
-          raise "Processed asset pack #{name} lacks iOS support" unless match.dig("attributes", "platforms")&.include?("IOS")
+          if (missing = platforms - (match.dig("attributes", "platforms") || [])).any?
+            raise "Processed asset pack #{name} lacks #{missing.map { |platform| PLATFORM_NAMES.fetch(platform) }.join(' and ')} support. " \
+                  "Add it to the platforms in apple/AssetPacks/manifests/#{name}.json and upload a new pack version."
+          end
 
           break { name: name, version: match.dig("attributes", "version"), version_id: match.fetch("id"),
                   store_version_id: asset.dig("relationships", "appStoreVersion", "data", "id"),

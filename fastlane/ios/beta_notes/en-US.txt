@@ -3,3 +3,5 @@ Browse Rulings and check that the newly added rulings appear and open correctly.
 Open the new Sermons section. Check that sermons load and that tapping a speaker opens their profile.
 Check the redesigned Today and Rakaat screens on iPhone and iPad, in both light and dark appearance.
 Move through Quran, Hadith, Rulings, and Saved. Check that scrolling, searching, and opening items feel fast and smooth.
+Open Today and check the new sun and moon sky animation, and that the weather credit appears in your language.
+On iPad, use the sidebar tabs. Check that the Calendar keeps its position and highlights today.

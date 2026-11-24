@@ -14,6 +14,17 @@ struct QuranReadingView: View {
     @FocusState private var searchFocused: Bool
     @State private var searchSurah: QuranSurah?
     @State private var surahs: [QuranSurah] = []
+    @Environment(\.splitState) private var splitState
+
+    /// On macOS a split view puts every column's search field in the one window toolbar, and AppKit
+    /// aborts on a second one, so beside the surah list only the list searches.
+    private var hasOwnSearch: Bool {
+        #if os(macOS)
+            splitState == nil
+        #else
+            true
+        #endif
+    }
 
     private var showingResults: Bool {
         !submittedQuery.isEmpty
@@ -37,8 +48,7 @@ struct QuranReadingView: View {
         }
         .environment(\.searchMatchQuery, searchQuery)
         .readingBackground()
-        .searchable(text: $query, isPresented: $searchPresented,
-                    placement: .alwaysVisible, prompt: "Verse number or Quran text")
+        .readingSearchable(hasOwnSearch, text: $query, isPresented: $searchPresented)
         .searchHistory($query, area: .quran)
         .submitsSearch($query, submitted: $submittedQuery)
         .onSubmit(of: .search) { searchFocused = false }
@@ -73,5 +83,15 @@ struct QuranReadingView: View {
         guard !showingResults else { return }
         guard position?.surah != surah || position?.verse != verse else { return }
         position = (surah, verse)
+    }
+}
+
+private extension View {
+    @ViewBuilder func readingSearchable(_ enabled: Bool, text: Binding<String>, isPresented: Binding<Bool>) -> some View {
+        if enabled {
+            searchable(text: text, isPresented: isPresented, placement: .alwaysVisible, prompt: "Verse number or Quran text")
+        } else {
+            self
+        }
     }
 }

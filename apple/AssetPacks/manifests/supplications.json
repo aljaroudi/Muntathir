@@ -15,7 +15,8 @@
     }
   ],
   "platforms": [
-    "iOS"
+    "iOS",
+    "macOS"
   ],
   "sourceRoot": "../../.."
 }

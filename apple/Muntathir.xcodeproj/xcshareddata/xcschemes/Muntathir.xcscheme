@@ -35,6 +35,9 @@
          <TestPlanReference
             reference = "container:Screenshots.xctestplan">
          </TestPlanReference>
+         <TestPlanReference
+            reference = "container:MacScreenshots.xctestplan">
+         </TestPlanReference>
       </TestPlans>
    </TestAction>
    <LaunchAction

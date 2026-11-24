@@ -71,6 +71,13 @@ struct MuntathirApp: App {
                 guard scenePhase == .active else { return }
                 await model.refreshInBackground()
             }
+            #if os(macOS) && DEBUG
+            .background {
+                if let size = Self.captureWindowSize {
+                    CaptureWindowSizer(size: size)
+                }
+            }
+            #endif
         }
         #if os(macOS)
         .defaultSize(width: 1100, height: 760)
@@ -91,6 +98,19 @@ struct MuntathirApp: App {
         #endif
     }
 
+    #if os(macOS)
+        /// 16:10 window for Mac App Store captures; 2560×1600 pixels of content on Retina.
+        private static var captureWindowSize: CGSize? {
+            #if DEBUG
+                let arguments = ProcessInfo.processInfo.arguments
+                if arguments.contains("--ui-testing"), arguments.contains("--marketing-capture") {
+                    return CGSize(width: 1280, height: 800)
+                }
+            #endif
+            return nil
+        }
+    #endif
+
     /// The stores and settings every scene reads from.
     private func appData(@ViewBuilder content: () -> some View) -> some View {
         ProgressDataView(store: progressStore) {
@@ -102,3 +122,42 @@ struct MuntathirApp: App {
         .environment(model)
     }
 }
+
+#if os(macOS) && DEBUG
+    /// Sizes the capture window once. macOS restores saved frames over `defaultSize`, and a fixed,
+    /// non-resizable window crashes AppKit layout in the Quran split view.
+    private struct CaptureWindowSizer: NSViewRepresentable {
+        let size: CGSize
+
+        func makeNSView(context _: Context) -> NSView {
+            SizerView(size: size)
+        }
+
+        func updateNSView(_: NSView, context _: Context) {}
+
+        final class SizerView: NSView {
+            let size: CGSize
+
+            init(size: CGSize) {
+                self.size = size
+                super.init(frame: .zero)
+            }
+
+            @available(*, unavailable)
+            required init?(coder _: NSCoder) {
+                fatalError("init(coder:) is unavailable")
+            }
+
+            override func viewDidMoveToWindow() {
+                super.viewDidMoveToWindow()
+                guard let window else { return }
+                DispatchQueue.main.async { [size] in
+                    // Store screenshots are light, like iOS; -AppleInterfaceStyle doesn't override a dark Mac.
+                    NSApp.appearance = NSAppearance(named: .aqua)
+                    window.setContentSize(size)
+                    window.center()
+                }
+            }
+        }
+    }
+#endif
