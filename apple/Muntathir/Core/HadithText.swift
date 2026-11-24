@@ -174,16 +174,31 @@ enum SearchMatch {
         }
         let searchable = normalized as NSString
         var ranges: [NSRange] = []
+        func occurrences(of key: String) -> [NSRange] {
+            var found: [NSRange] = []
+            var offset = 0
+            while offset < searchable.length {
+                let match = searchable.range(of: key, range: NSRange(location: offset, length: searchable.length - offset))
+                guard match.location != NSNotFound, match.length > 0 else { break }
+                found.append(NSUnionRange(originalRanges[match.location], originalRanges[NSMaxRange(match) - 1]))
+                offset = NSMaxRange(match)
+            }
+            return found
+        }
         for term in terms {
             let key = QuranSearchText.fold(QuranSearchText.normalize(term))
             guard !key.isEmpty else { continue }
-            var offset = 0
-            while offset < searchable.length {
-                let found = searchable.range(of: key, range: NSRange(location: offset, length: searchable.length - offset))
-                guard found.location != NSNotFound, found.length > 0 else { break }
-                ranges.append(NSUnionRange(originalRanges[found.location], originalRanges[NSMaxRange(found) - 1]))
-                offset = NSMaxRange(found)
+            var found = occurrences(of: key)
+            if found.isEmpty {
+                // Typed in standard spelling where the mushaf spells it otherwise (الصلاة, الصلوٰة).
+                for spelling in QuranSpelling.alternatives(for: term) {
+                    found = occurrences(of: spelling)
+                    if !found.isEmpty {
+                        break
+                    }
+                }
             }
+            ranges.append(contentsOf: found)
         }
         return ranges
     }

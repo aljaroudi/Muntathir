@@ -448,6 +448,32 @@
 			<key>DefaultValue</key>
 			<string>https://www.rohani.ir/</string>
 		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Arabic Dictionary</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Quranic Arabic Corpus</string>
+			<key>Key</key>
+			<string>credit-lexicon-quranic-corpus</string>
+			<key>DefaultValue</key>
+			<string>https://corpus.quran.com</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Quran Morphology — mustafa0x</string>
+			<key>Key</key>
+			<string>credit-lexicon-quran-morphology</string>
+			<key>DefaultValue</key>
+			<string>https://github.com/mustafa0x/quran-morphology</string>
+		</dict>
 	</array>
 </dict>
 </plist>

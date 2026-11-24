@@ -1,0 +1,5 @@
+{
+  "_comment": "Hand-checked roots for frequent words whose reading in hadith and rulings differs from the Quranic corpus (which reads يجب as يُجِبْ, from جوب). Roots in order; applied like verified Quran readings, so prefixed forms (ويجب) follow. Keep this short: fix the analyzer when a pattern, not a word, is wrong.",
+  "يجب": ["وجب", "جوب"],
+  "تجب": ["وجب", "جوب"]
+}

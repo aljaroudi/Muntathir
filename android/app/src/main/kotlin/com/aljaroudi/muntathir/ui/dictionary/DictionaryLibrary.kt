@@ -9,6 +9,7 @@ import com.aljaroudi.muntathir.core.rulings.LibraryPackReader
 import com.aljaroudi.muntathir.core.rulings.RulingsAssetStore
 import com.aljaroudi.muntathir.core.sql.ContentSql
 import com.aljaroudi.muntathir.core.sql.query
+import com.aljaroudi.muntathir.core.text.LexiconSpelling
 import com.aljaroudi.muntathir.data.AppScope
 import com.aljaroudi.muntathir.data.BundledContentSql
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -20,7 +21,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.File
-import java.text.Normalizer
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -38,13 +38,13 @@ class DictionaryReader : LibraryPackReader {
                     check(opened.query("pragma user_version") { it.int(0) } == listOf(1))
                     check(opened.query("pragma quick_check") { it.text(0) } == listOf("ok"))
                     check(
-                        opened
-                            .query(
-                                "select 1 from passages where passages match 'كتاب' limit 1",
-                            ) { it.int(0) }
-                            .isNotEmpty(),
+                        opened.query(
+                            "select root from words where spelling='الكتاب' order by rank limit 1",
+                        ) { it.text(0) } ==
+                            listOf("كتب"),
                     )
-                    check(opened.query("select 1 from entries where root='كتب' limit 1") { it.int(0) }.isNotEmpty())
+                    check(opened.query("select 1 from family limit 1") { it.int(0) }.isNotEmpty())
+                    check(opened.query("select 1 from rootless limit 1") { it.int(0) }.isNotEmpty())
                     db = opened
                 } catch (error: Exception) {
                     opened.close()
@@ -53,58 +53,53 @@ class DictionaryReader : LibraryPackReader {
             }
         }
 
-    data class Passage(
-        val root: String,
-        val source: Int,
-        val preview: String,
-    )
-
-    data class Matches(
-        val roots: List<String> = emptyList(),
-        val passages: List<Passage> = emptyList(),
-    )
-
-    suspend fun search(text: String) =
+    /** Roots for one word, best first. A phrase has no root of its own; its words are looked up one at a time. */
+    suspend fun search(text: String): List<String> =
         withContext(io) {
             val sql = checkNotNull(db)
-            val norm =
-                Normalizer
-                    .normalize(text, Normalizer.Form.NFKC)
-                    .replace(
-                        Regex("[ؐ-ؚـً-ٰٟۖ-ۭ]"),
-                        "",
-                    ).replace(Regex("[أإآٱ]"), "ا")
-                    .replace('ى', 'ي')
-                    .replace('ئ', 'ي')
-                    .replace('ؤ', 'و')
-            if (norm.isBlank()) return@withContext Matches()
-            val roots =
-                sql.query(
-                    """
-                    SELECT root FROM (SELECT root,0 priority FROM forms WHERE form=? UNION ALL SELECT root,1 FROM forms WHERE norm=?) AS candidate
-                    WHERE EXISTS (SELECT 1 FROM entries WHERE entries.root=candidate.root)
-                    GROUP BY root ORDER BY min(priority),root
-                    """.trimIndent(),
-                    text,
-                    norm,
-                ) { it.text(0) }
-            val phrase = "\"" + norm.replace("\"", "\"\"") + "\""
-            val passages =
-                sql.query(
-                    """
-                    SELECT e.root,e.source,snippet(passages,0,'','','…',18) FROM passages JOIN entries e ON e.rowid=passages.rowid
-                    WHERE passages MATCH ? ORDER BY rank LIMIT 100
-                    """.trimIndent(),
-                    phrase,
-                ) { Passage(it.text(0), it.int(1), it.text(2)) }
-            Matches(roots, passages)
+            val words = text.split(Regex("\\s+")).map(LexiconSpelling::spell).filter { it.isNotEmpty() }
+            if (words.size == 1) roots(sql, words[0]) else emptyList()
         }
+
+    /**
+     * The pack ranks roots for every word the lexicons list and every word in the app's text
+     * (see shared/lexicon/build.py), and lists the ones it found none for. Other selections, such
+     * as part of a word, retry without clitics.
+     */
+    private fun roots(
+        sql: ContentSql,
+        word: String,
+    ): List<String> {
+        if (sql.query("SELECT 1 FROM rootless WHERE spelling=?", word) { it.int(0) }.isNotEmpty()) return emptyList()
+        for (stem in listOf(word) + LexiconSpelling.stems(word)) {
+            val exact = sql.query("SELECT root FROM words WHERE spelling=? ORDER BY rank", stem) { it.text(0) }
+            if (exact.isNotEmpty()) return exact
+            val folded =
+                sql.query(
+                    "SELECT root FROM words WHERE norm=? GROUP BY root ORDER BY min(rank), count(*) DESC, root LIMIT 4",
+                    LexiconSpelling.normalize(stem),
+                ) { it.text(0) }
+            if (folded.isNotEmpty()) return folded
+        }
+        return emptyList()
+    }
+
+    /** One source's definition; `root` is the heading it files it under, which can be another spelling (سمو for سما). */
+    data class Definition(
+        val source: Int,
+        val root: String,
+        val body: String,
+    )
 
     suspend fun entry(root: String) =
         withContext(io) {
-            checkNotNull(db).query("SELECT source,body FROM entries WHERE root=? ORDER BY source", root) {
-                it.int(0) to it.text(1)
-            }
+            checkNotNull(db).query(
+                """
+                SELECT source,root,body FROM entries WHERE root=?1 OR root IN (SELECT member FROM family WHERE root=?1)
+                ORDER BY source, root<>?1, root
+                """.trimIndent(),
+                root,
+            ) { Definition(it.int(0), it.text(1), it.text(2)) }
         }
 }
 

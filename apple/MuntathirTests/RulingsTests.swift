@@ -157,6 +157,13 @@ private actor RulingsTestBackend: AssetPackBackend {
         served = value
     }
 
+    /// Like the system, which keeps a pack it already holds: the served file is replaced only after `remove()`.
+    var freshAfterRemove = false
+
+    func setFreshAfterRemove(_ value: Bool) {
+        freshAfterRemove = value
+    }
+
     func setRemote(_ value: Int?) {
         remote = value
     }
@@ -188,6 +195,9 @@ private actor RulingsTestBackend: AssetPackBackend {
             throw URLError(.cannotRemoveFile)
         }
         installed = false
+        if freshAfterRemove {
+            served = nil
+        }
     }
 
     nonisolated func updates() -> AsyncStream<AssetPackEvent> {
@@ -244,6 +254,37 @@ extension RulingsTests {
 }
 
 extension RulingsTests {
+    @MainActor @Test func downloadReplacesAnUnreadablePackTheSystemAlreadyHolds() async throws {
+        let fixture = try RulingsFixture()
+        defer { fixture.remove() }
+        let stale = URL.temporaryDirectory.appending(path: "\(UUID().uuidString).db")
+        defer { try? FileManager.default.removeItem(at: stale) }
+        try Data("old format".utf8).write(to: stale)
+        let suite = "RulingsStale.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let backend = RulingsTestBackend(url: fixture.url)
+        // The device already holds a pack this build cannot read, and downloading does not replace it.
+        await backend.serve(stale)
+        await backend.setFreshAfterRemove(true)
+        try await backend.download()
+        let store = RulingsAssetStore(backend: backend, defaults: defaults)
+        await store.refresh()
+        #expect(store.state != .ready)
+        await store.download()
+        #expect(store.state == .ready)
+        // The setup download, the one that confirmed the stale copy, and the fresh one.
+        #expect(await backend.downloads == 3)
+        #expect(try await store.reader.authorities().count == 2)
+
+        // A hosted pack that is itself unreadable is tried once, not in a loop.
+        let broken = RulingsTestBackend(url: stale)
+        let brokenStore = RulingsAssetStore(backend: broken, defaults: defaults)
+        await brokenStore.download()
+        #expect(brokenStore.state != .ready)
+        #expect(await broken.downloads == 2)
+    }
+
     @Test func repeatedReaderQueriesAndRemoval() async throws {
         let fixture = try RulingsFixture()
         defer { fixture.remove() }

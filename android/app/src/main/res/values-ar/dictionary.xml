@@ -3,7 +3,7 @@
     <string name="dictionary_lookup">بحث في المعجم العربي</string>
     <string name="dictionary_entry">مادة معجمية</string>
     <string name="dictionary_history">السجل</string>
-    <string name="dictionary_passages">نصوص المعاجم</string>
+    <string name="dictionary_other_roots">جذور أخرى محتملة</string>
     <string name="no_root_found">لم يُعثر على مادة لهذا الجذر.</string>
     <string name="word_or_phrase">كلمة أو عبارة</string>
     <string name="dictionary_read_error">تعذّرت قراءة المعجم.</string>

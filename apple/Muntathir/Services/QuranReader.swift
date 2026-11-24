@@ -27,6 +27,8 @@ actor QuranReader {
         let surahs: [Int: Int]
         let searchable: Set<Int>
         let indexed: Bool
+        /// The word index's terms, for matching typed spellings to the mushaf's; absent without an index.
+        let vocabulary: QuranVocabulary?
     }
 
     /// The active translation's texts, dropped whenever its revision changes.
@@ -167,7 +169,9 @@ actor QuranReader {
     /// Exact phrases, then all-word matches; Arabic wins ties between languages.
     private func rankedIDs(_ terms: [String], translationID: String?, surah: Int?, revision: Int) throws -> [Int] {
         let arabicCorpus = try loadCorpus()
-        let arabic = try rank(matches(terms, in: arabicCorpus.connection, indexed: arabicCorpus.indexed, texts: arabicCorpus.texts), terms: terms, texts: arabicCorpus.texts)
+        // Typed spellings are matched to the mushaf's only for the Arabic text; translations keep what was typed.
+        let arabicTerms = arabicCorpus.vocabulary.map { QuranSpelling.resolve(terms, in: $0) } ?? terms
+        let arabic = try rank(matches(arabicTerms, in: arabicCorpus.connection, indexed: arabicCorpus.indexed, texts: arabicCorpus.texts), terms: arabicTerms, texts: arabicCorpus.texts)
         var translated = [[Int]](repeating: [], count: 2)
         if let translationID {
             // Optional assets can disappear or be invalid; Arabic search must still work.
@@ -205,7 +209,9 @@ actor QuranReader {
                 searchable.insert(id)
             }
         }
-        let value = try Corpus(connection: connection, texts: texts, surahs: surahs, searchable: searchable, indexed: Self.hasIndex(connection))
+        let indexed = try Self.hasIndex(connection)
+        let value = Corpus(connection: connection, texts: texts, surahs: surahs, searchable: searchable, indexed: indexed,
+                           vocabulary: indexed ? try? Self.vocabulary(connection) : nil)
         corpus = value
         return value
     }
@@ -223,6 +229,12 @@ actor QuranReader {
         let value = try TranslationCorpus(id: id, revision: revision, connection: connection, texts: texts, indexed: Self.hasIndex(connection))
         translationCorpus = value
         return value
+    }
+
+    private static func vocabulary(_ connection: QuranConnection) throws -> QuranVocabulary {
+        try QuranVocabulary(connection.query("SELECT term, doc FROM quran_words_vocab") {
+            (QuranConnection.text($0, 0), Int(sqlite3_column_int($0, 1)))
+        })
     }
 
     private static func hasIndex(_ connection: QuranConnection) throws -> Bool {

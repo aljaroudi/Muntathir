@@ -206,6 +206,21 @@ extension LibraryPackStore where Reader == RulingsReader {
             signature = nil
             replaceRequested = true
             await refresh()
+            // The system keeps a pack it already holds instead of fetching it, so a copy this app cannot
+            // read (an old format served again, a corrupt file) would be confirmed and rejected forever.
+            // Discard it and fetch the hosted copy once.
+            guard state == .incompatible || state == .failed, await (try? backend.localURL()) != nil else { return }
+            Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
+                .notice("Replacing the unreadable \(packID) pack with a fresh download.")
+            downloading = true
+            state = .downloading
+            progress = nil
+            try await backend.remove()
+            try await backend.download()
+            downloading = false
+            signature = nil
+            replaceRequested = true
+            await refresh()
         } catch {
             downloading = false
             state = .failed

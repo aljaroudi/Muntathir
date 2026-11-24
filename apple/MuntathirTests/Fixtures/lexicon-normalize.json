@@ -1,0 +1,130 @@
+{
+  "_comment": "Generated from shared/lexicon/normalize.py; the Swift and Kotlin dictionary readers must agree on every case.",
+  "words": [
+    {
+      "text": "كُتُب",
+      "spell": "كتب",
+      "normalize": "كتب"
+    },
+    {
+      "text": "الكِتَابُ",
+      "spell": "الكتاب",
+      "normalize": "الكتاب"
+    },
+    {
+      "text": "الصَّلاةُ",
+      "spell": "الصلاه",
+      "normalize": "الصلاه"
+    },
+    {
+      "text": "السَّمَٰوَٰتِ",
+      "spell": "السماوات",
+      "normalize": "السماوات"
+    },
+    {
+      "text": "عَلَىٰ",
+      "spell": "على",
+      "normalize": "علي"
+    },
+    {
+      "text": "ءَامَنُوا",
+      "spell": "آمنوا",
+      "normalize": "امنوا"
+    },
+    {
+      "text": "لِءَايَٰتِ",
+      "spell": "لآيات",
+      "normalize": "لايات"
+    },
+    {
+      "text": "قُرْءَان",
+      "spell": "قرآن",
+      "normalize": "قران"
+    },
+    {
+      "text": "ٱلَّذِينَ",
+      "spell": "الذين",
+      "normalize": "الذين"
+    },
+    {
+      "text": "فَسَيَكْفِيكَهُمُ",
+      "spell": "فسيكفيكهم",
+      "normalize": "فسيكفيكهم"
+    },
+    {
+      "text": "بِالمُؤْمِنِينَ",
+      "spell": "بالمؤمنين",
+      "normalize": "بالمومنين"
+    },
+    {
+      "text": "مُؤْتٍ",
+      "spell": "مؤت",
+      "normalize": "موت"
+    },
+    {
+      "text": "شَيْءٍ",
+      "spell": "شيء",
+      "normalize": "شيء"
+    },
+    {
+      "text": "جَاءَا",
+      "spell": "جاءا",
+      "normalize": "جاءا"
+    },
+    {
+      "text": "الرَّحمـٰنِ",
+      "spell": "الرحمان",
+      "normalize": "الرحمان"
+    },
+    {
+      "text": "إِبْرَاهِيمَ",
+      "spell": "إبراهيم",
+      "normalize": "ابراهيم"
+    },
+    {
+      "text": "آدَم",
+      "spell": "آدم",
+      "normalize": "ادم"
+    },
+    {
+      "text": "یکی",
+      "spell": "يكي",
+      "normalize": "يكي"
+    },
+    {
+      "text": "کتاب",
+      "spell": "كتاب",
+      "normalize": "كتاب"
+    },
+    {
+      "text": "الله،",
+      "spell": "الله",
+      "normalize": "الله"
+    },
+    {
+      "text": "(قال)",
+      "spell": "قال",
+      "normalize": "قال"
+    },
+    {
+      "text": "١٢٣",
+      "spell": "",
+      "normalize": ""
+    },
+    {
+      "text": "ﻻ",
+      "spell": "لا",
+      "normalize": "لا"
+    },
+    {
+      "text": "الصلوٰة",
+      "spell": "الصلواه",
+      "normalize": "الصلواه"
+    },
+    {
+      "text": "۞",
+      "spell": "",
+      "normalize": ""
+    }
+  ]
+}

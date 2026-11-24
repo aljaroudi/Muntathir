@@ -126,20 +126,22 @@ fun DictionaryScreen(
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var query by rememberSaveable { mutableStateOf(initial) }
     var submitted by rememberSaveable { mutableStateOf(initial) }
-    var source by rememberSaveable { mutableStateOf<Int?>(null) }
     var root by rememberSaveable { mutableStateOf<String?>(null) }
     var recorded by rememberSaveable { mutableStateOf(false) }
-    var matches by remember { mutableStateOf(DictionaryReader.Matches()) }
-    var definitions by remember { mutableStateOf(emptyList<Pair<Int, String>>()) }
+    // A looked-up word almost always has one root, so its definitions open directly; the other
+    // roots its spelling can come from are offered there.
+    var opened by rememberSaveable { mutableStateOf(false) }
+    var alternatives by rememberSaveable { mutableStateOf(emptyList<String>()) }
+    var roots by remember { mutableStateOf(emptyList<String>()) }
+    var definitions by remember { mutableStateOf(emptyList<DictionaryReader.Definition>()) }
     var failed by remember { mutableStateOf(false) }
 
     fun visit(
         value: String,
         entry: Boolean,
-        matchSource: Int? = null,
     ) {
-        source = matchSource
         if (value.isBlank()) return
+        alternatives = emptyList()
         library.visit(DictionaryRecord(value, entry))
         if (entry) {
             root = value
@@ -156,7 +158,7 @@ fun DictionaryScreen(
         library.refresh()
     }
     LaunchedEffect(submitted, root, state.status, state.revision) {
-        matches = DictionaryReader.Matches()
+        roots = emptyList()
         definitions = emptyList()
         failed = false
         if (state.status == RulingsStatus.Ready) {
@@ -165,7 +167,12 @@ fun DictionaryScreen(
                 if (selected != null) {
                     definitions = library.reader.entry(selected)
                 } else if (submitted.isNotBlank()) {
-                    matches = library.reader.search(submitted)
+                    roots = library.reader.search(submitted)
+                    if (!opened && initial.isNotBlank() && submitted == initial && roots.isNotEmpty()) {
+                        opened = true
+                        root = roots.first()
+                        alternatives = roots.drop(1)
+                    }
                 }
             } catch (error: CancellationException) {
                 throw error
@@ -194,9 +201,23 @@ fun DictionaryScreen(
                         Text(stringResource(if (selected in bookmarks) R.string.remove_bookmark else R.string.bookmark))
                     }
                 }
-                items(definitions.sortedBy { if (it.first == source) -1 else it.first }) { (source, body) ->
-                    Text(sources[source], style = MaterialTheme.typography.titleMedium)
-                    ReaderText(StyledText(body), "", 20f, rightToLeft = true)
+                if (alternatives.isNotEmpty()) {
+                    item {
+                        Text(
+                            stringResource(R.string.dictionary_other_roots),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    }
+                    items(alternatives) { other -> TextButton(onClick = { visit(other, true) }) { Text(other) } }
+                }
+                items(definitions) { definition ->
+                    // A source filing the root under another spelling (سمو for سما) names that heading.
+                    val name = sources[definition.source]
+                    Text(
+                        if (definition.root == selected) name else "$name · ${definition.root}",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    ReaderText(StyledText(definition.body), "", 20f, rightToLeft = true)
                 }
             } else {
                 item {
@@ -254,27 +275,13 @@ fun DictionaryScreen(
                         }
                         if (submitted.isNotBlank() && state.status == RulingsStatus.Ready) {
                             item { Text(submitted, style = MaterialTheme.typography.titleMedium) }
-                            if (matches.roots.isEmpty()) item { Text(stringResource(R.string.no_root_found)) }
-                            items(matches.roots) { word -> TextButton(onClick = { visit(word, true) }) { Text(word) } }
+                            if (roots.isEmpty()) item { Text(stringResource(R.string.no_root_found)) }
+                            items(roots) { word -> TextButton(onClick = { visit(word, true) }) { Text(word) } }
                             val words = submitted.trim().split(Regex("\\s+"))
                             if (words.size >
                                 1
                             ) {
                                 items(words) { word -> TextButton(onClick = { visit(word, false) }) { Text(word) } }
-                            }
-                            item {
-                                Text(
-                                    stringResource(R.string.dictionary_passages),
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                            }
-                            items(matches.passages) { match ->
-                                TextButton(onClick = { visit(match.root, true, match.source) }) {
-                                    Column {
-                                        Text(match.root + " · " + sources[match.source])
-                                        Text(match.preview, maxLines = 2)
-                                    }
-                                }
                             }
                         }
                     }

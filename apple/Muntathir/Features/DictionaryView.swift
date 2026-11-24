@@ -1,15 +1,19 @@
 import SwiftUI
 
-/// Search for Arabic words; results open the full entry from each source dictionary.
+/// Search for Arabic words; results open the full entry from each source dictionary. Looking up
+/// selected text (`showsSearch` off) shows that text's roots without a search field.
 struct DictionaryView: View {
     var initialQuery = ""
+    var showsSearch = true
     @State private var query = ""
     @State private var submitted = ""
     @State private var started = false
-    @State private var matches = DictionaryReader.Matches()
-    /// The query `matches` belongs to, so the empty state doesn't flash while a search runs.
+    @State private var roots: [String] = []
+    /// The query `roots` belongs to, so the empty state doesn't flash while a search runs.
     @State private var searched: String?
     @State private var failed = false
+    /// An on-device guess when lookup finds no root for a single word; see `DictionaryRootSuggester`.
+    @State private var suggestion: String?
     @AppStorage("lexicon.bookmarks") private var bookmarksData = Data()
     private let assets = AssetPackUpdates.shared.dictionary
 
@@ -21,7 +25,7 @@ struct DictionaryView: View {
                 download
             }
         }
-        .navigationTitle("Arabic Dictionary")
+        .navigationTitle(showsSearch ? Text("Arabic Dictionary") : Text(verbatim: initialQuery))
         .onAppear {
             guard !started else { return }
             started = true
@@ -36,7 +40,40 @@ struct DictionaryView: View {
     private var results: some View {
         let words = submitted.split(whereSeparator: \.isWhitespace).map(String.init)
         let bookmarks = DictionaryBookmarks.decode(bookmarksData)
-        return List {
+        return Group {
+            // A looked-up word almost always has one root, so its definitions open directly; other
+            // readings of the spelling are offered from there.
+            if !showsSearch, searched == submitted, words.count == 1, let first = roots.first {
+                DictionaryEntryView(root: first, alternatives: Array(roots.dropFirst()))
+            } else {
+                list(words: words, bookmarks: bookmarks)
+            }
+        }
+        .modifier(DictionarySearchField(enabled: showsSearch, query: $query, submitted: $submitted))
+        .task(id: Request(query: submitted, revision: assets.revision)) {
+            failed = false
+            suggestion = nil
+            guard !submitted.isEmpty else { roots = []; searched = nil; return }
+            do {
+                let result = try await assets.reader.search(submitted)
+                try Task.checkCancellation()
+                roots = result
+                searched = submitted
+                guard result.isEmpty, words.count == 1, DictionaryRootSuggester.isAvailable else { return }
+                let candidates = try await assets.reader.candidateRoots(for: submitted)
+                let root = await DictionaryRootSuggester.shared.suggest(for: DictionaryReader.spell(submitted), candidates: candidates)
+                try Task.checkCancellation()
+                suggestion = root
+            } catch {
+                if !Task.isCancelled {
+                    failed = true
+                }
+            }
+        }
+    }
+
+    private func list(words: [String], bookmarks: [String]) -> some View {
+        List {
             if submitted.isEmpty {
                 if !bookmarks.isEmpty {
                     Section("Bookmarks") {
@@ -44,29 +81,27 @@ struct DictionaryView: View {
                     }
                 }
             } else if searched == submitted {
-                if !matches.roots.isEmpty {
+                if !roots.isEmpty {
                     Section("Roots") {
-                        ForEach(matches.roots, id: \.self) { root in rootLink(root) }
+                        ForEach(roots, id: \.self) { root in rootLink(root) }
+                    }
+                }
+                if let suggestion {
+                    Section {
+                        rootLink(suggestion)
+                    } header: {
+                        Text("Suggested Root")
+                    } footer: {
+                        Text("This word isn’t in the dictionaries’ word lists. Its root was inferred on this device and may be wrong.")
                     }
                 }
                 if words.count > 1 {
                     Section("Words") {
                         ForEach(Array(words.enumerated()), id: \.offset) { _, word in
-                            Button(word) { search(word) }
-                        }
-                    }
-                }
-                if !matches.passages.isEmpty {
-                    Section("Mentions") {
-                        ForEach(matches.passages, id: \.self) { match in
-                            NavigationLink {
-                                DictionaryEntryView(root: match.root, source: match.source)
-                            } label: {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(match.root).font(.headline)
-                                    Text(match.preview).foregroundStyle(.secondary).lineLimit(2)
-                                    Text(DictionaryReader.sources[match.source]).font(.caption).foregroundStyle(.secondary)
-                                }
+                            if showsSearch {
+                                Button(word) { search(word) }
+                            } else {
+                                NavigationLink(word) { DictionaryView(initialQuery: word, showsSearch: false) }
                             }
                         }
                     }
@@ -79,25 +114,8 @@ struct DictionaryView: View {
             } else if submitted.isEmpty, bookmarks.isEmpty {
                 ContentUnavailableView("Arabic Dictionary", systemImage: "character.book.closed",
                                        description: Text("Search for a word to see its root and meanings."))
-            } else if searched == submitted, !submitted.isEmpty, matches.roots.isEmpty, matches.passages.isEmpty, words.count < 2 {
+            } else if searched == submitted, !submitted.isEmpty, roots.isEmpty, suggestion == nil, words.count < 2 {
                 ContentUnavailableView.search(text: submitted)
-            }
-        }
-        .searchable(text: $query, placement: .alwaysVisible, prompt: "Search")
-        .searchHistory($query, area: .dictionary)
-        .submitsSearch($query, submitted: $submitted)
-        .task(id: Request(query: submitted, revision: assets.revision)) {
-            failed = false
-            guard !submitted.isEmpty else { matches = .init(); searched = nil; return }
-            do {
-                let result = try await assets.reader.search(submitted)
-                try Task.checkCancellation()
-                matches = result
-                searched = submitted
-            } catch {
-                if !Task.isCancelled {
-                    failed = true
-                }
             }
         }
     }
@@ -139,7 +157,9 @@ struct DictionaryView: View {
         guard !value.isEmpty else { return }
         query = value
         submitted = value
-        SearchHistory.shared.record(value, in: .dictionary)
+        if showsSearch {
+            SearchHistory.shared.record(value, in: .dictionary)
+        }
     }
 
     private struct Request: Equatable {
@@ -148,10 +168,29 @@ struct DictionaryView: View {
     }
 }
 
-/// Every source's definition of one root, with the source that matched a search listed first.
+/// The dictionary tool's search field; lookups of selected text have none.
+private struct DictionarySearchField: ViewModifier {
+    let enabled: Bool
+    @Binding var query: String
+    @Binding var submitted: String
+
+    func body(content: Content) -> some View {
+        if enabled {
+            content
+                .searchable(text: $query, placement: .alwaysVisible, prompt: "Search")
+                .searchHistory($query, area: .dictionary)
+                .submitsSearch($query, submitted: $submitted)
+        } else {
+            content
+        }
+    }
+}
+
+/// Every source's definition of one root.
 struct DictionaryEntryView: View {
     let root: String
-    var source: Int?
+    /// Other roots the looked-up spelling can come from, less likely than `root`.
+    var alternatives: [String] = []
     @State private var definitions: [DictionaryReader.Definition] = []
     @State private var failed = false
     @State private var lookup: Lookup?
@@ -166,8 +205,20 @@ struct DictionaryEntryView: View {
         let bookmarks = DictionaryBookmarks.decode(bookmarksData)
         let saved = bookmarks.contains(root)
         List {
-            ForEach(definitions.sorted { ($0.id == source ? -1 : $0.id) < ($1.id == source ? -1 : $1.id) }) { entry in
-                Section(DictionaryReader.sources[entry.id]) {
+            if !alternatives.isEmpty {
+                Section("Other Possible Roots") {
+                    ForEach(alternatives, id: \.self) { other in
+                        NavigationLink {
+                            DictionaryEntryView(root: other)
+                        } label: {
+                            Text(other).readingText(arabic: true, hadith: true, adjustable: false)
+                        }
+                    }
+                }
+            }
+            ForEach(definitions) { entry in
+                // A source filing the root under another spelling (سمو for سما) names that heading.
+                Section(entry.root == root ? DictionaryReader.sources[entry.source] : "\(DictionaryReader.sources[entry.source]) · \(entry.root)") {
                     DictionarySelectableText(text: entry.body)
                 }
             }
@@ -186,8 +237,8 @@ struct DictionaryEntryView: View {
         }
         // Looking up text inside an entry searches on this stack instead of opening another sheet.
         .environment(\.lookupSelection) { lookup = Lookup(text: $0) }
-        .navigationDestination(item: $lookup) { DictionaryView(initialQuery: $0.text) }
-        .task(id: assets.revision) {
+        .navigationDestination(item: $lookup) { DictionaryView(initialQuery: $0.text, showsSearch: false) }
+        .task(id: "\(root)|\(assets.revision)") {
             failed = false
             guard assets.state == .ready else { return }
             do {
@@ -261,7 +312,7 @@ struct DictionaryLookupHost: ViewModifier {
         content.environment(\.lookupSelection) { selection = Selection(text: $0) }
             .sheet(item: $selection) { item in
                 NavigationStack {
-                    DictionaryView(initialQuery: item.text)
+                    DictionaryView(initialQuery: item.text, showsSearch: false)
                         .toolbar {
                             ToolbarItem(placement: .confirmationAction) { Button("Done") { selection = nil } }
                         }
