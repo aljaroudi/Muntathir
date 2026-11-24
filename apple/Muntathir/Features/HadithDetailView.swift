@@ -42,22 +42,22 @@ struct HadithDetailView: View {
                 } else if let detail {
                     let narration = detail.narration
                     if isSupplication {
-                        Text(narration.chapter.chapterTitle(locale: locale))
+                        DictionarySelectableText(text: narration.chapter.chapterTitle(locale: locale), arabic: false)
                             .font(.title2.weight(.semibold))
                             .accessibilityIdentifier("supplication-title")
                     } else {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text(narration.chapter.bookTitle(locale: locale))
+                            DictionarySelectableText(text: narration.chapter.bookTitle(locale: locale), arabic: false)
                                 .font(.headline)
                                 .accessibilityIdentifier("hadith-detail-book")
                             if !detail.authorName(locale: locale).isEmpty {
-                                Text(detail.authorName(locale: locale))
+                                DictionarySelectableText(text: detail.authorName(locale: locale), arabic: false)
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                     .accessibilityIdentifier("hadith-detail-author")
                             }
                             if !narration.chapter.chapterTitle(locale: locale).isEmpty {
-                                Text(narration.chapter.chapterTitle(locale: locale))
+                                DictionarySelectableText(text: narration.chapter.chapterTitle(locale: locale), arabic: false)
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                     .accessibilityIdentifier("hadith-detail-chapter")
@@ -117,15 +117,15 @@ struct HadithDetailView: View {
                                 .accessibilityAddTraits(.isHeader)
                             ForEach(gradings) { grading in
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(grading.judgment(locale: locale))
+                                    DictionarySelectableText(text: grading.judgment(locale: locale), arabic: false)
                                         .font(.headline)
                                     if !grading.grader(locale: locale).isEmpty {
-                                        Text(grading.grader(locale: locale))
+                                        DictionarySelectableText(text: grading.grader(locale: locale), arabic: false)
                                             .font(.subheadline)
                                             .foregroundStyle(.secondary)
                                     }
                                     if !grading.reference(locale: locale).isEmpty {
-                                        Text(grading.reference(locale: locale))
+                                        DictionarySelectableText(text: grading.reference(locale: locale), arabic: false)
                                             .font(.footnote)
                                             .foregroundStyle(.secondary)
                                     }

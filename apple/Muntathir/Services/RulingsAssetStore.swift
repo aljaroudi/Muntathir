@@ -2,9 +2,26 @@ import Foundation
 import Observation
 import OSLog
 
-@MainActor @Observable final class RulingsAssetStore {
+protocol LibraryPackReader: Actor {
+    init()
+    func install(_ url: URL?) throws
+    func replace(_ destination: URL, with staged: URL) throws
+}
+
+extension RulingsReader: LibraryPackReader {}
+typealias RulingsAssetStore = LibraryPackStore<RulingsReader>
+
+extension LibraryPackStore where Reader == RulingsReader {
+    convenience init(backend: any AssetPackBackend = AppleAssetPackBackend(identifier: "rulings-v2", resourcePath: "Rulings/rulings.db"),
+                     defaults: UserDefaults = .standard, library: URL? = nil)
+    {
+        self.init(packID: "rulings-v2", filename: "rulings/rulings.db", backend: backend, defaults: defaults, library: library)
+    }
+}
+
+@MainActor @Observable final class LibraryPackStore<Reader: LibraryPackReader> {
     enum State { case checking, missing, downloading, ready, failed, incompatible }
-    let reader = RulingsReader()
+    let reader = Reader()
     private let backend: any AssetPackBackend
     private(set) var state: State = .checking
     private(set) var progress: Progress?
@@ -21,27 +38,25 @@ import OSLog
     private let defaults: UserDefaults
     /// The app-owned copy that is read. Without one (tests and UI tests), the managed pack is read in place.
     private let library: URL?
-    private let installedVersionKey = "rulings-v2.installedPackVersion"
+    private let packID: String
+    private var installedVersionKey: String {
+        "\(packID).installedPackVersion"
+    }
 
     private var installedVersion: Int? {
         defaults.object(forKey: installedVersionKey) as? Int
     }
 
     private var policy: AssetPackUpdatePolicy {
-        AssetPackUpdatePolicy(packID: "rulings-v2", defaults: defaults)
+        AssetPackUpdatePolicy(packID: packID, defaults: defaults)
     }
 
-    init(backend: any AssetPackBackend = AppleAssetPackBackend(identifier: "rulings-v2", resourcePath: "Rulings/rulings.db"),
-         defaults: UserDefaults = .standard, library: URL? = nil)
-    {
+    init(packID: String, filename: String, backend: any AssetPackBackend, defaults: UserDefaults = .standard, library: URL? = nil) {
+        self.packID = packID
         self.backend = backend
         self.defaults = defaults
-        self.library = library ?? Self.defaultLibrary(backend: backend)
-    }
-
-    private static func defaultLibrary(backend: any AssetPackBackend) -> URL? {
-        guard backend is AppleAssetPackBackend, !ProcessInfo.processInfo.arguments.contains("--ui-testing") else { return nil }
-        return URL.applicationSupportDirectory.appending(path: "Libraries/rulings/rulings.db")
+        let usesLibrary = backend is AppleAssetPackBackend && !ProcessInfo.processInfo.arguments.contains("--ui-testing")
+        self.library = library ?? (usesLibrary ? URL.applicationSupportDirectory.appending(path: "Libraries/" + filename) : nil)
     }
 
     /// Downloads a newer hosted pack when due; `refresh()` adopts it only if it passes validation.
@@ -57,7 +72,7 @@ import OSLog
             guard policy.accepts(remote, over: installedVersion) else { return }
             if let installedVersion {
                 Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
-                    .notice("Updating rulings from \(installedVersion) to \(remote).")
+                    .notice("Updating \(packID) from \(installedVersion) to \(remote).")
             }
             if await backend.localVersion() != remote {
                 try await backend.download()
@@ -65,7 +80,7 @@ import OSLog
             await refresh()
         } catch {
             Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
-                .error("Rulings update check failed: \(String(describing: error), privacy: .public)")
+                .error("Library update check failed: \(String(describing: error), privacy: .public)")
         }
     }
 
@@ -87,7 +102,7 @@ import OSLog
         }
         let log = Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
         do {
-            try await RulingsReader().install(managed)
+            try await Reader().install(managed)
         } catch {
             // An interrupted check proves nothing about the pack; keep it for the next refresh.
             if Task.isCancelled, let local {
@@ -95,7 +110,7 @@ import OSLog
             }
             // Without a copy to keep, the error surfaces as incompatible or failed.
             guard let local else { throw error }
-            log.error("Rejected rulings pack \(version ?? 0): \(String(describing: error), privacy: .public)")
+            log.error("Rejected \(packID) pack \(version ?? 0): \(String(describing: error), privacy: .public)")
             if let version {
                 policy.reject(version)
             }
@@ -114,13 +129,13 @@ import OSLog
             }
             guard let local else { throw error }
             // Storage failures are transient; the managed pack stays for the next refresh.
-            log.error("Could not install rulings pack \(version ?? 0): \(String(describing: error), privacy: .public)")
+            log.error("Could not install library pack \(version ?? 0): \(String(describing: error), privacy: .public)")
             return local
         }
         if let version {
             defaults.set(version, forKey: installedVersionKey)
         }
-        log.notice("Installed rulings pack \(version ?? 0).")
+        log.notice("Installed \(packID) pack \(version ?? 0).")
         try? await backend.remove()
         return library
     }

@@ -6,6 +6,8 @@ import Foundation
 
     let hadith: HadithAssetStore
     let supplications: HadithAssetStore
+    let dictionary = LibraryPackStore<DictionaryReader>(packID: "lexicon", filename: "lexicon/lexicon.db",
+                                                        backend: AppleAssetPackBackend(identifier: "lexicon", resourcePath: "Lexicon/lexicon.db"))
     let rulings: RulingsAssetStore
     private var current: Task<Void, Never>?
 
@@ -24,10 +26,12 @@ import Foundation
         let task = Task {
             await previous?.value
             let translations = QuranTranslationStore.shared
+            await dictionary.refresh()
             await rulings.refresh()
             await hadith.refresh()
             await supplications.refresh()
             await translations.refresh()
+            await dictionary.checkForUpdates(trigger: trigger)
             await rulings.checkForUpdates(trigger: trigger)
             await hadith.checkForUpdates(trigger: trigger)
             await supplications.checkForUpdates(trigger: trigger)

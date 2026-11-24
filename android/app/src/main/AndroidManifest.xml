@@ -38,6 +38,15 @@
         android:theme="@style/Theme.Muntathir"
         tools:targetApi="37">
 
+        <activity android:name=".ui.dictionary.DictionaryActivity"
+            android:label="@string/dictionary_lookup" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.PROCESS_TEXT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+
         <!-- singleTop: launcher shortcuts, widgets and the tile reach the running activity (onNewIntent). -->
         <activity
             android:name=".MainActivity"

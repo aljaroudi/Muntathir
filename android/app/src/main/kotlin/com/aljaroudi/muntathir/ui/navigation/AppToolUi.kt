@@ -29,6 +29,7 @@ val AppTool.title: Int
             AppTool.Quran -> R.string.holy_quran
             AppTool.Hadith -> R.string.hadith
             AppTool.Supplications -> R.string.supplications
+            AppTool.Dictionary -> R.string.arabic_dictionary
             AppTool.Sermons -> R.string.sermons
             AppTool.Rulings -> R.string.rulings
             AppTool.Figures -> R.string.figures
@@ -47,6 +48,7 @@ val AppTool.icon: ImageVector
             AppTool.Quran -> Icons.AutoMirrored.Outlined.MenuBook
             AppTool.Hadith -> Icons.Outlined.Book
             AppTool.Supplications -> Icons.Outlined.VolunteerActivism
+            AppTool.Dictionary -> Icons.Outlined.Book
             AppTool.Sermons -> Icons.AutoMirrored.Outlined.MenuBook
             AppTool.Rulings -> Icons.AutoMirrored.Outlined.Article
             AppTool.Figures -> Icons.Outlined.People

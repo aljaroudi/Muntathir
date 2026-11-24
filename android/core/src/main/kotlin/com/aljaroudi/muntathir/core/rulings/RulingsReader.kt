@@ -64,14 +64,14 @@ data class RulingsSection(
 class RulingsReader(
     private val driver: SqlDriver,
     private val io: CoroutineDispatcher = Dispatchers.IO,
-) {
+) : LibraryPackReader {
     private var packVersion = 1
     private val columns get() = QUESTION_COLUMNS + if (packVersion == 2) ", q.context, q.kind" else ", '', 'qa'"
     private val mutex = Mutex()
     private var connection: ContentSql? = null
 
     /** Opens [file] once it passes the schema and integrity checks, or closes the current one. */
-    suspend fun install(file: File?) =
+    override suspend fun install(file: File?) =
         locked {
             runCatching { connection?.close() }
             connection = null

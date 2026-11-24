@@ -183,7 +183,7 @@ struct SharedAyah: Identifiable {
                     preview.resizable().scaledToFit().frame(maxWidth: 360, maxHeight: 480)
                     ShareLink(item: preview, preview: SharePreview(Text("Muntathir"), image: preview))
                 } else if let text = items.first(where: { $0 is String }) as? String {
-                    ScrollView { Text(text).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading) }
+                    ScrollView { DictionarySelectableText(text: text).frame(maxWidth: .infinity, alignment: .leading) }
                         .frame(width: 360, height: 240)
                     ShareLink(item: text)
                 }

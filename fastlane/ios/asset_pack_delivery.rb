@@ -5,7 +5,7 @@ Dotenv.load(ENV.fetch("MUNTATHIR_FASTLANE_ENV_FILE", File.expand_path("~/.config
 mode = ARGV.shift || "--list"
 pack = ARGV.shift
 pack = "rulings-v2" if pack == "rulings"
-known = %w[hadith supplications quran-translations rulings-v2]
+known = %w[hadith supplications quran-translations rulings-v2 lexicon]
 abort "Usage: ruby fastlane/ios/asset_pack_delivery.rb [--list|--upload [pack-id]]" unless %w[--list --upload].include?(mode) && ARGV.empty? && (pack.nil? || (mode == "--upload" && known.include?(pack)))
 root = File.expand_path("../../apple", __dir__)
 altool = "/Applications/Transporter.app/Contents/Frameworks/ContentDelivery.framework/Versions/A/Resources/altool"

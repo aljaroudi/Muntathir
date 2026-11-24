@@ -110,7 +110,8 @@ android {
     bundle.language.enableSplit = false
 
     // Content databases ship as Play Asset Delivery packs; only the Quran text is in the base APK.
-    assetPacks += listOf(":packs:hadith", ":packs:supplications", ":packs:quran_translations", ":packs:rulings")
+    assetPacks +=
+        listOf(":packs:hadith", ":packs:supplications", ":packs:quran_translations", ":packs:rulings", ":packs:lexicon")
     // Databases are copied out once; storing them uncompressed keeps that a plain stream copy.
     androidResources.noCompress += "db"
 

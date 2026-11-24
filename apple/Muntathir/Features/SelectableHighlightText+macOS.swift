@@ -4,6 +4,7 @@
 
     /// The macOS counterpart of the iOS reader text view: selectable, highlightable text backed by `NSTextView`.
     struct SelectableHighlightText: NSViewRepresentable {
+        @Environment(\.lookupSelection) private var lookupSelection
         let attributed: NSMutableAttributedString
         let highlights: [ReadingHighlight]
         let block: String
@@ -89,6 +90,12 @@
                     items.append(MenuAction.item(title: String(localized: "Highlight"), systemImage: "highlighter") { [weak self, weak view] in
                         view?.setSelectedRange(NSRange(location: 0, length: 0))
                         self?.parent.select(selected)
+                    })
+                }
+                if !selected.isEmpty {
+                    let value = selected.map { (view.string as NSString).substring(with: $0) }.joined(separator: " ")
+                    items.append(MenuAction.item(title: String(localized: "Dictionary"), systemImage: "character.book.closed") { [weak self] in
+                        self?.parent.lookupSelection(value)
                     })
                 }
                 items += parent.additionalActions(selected).map { MenuAction.item(title: $0.title, systemImage: $0.systemImage, perform: $0.perform) }

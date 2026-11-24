@@ -5,7 +5,7 @@ require "base64"
 require "tmpdir"
 
 module MuntathirRelease
-  REQUIRED_ASSET_PACKS = %w[hadith supplications quran-translations rulings-v2].freeze
+  REQUIRED_ASSET_PACKS = %w[hadith supplications quran-translations rulings-v2 lexicon].freeze
 
   class << self
     attr_accessor :review_pack_versions

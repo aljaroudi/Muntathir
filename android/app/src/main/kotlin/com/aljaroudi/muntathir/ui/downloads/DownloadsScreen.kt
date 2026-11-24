@@ -67,6 +67,7 @@ class DownloadsViewModel
         val translations: QuranTranslations,
         val libraries: ContentLibraries,
         val rulings: RulingsLibrary,
+        val dictionary: com.aljaroudi.muntathir.ui.dictionary.DictionaryLibrary,
     ) : ViewModel()
 
 /** Swift `DownloadsSettingsView`: Hadith (with its books), Supplications and Quran translations. */
@@ -101,6 +102,10 @@ fun DownloadsScreen(
     }
     ScreenScaffold(stringResource(R.string.downloads), onBack = onBack) { padding ->
         LazyColumn(Modifier.fillMaxSize().testTag("downloads"), contentPadding = padding) {
+            item {
+                com.aljaroudi.muntathir.ui.dictionary
+                    .DictionaryPack(viewModel.dictionary, manage = true)
+            }
             libraryPack(
                 library = hadith,
                 state = hadithState,

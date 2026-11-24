@@ -58,7 +58,7 @@ struct MuntathirApp: App {
         WindowGroup {
             appData {
                 if model.onboardingCompleted {
-                    ContentView().modifier(ReleaseNotesPrompt())
+                    ContentView().modifier(DictionaryLookupHost()).modifier(ReleaseNotesPrompt())
                 } else {
                     OnboardingView().modifier(FreshInstallReleaseMarker())
                 }

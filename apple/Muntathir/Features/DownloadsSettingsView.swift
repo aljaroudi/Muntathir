@@ -10,6 +10,9 @@ struct DownloadsSettingsView: View {
 
     var body: some View {
         List {
+            Section("Arabic Dictionary") { DictionaryDownloadRow() }
+                .task { await AssetPackUpdates.shared.dictionary.refresh() }
+                .task { await AssetPackUpdates.shared.dictionary.monitor() }
             if let rulings {
                 RulingsDownloadSection(assets: rulings)
             }

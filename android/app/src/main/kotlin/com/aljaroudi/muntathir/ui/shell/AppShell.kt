@@ -427,6 +427,11 @@ private fun ToolScreen(
             SupplicationsScreen(hiltViewModel(), open, onBack)
         }
 
+        AppTool.Dictionary -> {
+            com.aljaroudi.muntathir.ui.dictionary
+                .DictionaryScreen(onBack = onBack)
+        }
+
         AppTool.Sermons -> {
             SermonsScreen(onBack = onBack, onOpen = { open(SermonRoute(it)) }, open = open)
         }

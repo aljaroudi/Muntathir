@@ -11,6 +11,7 @@ extension AppTool: AppEnum {
         .quran: DisplayRepresentation(title: "Holy Quran", image: .init(systemName: "book.closed")),
         .hadith: DisplayRepresentation(title: "Hadith", image: .init(systemName: "text.book.closed")),
         .supplications: DisplayRepresentation(title: "Supplications", image: .init(systemName: "hands.sparkles")),
+        .dictionary: DisplayRepresentation(title: "Arabic Dictionary", image: .init(systemName: "character.book.closed")),
         .sermons: DisplayRepresentation(title: "Sermons", image: .init(systemName: "text.quote")),
         .rulings: DisplayRepresentation(title: "Rulings", image: .init(systemName: "text.page")),
         .figures: DisplayRepresentation(title: "Figures", image: .init(systemName: "person.2")),

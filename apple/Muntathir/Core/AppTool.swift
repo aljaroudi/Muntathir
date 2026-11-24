@@ -1,7 +1,7 @@
 import Foundation
 
 enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
-    case calendar, events, quran, hadith, supplications, sermons, rulings, figures, tasbih, rakaat, prayerProgress, qibla
+    case calendar, events, quran, hadith, supplications, sermons, dictionary, rulings, figures, tasbih, rakaat, prayerProgress, qibla
 
     var id: String {
         rawValue
@@ -15,6 +15,7 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
         case .hadith: "Hadith"
         case .rulings: "Rulings"
         case .supplications: "Supplications"
+        case .dictionary: "Arabic Dictionary"
         case .sermons: "Sermons"
         case .figures: "Figures"
         case .tasbih: "Tasbih"
@@ -32,6 +33,7 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
         case .hadith: "text.book.closed"
         case .rulings: "text.page"
         case .supplications: "hands.sparkles"
+        case .dictionary: "character.book.closed"
         case .sermons: "text.quote"
         case .figures: "person.2"
         case .tasbih: "circle.dotted"
@@ -83,7 +85,7 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
 
     static let maximumShortcuts = 3
     static let groups: [ToolGroup] = [
-        ToolGroup(id: "library", title: "Library", tools: [.quran, .hadith, .supplications, .sermons]),
+        ToolGroup(id: "library", title: "Library", tools: [.quran, .hadith, .supplications, .sermons, .dictionary]),
         ToolGroup(id: "rulings", title: "Rulings", tools: [.rulings]),
         ToolGroup(id: "calendar", title: "Calendar", tools: [.calendar, .events, .figures]),
         ToolGroup(id: "practice", title: "Practice", tools: [.qibla, .rakaat, .tasbih, .prayerProgress]),

@@ -19,7 +19,8 @@ struct HadithMarkdownView: View {
                     }
                     Group {
                         if highlights.isEmpty, adjustable {
-                            SearchMatchText(paragraph.text)
+                            HighlightText(text: HighlightTextContent.canonical(paragraph.text), source: "", block: block,
+                                          isHadith: true, arabic: arabic, markdown: paragraph.text, heading: paragraph.heading)
                         } else {
                             ShareHighlightText(text: paragraph.text, highlights: highlights, block: block,
                                                sourceText: HighlightTextContent.canonical(text), offset: offset(for: paragraph))

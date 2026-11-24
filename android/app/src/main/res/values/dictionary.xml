@@ -1,0 +1,11 @@
+<resources>
+    <string name="arabic_dictionary">Arabic Dictionary</string>
+    <string name="dictionary_lookup">Look Up in Arabic Dictionary</string>
+    <string name="dictionary_entry">Entry</string>
+    <string name="dictionary_history">History</string>
+    <string name="dictionary_passages">Dictionary passages</string>
+    <string name="no_root_found">No root entry found.</string>
+    <string name="word_or_phrase">Word or phrase</string>
+    <string name="dictionary_read_error">Unable to read dictionary.</string>
+    <string name="dictionary_delete">Delete</string>
+</resources>

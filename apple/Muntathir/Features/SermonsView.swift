@@ -228,8 +228,7 @@ private struct SermonReader: View {
 
     private var header: some View {
         VStack(spacing: 10) {
-            Text(verbatim: sermon.title)
-                .readingText(arabic: true, hadith: true, heading: 1)
+            DictionarySelectableText(text: sermon.title, heading: 1, centered: true)
                 .accessibilityAddTraits(.isHeader)
             if let speaker {
                 NavigationLink(value: FigureRoute.profile(speaker.id)) {
@@ -263,7 +262,7 @@ private struct SermonReader: View {
 
     /// Lays out text in its own direction; `marked` adds a leading accent bar that sets translations apart from the Arabic.
     private func passage(_ text: String, language: String, centered: Bool = false, marked: Bool = false) -> some View {
-        Text(verbatim: text)
+        DictionarySelectableText(text: text, arabic: language == "ar", heading: centered ? 2 : nil, centered: centered)
             .multilineTextAlignment(centered ? .center : .leading)
             .frame(maxWidth: .infinity, alignment: centered ? .center : .leading)
             .padding(.leading, marked ? 14 : 0)

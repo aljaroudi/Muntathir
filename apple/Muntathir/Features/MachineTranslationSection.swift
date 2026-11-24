@@ -91,8 +91,7 @@ struct MachineTranslationSection: View {
                 .buttonStyle(.bordered)
             case let .translated(texts):
                 ForEach(Array(texts.enumerated()), id: \.offset) { index, text in
-                    Text(verbatim: text)
-                        .readingText(heading: index < headings ? 2 : nil)
+                    DictionarySelectableText(text: text, arabic: false, heading: index < headings ? 2 : nil)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .environment(\.layoutDirection, target.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight)

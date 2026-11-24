@@ -221,7 +221,7 @@ struct HighlightText: View {
                     tappedHighlights = matches
                     choosingHighlight = true
                 }
-            }, mappedRanges: ranges
+            }, mappedRanges: ranges, canHighlight: { _ in !source.isEmpty }
         )
         .frame(maxWidth: .infinity)
         .fixedSize(horizontal: false, vertical: true)
@@ -267,6 +267,7 @@ struct HighlightTextAction {
     struct SelectableHighlightText: UIViewRepresentable {
         @Environment(\.accessibilityReduceMotion) private var reduceMotion
         @Environment(\.scenePhase) private var scenePhase
+        @Environment(\.lookupSelection) private var lookupSelection
         let attributed: NSMutableAttributedString
         let highlights: [ReadingHighlight]
         let block: String
@@ -383,6 +384,12 @@ struct HighlightTextAction {
                         textView?.selectedTextRange = nil
                         textView?.resignFirstResponder()
                         self?.parent.select(selected)
+                    })
+                }
+                if !selected.isEmpty {
+                    let value = selected.map { (textView.text as NSString).substring(with: $0) }.joined(separator: " ")
+                    actions.append(UIAction(title: String(localized: "Dictionary"), image: UIImage(systemName: "character.book.closed")) { [weak self] _ in
+                        self?.parent.lookupSelection(value)
                     })
                 }
                 let additional = parent.additionalActions(selected).map { action in

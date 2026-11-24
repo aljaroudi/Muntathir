@@ -19,6 +19,7 @@ ANDROID_PACKS = {
     'hadith': ('hadith', 'on-demand'),
     'supplications': ('supplications', 'fast-follow'),
     'quran-translations': ('quran_translations', 'on-demand'),
+    'lexicon': ('lexicon', 'on-demand'),
     'rulings-v2': ('rulings', 'on-demand'),
 }
 
@@ -205,13 +206,18 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=['validate', 'package', 'android', 'check-bundle'])
     parser.add_argument('path', nargs='?')
-    parser.add_argument('--content', choices=['hadith', 'supplications', 'quran', 'rulings', 'all'], default='hadith')
+    parser.add_argument('--content', choices=['hadith', 'supplications', 'quran', 'rulings', 'lexicon', 'all'], default='hadith')
     args = parser.parse_args()
     manifests = []
     if args.command != 'check-bundle':
         if args.content in ('hadith', 'all'): manifests += validate_hadith()
         if args.content in ('supplications', 'all'): manifests += validate_hadith('supplications')
         if args.content in ('quran', 'all'): manifests += validate_quran()
+        if args.content in ('lexicon', 'all'):
+            import runpy
+            builder = runpy.run_path(str(ROOT / 'shared/lexicon/build.py'))
+            builder['validate'](builder['PACK'])
+            manifests.append(MANIFESTS / 'lexicon.json')
         if args.content in ('rulings', 'all'): manifests += validate_rulings()
     if args.command == 'package':
         output = Path(args.path).resolve() if args.path else ROOT / 'apple/build/AssetPacks/archives'

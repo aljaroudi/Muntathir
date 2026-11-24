@@ -33,6 +33,7 @@ enum class ContentPack(
 ) {
     Hadith("hadith", "Hadith/hadith.db", R.string.hadith),
     Supplications("supplications", "Supplications/supplications.db", R.string.supplications),
+    Dictionary("lexicon", "Lexicon/lexicon.db", R.string.arabic_dictionary),
     Rulings("rulings", "Rulings/rulings.db", R.string.rulings),
 
     /** Every Quran translation but the bundled English, as `Quran/<id>.db`. */

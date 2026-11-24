@@ -28,9 +28,13 @@ data class RulingsState(
 /**
  * The rulings pack, read where Play installs it. Port of Swift `RulingsAssetStore`; call it from one thread.
  */
-class RulingsAssetStore(
+interface LibraryPackReader {
+    suspend fun install(file: File?)
+}
+
+class RulingsAssetStore<R : LibraryPackReader>(
     private val pack: AssetPack,
-    val reader: RulingsReader,
+    val reader: R,
     private val fileName: String = "rulings.db",
     private val io: CoroutineDispatcher = Dispatchers.IO,
 ) {
