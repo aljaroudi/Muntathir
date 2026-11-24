@@ -114,14 +114,12 @@ final class MuntathirUITests: XCTestCase {
     }
 
     @MainActor private func verifyPrayerVisibility(in app: XCUIApplication) {
-        app.openSettingsFromTools()
-        let link = app.buttons["Visibility"]
-        for _ in 0 ..< 4 where !link.isHittable {
+        app.openSettingsPage("settings-prayers")
+        XCTAssertTrue(app.navigationBars["Prayer times"].waitForExistence(timeout: 5))
+        let last = app.switches["Maghrib"]
+        for _ in 0 ..< 4 where !last.isHittable {
             app.swipeUp()
         }
-        XCTAssertTrue(link.waitForExistence(timeout: 5))
-        link.tap()
-        XCTAssertTrue(app.navigationBars["Visibility"].waitForExistence(timeout: 5))
         for name in ["Fajr", "Dhuhr", "Maghrib"] {
             let toggle = app.switches[name]
             XCTAssertTrue(toggle.exists)

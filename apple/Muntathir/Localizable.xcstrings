@@ -3788,6 +3788,84 @@
             "state" : "machine_translated",
             "value" : "تختار Apple Intelligence أهم المقاطع من تعريفات كل جذر على هذا الجهاز."
           }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Apple Intelligence wählt auf diesem Gerät die wichtigsten Textstellen aus den Definitionen jeder Wurzel aus."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Apple Intelligence elige los pasajes clave de las definiciones de cada raíz en este dispositivo."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Apple Intelligence بخش‌های کلیدی تعریف‌های هر ریشه را روی همین دستگاه انتخاب می‌کند."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Apple Intelligence sélectionne sur cet appareil les passages clés des définitions de chaque racine."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Apple Intelligence memilih bagian utama dari definisi setiap akar kata di perangkat ini."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Apple Intelligence sceglie su questo dispositivo i passaggi chiave delle definizioni di ogni radice."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Apple Intelligenceが、この端末上で各語根の定義から重要な箇所を選びます。"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Apple Intelligence memilih petikan utama bagi definisi setiap akar kata pada peranti ini."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Apple Intelligence выбирает ключевые фрагменты определений каждого корня на этом устройстве."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Apple Intelligence, bu aygıtta her kökün tanımlarındaki önemli pasajları seçer."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "ایپل انٹیلیجنس اس آلے پر ہر جذر کی تعریفوں کے اہم اقتباس منتخب کرتی ہے۔"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Apple Intelligence在此设备上挑选每个词根释义中的关键段落。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Apple Intelligence會在此裝置上，挑選每個詞根釋義中的重點段落。"
+          }
         }
       }
     },
@@ -3885,6 +3963,84 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "المعجم العربي"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Arabisches Wörterbuch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Diccionario árabe"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "فرهنگ لغت عربی"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Dictionnaire arabe"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Kamus Arab"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Dizionario arabo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "アラビア語辞書"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Kamus Arab"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Арабский словарь"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Arapça Sözlük"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "عربی لغت"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "阿拉伯语词典"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "阿拉伯語辭典"
           }
         }
       }
@@ -9711,17 +9867,6 @@
         }
       }
     },
-    "Delete" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "حذف"
-          }
-        }
-      }
-    },
     "Delete highlight" : {
       "localizations" : {
         "ar" : {
@@ -10345,16 +10490,83 @@
             "state" : "machine_translated",
             "value" : "المعجم"
           }
-        }
-      }
-    },
-    "Dictionary passages" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ar" : {
+        },
+        "de" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "نصوص المعاجم"
+            "state" : "machine_translated",
+            "value" : "Wörterbuch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Diccionario"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "فرهنگ لغت"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Dictionnaire"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Kamus"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Dizionario"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "辞書"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Kamus"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Словарь"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Sözlük"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "لغت"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "词典"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "辭典"
           }
         }
       }
@@ -11587,17 +11799,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "請輸入本章中有效的經文編號。"
-          }
-        }
-      }
-    },
-    "Entry" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "مادة معجمية"
           }
         }
       }
@@ -16029,17 +16230,6 @@
         }
       }
     },
-    "History" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "السجل"
-          }
-        }
-      }
-    },
     "Hizb %lld" : {
       "localizations" : {
         "ar" : {
@@ -19488,17 +19678,6 @@
         }
       }
     },
-    "Look Up in Arabic Dictionary" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "بحث في المعجم العربي"
-          }
-        }
-      }
-    },
     "Look up words offline." : {
       "comment" : "A description of the action to look up words offline.",
       "isCommentAutoGenerated" : true,
@@ -19507,6 +19686,84 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "معاني الكلمات دون اتصال بالإنترنت."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Wörter offline nachschlagen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Consulta palabras sin conexión."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "واژه‌ها را آفلاین جست‌وجو کنید."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Consultez les mots hors ligne."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Cari arti kata secara offline."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Consulta le parole offline."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "単語をオフラインで調べられます。"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Cari perkataan di luar talian."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Ищите слова без интернета."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Kelimelere çevrimdışı bakın."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "الفاظ آف لائن دیکھیں۔"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "离线查询单词。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "離線查詢單字。"
           }
         }
       }
@@ -19953,19 +20210,6 @@
         }
       }
     },
-    "Mentions" : {
-      "comment" : "A heading for the mentions of a word in the Arabic Dictionary.",
-      "extractionState" : "stale",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "machine_translated",
-            "value" : "مواضع الورود"
-          }
-        }
-      }
-    },
     "Method" : {
       "localizations" : {
         "ar" : {
@@ -20228,94 +20472,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "薄荷綠"
-          }
-        }
-      }
-    },
-    "Month adjustments" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "تعديلات الأشهر"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Monatsanpassungen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajustes de meses"
-          }
-        },
-        "fa" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "تنظیم ماه‌ها"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajustements des mois"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Penyesuaian bulan"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Regolazioni dei mesi"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "月の調整"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pelarasan bulan"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Корректировки месяцев"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ay düzenlemeleri"
-          }
-        },
-        "ur" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "مہینوں کی درستگی"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "月份调整"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "月份調整"
           }
         }
       }
@@ -23144,17 +23300,6 @@
         }
       }
     },
-    "No root entry found." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "لم يُعثر على مادة لهذا الجذر."
-          }
-        }
-      }
-    },
     "No supplications found" : {
       "localizations" : {
         "ar" : {
@@ -25729,6 +25874,84 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "جذور أخرى محتملة"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Weitere mögliche Wurzeln"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Otras raíces posibles"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "ریشه‌های احتمالی دیگر"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Autres racines possibles"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Akar Lain yang Mungkin"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Altre radici possibili"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "その他の候補の語根"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Akar Lain yang Mungkin"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Другие возможные корни"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Diğer Olası Kökler"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "دیگر ممکنہ جذور"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "其他可能的词根"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "其他可能的詞根"
           }
         }
       }
@@ -30237,17 +30460,6 @@
         }
       }
     },
-    "Remove bookmark" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "إزالة الإشارة المرجعية"
-          }
-        }
-      }
-    },
     "Remove Bookmark" : {
       "localizations" : {
         "ar" : {
@@ -30872,6 +31084,84 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "الجذور"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Wurzeln"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Raíces"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "ریشه‌ها"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Racines"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Akar"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Radici"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "語根"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Akar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Корни"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Kökler"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "جذور"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "词根"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "詞根"
           }
         }
       }
@@ -32038,6 +32328,84 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "يمكنك البحث عن كلمة لعرض جذرها ومعانيها."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Suche nach einem Wort, um seine Wurzel und Bedeutungen zu sehen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Busca una palabra para ver su raíz y sus significados."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "واژه‌ای را جست‌وجو کنید تا ریشه و معناهایش را ببینید."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Recherchez un mot pour voir sa racine et ses significations."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Cari kata untuk melihat akar dan artinya."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Cerca una parola per vedere la sua radice e i suoi significati."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "単語を検索すると、語根と意味が表示されます。"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Cari perkataan untuk melihat akar dan maknanya."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Найдите слово, чтобы увидеть его корень и значения."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Kökünü ve anlamlarını görmek için bir kelime arayın."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "کسی لفظ کو تلاش کریں تاکہ اس کا جذر اور معانی دیکھ سکیں۔"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "搜索单词，查看其词根和释义。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "搜尋單字，即可查看其詞根與釋義。"
           }
         }
       }
@@ -34795,6 +35163,84 @@
             "state" : "machine_translated",
             "value" : "جذر مقترح"
           }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Vorgeschlagene Wurzel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Raíz sugerida"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "ریشهٔ پیشنهادی"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Racine suggérée"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Akar yang Disarankan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Radice suggerita"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "候補の語根"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Akar yang Dicadangkan"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Предлагаемый корень"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Önerilen Kök"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "تجویز کردہ جذر"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "建议词根"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "建議詞根"
+          }
         }
       }
     },
@@ -34806,6 +35252,84 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "تلخيص مداخل المعجم"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Wörterbucheinträge zusammenfassen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Resumir entradas del diccionario"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "خلاصه‌سازی مدخل‌های فرهنگ لغت"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Résumer les entrées du dictionnaire"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Ringkas Entri Kamus"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Riassumi le voci del dizionario"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "辞書の項目を要約する"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Ringkaskan Entri Kamus"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Создавать сводки статей словаря"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Sözlük maddelerini özetle"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "لغت کے اندراجات کا خلاصہ بنائیں"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "摘要词典条目"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "摘要辭典條目"
           }
         }
       }
@@ -34819,6 +35343,84 @@
             "state" : "machine_translated",
             "value" : "جارٍ التلخيص…"
           }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Zusammenfassen …"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Resumiendo…"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "در حال خلاصه‌سازی…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Résumé en cours…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Meringkas…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Riassunto in corso…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "要約中…"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Sedang meringkaskan…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Создание сводки…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Özetleniyor…"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "خلاصہ بنایا جا رہا ہے…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "摘要中…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "摘要中…"
+          }
         }
       }
     },
@@ -34830,6 +35432,84 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "ملخص"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Zusammenfassung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Resumen"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "خلاصه"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Résumé"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Ringkasan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Riepilogo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "要約"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Ringkasan"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Сводка"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Özet"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "خلاصہ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "摘要"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "摘要"
           }
         }
       }
@@ -37939,6 +38619,84 @@
             "state" : "machine_translated",
             "value" : "هذه الكلمة غير واردة في قوائم كلمات المعاجم. استُنتج جذرها على هذا الجهاز وقد يكون غير صحيح."
           }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Dieses Wort ist nicht in den Wortlisten der Wörterbücher enthalten. Seine Wurzel wurde auf diesem Gerät abgeleitet und ist möglicherweise falsch."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Esta palabra no aparece en las listas de palabras de los diccionarios. Su raíz se dedujo en este dispositivo y podría ser incorrecta."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "این واژه در فهرست واژه‌های فرهنگ‌های لغت نیست. ریشهٔ آن روی همین دستگاه استنباط شده و ممکن است نادرست باشد."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Ce mot ne figure pas dans les listes de mots des dictionnaires. Sa racine a été déduite sur cet appareil et peut être erronée."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Kata ini tidak ada dalam daftar kata kamus. Akarnya disimpulkan di perangkat ini dan mungkin keliru."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Questa parola non compare negli elenchi di parole dei dizionari. La sua radice è stata dedotta su questo dispositivo e potrebbe essere errata."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "この単語は辞書の単語リストにありません。語根はこの端末上で推定されたもので、誤っている可能性があります。"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Perkataan ini tiada dalam senarai perkataan kamus. Akarnya dianggarkan pada peranti ini dan mungkin tidak tepat."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Этого слова нет в списках слов словарей. Его корень определён на этом устройстве и может быть неверным."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Bu kelime sözlüklerin kelime listelerinde bulunmuyor. Kökü bu aygıtta çıkarıldı ve yanlış olabilir."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "یہ لفظ لغات کی فہرستِ الفاظ میں نہیں ہے۔ اس کا جذر اس آلے پر اندازے سے نکالا گیا ہے، اس لیے یہ غلط ہو سکتا ہے۔"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "这个单词不在词典的单词表中。其词根是在此设备上推断的，可能有误。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "這個單字不在辭典的單字表中。其詞根是在此裝置上推斷的，可能有誤。"
+          }
         }
       }
     },
@@ -40434,6 +41192,84 @@
             "state" : "machine_translated",
             "value" : "إيقاف التلخيص"
           }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Zusammenfassungen ausschalten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Desactivar resúmenes"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "خاموش کردن خلاصه‌ها"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Désactiver les résumés"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Matikan Ringkasan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Disattiva riassunti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "要約をオフにする"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Matikan Ringkasan"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Выключить сводки"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Özetlemeyi Kapat"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "خلاصے بند کریں"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "关闭摘要"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "關閉摘要"
+          }
         }
       }
     },
@@ -41416,16 +42252,83 @@
             "state" : "machine_translated",
             "value" : "تعذّرت قراءة المعجم"
           }
-        }
-      }
-    },
-    "Unable to read dictionary." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ar" : {
+        },
+        "de" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "تعذّرت قراءة المعجم."
+            "state" : "machine_translated",
+            "value" : "Wörterbuch konnte nicht gelesen werden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "No se pudo leer el diccionario"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "امکان خواندن فرهنگ لغت نیست."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Impossible de lire le dictionnaire"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Tidak dapat membaca kamus"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Impossibile leggere il dizionario"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "辞書を読み込めません"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Tidak dapat membaca kamus"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Не удалось прочитать словарь"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Sözlük okunamadı"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "لغت نہیں پڑھی جا سکی"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "无法读取词典"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "無法讀取辭典"
           }
         }
       }
@@ -43459,23 +44362,90 @@
         }
       }
     },
-    "Word or phrase" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "كلمة أو عبارة"
-          }
-        }
-      }
-    },
     "Words" : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "الكلمات"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Wörter"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Palabras"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "واژه‌ها"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Mots"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Kata"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Parole"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "単語"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Perkataan"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Слова"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Kelimeler"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "الفاظ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "单词"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "單字"
           }
         }
       }

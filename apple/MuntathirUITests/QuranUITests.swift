@@ -422,8 +422,16 @@ final class QuranUITests: XCTestCase {
         XCTAssertTrue(size.waitForExistence(timeout: 10))
         XCTAssertTrue(books.exists)
         XCTAssertFalse(book.exists)
+        // Translations sit below the fold in the Settings sheet, where the list hasn't loaded them yet.
+        let getTranslation = app.buttons["downloads-get-de.bubenheim"]
+        for _ in 0 ..< 3 where !getTranslation.exists {
+            app.swipeUp()
+        }
         XCTAssertTrue(app.descendants(matching: .any)["downloads-bundled-en"].firstMatch.exists)
-        XCTAssertTrue(app.buttons["downloads-get-de.bubenheim"].exists)
+        XCTAssertTrue(getTranslation.exists)
+        for _ in 0 ..< 3 where !books.isHittable {
+            app.swipeDown()
+        }
 
         books.tap()
         XCTAssertTrue(book.waitForExistence(timeout: 5))

@@ -22,6 +22,8 @@ struct ContentView: View {
     #endif
     @State private var toolPaths: [AppTool: [FigureRoute]] = [:]
     @State private var toolsPath: [FigureRoute] = []
+    /// Without a sidebar, Settings opens from the Tools toolbar as a sheet.
+    @State private var isShowingSettings = false
     @State private var splitSelections = SplitSelections()
     @State private var hadithAssets = AssetPackUpdates.shared.hadith
     @State private var supplicationAssets = AssetPackUpdates.shared.supplications
@@ -202,19 +204,30 @@ struct ContentView: View {
                             }
                         }
                     }
-                    Section {
-                        NavigationLink {
-                            SettingsView()
-                        } label: {
-                            Label("Settings", systemImage: "gearshape")
+                }
+                .navigationTitle("Tools")
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button("Settings", systemImage: "gearshape") {
+                            isShowingSettings = true
                         }
                         .accessibilityIdentifier("settings")
                     }
                 }
-                .navigationTitle("Tools")
                 .figureDestinations(hadithAssets: hadithAssets, supplicationAssets: supplicationAssets)
             }
             .reportsTabSidebar(available: $isSidebarAvailable, showing: $isSidebarShowing, active: selectedTab == .tools)
+            .sheet(isPresented: $isShowingSettings) {
+                NavigationStack {
+                    SettingsView()
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Done") { isShowingSettings = false }
+                                    .accessibilityIdentifier("settings-done")
+                            }
+                        }
+                }
+            }
         }
     }
 

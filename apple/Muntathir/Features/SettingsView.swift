@@ -1,83 +1,27 @@
 import MapKit
 import SwiftUI
 
+/// Settings as a short list of pages, for layouts without room for the split view.
 struct SettingsView: View {
-    @Environment(AppModel.self) private var model
+    private static let sections: [[SettingsPage]] = [
+        [.location, .prayers, .notifications, .calendar],
+        [.general, .tabs, .highlightColors, .downloads],
+        [.whatsNew],
+    ]
 
     var body: some View {
-        Form {
-            Section { AppLanguageLink() }
-            Section { NavigationLink("What’s New") { ReleaseNotesList(entries: ReleaseNote.history) } }
-            Section {
-                NavigationLink {
-                    TabsSettingsView()
-                } label: {
-                    Label("Tabs", systemImage: "square.grid.2x2")
-                }
-                .accessibilityIdentifier("settings-tabs")
-            }
-            Section {
-                NavigationLink {
-                    HighlightPaletteSettings()
-                } label: {
-                    Label("Highlight colors", systemImage: "paintpalette")
-                }
-                .accessibilityIdentifier("settings-highlight-colors")
-            }
-            Section {
-                NavigationLink {
-                    DownloadsSettingsView()
-                } label: {
-                    Label("Downloads", systemImage: "arrow.down.circle")
-                }
-                .accessibilityIdentifier("settings-downloads")
-            }
-            DictionarySummarySettingsSection()
-            Section {
-                NavigationLink {
-                    LocationPicker()
-                } label: {
-                    LocationSettingLabel()
-                }
-            } header: {
-                Text("Location")
-            } footer: {
-                if model.liveLocation != nil {
-                    Text("Device location stays on this device.")
+        List {
+            ForEach(Self.sections, id: \.self) { pages in
+                Section {
+                    ForEach(pages.filter(SettingsPage.available.contains)) { page in
+                        NavigationLink {
+                            SettingsPageView(page: page)
+                        } label: {
+                            SettingsPageLabel(page: page)
+                        }
+                    }
                 }
             }
-            PrayerCalculationSection()
-            Section {
-                NavigationLink {
-                    CurrentMonthAdjustments()
-                } label: {
-                    Label("Month adjustments", systemImage: "calendar")
-                }
-                .accessibilityIdentifier("month-adjustments")
-            } header: {
-                Text("Calendar")
-            } footer: {
-                if let error = model.error {
-                    Text(error).foregroundStyle(.red)
-                }
-            }
-            WeatherSettingsSection()
-            Section("Prayers") {
-                HorizontalPrayerTimesToggle()
-                NavigationLink {
-                    PrayerVisibilitySettings()
-                } label: {
-                    Label("Visibility", systemImage: "eye")
-                }
-                NavigationLink {
-                    PrayerNotificationSettings()
-                } label: {
-                    Label("Notifications", systemImage: "bell")
-                }
-            }
-            MonthConfirmationsSection()
-            CalendarEventNotificationsSection()
-            SettingsSyncFooter()
         }
         .navigationTitle("Settings")
     }
@@ -341,14 +285,6 @@ struct LocationPicker: View {
     }
 }
 
-struct PrayerVisibilitySettings: View {
-    var body: some View {
-        Form {
-            PrayerVisibilitySection()
-        }.navigationTitle("Visibility")
-    }
-}
-
 struct PrayerVisibilitySection: View {
     @Environment(AppModel.self) private var model
     var header: LocalizedStringKey?
@@ -378,8 +314,6 @@ struct PrayerNotificationSettings: View {
     @Environment(AppModel.self) private var model
     @Environment(\.openURL) private var openURL
     @State private var permissionDenied = false
-    /// Adds the month and calendar alerts that otherwise live on the main settings list.
-    var includesAppAlerts = false
 
     var body: some View {
         Form {
@@ -419,10 +353,8 @@ struct PrayerNotificationSettings: View {
             } footer: {
                 Text("Alerts are scheduled for up to 10 days. Open the app regularly to refresh them.")
             }
-            if includesAppAlerts {
-                MonthConfirmationsSection()
-                CalendarEventNotificationsSection()
-            }
+            MonthConfirmationsSection()
+            CalendarEventNotificationsSection()
         }.navigationTitle("Notifications")
             .onDisappear { model.notifications.stopPreview() }
             .task {

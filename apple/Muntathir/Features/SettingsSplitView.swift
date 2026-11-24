@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The pages of the split settings layout, grouping what the single settings list shows inline.
+/// The pages settings are grouped into, in both the split layout and the single list.
 enum SettingsPage: String, CaseIterable, Identifiable {
     case general, location, prayers, notifications, calendar, tabs, highlightColors, downloads, whatsNew
 
@@ -63,15 +63,7 @@ struct SettingsSplitView: View {
     var body: some View {
         NavigationSplitView(columnVisibility: .constant(.all)) {
             List(SettingsPage.available, selection: selection) { page in
-                Group {
-                    if page == .location {
-                        // Shows the current location, which is also how a pick on that page confirms itself.
-                        LocationSettingLabel()
-                    } else {
-                        Label(page.title, systemImage: page.symbol)
-                    }
-                }
-                .accessibilityIdentifier(page.accessibilityID)
+                SettingsPageLabel(page: page)
             }
             .navigationTitle("Settings")
             .toolbar(removing: .sidebarToggle)
@@ -91,7 +83,24 @@ struct SettingsSplitView: View {
     }
 }
 
-private struct SettingsPageView: View {
+/// A settings page's row in either settings list.
+struct SettingsPageLabel: View {
+    let page: SettingsPage
+
+    var body: some View {
+        Group {
+            if page == .location {
+                // Shows the current location, which is also how a pick on that page confirms itself.
+                LocationSettingLabel()
+            } else {
+                Label(page.title, systemImage: page.symbol)
+            }
+        }
+        .accessibilityIdentifier(page.accessibilityID)
+    }
+}
+
+struct SettingsPageView: View {
     let page: SettingsPage
 
     var body: some View {
@@ -113,7 +122,7 @@ private struct SettingsPageView: View {
             }
             .navigationTitle("Prayer times")
         case .notifications:
-            PrayerNotificationSettings(includesAppAlerts: true)
+            PrayerNotificationSettings()
         case .calendar:
             CurrentMonthAdjustments()
         case .tabs:

@@ -17,19 +17,41 @@ extension XCUIApplication {
             sidebarSettings.tap()
             return
         }
+        // Otherwise it's a sheet from the Tools toolbar.
         selectMainTab("square.grid.2x2")
         let settings = buttons["settings"]
-        for _ in 0 ..< 5 where !settings.isHittable {
-            swipeUp()
-        }
         XCTAssertTrue(settings.waitForExistence(timeout: 5))
         settings.tap()
     }
 
-    @MainActor func leaveSettings(for tab: String = "sun.max") {
-        if !buttons["settings-tab"].exists {
-            navigationBars.buttons.element(boundBy: 0).tap()
+    /// Opens a page of Settings, such as `settings-prayers`, from either settings layout.
+    @MainActor func openSettingsPage(_ identifier: String) {
+        openSettingsFromTools()
+        let page = buttons[identifier]
+        // Large text can push later pages below the fold, where the list hasn't loaded them yet.
+        for _ in 0 ..< 5 where !page.waitForExistence(timeout: 1) || !page.isHittable {
+            swipeUp()
         }
+        XCTAssertTrue(page.isHittable)
+        page.tap()
+    }
+
+    /// Dismisses the Settings sheet from any of its pages; with a sidebar, Settings is a tab and stays open.
+    @MainActor func closeSettings() {
+        guard !buttons["settings-tab"].exists else { return }
+        let done = buttons["settings-done"]
+        let back = navigationBars.buttons["BackButton"]
+        // Done only shows on the Settings root, so return there first.
+        for _ in 0 ..< 3 where !done.exists && back.exists {
+            back.tap()
+        }
+        if done.waitForExistence(timeout: 2) {
+            done.tap()
+        }
+    }
+
+    @MainActor func leaveSettings(for tab: String = "sun.max") {
+        closeSettings()
         selectMainTab(tab)
     }
 }

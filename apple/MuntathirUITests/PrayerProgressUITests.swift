@@ -35,7 +35,7 @@ final class PrayerProgressUITests: XCTestCase {
         }
         app.buttons["add-tab-prayerProgress"].tap()
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.closeSettings()
         app.buttons["Activity"].firstMatch.tap()
         XCTAssertTrue(app.navigationBars["Activity"].exists)
     }
