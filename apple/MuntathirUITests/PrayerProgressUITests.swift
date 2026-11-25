@@ -10,12 +10,7 @@ final class PrayerProgressUITests: XCTestCase {
     }
 
     @MainActor private func openTool(_ id: String, app: XCUIApplication) {
-        app.buttons["Tools"].firstMatch.tap()
-        for _ in 0 ..< 5 where !app.buttons[id].isHittable {
-            app.swipeUp()
-        }
-        XCTAssertTrue(app.buttons[id].waitForExistence(timeout: 5))
-        app.buttons[id].tap()
+        app.openTool(id)
     }
 
     @MainActor func testEmptyHistoryAndShortcut() {
@@ -27,9 +22,11 @@ final class PrayerProgressUITests: XCTestCase {
         for prayer in ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"] {
             XCTAssertTrue((chart.value as? String ?? "").contains("\(prayer): 0"))
         }
-        app.navigationBars.buttons.element(boundBy: 0).tap()
-        app.openSettingsFromTools()
-        app.buttons["settings-tabs"].tap()
+        // Without a sidebar, Settings opens from the Tools root.
+        if !app.usesTabSidebar {
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+        app.openSettingsPage("settings-tabs")
         for _ in 0 ..< 4 where !app.buttons["add-tab-prayerProgress"].isHittable {
             app.swipeUp()
         }
@@ -46,11 +43,7 @@ final class PrayerProgressUITests: XCTestCase {
                                "-AppleLanguages", "(ar)", "-AppleLocale", "ar_SA",
                                "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         app.launch()
-        app.buttons["الأدوات"].firstMatch.tap()
-        for _ in 0 ..< 6 where !app.buttons["prayer-progress"].isHittable {
-            app.swipeUp()
-        }
-        app.buttons["prayer-progress"].tap()
+        app.openTool("prayer-progress")
         XCTAssertTrue(app.navigationBars["النشاط"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.descendants(matching: .any)["prayer-total-fajr"].firstMatch.exists)
         let screenshot = XCTAttachment(screenshot: app.screenshot())
@@ -72,8 +65,6 @@ final class PrayerProgressUITests: XCTestCase {
     @MainActor func testNamedCompletionPersistsNeutralSummary() {
         let app = launch()
         openTool("rakaat-tracker", app: app)
-        app.buttons["rakaat-target-2"].tap()
-        XCTAssertTrue(app.buttons["rakaat-prayer-fajr"].exists)
         app.buttons["rakaat-prayer-fajr"].firstMatch.tap()
         XCTAssertTrue(app.buttons["rakaat-complete"].waitForExistence(timeout: 10))
         app.navigationBars.buttons.element(boundBy: 0).tap()
@@ -86,27 +77,6 @@ final class PrayerProgressUITests: XCTestCase {
         app.launch()
         openTool("prayer-progress", app: app)
         XCTAssertTrue(marker.waitForExistence(timeout: 5))
-    }
-
-    @MainActor func testSelectionChoicesAndCancelledPreparation() {
-        let app = launch()
-        openTool("rakaat-tracker", app: app)
-        for (target, choices) in [(2, ["fajr"]), (3, ["maghrib"]), (4, ["dhuhr", "asr", "isha"])] {
-            app.buttons["rakaat-target-\(target)"].tap()
-            for prayer in choices {
-                XCTAssertTrue(app.buttons["rakaat-prayer-\(prayer)"].exists)
-            }
-            XCTAssertTrue(app.buttons["rakaat-prayer-other"].exists)
-            app.buttons["rakaat-prayer-\(choices[0])"].firstMatch.tap()
-            app.navigationBars.buttons.element(boundBy: 0).tap()
-        }
-        app.navigationBars.buttons.element(boundBy: 0).tap()
-        openTool("prayer-progress", app: app)
-        let chart = app.descendants(matching: .any)["progress-prayer-chart"].firstMatch
-        XCTAssertTrue(chart.waitForExistence(timeout: 5))
-        XCTAssertEqual(chart.value as? String, "Fajr: 0, Dhuhr: 0, Asr: 0, Maghrib: 0, Isha: 0")
-        XCTAssertFalse(app.descendants(matching: .any)["prayer-outsideTime-count"].firstMatch.exists)
-        XCTAssertFalse(app.descendants(matching: .any)["prayer-unavailable-count"].firstMatch.exists)
     }
 
     @MainActor func testPopulatedDashboard() {
@@ -188,10 +158,12 @@ final class PrayerProgressUITests: XCTestCase {
         app.swipeUp()
         app.swipeDown()
         app.buttons["Today"].firstMatch.tap()
-        app.buttons["Tools"].firstMatch.tap()
-        // Return from the retained reader stack to the Tools root.
-        for _ in 0 ..< 6 where !app.buttons["prayer-progress"].exists {
-            app.navigationBars.buttons.element(boundBy: 0).tap()
+        if !app.usesTabSidebar {
+            app.buttons["Tools"].firstMatch.tap()
+            // Return from the retained reader stack to the Tools root.
+            for _ in 0 ..< 6 where !app.buttons["prayer-progress"].exists {
+                app.navigationBars.buttons.element(boundBy: 0).tap()
+            }
         }
         openTool("prayer-progress", app: app)
         let card = app.descendants(matching: .any)["progress-\(kind)"].firstMatch

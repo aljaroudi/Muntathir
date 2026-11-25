@@ -2,18 +2,17 @@ import XCTest
 
 final class FiguresUITests: XCTestCase {
     @MainActor func testLaqabDisclosureInArabic() throws {
-        try checkLaqabDisclosure(language: "ar", locale: "ar_SA", tools: "الأدوات",
+        try checkLaqabDisclosure(language: "ar", locale: "ar_SA",
                                  more: "عرض المزيد من الألقاب", fewer: "عرض ألقاب أقل")
     }
 
-    @MainActor private func checkLaqabDisclosure(language: String, locale: String, tools: String,
+    @MainActor private func checkLaqabDisclosure(language: String, locale: String,
                                                  more: String, fewer: String) throws
     {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "-AppleLanguages", "(\(language))", "-AppleLocale", locale]
         try launchWithFigures(app)
-        app.buttons[tools].firstMatch.tap()
-        app.buttons["figures"].tap()
+        app.openTool("figures")
         let hasan = app.buttons["figure-hasan-ibn-ali"]
         XCTAssertTrue(hasan.waitForExistence(timeout: 10))
         hasan.tap()
@@ -38,11 +37,11 @@ final class FiguresUITests: XCTestCase {
     }
 
     @MainActor func testArabicSiblingSectionAtAccessibilitySize() throws {
-        try checkSiblingSection(language: "ar", locale: "ar_SA", tools: "الأدوات", siblings: "الإخوة والأخوات",
+        try checkSiblingSection(language: "ar", locale: "ar_SA", siblings: "الإخوة والأخوات",
                                 textSize: "UICTContentSizeCategoryAccessibilityXXXL")
     }
 
-    @MainActor private func checkSiblingSection(language: String, locale: String, tools: String, siblings: String,
+    @MainActor private func checkSiblingSection(language: String, locale: String, siblings: String,
                                                 textSize: String = "UICTContentSizeCategoryL") throws
     {
         continueAfterFailure = false
@@ -50,8 +49,7 @@ final class FiguresUITests: XCTestCase {
         app.launchArguments = ["--ui-testing", "-AppleLanguages", "(\(language))", "-AppleLocale", locale,
                                "-UIPreferredContentSizeCategoryName", textSize]
         try launchWithFigures(app)
-        app.buttons[tools].firstMatch.tap()
-        app.buttons["figures"].tap()
+        app.openTool("figures")
         let prophet = app.buttons["figure-prophet-muhammad"]
         XCTAssertTrue(prophet.waitForExistence(timeout: 10))
         prophet.tap()

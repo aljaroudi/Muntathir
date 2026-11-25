@@ -8,8 +8,7 @@ final class QuranUITests: XCTestCase {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         }
         app.launch()
-        app.buttons[arabic ? "الأدوات" : "Tools"].firstMatch.tap()
-        app.buttons["holy-quran"].tap()
+        app.openTool("holy-quran")
         XCTAssertTrue(app.buttons["quran-surah-1"].waitForExistence(timeout: 10))
         return app
     }
@@ -292,8 +291,7 @@ final class QuranUITests: XCTestCase {
         app.terminate()
         app.launchArguments += ["--ui-testing-preserve-state"]
         app.launch()
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["holy-quran"].tap()
+        app.openTool("holy-quran")
         app.buttons["quran-surah-1"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["quran-page-1"].firstMatch.waitForExistence(timeout: 10))
     }
@@ -413,8 +411,7 @@ final class QuranUITests: XCTestCase {
         app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launchEnvironment["HADITH_DOWNLOADS_FIXTURE"] = UUID().uuidString
         app.launch()
-        app.openSettingsFromTools()
-        app.buttons["settings-downloads"].tap()
+        app.openSettingsPage("settings-downloads")
 
         let size = app.descendants(matching: .any)["downloads-size-hadith"].firstMatch
         let books = app.buttons["Books"].firstMatch
@@ -457,8 +454,7 @@ final class QuranUITests: XCTestCase {
         app.launchArguments.append("--ui-testing-preserve-state")
         app.launchEnvironment["HADITH_DOWNLOADS_FIXTURE"] = UUID().uuidString
         app.launch()
-        app.openSettingsFromTools()
-        app.buttons["settings-downloads"].tap()
+        app.openSettingsPage("settings-downloads")
         XCTAssertTrue(app.buttons["downloads-get-hadith"].waitForExistence(timeout: 5))
         XCTAssertFalse(size.exists)
     }
@@ -493,7 +489,7 @@ final class QuranUITests: XCTestCase {
 
 extension QuranUITests {
     @MainActor func testSurahHeadingsInBothDirections() {
-        for (language, tools, largeText) in [
+        for (language, _, largeText) in [
             ("en", "Tools", false),
             ("ar", "الأدوات", true),
         ] {
@@ -503,8 +499,7 @@ extension QuranUITests {
                 app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
             }
             app.launch()
-            app.buttons[tools].firstMatch.tap()
-            app.buttons["holy-quran"].tap()
+            app.openTool("holy-quran")
             let first = app.buttons["quran-surah-1"]
             XCTAssertTrue(first.waitForExistence(timeout: 10), language)
             XCTAssertTrue(first.label.contains(language == "ar" ? "الفاتحة" : "Al-Faatiha"), language)

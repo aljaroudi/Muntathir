@@ -15,10 +15,7 @@ final class SemanticSearchUITests: XCTestCase {
             app.launchEnvironment["UITEST_FIGURES"] = (try? Data(contentsOf: url))?.base64EncodedString()
         }
         app.launch()
-        let tools = app.buttons[arabic ? "الأدوات" : "Tools"].firstMatch
-        XCTAssertTrue(tools.waitForExistence(timeout: 10))
-        tools.tap()
-        app.buttons[identifier].tap()
+        app.openTool(identifier)
         XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: identifier == "hadith" ? 30 : 10))
         return app
     }
@@ -158,6 +155,6 @@ final class SemanticSearchUITests: XCTestCase {
         let row = app.buttons["rulings-question-42"]
         XCTAssertTrue(row.waitForExistence(timeout: 5))
         row.tap()
-        XCTAssertTrue(app.staticTexts["Original answer"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.textViews["Original answer"].waitForExistence(timeout: 5))
     }
 }

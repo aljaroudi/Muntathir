@@ -214,7 +214,7 @@ platform :ios do
     context = release_context(app_store: options.fetch(:app_store), force: force)
     # The Mac app ships with each App Store release and skips TestFlight.
     context[:mac] = release_context(platform: :mac, app_store: true, force: force) if options[:mac]
-    sh("python3", File.join(__dir__, "../build/build.py"), "--assets-only")
+    sh("python3", File.join(__dir__, "../build/build.py"), "--assets-only") unless options[:skip_assets].to_s == "true"
     unless options[:skip_tests].to_s == "true"
       tests(include_ipad: options.fetch(:app_store), unit_only: !options.fetch(:app_store))
     end
@@ -233,7 +233,7 @@ platform :ios do
   desc "Run unit tests on iPhone and submit a new build to TestFlight Public"
   lane :beta do |options|
     MuntathirRelease.with_release_lock do
-      context = prepare_release(app_store: false, force: options[:force], skip_tests: options[:skip_tests])
+      context = prepare_release(app_store: false, force: options[:force], skip_tests: options[:skip_tests], skip_assets: options[:skip_assets])
       # Pass build_number to distribute a build that uploaded but timed out while processing.
       build = if options[:build_number].to_s.strip.empty?
                 archive_and_upload(context)
@@ -267,7 +267,7 @@ platform :ios do
     mac = options[:mac].to_s != "false"
     MuntathirRelease.with_release_lock do
       context = prepare_release(app_store: true, mac: mac, force: options[:force], skip_tests: options[:skip_tests],
-                                skip_screenshots: options[:skip_screenshots])
+                                skip_screenshots: options[:skip_screenshots], skip_assets: options[:skip_assets])
       # iOS reuses its TestFlight build; the Mac build is uploaded now and goes straight to App Review.
       releases = [[context, MuntathirRelease.existing_valid_build(context.fetch(:app).id, context.fetch(:version), build_number: options[:build_number])]]
       releases << [context.fetch(:mac), archive_and_upload(context.fetch(:mac))] if mac

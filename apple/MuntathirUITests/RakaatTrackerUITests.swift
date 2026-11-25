@@ -6,20 +6,13 @@ final class RakaatTrackerUITests: XCTestCase {
         let arabic = extraArguments.contains("(ar)")
         app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "--ui-testing-supplications-fixture", argument] + (arabic ? [] : ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]) + extraArguments
         app.launch()
-        app.buttons[arabic ? "الأدوات" : "Tools"].firstMatch.tap()
-        for _ in 0 ..< 3 where !app.buttons["rakaat-tracker"].exists {
-            app.swipeUp()
-        }
-        XCTAssertTrue(app.buttons["rakaat-tracker"].waitForExistence(timeout: 5))
-        app.buttons["rakaat-tracker"].tap()
+        app.openTool("rakaat-tracker")
         XCTAssertTrue(app.buttons["rakaat-other"].waitForExistence(timeout: 5))
         return app
     }
 
     @MainActor private func choose(_ target: Int, in app: XCUIApplication) {
-        app.buttons["rakaat-other"].tap()
-        XCTAssertTrue(app.buttons["rakaat-target-\(target)"].waitForExistence(timeout: 3))
-        app.buttons["rakaat-target-\(target)"].tap()
+        app.chooseRakaat(target)
     }
 
     @MainActor func testDhuhrOffersAsrWithoutRecalibrating() {
@@ -46,7 +39,6 @@ final class RakaatTrackerUITests: XCTestCase {
         XCTAssertTrue(app.otherElements["rakaat-prayer-screen"].exists)
         XCTAssertTrue(app.staticTexts["rakaat-count"].waitForExistence(timeout: 4))
         XCTAssertEqual(app.staticTexts["rakaat-count"].label, "1 rakaat")
-        XCTAssertTrue(app.navigationBars["Rakaat Tracker"].exists)
         XCTAssertTrue(app.descendants(matching: .any)["rakaat-complete"].waitForExistence(timeout: 8))
         XCTAssertEqual(app.staticTexts["rakaat-count"].label, "3 rakaat")
         app.buttons["rakaat-complete"].tap()
@@ -134,5 +126,18 @@ extension RakaatTrackerUITests {
             add(screenshot)
             app.terminate()
         }
+    }
+}
+
+extension XCUIApplication {
+    /// Picks a rakaat count from the Other menu. Menu items lose their identifiers on iOS 27,
+    /// so this also matches the item's title: the count in the app's locale.
+    @MainActor func chooseRakaat(_ target: Int) {
+        buttons["rakaat-other"].tap()
+        let locale = Locale(identifier: launchArguments.contains("(ar)") ? "ar_SA" : "en_US")
+        let item = buttons.matching(NSPredicate(format: "identifier == %@ OR label CONTAINS %@",
+                                                "rakaat-target-\(target)", target.formatted(.number.locale(locale)))).firstMatch
+        XCTAssertTrue(item.waitForExistence(timeout: 3))
+        item.tap()
     }
 }

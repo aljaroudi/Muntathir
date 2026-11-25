@@ -5,12 +5,11 @@ final class SavedUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", arabic ? "(ar)" : "(en)", "-AppleLocale", arabic ? "ar_SA" : "en_US"] + extra
         app.launch()
-        app.buttons[arabic ? "الأدوات" : "Tools"].firstMatch.tap()
         return app
     }
 
     @MainActor private func openVerse(_ app: XCUIApplication) {
-        app.buttons["holy-quran"].tap()
+        app.openTool("holy-quran")
         XCTAssertTrue(app.buttons["quran-surah-1"].waitForExistence(timeout: 10))
         app.buttons["quran-surah-1"].tap()
         XCTAssertTrue(app.buttons["verse-actions-1:1"].waitForExistence(timeout: 5))
@@ -31,11 +30,14 @@ final class SavedUITests: XCTestCase {
         search.typeText("no-such-saved-passage\n")
         XCTAssertTrue(row.waitForNonExistence(timeout: 5))
         search.buttons["Clear text"].tap()
+        // Clearing can end editing on iPad, so focus the field again.
+        search.tap()
         search.typeText(query + "\n")
         XCTAssertTrue(row.waitForExistence(timeout: 5))
+        // Dismiss search; iPad shows neither button.
         if app.buttons["Close"].exists {
             app.buttons["Close"].tap()
-        } else {
+        } else if app.buttons["Cancel"].exists {
             app.buttons["Cancel"].tap()
         }
         row.swipeLeft()
@@ -53,7 +55,6 @@ final class SavedUITests: XCTestCase {
         app.terminate()
         app.launchArguments.append("--ui-testing-preserve-state")
         app.launch()
-        app.buttons["Tools"].firstMatch.tap()
         openVerse(app)
         app.buttons["verse-actions-1:1"].tap()
         XCTAssertTrue(app.buttons["Remove Bookmark"].waitForExistence(timeout: 5))
@@ -78,7 +79,7 @@ final class SavedUITests: XCTestCase {
 
     @MainActor func testHadithBookmarkOpensSourceAndCanBeRemoved() {
         let app = launch()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 15))
         app.buttons["hadith-book-bukhari"].tap()
         app.openFirstHadithChapter()
@@ -109,7 +110,7 @@ final class SavedUITests: XCTestCase {
 
     @MainActor func testSupplicationBookmarksStayInSupplications() {
         let app = launch(extra: ["--ui-testing-supplications-fixture"])
-        app.buttons["supplications"].tap()
+        app.openTool("supplications")
         XCTAssertTrue(app.buttons["supplication-1"].waitForExistence(timeout: 15))
         app.buttons["supplication-1"].tap()
         XCTAssertTrue(app.buttons["hadith-bookmark"].waitForExistence(timeout: 10))
@@ -122,7 +123,7 @@ final class SavedUITests: XCTestCase {
         let rowID = row.identifier
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 10))
         for _ in 0 ..< 3 {
             if app.buttons["hadith-saved"].exists {
@@ -136,7 +137,7 @@ final class SavedUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["No bookmarks yet"].waitForExistence(timeout: 10))
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        app.buttons["supplications"].tap()
+        app.openTool("supplications")
         XCTAssertTrue(app.buttons["supplication-saved"].waitForExistence(timeout: 10))
         app.buttons["supplication-saved"].tap()
         exerciseSavedBookmark(app, rowID: rowID, query: "تجريبي")

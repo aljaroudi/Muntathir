@@ -8,8 +8,7 @@ final class ReadingAppearanceUITests: XCTestCase {
         let options = app.buttons["quran-reading-options"]
         let marks = app.descendants(matching: .any)["reading-diacritics"]
         func openReaderMenu() {
-            app.buttons["Tools"].firstMatch.tap()
-            app.buttons["holy-quran"].tap()
+            app.openTool("holy-quran")
             XCTAssertTrue(app.buttons["quran-surah-1"].waitForExistence(timeout: 10))
             app.buttons["quran-surah-1"].tap()
             XCTAssertTrue(options.waitForExistence(timeout: 10))
@@ -43,8 +42,7 @@ final class ReadingAppearanceUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 15))
         app.buttons["hadith-book-bukhari"].tap()
         app.openFirstHadithChapter()
@@ -69,8 +67,7 @@ final class ReadingAppearanceUITests: XCTestCase {
         app.terminate()
         app.launchArguments.append("--ui-testing-preserve-state")
         app.launch()
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         XCTAssertTrue(bookmark.waitForExistence(timeout: 15))
         XCTAssertEqual(bookmark.label, "Remove Bookmark")
         app.buttons["hadith-actions"].tap()
@@ -116,8 +113,7 @@ extension ReadingAppearanceUITests {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 10))
         app.buttons["hadith-book-bukhari"].tap()
         let chapter = app.buttons["hadith-chapter-1"]

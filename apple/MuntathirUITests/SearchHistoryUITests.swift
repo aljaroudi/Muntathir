@@ -12,11 +12,8 @@ final class SearchHistoryUITests: XCTestCase {
         return app
     }
 
-    @MainActor private func openQuran(_ app: XCUIApplication, arabic: Bool = false) {
-        let tools = app.buttons[arabic ? "الأدوات" : "Tools"].firstMatch
-        XCTAssertTrue(tools.waitForExistence(timeout: 10))
-        tools.tap()
-        app.buttons["holy-quran"].tap()
+    @MainActor private func openQuran(_ app: XCUIApplication, arabic _: Bool = false) {
+        app.openTool("holy-quran")
         XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 10))
     }
 

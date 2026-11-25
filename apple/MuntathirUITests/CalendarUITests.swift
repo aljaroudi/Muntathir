@@ -2,15 +2,7 @@ import XCTest
 
 final class CalendarUITests: XCTestCase {
     @MainActor private func openAdjustments(_ app: XCUIApplication) {
-        app.openSettingsFromTools()
-        let link = app.buttons["month-adjustments"]
-        for _ in 0 ..< 8 {
-            if link.isHittable {
-                break
-            }
-            app.swipeUp()
-        }
-        link.tap()
+        app.openSettingsPage("month-adjustments")
     }
 
     @MainActor func testDatePickerChangesMonthWithoutReplacingSheet() {
@@ -250,7 +242,7 @@ extension CalendarUITests {
         app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
         app.openSettingsFromTools()
-        let adjustments = app.buttons["month-adjustments"]
+        let adjustments = app.usesTabSidebar ? app.staticTexts["month-adjustments"] : app.buttons["month-adjustments"]
         for _ in 0 ..< 5 where !adjustments.isHittable {
             app.swipeUp()
         }

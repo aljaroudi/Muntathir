@@ -245,7 +245,9 @@
         "Discover the new Sermons section.",
         "Meet the redesigned Today and Rakaat screens.",
         "Smart Search is now the default and returns more relevant results.",
-        "Show or hide Arabic diacritics while reading."
+        "Show or hide Arabic diacritics while reading.",
+        "Use Siri and Shortcuts to reach Muntathir content.",
+        "Look up Arabic roots more accurately, with summaries written on your device."
       ],
       "ar-SA": [
         "ترجمة الأحاديث والأحكام الشرعية",
@@ -254,7 +256,9 @@
         "اكتشف قسم الخطب الجديد.",
         "تعرّف على شاشتي اليوم والركعات بتصميمهما الجديد.",
         "أصبح البحث الذكي طريقة البحث الافتراضية، ويعرض نتائج أكثر صلة بما تبحث عنه.",
-        "أظهر التشكيل أو أخفِه أثناء القراءة."
+        "أظهر التشكيل أو أخفِه أثناء القراءة.",
+        "استخدم سيري والاختصارات للوصول إلى محتوى منتظِر.",
+        "ابحث عن الجذور العربية بدقة أكبر مع ملخصات تُكتب على جهازك."
       ],
       "de-DE": [
         "Übersetze Hadithe und Rechtsgutachten bei Bedarf.",
@@ -263,7 +267,9 @@
         "Entdecke den neuen Bereich „Predigten“.",
         "Lerne die neu gestalteten Bildschirme „Heute“ und „Rakaat“ kennen.",
         "Die intelligente Suche ist jetzt die Standardsuche und liefert passendere Ergebnisse.",
-        "Blende beim Lesen arabische Vokalzeichen ein oder aus."
+        "Blende beim Lesen arabische Vokalzeichen ein oder aus.",
+        "Greife mit Siri und Kurzbefehlen auf Inhalte von Muntathir zu.",
+        "Suche arabische Wurzeln genauer, mit Zusammenfassungen, die auf deinem Gerät entstehen."
       ],
       "es-ES": [
         "Traduce hadices y dictámenes cuando lo necesites.",
@@ -272,7 +278,9 @@
         "Descubre la nueva sección de Sermones.",
         "Descubre las pantallas Hoy y Rakaat, ahora rediseñadas.",
         "La búsqueda inteligente es ahora el método predeterminado y ofrece resultados más relevantes.",
-        "Muestra u oculta los signos diacríticos del árabe durante la lectura."
+        "Muestra u oculta los signos diacríticos del árabe durante la lectura.",
+        "Usa Siri y Atajos para acceder al contenido de Muntathir.",
+        "Busca raíces árabes con más precisión, con resúmenes generados en tu dispositivo."
       ],
       "fa": [
         "حدیث‌ها و احکام را در صورت نیاز ترجمه کنید.",
@@ -281,7 +289,9 @@
         "بخش جدید خطبه‌ها را کشف کنید.",
         "با صفحه‌های بازطراحی‌شدهٔ امروز و رکعت آشنا شوید.",
         "جست‌وجوی هوشمند اکنون روش پیش‌فرض جست‌وجو است و نتایج مرتبط‌تری نشان می‌دهد.",
-        "هنگام خواندن، اعراب متن عربی را نمایش دهید یا پنهان کنید."
+        "هنگام خواندن، اعراب متن عربی را نمایش دهید یا پنهان کنید.",
+        "با سیری و میان‌برها به محتوای Muntathir دسترسی پیدا کنید.",
+        "ریشه‌های عربی را دقیق‌تر جست‌وجو کنید، با خلاصه‌هایی که روی دستگاه شما نوشته می‌شوند."
       ],
       "fr-FR": [
         "Traduisez les hadiths et les avis juridiques à la demande.",
@@ -290,7 +300,9 @@
         "Découvrez la nouvelle section Sermons.",
         "Découvrez les écrans Aujourd’hui et Rakaat entièrement repensés.",
         "La recherche intelligente est désormais le mode par défaut et propose des résultats plus pertinents.",
-        "Affichez ou masquez les signes diacritiques arabes pendant la lecture."
+        "Affichez ou masquez les signes diacritiques arabes pendant la lecture.",
+        "Accédez au contenu de Muntathir avec Siri et Raccourcis.",
+        "Recherchez les racines arabes plus précisément, avec des résumés rédigés sur votre appareil."
       ],
       "id": [
         "Terjemahkan hadis dan fatwa sesuai kebutuhan.",
@@ -299,7 +311,9 @@
         "Temukan bagian Khotbah yang baru.",
         "Lihat tampilan Hari Ini dan Rakaat yang didesain ulang.",
         "Pencarian pintar kini menjadi metode pencarian bawaan dan memberikan hasil yang lebih relevan.",
-        "Tampilkan atau sembunyikan harakat saat membaca."
+        "Tampilkan atau sembunyikan harakat saat membaca.",
+        "Gunakan Siri dan Pintasan untuk membuka konten Muntathir.",
+        "Cari akar kata Arab dengan lebih akurat, lengkap dengan ringkasan yang dibuat di perangkat Anda."
       ],
       "it": [
         "Traduci hadith e responsi giuridici su richiesta.",
@@ -308,7 +322,9 @@
         "Scopri la nuova sezione Sermoni.",
         "Prova le schermate Oggi e Rakaat completamente ridisegnate.",
         "La ricerca intelligente è ora il metodo predefinito e offre risultati più pertinenti.",
-        "Mostra o nascondi i segni diacritici arabi durante la lettura."
+        "Mostra o nascondi i segni diacritici arabi durante la lettura.",
+        "Usa Siri e Comandi rapidi per accedere ai contenuti di Muntathir.",
+        "Cerca le radici arabe con maggiore precisione, con riepiloghi creati sul tuo dispositivo."
       ],
       "ja": [
         "ハディースと法的見解を必要に応じて翻訳できます。",
@@ -317,7 +333,9 @@
         "新しい「説教」セクションが登場しました。",
         "「今日」と「ラカア」の画面を刷新しました。",
         "スマート検索が標準になり、検索内容により合った結果が表示されます。",
-        "読書中にアラビア語の発音記号の表示を切り替えられます。"
+        "読書中にアラビア語の発音記号の表示を切り替えられます。",
+        "SiriとショートカットでMuntathirのコンテンツを利用できます。",
+        "アラビア語の語根をより正確に検索でき、要約はデバイス上で作成されます。"
       ],
       "ms": [
         "Terjemahkan hadis dan fatwa mengikut keperluan.",
@@ -326,7 +344,9 @@
         "Temui bahagian Khutbah yang baharu.",
         "Lihat skrin Hari Ini dan Rakaat yang direka bentuk semula.",
         "Carian pintar kini menjadi kaedah carian lalai dan memberikan hasil yang lebih relevan.",
-        "Paparkan atau sembunyikan tanda baris Arab semasa membaca."
+        "Paparkan atau sembunyikan tanda baris Arab semasa membaca.",
+        "Gunakan Siri dan Pintasan untuk mengakses kandungan Muntathir.",
+        "Cari akar kata Arab dengan lebih tepat, lengkap dengan ringkasan yang dihasilkan pada peranti anda."
       ],
       "ru": [
         "Переводите хадисы и фетвы по запросу.",
@@ -335,7 +355,9 @@
         "Откройте для себя новый раздел «Проповеди».",
         "Оцените обновлённый дизайн экранов «Сегодня» и «Ракаат».",
         "Умный поиск теперь используется по умолчанию и находит более подходящие результаты.",
-        "Показывайте или скрывайте арабские огласовки при чтении."
+        "Показывайте или скрывайте арабские огласовки при чтении.",
+        "Открывайте материалы Muntathir через Siri и «Быстрые команды».",
+        "Ищите арабские корни точнее — с краткими пересказами, которые создаются на вашем устройстве."
       ],
       "tr": [
         "Hadisleri ve fetvaları istediğiniz zaman çevirin.",
@@ -344,7 +366,9 @@
         "Yeni Hutbeler bölümünü keşfedin.",
         "Yeniden tasarlanan Bugün ve Rekât ekranlarını deneyin.",
         "Akıllı arama artık varsayılan arama yöntemi ve daha alakalı sonuçlar sunuyor.",
-        "Okurken Arapça harekeleri gösterin veya gizleyin."
+        "Okurken Arapça harekeleri gösterin veya gizleyin.",
+        "Siri ve Kısayollar ile Muntathir içeriğine ulaşın.",
+        "Arapça kökleri daha doğru arayın; özetler cihazınızda hazırlanır."
       ],
       "ur-PK": [
         "احادیث اور فتاویٰ کا ضرورت کے مطابق ترجمہ کریں۔",
@@ -353,7 +377,9 @@
         "خطبات کا نیا سیکشن دریافت کریں۔",
         "نئے ڈیزائن والی آج اور رکعات کی اسکرینیں دیکھیں۔",
         "اسمارٹ تلاش اب تلاش کا طے شدہ طریقہ ہے اور زیادہ متعلقہ نتائج دکھاتی ہے۔",
-        "پڑھتے وقت عربی اعراب دکھائیں یا چھپائیں۔"
+        "پڑھتے وقت عربی اعراب دکھائیں یا چھپائیں۔",
+        "سری اور شارٹ کٹس کے ذریعے منتظر کے مواد تک پہنچیں۔",
+        "عربی جڑوں کو زیادہ درستی سے تلاش کریں، خلاصے آپ کے آلے پر تیار ہوتے ہیں۔"
       ],
       "zh-Hans": [
         "按需翻译圣训和教法裁决。",
@@ -362,7 +388,9 @@
         "发现全新的“讲道”板块。",
         "体验焕然一新的“今日”和“拜数”界面。",
         "智能搜索现已成为默认搜索方式，搜索结果也更切合你的需求。",
-        "阅读时可显示或隐藏阿拉伯语注音符号。"
+        "阅读时可显示或隐藏阿拉伯语注音符号。",
+        "通过Siri和快捷指令使用Muntathir内容。",
+        "更准确地查询阿拉伯语词根，摘要在设备上生成。"
       ],
       "zh-Hant": [
         "依需求翻譯聖訓與教法裁決。",
@@ -371,7 +399,9 @@
         "探索全新的「講道」區塊。",
         "體驗煥然一新的「今日」與「拜數」畫面。",
         "智慧搜尋現已成為預設搜尋方式，搜尋結果也更切合你的需求。",
-        "閱讀時可顯示或隱藏阿拉伯語注音符號。"
+        "閱讀時可顯示或隱藏阿拉伯語注音符號。",
+        "透過Siri和捷徑使用Muntathir內容。",
+        "更準確地查詢阿拉伯語詞根，摘要在裝置上生成。"
       ]
     }
   }

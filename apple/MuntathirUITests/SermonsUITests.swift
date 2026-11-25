@@ -5,16 +5,15 @@ final class SermonsUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["sermons"].tap()
+        app.openTool("sermons")
         app.buttons["sermon-fadak"].tap()
         let picker = app.buttons["sermon-edition"]
         XCTAssertTrue(picker.waitForExistence(timeout: 5))
         // Attribution lives in the Settings app, not the reader.
         XCTAssertFalse(app.buttons["Source"].exists)
-        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "روى عبد الله بن الحسن")).firstMatch.exists)
+        XCTAssertTrue(app.textViews.matching(NSPredicate(format: "label BEGINSWITH %@", "روى عبد الله بن الحسن")).firstMatch.exists)
         app.swipeUp()
-        let visiblePassages = app.staticTexts.matching(NSPredicate(format: "identifier BEGINSWITH %@", "arabic-"))
+        let visiblePassages = app.textViews.matching(NSPredicate(format: "identifier BEGINSWITH %@", "arabic-"))
             .allElementsBoundByIndex.filter(\.isHittable).map(\.identifier)
         XCTAssertFalse(visiblePassages.isEmpty)
         for (language, label) in [("Deutsch", "Ahl al-Bayt Weltversammlung"), ("English", "Ahl al-Bayt World Assembly"), ("English", "Literal"), ("English", "Simplified"),
@@ -24,7 +23,7 @@ final class SermonsUITests: XCTestCase {
             app.buttons[language].tap()
             app.buttons[label].tap()
             XCTAssertEqual(picker.label, language + " · " + label)
-            XCTAssertTrue(visiblePassages.contains { app.staticTexts[$0].isHittable })
+            XCTAssertTrue(visiblePassages.contains { app.textViews[$0].isHittable })
         }
         app.navigationBars.buttons.firstMatch.tap()
         XCTAssertTrue(app.buttons["sermon-fadak"].exists)
@@ -34,8 +33,7 @@ final class SermonsUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["sermons"].tap()
+        app.openTool("sermons")
         let row = app.buttons["sermon-fadak"]
         XCTAssertTrue(row.waitForExistence(timeout: 5))
         XCTAssertTrue(row.staticTexts["Fatima al-Zahra"].waitForExistence(timeout: 5))

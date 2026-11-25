@@ -5,12 +5,7 @@ final class TasbihUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "-AppleLanguages", arabic ? "(ar)" : "(en)", "-AppleLocale", arabic ? "ar_SA" : "en_US"] + extraArguments
         app.launch()
-        app.buttons[arabic ? "الأدوات" : "Tools"].firstMatch.tap()
-        let tasbih = app.buttons["tasbih"]
-        for _ in 0 ..< 4 where !tasbih.isHittable {
-            app.swipeUp()
-        }
-        tasbih.tap()
+        app.openTool("tasbih")
         XCTAssertTrue(stageCounter(app).waitForExistence(timeout: 5))
         return app
     }
