@@ -47,7 +47,11 @@ struct MuntathirApp: App {
         _model = State(initialValue: model)
         _quranStore = State(initialValue: QuranUserStore.application())
         BackgroundRefresh.register {
+            // Weather doesn't depend on the feed, so both share the short background budget.
+            let location = model.location
+            async let weather: Void = SharedWeatherStore.refreshInBackground(for: location)
             let refreshed = await model.refreshInBackground()
+            await weather
             // Content stays fresh for the next open even when the app goes unopened for days.
             await AssetPackUpdates.shared.run(.background)
             return refreshed

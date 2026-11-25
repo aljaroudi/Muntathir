@@ -27,8 +27,15 @@ struct WeatherReading: Codable, Sendable {
         feelsLike ? apparentTemperature : temperature
     }
 
+    /// Last moment the reading is shown. Widgets reload late and refreshes fail, so a slightly old
+    /// reading beats a missing one.
+    var expiresAt: Date {
+        date.addingTimeInterval(3 * 3600)
+    }
+
+    /// Allows a few minutes of clock skew for readings stamped slightly ahead of the device.
     func isCurrent(at date: Date) -> Bool {
-        (0 ..< 3600).contains(date.timeIntervalSince(self.date))
+        (self.date.addingTimeInterval(-300) ..< expiresAt).contains(date)
     }
 
     static func fetch(_ location: SavedLocation) async throws -> WeatherReading {

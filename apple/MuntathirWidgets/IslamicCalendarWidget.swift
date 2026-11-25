@@ -16,6 +16,8 @@ struct IslamicDateEntry: TimelineEntry {
     var weatherTimeline: Timeline<IslamicDateEntry> {
         let dates = settings.timelineDates(from: date)
             + [900.0, 1800, 3600].map { date.addingTimeInterval($0) }
+            // Clear the weather when the reading expires if WidgetKit hasn't reloaded by then.
+            + (weather.map { [max($0.expiresAt, date)] } ?? [])
         let entries = Set(dates).sorted().map {
             IslamicDateEntry(date: $0, settings: settings, location: location, weather: weather)
         }

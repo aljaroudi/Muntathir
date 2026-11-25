@@ -18,10 +18,9 @@ import WidgetKit
 
     init(cached: @escaping (SavedLocation, Date) -> WeatherReading? = { SharedWeatherStore.read(for: $0, at: $1) }, publish: @escaping (WeatherReading, SavedLocation) -> Void = { reading, location in
         SharedWeatherStore.write(reading, for: location)
-        WidgetCenter.shared.reloadTimelines(ofKind: "WeatherDate")
-        WidgetCenter.shared.reloadTimelines(ofKind: "CalendarWeather")
+        SharedWeatherStore.reloadWidgets()
     }, fetch: @escaping (SavedLocation) async throws -> WeatherReading = { location in
-        guard let reading = await SharedWeatherStore.refresh(for: location) else { throw URLError(.cannotLoadFromNetwork) }
+        guard let reading = await SharedWeatherStore.refresh(for: location, backoff: false) else { throw URLError(.cannotLoadFromNetwork) }
         return reading
     }) {
         self.cached = cached
@@ -70,5 +69,18 @@ import WidgetKit
         if requestID == id {
             isLoading = false
         }
+    }
+}
+
+extension SharedWeatherStore {
+    static func reloadWidgets() {
+        WidgetCenter.shared.reloadTimelines(ofKind: "WeatherDate")
+        WidgetCenter.shared.reloadTimelines(ofKind: "CalendarWeather")
+    }
+
+    /// Keeps the weather widgets current while the app runs in the background.
+    @MainActor static func refreshInBackground(for location: SavedLocation?) async {
+        guard let location, await refresh(for: location, backoff: false) != nil else { return }
+        reloadWidgets()
     }
 }

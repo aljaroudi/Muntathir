@@ -37,9 +37,14 @@
                 !arguments.contains("--ui-testing")
                 || arguments.contains("--ui-testing-background-refresh")
             else { return }
-            let request = BGAppRefreshTaskRequest(identifier: identifier)
-            request.earliestBeginDate = Date(timeIntervalSinceNow: 12 * 60 * 60)
-            try? BGTaskScheduler.shared.submit(request)
+            Task {
+                // Resubmitting replaces the pending request, so daily launches would push it back forever.
+                let pending = await BGTaskScheduler.shared.pendingTaskRequests()
+                guard !pending.contains(where: { $0.identifier == identifier }) else { return }
+                let request = BGAppRefreshTaskRequest(identifier: identifier)
+                request.earliestBeginDate = Date(timeIntervalSinceNow: 12 * 60 * 60)
+                try? BGTaskScheduler.shared.submit(request)
+            }
         #endif
     }
 }
