@@ -68,6 +68,7 @@ unless worker
   end
   MuntathirRelease.run_parallel!(*commands)
   MuntathirRelease.run!(RbConfig.ruby, File.join(File.dirname(script_path), "watch_screenshots.rb")) if ENV["MUNTATHIR_CAPTURE_WATCH"] == "1"
+  FileUtils.mkdir_p("./build/marketing/raw")
   MuntathirRelease.capture_shards(locales, workers).each_with_index do |shard, index|
     summary = "./build/marketing/workers/#{index}/raw/screenshots.html"
     FileUtils.cp(summary, "./build/marketing/raw/screenshots-worker-#{index + 1}.html") if File.file?(summary)

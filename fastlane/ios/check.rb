@@ -557,7 +557,7 @@ check.define_singleton_method(:upload_to_app_store) do |**options|
   draft_version.release_type = "AFTER_APPROVAL" if options[:automatic_release]
 end
 rows.replace([new_upload])
-check.release(mac: "false")
+check.release(mac: "false", skip_build: "true")
 assert(synced_packs == 1 && synced_pack_platforms == ["IOS"], "App Store must sync Asset Packs")
 assert(synced_creatives == 1, "App Store must sync header and search creatives")
 assert(check.calls.none? { |name, _| name == :archive_and_upload }, "App Store must reuse the TestFlight build instead of uploading a new binary")
@@ -573,6 +573,30 @@ assert(listing[:automatic_release] && listing[:overwrite_screenshots] && !listin
 assert(review[:submit_for_review] && review[:build_number] == build.version && review[:app_version] == build.app_version, "App Store review must use the processed build")
 assert([listing, review].all? { |options| options[:skip_binary_upload] && options[:skip_app_version_update] }, "Deliver must leave binary upload and version numbering to Xcode and the operator")
 assert(check.calls.index { |name, _| name == :upload_to_app_store } < check.calls.rindex { |name, _| name == :upload_to_app_store }, "App Store listing must precede review submit")
+
+# By default release ships the build through TestFlight first, without waiting on beta review.
+check.calls.clear
+synced_packs = 0
+synced_creatives = 0
+draft_version.release_type = "MANUAL"
+check.release(mac: "false", force: "true", skip_tests: "true")
+assert(check.calls.select { |name, _| name == :archive_and_upload } == [[:archive_and_upload, context[:platform]]], "Release must upload one new iOS build by default")
+assert(check.calls.include?([:release_context, { app_store: false, force: "true" }]), "Release must run the TestFlight freshness checks")
+testflight = check.calls.select { |name, _| name == :upload_to_testflight }
+assert(testflight.length == 1 && testflight.first.last[:groups] == ["Public"] && testflight.first.last[:submit_beta_review] &&
+       testflight.first.last[:build_number] == build.version, "Release must request Public beta review for the new build")
+assert(check.calls.index { |name, _| name == :upload_to_testflight } < check.calls.index { |name, _| name == :upload_to_app_store },
+       "TestFlight must precede the App Store listing")
+assert(check.calls.rindex { |name, _| name == :upload_to_app_store } > check.calls.index { |name, _| name == :upload_to_testflight } &&
+       check.calls.select { |name, _| name == :upload_to_app_store }.last.last[:build_number] == build.version,
+       "App Store review must submit the build that went to TestFlight")
+
+check.calls.clear
+synced_packs = 0
+synced_creatives = 0
+draft_version.release_type = "MANUAL"
+check.release(mac: "false", skip_tests: "true", skip_build: "true")
+assert(check.calls.none? { |name, _| %i[archive_and_upload upload_to_testflight].include?(name) }, "skip_build must neither upload nor redistribute a build")
 
 %i[tests refresh_screenshots].each do |step|
   original = check.method(step)
@@ -630,7 +654,7 @@ if check_media
     %w[en-US ar-SA].each do |locale|
       FileUtils.mkdir_p(File.join(dir, "raw", locale))
       screens.each do |screen|
-        MuntathirRelease.run!("magick", "-size", "32x64", "xc:black", File.join(dir, "raw", locale, "iPhone 17 Pro Max-#{screen}.png"))
+        MuntathirRelease.run!("magick", "-size", "32x64", "xc:black", File.join(dir, "raw", locale, "#{MuntathirRelease::DEVICES.first}-#{screen}.png"))
       end
       FileUtils.mkdir_p(File.join(dir, "previews", locale))
       File.write(File.join(dir, "previews", locale, "01-IPHONE_67-SunriseToSunset.mp4"), "unreached")
@@ -662,7 +686,7 @@ check.define_singleton_method(:upload_to_app_store) do |**options|
   calls << [:upload_to_app_store, options]
   draft_version.release_type = "AFTER_APPROVAL" if options[:automatic_release]
 end
-check.release(skip_tests: "true")
+check.release(skip_tests: "true", skip_build: "true")
 assert(check.calls.include?([:release_context, { platform: :mac, app_store: true, force: false }]), "Release must load the Mac App Store draft")
 assert(check.calls.select { |name, _| name == :archive_and_upload } == [[:archive_and_upload, :mac]], "Release must upload only the Mac build")
 assert(check.calls.none? { |name, _| name == :upload_to_testflight }, "The Mac build must skip TestFlight")

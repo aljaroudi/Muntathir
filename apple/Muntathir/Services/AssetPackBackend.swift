@@ -111,11 +111,12 @@ struct AppleAssetPackBackend: AssetPackBackend {
                 let marker = fixture.appending(path: "Removed")
                 return FileManager.default.fileExists(atPath: marker.path) ? nil : try HadithUITestFixture.url()
             }
+            // Capture builds stage Hadith/Supplications only; AssetPackManager traps without a managed pack.
             if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
-               ProcessInfo.processInfo.arguments.contains("--marketing-capture"),
-               let url = Bundle.main.url(forResource: identifier, withExtension: "db", subdirectory: identifier == "supplications" ? "Supplications" : "Hadith")
+               ProcessInfo.processInfo.arguments.contains("--marketing-capture")
             {
-                return url
+                return Bundle.main.url(forResource: identifier, withExtension: "db",
+                                       subdirectory: identifier == "supplications" ? "Supplications" : "Hadith")
             }
             if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
                (identifier == Self.packID && ProcessInfo.processInfo.arguments.contains("--ui-testing-hadith-fixture")) ||

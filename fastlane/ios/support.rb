@@ -26,7 +26,7 @@ module MuntathirRelease
   # Apple does not support Persian store metadata; its copy stays in listing-drafts/fa.
   LOCALES = %w[en-US ar-SA fr-FR de-DE id it ja ms ru es-ES tr ur-PK zh-Hans zh-Hant].freeze
   LANGUAGE_ALIASES = { "ar" => "ar-SA", "en" => "en-US" }.freeze
-  DEVICES = ["iPhone 17 Pro Max", "iPad Pro 13-inch (M5)", "iPhone Duo"].freeze
+  DEVICES = ["iPhone 18 Pro Max", "iPad Pro 13-inch (M5)", "iPhone Duo"].freeze
   PREVIEW_DEVICES = DEVICES.reject { |name| name == "iPhone Duo" }.freeze
   WATCH_SCREENSHOT = "Apple Watch Series 12 (46mm)-01-PrayerTimes.png".freeze
   SCREENSHOTS = JSON.parse(File.read(File.join(__dir__, "marketing/screenshots.json"))).freeze
@@ -40,7 +40,7 @@ module MuntathirRelease
   PLATFORM_NAMES = { "IOS" => "iOS", "MAC_OS" => "macOS" }.freeze
 
   def self.capture_runtime(device)
-    device == "iPhone Duo" ? ENV.fetch("SCREENSHOT_DUO_IOS_VERSION", "27.2") : ENV.fetch("SCREENSHOT_IOS_VERSION", "27.0")
+    device == "iPhone Duo" ? ENV.fetch("SCREENSHOT_DUO_IOS_VERSION", "27.2") : ENV.fetch("SCREENSHOT_IOS_VERSION", "27.2")
   end
 
   def self.capture_locales(value)
@@ -159,7 +159,8 @@ module MuntathirRelease
 
   def self.validate_capture!(path)
     brightness = run!("magick", path, "-format", "%[fx:mean]", "info:").to_f
-    raise "Blank capture: #{path}" unless brightness.between?(0.01, 0.99)
+    # Light calendar/list UIs (esp. Urdu) sit just above 0.99; true blanks are ~1.0.
+    raise "Blank capture: #{path}" unless brightness.between?(0.01, 0.995)
   end
 
   CREATIVE_SIZE = SCREENSHOTS.fetch("creative").fetch("size").freeze
