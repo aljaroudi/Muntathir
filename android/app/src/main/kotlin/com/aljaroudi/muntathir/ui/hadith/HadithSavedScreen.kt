@@ -124,7 +124,8 @@ class HadithSavedViewModel
         val reading = settings.state
 
         private fun belongs(source: String) =
-            (HadithSource.fromKey(source)?.book in Hadith.SUPPLICATION_COLLECTION_IDS) == route.supplications
+            !source.startsWith("sermon/") &&
+                (HadithSource.fromKey(source)?.book in Hadith.SUPPLICATION_COLLECTION_IDS) == route.supplications
 
         val highlights: StateFlow<List<ReadingHighlight>> =
             user.highlights

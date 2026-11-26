@@ -184,6 +184,8 @@ struct HighlightText: View {
     /// When `text` is a segment, the whole block it belongs to and where it starts.
     var blockText: String?
     var offset = 0
+    var emphasizedMatch: NSRange?
+    var textColor: Color?
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiate
     @Environment(\.quranUserStore) private var store
     @Environment(\.focusedHighlight) private var focused
@@ -201,7 +203,7 @@ struct HighlightText: View {
         let highlights = store?.highlights(for: source, isHadith: isHadith, ruling: ruling) ?? []
         let passage = HighlightTextContent.attributed(text: text, markdown: markdown, arabic: arabic, hadith: isHadith || ruling != nil,
                                                       heading: heading, size: size, alignment: centered ? .center : .natural)
-        let display = ArabicDisplay(SearchMatch.applying(to: passage, query: searchQuery), showMarks: showMarks)
+        let display = displayText(passage)
         let ranges = Dictionary(uniqueKeysWithValues: highlights.map { ($0.id, displayRanges(of: $0, display: display)) })
         SelectableHighlightText(
             attributed: display.attributed,
@@ -234,7 +236,9 @@ struct HighlightText: View {
         }
         .accessibilityActions {
             ForEach(highlights.filter { ranges[$0.id]?.isEmpty == false }) { highlight in
-                Button(highlight.note.isEmpty ? String(highlight.excerpt.prefix(60)) : String(localized: "Highlight note") + ": " + String(highlight.note.prefix(60))) {
+                let preview = String((highlight.note.isEmpty ? highlight.excerpt : highlight.note).prefix(60))
+                let label = highlight.note.isEmpty ? preview : String(localized: "Highlight note") + ": " + preview
+                Button(label) {
                     editing = highlight
                 }
             }
@@ -245,6 +249,17 @@ struct HighlightText: View {
     }
 
     /// Validates against the whole block, then keeps the part inside this segment in display coordinates.
+    private func displayText(_ passage: NSMutableAttributedString) -> ArabicDisplay {
+        if let textColor {
+            passage.addAttribute(.foregroundColor, value: PlatformColor(textColor), range: NSRange(location: 0, length: passage.length))
+        }
+        let matched = NSMutableAttributedString(attributedString: SearchMatch.applying(to: passage, query: searchQuery))
+        if let emphasizedMatch, NSMaxRange(emphasizedMatch) <= matched.length {
+            matched.addAttribute(.underlineStyle, value: NSUnderlineStyle.double.rawValue, range: emphasizedMatch)
+        }
+        return ArabicDisplay(matched, showMarks: showMarks)
+    }
+
     private func displayRanges(of highlight: ReadingHighlight, display: ArabicDisplay) -> [NSRange] {
         let length = text.utf16.count
         return highlight.ranges(in: blockText ?? text, block: block).compactMap { range in

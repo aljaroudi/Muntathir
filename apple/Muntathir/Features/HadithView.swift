@@ -680,7 +680,7 @@ struct HadithSavedView: View {
 
     private var highlights: [ReadingHighlight] {
         store?.highlights.filter {
-            guard $0.isHadith else { return false }
+            guard $0.isHadith, !$0.source.hasPrefix("sermon/") else { return false }
             // Introductions belong to the hadith library, never to supplications.
             if $0.source.hasPrefix(HadithIntroduction.highlightPrefix) {
                 return !supplications

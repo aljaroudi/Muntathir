@@ -426,4 +426,8 @@
     <string name="your_saved_data_could_not_be_opened_please_try_a">Your saved data could not be opened. Please try again.</string>
     <string name="literal">Literal</string>
     <string name="sermons">Sermons</string>
+    <string name="search_sermons">Search sermons</string>
+    <string name="find_in_sermon">Find in sermon</string>
+    <string name="previous_sermon_match">Previous match</string>
+    <string name="next_sermon_match">Next match</string>
 </resources>

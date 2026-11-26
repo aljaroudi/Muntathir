@@ -255,7 +255,7 @@ fun AppShell(
                                 )
                             }
                             entry<SermonRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
-                                SermonsScreen(route.id, onBack = detailBack, open = { navigator.push(it) })
+                                SermonsScreen(route.id, onBack = detailBack, open = { navigator.push(it) }, destination = route)
                             }
                             entry<RulingDetailRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
                                 RulingDetailScreen(
