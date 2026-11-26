@@ -22,6 +22,12 @@ struct RakaatDetector: Sendable {
         self.target = target
     }
 
+    /// Continues counting with a baseline measured by a previous session under the same locked exposure.
+    init(target: Int, baseline: Double) {
+        self.init(target: target)
+        self.baseline = baseline
+    }
+
     mutating func sample(_ light: Double, at time: Double) {
         guard !complete, light.isFinite, (0 ... 1).contains(light), time.isFinite else { return }
         if let lastTime {

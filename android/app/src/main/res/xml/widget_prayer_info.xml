@@ -2,6 +2,7 @@
 <!-- No updatePeriodMillis: WidgetUpdater re-renders on changes and at the next prayer, sunset or midnight. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/the_next_prayer_countdown_alongside_your_prayer"
+    android:initialKeyguardLayout="@layout/glance_default_loading_layout"
     android:initialLayout="@layout/glance_default_loading_layout"
     android:minWidth="110dp"
     android:minHeight="110dp"
@@ -9,4 +10,4 @@
     android:targetCellWidth="2"
     android:targetCellHeight="2"
     android:updatePeriodMillis="0"
-    android:widgetCategory="home_screen" />
+    android:widgetCategory="home_screen|keyguard" />

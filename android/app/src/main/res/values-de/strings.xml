@@ -59,6 +59,7 @@
     <string name="camera_capture_ended_start_a_new_session_to_try">Die Kameraaufnahme wurde beendet. Starte eine neue Sitzung, um es erneut zu versuchen.</string>
     <string name="camera_unavailable">Kamera nicht verfügbar</string>
     <string name="cancel">Abbrechen</string>
+    <string name="chapter_note">Kapitelnotiz</string>
     <string name="checking_hadith_download">Hadith-Download wird geprüft…</string>
     <string name="checking_supplications_download">Bittgebete-Download wird geprüft…</string>
     <string name="children">Kinder</string>
@@ -70,6 +71,7 @@
     <string name="choose_a_location_in_muntathir">Standort in Muntathir wählen</string>
     <string name="choose_a_parentage_report">Abstammungsbericht wählen</string>
     <string name="choose_a_translation_to_read_alongside_arabic">Wähle eine Übersetzung, die neben dem arabischen Text angezeigt wird.</string>
+    <string name="choose_prayer">Gebet wählen</string>
     <string name="choose_rakaat">Anzahl der Rakʿa wählen</string>
     <string name="choose_the_calculation_method_you_follow_you_can">Wähle deine Berechnungsmethode. Du kannst sie später in den Einstellungen ändern.</string>
     <string name="choose_up_to_three_tabs_everything_else_stays_in">Wähle bis zu drei Tabs. Alles andere bleibt unter Werkzeuge.</string>
@@ -129,6 +131,7 @@
     <string name="find_the_direction_of_qibla">Qibla-Richtung finden</string>
     <string name="finding_your_precise_current_location">Dein genauer aktueller Standort wird ermittelt…</string>
     <string name="finish_setup">Einrichtung abschließen</string>
+    <string name="first_sujood">Erste Niederwerfung</string>
     <string name="from_x_to_x">%1$s – %2$s</string>
     <string name="full_siblings">Vollgeschwister</string>
     <string name="future_dates_are_estimates_until_the_month_s_moo">Zukünftige Daten sind Schätzungen, bis die Mondsichtung für den Monat bestätigt ist oder der Monat beginnt.</string>
@@ -158,6 +161,8 @@
     <string name="hijri_month_x_x">Hidschri-Monat: %1$s / %2$s</string>
     <string name="hizb_x">Hizb %d</string>
     <string name="holy_quran">Der Heilige Koran</string>
+    <string name="horizontal_layout">Horizontales Layout</string>
+    <string name="horizontal_prayer_times">Gebetszeiten nebeneinander</string>
     <string name="hours_and_minutes_until_your_next_prayer">Stunden und Minuten bis zum nächsten Gebet.</string>
     <string name="imsak">Imsak</string>
     <string name="imsak_before_fajr">Imsak vor Fajr</string>
@@ -190,6 +195,7 @@
     <string name="local_naked_eye">Lokale Sichtung mit bloßem Auge</string>
     <string name="location">Standort</string>
     <string name="location_access_is_disabled_search_for_a_city_in">Standortzugriff deaktiviert. Suche stattdessen nach einer Stadt.</string>
+    <string name="simplified">Vereinfacht</string>
     <string name="maghrib">Maghrib</string>
     <string name="maghrib_prayer">Maghrib-Gebet</string>
     <string name="manual_month_correction">Manuelle Monatskorrektur</string>
@@ -279,6 +285,7 @@
     <string name="purple">Lila</string>
     <string name="qibla">Qibla</string>
     <string name="quran_translations">Koranübersetzungen</string>
+    <string name="rakaat">Rakʿa</string>
     <string name="rakaat_tracker">Rakʿa-Zähler</string>
     <string name="read_and_search_hadith_offline">Hadithe offline lesen und durchsuchen.</string>
     <string name="read_and_search_supplications_offline">Bittgebete offline lesen und durchsuchen.</string>
@@ -314,6 +321,7 @@
     <string name="select_text_to_highlight_it">Wähle Text aus, um ihn zu markieren.</string>
     <string name="select_text_to_highlight_it_use_the_passage_acti">Wähle Text aus, um ihn zu markieren. Füge über die Aktionen der Textstelle ein Lesezeichen hinzu.</string>
     <string name="selected_location">Gewählter Standort</string>
+    <string name="sermons_unavailable">Predigten nicht verfügbar</string>
     <string name="set_a_location_to_view_prayer_times">Lege einen Standort fest, um Gebetszeiten anzuzeigen.</string>
     <string name="set_location_in_app">Standort in der App festlegen</string>
     <string name="set_up_muntathir">Muntathir einrichten</string>
@@ -332,6 +340,7 @@
     <string name="some_files_remain_on_this_device_please_try_agai">Einige Dateien bleiben auf diesem Gerät. Bitte erneut versuchen.</string>
     <string name="source">Quelle</string>
     <string name="spouses">Ehepartner</string>
+    <string name="start_x">%s beginnen</string>
     <string name="start_tasbih">Tasbih beginnen</string>
     <string name="step_x_of_x">Schritt %1$s von %2$s</string>
     <string name="sunrise">Sonnenaufgang</string>
@@ -403,6 +412,7 @@
     <string name="verse_number_or_quran_text">Versnummer oder Korantext</string>
     <string name="verse_unavailable">Vers nicht verfügbar</string>
     <string name="verses">Verse</string>
+    <string name="vertical_layout">Vertikales Layout</string>
     <string name="view_profile">Profil ansehen</string>
     <string name="visibility">Sichtbarkeit</string>
     <string name="weather">Wetter</string>
@@ -414,4 +424,6 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">Sie können heruntergeladene Koran- und Hadithtexte weiterhin offline durchsuchen.</string>
     <string name="you_can_still_search_downloaded_text_offline">Sie können heruntergeladene Texte weiterhin offline durchsuchen.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">Deine gespeicherten Daten konnten nicht geöffnet werden. Bitte versuche es erneut.</string>
+    <string name="literal">Wörtlich</string>
+    <string name="sermons">Predigten</string>
 </resources>

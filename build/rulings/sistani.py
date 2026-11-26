@@ -300,7 +300,10 @@ class SiteClient:
         if parsed.query:
             path += "?" + parsed.query
         current = path
+        book_request = "/book/" in parsed.path
         for _ in range(6):
+            if book_request and current != path:
+                raise ValueError(f"unexpected book redirect from {path} to {current}")
             self._wait()
             conn = self._connection()
             try:
@@ -311,6 +314,8 @@ class SiteClient:
                     "Connection": "keep-alive",
                 })
                 response = conn.getresponse()
+                if book_request and response.status == 200 and response.headers.get_content_type() not in ("text/html", "application/xhtml+xml"):
+                    raise ValueError(f"non-HTML book response for {current}")
                 body = response.read()
             except Exception:
                 self.close()

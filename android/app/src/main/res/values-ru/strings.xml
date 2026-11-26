@@ -61,6 +61,7 @@
     <string name="camera_capture_ended_start_a_new_session_to_try">Съёмка завершена. Начните новый сеанс, чтобы повторить попытку.</string>
     <string name="camera_unavailable">Камера недоступна</string>
     <string name="cancel">Отмена</string>
+    <string name="chapter_note">Примечание к главе</string>
     <string name="checking_hadith_download">Проверка загрузки хадисов…</string>
     <string name="checking_supplications_download">Проверка загрузки мольб…</string>
     <string name="children">Дети</string>
@@ -72,6 +73,7 @@
     <string name="choose_a_location_in_muntathir">Выбрать местоположение в Muntathir</string>
     <string name="choose_a_parentage_report">Выбрать предание о происхождении</string>
     <string name="choose_a_translation_to_read_alongside_arabic">Выберите перевод для чтения вместе с арабским текстом.</string>
+    <string name="choose_prayer">Выберите молитву</string>
     <string name="choose_rakaat">Выберите число ракаатов</string>
     <string name="choose_the_calculation_method_you_follow_you_can">Выберите принятый вами метод расчёта. Его можно изменить позже в настройках.</string>
     <string name="choose_up_to_three_tabs_everything_else_stays_in">Выберите до трёх вкладок. Остальное останется в разделе «Инструменты».</string>
@@ -131,6 +133,7 @@
     <string name="find_the_direction_of_qibla">Найти направление киблы</string>
     <string name="finding_your_precise_current_location">Определение вашей точной текущей геопозиции…</string>
     <string name="finish_setup">Завершить настройку</string>
+    <string name="first_sujood">Первый земной поклон</string>
     <string name="from_x_to_x">%1$s – %2$s</string>
     <string name="full_siblings">Полнородные братья и сёстры</string>
     <string name="future_dates_are_estimates_until_the_month_s_moo">Будущие даты являются приблизительными до подтверждения наблюдения лунного серпа или начала месяца.</string>
@@ -160,6 +163,8 @@
     <string name="hijri_month_x_x">Месяц хиджры: %1$s / %2$s</string>
     <string name="hizb_x">Хизб %d</string>
     <string name="holy_quran">Священный Коран</string>
+    <string name="horizontal_layout">Горизонтальный вид</string>
+    <string name="horizontal_prayer_times">Время молитв в ряд</string>
     <string name="hours_and_minutes_until_your_next_prayer">Часы и минуты до следующего намаза.</string>
     <string name="imsak">Имсак</string>
     <string name="imsak_before_fajr">Имсак перед фаджром</string>
@@ -192,6 +197,7 @@
     <string name="local_naked_eye">Местное наблюдение невооружённым глазом</string>
     <string name="location">Местоположение</string>
     <string name="location_access_is_disabled_search_for_a_city_in">Доступ к геопозиции отключён. Попробуйте найти город.</string>
+    <string name="simplified">Упрощённый</string>
     <string name="maghrib">Магриб</string>
     <string name="maghrib_prayer">Намаз магриб</string>
     <string name="manual_month_correction">Ручная корректировка месяца</string>
@@ -281,6 +287,7 @@
     <string name="purple">Фиолетовый</string>
     <string name="qibla">Кибла</string>
     <string name="quran_translations">Переводы Корана</string>
+    <string name="rakaat">Ракааты</string>
     <string name="rakaat_tracker">Счётчик ракаатов</string>
     <string name="read_and_search_hadith_offline">Читайте и ищите хадисы без интернета.</string>
     <string name="read_and_search_supplications_offline">Читайте и ищите мольбы без интернета.</string>
@@ -316,6 +323,7 @@
     <string name="select_text_to_highlight_it">Выберите текст, чтобы выделить его.</string>
     <string name="select_text_to_highlight_it_use_the_passage_acti">Выделите текст, чтобы подсветить его. Добавьте закладку через меню действий отрывка.</string>
     <string name="selected_location">Выбранное местоположение</string>
+    <string name="sermons_unavailable">Проповеди недоступны</string>
     <string name="set_a_location_to_view_prayer_times">Укажите местоположение для просмотра времени намаза.</string>
     <string name="set_location_in_app">Указать местоположение в приложении</string>
     <string name="set_up_muntathir">Настроить Muntathir</string>
@@ -334,6 +342,7 @@
     <string name="some_files_remain_on_this_device_please_try_agai">Некоторые файлы остались на устройстве. Повторите попытку.</string>
     <string name="source">Источник</string>
     <string name="spouses">Супруги</string>
+    <string name="start_x">Начать: %s</string>
     <string name="start_tasbih">Начать тасбих</string>
     <string name="step_x_of_x">Шаг %1$s из %2$s</string>
     <string name="sunrise">Восход</string>
@@ -405,6 +414,7 @@
     <string name="verse_number_or_quran_text">Номер аята или текст Корана</string>
     <string name="verse_unavailable">Аят недоступен</string>
     <string name="verses">Аяты</string>
+    <string name="vertical_layout">Вертикальный вид</string>
     <string name="view_profile">Открыть профиль</string>
     <string name="visibility">Видимость</string>
     <string name="weather">Погода</string>
@@ -416,4 +426,6 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">Вы по-прежнему можете искать в загруженных текстах Корана и хадисов без интернета.</string>
     <string name="you_can_still_search_downloaded_text_offline">Вы по-прежнему можете искать в загруженных текстах без интернета.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">Не удалось открыть сохранённые данные. Повторите попытку.</string>
+    <string name="literal">Буквальный</string>
+    <string name="sermons">Проповеди</string>
 </resources>

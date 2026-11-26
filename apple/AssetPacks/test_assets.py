@@ -43,7 +43,7 @@ class PackagingTests(unittest.TestCase):
             resources.mkdir(parents=True)
             sizes = resources / 'AssetDownloadSizes.json'
             sizes.write_text(json.dumps({'hadith': 123, 'supplications': 45}))
-            manifest = root / 'rulings.json'
+            manifest = root / 'rulings-v2.json'
             def package(arguments, check):
                 self.assertTrue(check)
                 Path(arguments[-1]).write_bytes(b'rulings archive')
@@ -51,7 +51,7 @@ class PackagingTests(unittest.TestCase):
                  patch.object(assets.subprocess, 'run', side_effect=package), \
                  patch('sys.argv', ['assets.py', 'package', '--content', 'rulings']):
                 assets.main()
-            self.assertEqual(json.loads(sizes.read_text()), {'hadith': 123, 'supplications': 45, 'rulings': 15})
+            self.assertEqual(json.loads(sizes.read_text()), {'hadith': 123, 'supplications': 45, 'rulings-v2': 15})
 
     def test_android_pack_copies_into_module_with_matching_delivery(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -82,3 +82,53 @@ class PackagingTests(unittest.TestCase):
             name, delivery = assets.ANDROID_PACKS[pack_id]
             script = (assets.ROOT / 'android/packs' / name / 'build.gradle.kts').read_text()
             self.assertIn(f'deliveryType = "{delivery}"', script)
+
+    def test_android_rulings_pack_keeps_authorities_the_ios_pack_leaves_out(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            dist = root / 'build/rulings/dist'
+            dist.mkdir(parents=True)
+            (dist / 'rulings.db').write_bytes(b'full')
+            (dist / 'rulings-apple.db').write_bytes(b'apple')
+            module = root / 'android/packs/rulings'
+            module.mkdir(parents=True)
+            (module / 'build.gradle.kts').write_text('packName = "rulings"\ndeliveryType = "on-demand"\n')
+            manifest = root / 'apple/AssetPacks/manifests/rulings-v2.json'
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text((assets.MANIFESTS / 'rulings-v2.json').read_text())
+            copied, = assets.android_pack(manifest, root)
+            self.assertEqual(copied, module / 'src/main/assets/Rulings/rulings.db')
+            self.assertEqual(copied.read_bytes(), b'full')
+
+    def test_ios_rulings_pack_rejects_sanctioned_authority(self):
+        import sqlite3
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            manifests = root / 'apple/AssetPacks/manifests'
+            manifests.mkdir(parents=True)
+            (manifests / 'rulings-v2.json').write_text((assets.MANIFESTS / 'rulings-v2.json').read_text())
+            database = root / 'build/rulings/dist/rulings-apple.db'
+            database.parent.mkdir(parents=True)
+            with sqlite3.connect(database) as db:
+                db.executescript("""
+                    PRAGMA application_id = 1179809601; PRAGMA user_version = 2;
+                    CREATE TABLE authority (code TEXT PRIMARY KEY);
+                    CREATE TABLE topic (id INTEGER PRIMARY KEY, authority_code TEXT, language_code TEXT, url TEXT);
+                    CREATE TABLE entry (id INTEGER PRIMARY KEY, authority_code TEXT, language_code TEXT, url TEXT);
+                    CREATE VIEW question AS SELECT id, authority_code, language_code, 'q' AS question, 'الصلاة' AS answer FROM entry;
+                    CREATE TABLE placement (topic_id INTEGER, question_id INTEGER);
+                    CREATE VIRTUAL TABLE question_fts USING fts5(question, answer);
+                    INSERT INTO question_fts VALUES ('q', 'الصلاة');
+                    INSERT INTO authority VALUES ('sistani');
+                    INSERT INTO entry VALUES (1, 'sistani', 'ar', 'https://www.sistani.org/1');
+                """)
+            self.assertEqual(assets.validate_rulings(root, manifests), [manifests / 'rulings-v2.json'])
+            with sqlite3.connect(database) as db:
+                db.execute("INSERT INTO entry VALUES (2, 'sistani', 'fa', 'https://www.rohani.ir/fa/idetail/1/x')")
+            with self.assertRaisesRegex(AssertionError, 'rohani.ir'):
+                assets.validate_rulings(root, manifests)
+            with sqlite3.connect(database) as db:
+                db.execute("DELETE FROM entry WHERE id = 2")
+                db.execute("INSERT INTO authority VALUES ('rohani')")
+            with self.assertRaisesRegex(AssertionError, '--exclude rohani'):
+                assets.validate_rulings(root, manifests)

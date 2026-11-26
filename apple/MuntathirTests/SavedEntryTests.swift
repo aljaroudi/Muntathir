@@ -68,4 +68,18 @@ struct SavedEntryTests {
         #expect(narration.matches("Book 1", locale: locale))
         #expect(SavedEntry.sections([entry], byDate: true, query: "", calendar: .current, locale: locale).count == 1)
     }
+
+    @Test func rulingHighlightsUseAuthorityTitlesAndOwnGroups() throws {
+        let ruling = Rulings.ID(authority: "sistani", language: "ar", siteID: "1:1")
+        var value = highlight("r", source: "1:1", created: 1, modified: 1)
+        value.ruling = ruling
+        value.reference = "Sistani"
+        let entries = [SavedEntry(value), SavedEntry(highlight("q", source: "1:1", created: 1, modified: 1))]
+        #expect(entries[0].ruling == ruling)
+        #expect(entries[0].title(locale: Locale(identifier: "ar")) == "Sistani")
+        #expect(SavedEntry.sections(entries, byDate: false, query: "", calendar: .current, locale: locale).count == 2)
+        // Highlights saved before rulings supported them decode without the field.
+        let legacy = try JSONEncoder().encode(highlight("old", source: "1:1", created: 1, modified: 1))
+        #expect(try JSONDecoder().decode(ReadingHighlight.self, from: legacy).ruling == nil)
+    }
 }

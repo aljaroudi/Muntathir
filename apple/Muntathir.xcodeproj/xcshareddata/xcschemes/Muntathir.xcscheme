@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "2710"
+   LastUpgradeVersion = "2720"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -34,6 +34,9 @@
          </TestPlanReference>
          <TestPlanReference
             reference = "container:Screenshots.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:MacScreenshots.xctestplan">
          </TestPlanReference>
       </TestPlans>
    </TestAction>

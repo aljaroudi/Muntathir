@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="open_on_phone">Apri sul telefono</string>
+    <string name="open_muntathir_on_your_phone">Apri Muntathir sul telefono</string>
+    <string name="sync_from_phone">Apri Muntathir sul telefono per sincronizzare la tua posizione e le impostazioni.</string>
+</resources>

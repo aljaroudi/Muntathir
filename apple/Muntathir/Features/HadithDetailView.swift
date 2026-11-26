@@ -30,6 +30,7 @@ struct HadithDetailView: View {
     @State private var loading = true
     @State private var failed = false
     @State private var retry = 0
+    @State private var translationTarget: Locale.Language?
 
     var body: some View {
         ScrollView {
@@ -41,22 +42,22 @@ struct HadithDetailView: View {
                 } else if let detail {
                     let narration = detail.narration
                     if isSupplication {
-                        Text(narration.chapter.chapterTitle(locale: locale))
+                        DictionarySelectableText(text: narration.chapter.chapterTitle(locale: locale), arabic: false)
                             .font(.title2.weight(.semibold))
                             .accessibilityIdentifier("supplication-title")
                     } else {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text(narration.chapter.bookTitle(locale: locale))
+                            DictionarySelectableText(text: narration.chapter.bookTitle(locale: locale), arabic: false)
                                 .font(.headline)
                                 .accessibilityIdentifier("hadith-detail-book")
                             if !detail.authorName(locale: locale).isEmpty {
-                                Text(detail.authorName(locale: locale))
+                                DictionarySelectableText(text: detail.authorName(locale: locale), arabic: false)
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                     .accessibilityIdentifier("hadith-detail-author")
                             }
                             if !narration.chapter.chapterTitle(locale: locale).isEmpty {
-                                Text(narration.chapter.chapterTitle(locale: locale))
+                                DictionarySelectableText(text: narration.chapter.chapterTitle(locale: locale), arabic: false)
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                     .accessibilityIdentifier("hadith-detail-chapter")
@@ -73,23 +74,37 @@ struct HadithDetailView: View {
                                 .environment(\.layoutDirection, .rightToLeft)
                                 .accessibilityIdentifier("hadith-full-arabic")
                         }
-                        if !isSupplication, showEnglish, !narration.englishNarrator.isEmpty {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Narrator").font(.subheadline).foregroundStyle(.secondary)
-                                highlighted(narration.narratorDisplay, block: "englishNarrator", narration: narration)
-                                    .environment(\.layoutDirection, .leftToRight)
+                        if !isSupplication, showEnglish, !narration.englishNarrator.isEmpty || !narration.english.isEmpty {
+                            VStack(alignment: .leading, spacing: 12) {
+                                TranslationHeader(title: languageName("en"))
+                                if !narration.englishNarrator.isEmpty {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        Text("Narrator").font(.subheadline).foregroundStyle(.secondary)
+                                        highlighted(narration.narratorDisplay, block: "englishNarrator", narration: narration)
+                                    }
+                                    .accessibilityIdentifier("hadith-detail-narrator")
+                                }
+                                if !narration.english.isEmpty {
+                                    highlighted(narration.englishDisplay, block: "english", narration: narration)
+                                        .accessibilityIdentifier("hadith-full-english")
+                                }
                             }
-                            .accessibilityIdentifier("hadith-detail-narrator")
-                        }
-                        if !isSupplication, showEnglish, !narration.english.isEmpty {
-                            highlighted(narration.englishDisplay, block: "english", narration: narration)
-                                .environment(\.layoutDirection, .leftToRight)
-                                .accessibilityIdentifier("hadith-full-english")
+                            .environment(\.layoutDirection, .leftToRight)
                         }
                         if let translation = narration.translation {
-                            highlighted(HadithText.highlighted(translation.text, terms: QuranSearchText.queryTerms(query)), block: translation.block, narration: narration)
-                                .environment(\.layoutDirection, translation.isRightToLeft ? .rightToLeft : .leftToRight)
-                                .accessibilityIdentifier("supplication-full-translation")
+                            VStack(alignment: .leading, spacing: 12) {
+                                TranslationHeader(title: languageName(translation.language))
+                                highlighted(HadithText.highlighted(translation.text, terms: QuranSearchText.queryTerms(query)), block: translation.block, narration: narration)
+                                    .accessibilityIdentifier("supplication-full-translation")
+                            }
+                            .environment(\.layoutDirection, translation.isRightToLeft ? .rightToLeft : .leftToRight)
+                        }
+                        if !narration.arabic.isEmpty, let target = translationTarget,
+                           !showsTrustedTranslation(in: target, narration: narration)
+                        {
+                            MachineTranslationSection(source: Self.arabic, target: target,
+                                                      paragraphs: MachineTranslation.paragraphs(String(HadithText.markdown(narration.arabic).characters)))
+                                .id(narration.id)
                         }
                     }
                     let gradings = detail.gradings.filter {
@@ -102,15 +117,15 @@ struct HadithDetailView: View {
                                 .accessibilityAddTraits(.isHeader)
                             ForEach(gradings) { grading in
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(grading.judgment(locale: locale))
+                                    DictionarySelectableText(text: grading.judgment(locale: locale), arabic: false)
                                         .font(.headline)
                                     if !grading.grader(locale: locale).isEmpty {
-                                        Text(grading.grader(locale: locale))
+                                        DictionarySelectableText(text: grading.grader(locale: locale), arabic: false)
                                             .font(.subheadline)
                                             .foregroundStyle(.secondary)
                                     }
                                     if !grading.reference(locale: locale).isEmpty {
-                                        Text(grading.reference(locale: locale))
+                                        DictionarySelectableText(text: grading.reference(locale: locale), arabic: false)
                                             .font(.footnote)
                                             .foregroundStyle(.secondary)
                                     }
@@ -138,6 +153,8 @@ struct HadithDetailView: View {
             .padding(.vertical)
         }
         .readingBackground()
+        .onscreenEntity(HadithEntity.self, id: isSupplication ? nil : detail?.narration.source?.key)
+        .onscreenEntity(SupplicationEntity.self, id: isSupplication ? detail?.narration.source?.key : nil)
         .trackReading(isSupplication ? .supplicationReading : .hadithReading, enabled: !loading && !failed && detail != nil && !textSizePresented)
         .textSelection(.enabled)
         .environment(\.focusedHighlight, highlight)
@@ -155,14 +172,14 @@ struct HadithDetailView: View {
         }
         .navigationTitle(detail?.narration.displayNumber.map { isSupplication ? String(localized: "Supplication \($0)") : String(localized: "Narration \($0)") }
             ?? String(localized: isSupplication ? "Supplications" : "Hadith"))
-        .navigationBarTitleDisplayMode(.inline)
+        .inlineNavigationTitle()
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .trailingBar) {
                 if let detail {
                     HadithBookmarkButton(narration: detail.narration, failed: $bookmarkFailed)
                 }
             }
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .trailingBar) {
                 if let detail {
                     HadithActions(textSizePresented: $textSizePresented, narration: detail.narration, translationLanguages: translationLanguages)
                         .readingSizePresentation(isPresented: $textSizePresented, compact: sizeClass != .regular)
@@ -170,6 +187,9 @@ struct HadithDetailView: View {
             }
         }
         .onChange(of: translation) { _, _ in translationChanged = true }
+        .task(id: locale.identifier) {
+            translationTarget = await MachineTranslation.supportedTarget(from: Self.arabic)
+        }
         .alert("Unable to save bookmark", isPresented: $bookmarkFailed) {
             Button("OK", role: .cancel) {}
         } message: { Text("Please try again.") }
@@ -215,6 +235,21 @@ struct HadithDetailView: View {
                 loading = false
             }
         }
+    }
+
+    private static let arabic = Locale.Language(identifier: "ar")
+
+    private func languageName(_ code: String) -> String {
+        locale.localizedString(forLanguageCode: code) ?? code
+    }
+
+    /// A trusted translation already on screen in the machine translation's target makes it redundant.
+    private func showsTrustedTranslation(in target: Locale.Language, narration: Hadith) -> Bool {
+        if !isSupplication, showEnglish, !narration.english.isEmpty, target.languageCode == "en" {
+            return true
+        }
+        guard let translation = narration.translation else { return false }
+        return Locale.Language(identifier: translation.language).languageCode == target.languageCode
     }
 
     private func highlighted(_ text: AttributedString, block: String, narration: Hadith, arabic: Bool = false) -> some View {

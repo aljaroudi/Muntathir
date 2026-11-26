@@ -9,6 +9,7 @@ import com.aljaroudi.muntathir.core.feed.CorrectionsFeed
 import com.aljaroudi.muntathir.core.feed.FeedClient
 import com.aljaroudi.muntathir.core.location.SavedLocation
 import com.aljaroudi.muntathir.core.prayer.PrayerName
+import com.aljaroudi.muntathir.core.prayer.WidgetPrayerSettings
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -74,6 +75,16 @@ data class AppState(
     val location: SavedLocation? get() = device.liveLocation
 
     val zone: ZoneId get() = location?.zone ?: systemZone
+
+    /** The prayer settings every surface (widgets, tiles, alarms, the watch) reads. */
+    val prayerSettings: WidgetPrayerSettings
+        get() =
+            WidgetPrayerSettings(
+                location,
+                preferences.prayerMethod,
+                preferences.hiddenPrayers,
+                preferences.imsakMinutes,
+            )
 
     val engine: CalendarEngine by lazy {
         runCatching {

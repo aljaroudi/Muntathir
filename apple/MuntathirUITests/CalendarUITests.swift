@@ -2,15 +2,7 @@ import XCTest
 
 final class CalendarUITests: XCTestCase {
     @MainActor private func openAdjustments(_ app: XCUIApplication) {
-        app.openSettingsFromTools()
-        let link = app.buttons["month-adjustments"]
-        for _ in 0 ..< 8 {
-            if link.isHittable {
-                break
-            }
-            app.swipeUp()
-        }
-        link.tap()
+        app.openSettingsPage("month-adjustments")
     }
 
     @MainActor func testDatePickerChangesMonthWithoutReplacingSheet() {
@@ -75,15 +67,15 @@ final class CalendarUITests: XCTestCase {
                                "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
         app.buttons["Calendar"].firstMatch.tap()
-        let year = app.buttons["calendar-year"]
-        XCTAssertTrue(year.waitForExistence(timeout: 5))
-        XCTAssertTrue(year.label.contains("1448"))
+        XCTAssertTrue(app.buttons["calendar-jump"].waitForExistence(timeout: 5))
+        XCTAssertTrue(showsYear(app, "1448"))
+        openTitleMenu(app)
         app.buttons["Next year"].tap()
-        XCTAssertTrue(year.label.contains("1449"))
-        let firstMonth = app.buttons["calendar-month-1449-1"]
+        XCTAssertTrue(showsYear(app, "1449"))
+        let firstMonth = app.descendants(matching: .any)["calendar-month-1449-1"].firstMatch
         XCTAssertTrue(firstMonth.waitForExistence(timeout: 5))
         XCTAssertTrue(firstMonth.isHittable)
-        firstMonth.tap()
+        app.buttons["calendar-jump"].tap()
         XCTAssertTrue(app.staticTexts["Future dates are estimates until the month’s moonsighting is confirmed or the month begins."].exists)
         XCTAssertTrue(app.buttons["calendar-day-1449-1-1"].waitForExistence(timeout: 5))
         app.buttons["calendar-day-1449-1-1"].tap()
@@ -91,43 +83,74 @@ final class CalendarUITests: XCTestCase {
         XCTAssertTrue(event.waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "Expected:")).firstMatch.exists)
         app.buttons["calendar-today"].tap()
-        XCTAssertTrue(year.label.contains("1448"))
+        XCTAssertTrue(showsYear(app, "1448"))
+        XCTAssertTrue(app.descendants(matching: .any)["calendar-countdown"].firstMatch.waitForExistence(timeout: 5))
         XCTAssertTrue(app.descendants(matching: .any)["calendar-countdown"].firstMatch.isHittable)
+        openTitleMenu(app)
         app.buttons["Previous year"].tap()
-        XCTAssertTrue(year.label.contains("1447"))
-        XCTAssertTrue(app.buttons["calendar-month-1447-1"].isHittable)
+        XCTAssertTrue(showsYear(app, "1447"))
+        XCTAssertTrue(app.descendants(matching: .any)["calendar-month-1447-1"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["calendar-month-1447-1"].firstMatch.isHittable)
     }
 
-    @MainActor func testMonthMenuAndStickyHeader() {
+    @MainActor func testMonthMenuAndScrollBack() {
         continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "--sky-date", "2026-10-23T06:00:00Z",
                                "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
         app.buttons["Calendar"].firstMatch.tap()
-        XCTAssertTrue(app.buttons["calendar-year"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["calendar-jump"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.otherElements["Section index"].exists)
-        XCTAssertFalse(app.buttons["calendar-jump-month-12"].exists)
-        app.buttons["calendar-year"].tap()
-        app.buttons["calendar-jump-month-12"].tap()
-        XCTAssertTrue(app.buttons["calendar-month-1448-12"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["calendar-month-1448-12"].isHittable)
-        XCTAssertFalse(app.buttons["calendar-jump-month-12"].exists)
-        app.buttons["calendar-year"].tap()
-        app.buttons["calendar-jump-month-1"].tap()
-        let header = app.buttons["calendar-month-1448-1"]
-        XCTAssertTrue(header.waitForExistence(timeout: 5))
-        XCTAssertTrue(header.isHittable)
-        let top = header.frame.minY
-        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.65))
-        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.45))
-        start.press(forDuration: 0.1, thenDragTo: end)
-        XCTAssertTrue(header.isHittable)
-        XCTAssertEqual(header.frame.minY, top, accuracy: 2)
+        // The system title menu exposes items by label only.
+        let lastMonthItem = app.buttons["Dhuʻl-Hijjah"]
+        XCTAssertFalse(lastMonthItem.exists)
+        openTitleMenu(app)
+        lastMonthItem.tap()
+        let lastMonth = app.descendants(matching: .any)["calendar-month-1448-12"].firstMatch
+        XCTAssertTrue(lastMonth.waitForExistence(timeout: 5))
+        XCTAssertTrue(lastMonth.isHittable)
+        XCTAssertFalse(lastMonthItem.exists)
+        // A month jump lands its header just below the navigation bar, not partway down the screen.
+        openTitleMenu(app)
+        app.buttons["Shawwal"].tap()
+        let shawwal = app.descendants(matching: .any)["calendar-month-1448-10"].firstMatch
+        XCTAssertTrue(shawwal.waitForExistence(timeout: 5))
+        sleep(1)
+        XCTAssertTrue(shawwal.isHittable)
+        let barBottom = app.navigationBars.firstMatch.frame.maxY
+        XCTAssertEqual(shawwal.frame.minY, barBottom, accuracy: 40, "header at \(shawwal.frame.minY), bar bottom \(barBottom)")
+        openTitleMenu(app)
+        lastMonthItem.tap()
+        // Scrolling back up by hand must reach the first month.
+        let firstMonth = app.descendants(matching: .any)["calendar-month-1448-1"].firstMatch
+        for _ in 0 ..< 30 where !(firstMonth.exists && firstMonth.isHittable) {
+            app.swipeDown()
+        }
+        XCTAssertTrue(firstMonth.isHittable)
+        openTitleMenu(app)
+        lastMonthItem.tap()
+        XCTAssertTrue(lastMonth.waitForExistence(timeout: 5))
+        openTitleMenu(app)
+        app.buttons["Muharram"].tap()
+        XCTAssertTrue(firstMonth.waitForExistence(timeout: 5))
+        XCTAssertTrue(firstMonth.isHittable)
         let screenshot = XCTAttachment(screenshot: app.screenshot())
-        screenshot.name = "Month menu and sticky header"
+        screenshot.name = "Month menu"
         screenshot.lifetime = .keepAlways
         add(screenshot)
+    }
+
+    /// Opens the navigation title menu that holds year switching and month jumps.
+    @MainActor private func openTitleMenu(_ app: XCUIApplication) {
+        let bar = app.navigationBars.firstMatch
+        let button = bar.buttons["Calendar"]
+        (button.exists ? button : bar.staticTexts["Calendar"]).tap()
+    }
+
+    @MainActor private func showsYear(_ app: XCUIApplication, _ year: String) -> Bool {
+        app.navigationBars.firstMatch.descendants(matching: .any)
+            .matching(NSPredicate(format: "label CONTAINS %@", "\(year) AH")).firstMatch.waitForExistence(timeout: 5)
     }
 
     @MainActor private func checkCalendar(language: String, accessibilityText: Bool) throws {
@@ -219,7 +242,7 @@ extension CalendarUITests {
         app.launchArguments = ["--ui-testing", "--ui-testing-mecca", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
         app.openSettingsFromTools()
-        let adjustments = app.buttons["month-adjustments"]
+        let adjustments = app.usesTabSidebar ? app.staticTexts["month-adjustments"] : app.buttons["month-adjustments"]
         for _ in 0 ..< 5 where !adjustments.isHittable {
             app.swipeUp()
         }

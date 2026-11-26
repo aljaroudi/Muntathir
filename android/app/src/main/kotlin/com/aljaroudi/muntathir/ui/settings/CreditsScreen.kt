@@ -55,6 +55,13 @@ private val supplications =
         Credit("Al-Nudba Supplication — ur — Duas.org", "https://www.duas.org/ppt/Dua_al_Nudbah_Eng_Urdu.ppsx"),
     )
 
+/** Verified Quran word roots in the dictionary pack (shared/lexicon/vendor/README.md). */
+private val dictionary =
+    listOf(
+        Credit("Quranic Arabic Corpus", "https://corpus.quran.com"),
+        Credit("Quran Morphology — mustafa0x", "https://github.com/mustafa0x/quran-morphology"),
+    )
+
 @Composable
 fun CreditsScreen(
     onBack: (() -> Unit)?,
@@ -89,6 +96,8 @@ fun CreditsScreen(
                     stringResource(R.string.duas_org_credit) + " https://www.duas.org/mobile/about-us.html",
                 )
             }
+            item { SectionHeader(stringResource(R.string.arabic_dictionary)) }
+            items(dictionary) { CreditRow(it, open) }
             item { SectionHeader(stringResource(R.string.adhan_sounds)) }
             item { Text(sounds, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp)) }
             item { SectionHeader(stringResource(R.string.fonts)) }

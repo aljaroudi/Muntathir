@@ -6,6 +6,8 @@ struct QuranSearchContent: View {
     @State private var translationStore = QuranTranslationStore.shared
     let reader: QuranReader
     var surah: QuranSurah?
+    /// Bound only when the list sits beside a detail column.
+    var selection: Binding<FigureRoute?> = .constant(nil)
     @State private var surahs: [QuranSurah] = []
     @State private var counts: [Int: Int] = [:]
     @State private var readingWords: [Int: Int] = [:]
@@ -49,22 +51,19 @@ struct QuranSearchContent: View {
     }
 
     var body: some View {
-        List {
+        AdaptiveList(selection: selection) {
             if request.query.isEmpty, surah == nil {
                 Section {
-                    NavigationLink {
-                        QuranSavedVersesView(reader: reader, surahs: surahs)
-                    } label: { Label("Saved", systemImage: "bookmark") }
-                        .accessibilityIdentifier("quran-saved")
+                    AdaptiveLink(route: .quran(.saved)) {
+                        Label("Saved", systemImage: "bookmark")
+                    }
+                    .accessibilityIdentifier("quran-saved")
                 }
             }
             if !matchingSurahs.isEmpty {
                 Section("Surahs") {
                     ForEach(matchingSurahs) { surah in
-                        NavigationLink {
-                            QuranReadingView(surah: surah, reader: reader)
-                                .recordSearchOnOpen(submittedQuery, area: .quran)
-                        } label: {
+                        AdaptiveLink(route: .quran(.surah(surah.id)), search: (submittedQuery, .quran)) {
                             VStack(alignment: .leading, spacing: 6) {
                                 HStack(alignment: .firstTextBaseline, spacing: 0) {
                                     Text(surah.id, format: .number).fixedSize()
@@ -140,10 +139,9 @@ struct QuranSearchContent: View {
             ForEach(verses) { ayah in
                 if let surah = surahs.first(where: { $0.id == ayah.surah }) {
                     let translation = QuranTranslation.catalog.first { $0.id == translationStore.activeID }
-                    NavigationLink {
-                        QuranReadingView(surah: surah, initialVerse: ayah.number, reader: reader, searchQuery: resultQuery)
-                            .recordSearchOnOpen(submittedQuery, area: .quran)
-                    } label: {
+                    AdaptiveLink(route: .quran(.verse(surah: surah.id, verse: ayah.number, query: resultQuery)),
+                                 search: (submittedQuery, .quran))
+                    {
                         QuranVerseRow(ayah: ayah, translation: translation, searchQuery: resultQuery, preview: true, showsActions: false,
                                       highlight: highlights[ayah.id])
                             .contentShape(.rect)

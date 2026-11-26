@@ -108,6 +108,7 @@ class HighlightTextView(
                     mode: ActionMode,
                     menu: Menu,
                 ): Boolean {
+                    menu.add(Menu.NONE, R.string.dictionary_lookup, 1, R.string.dictionary_lookup)
                     if (selection()?.let { canHighlight(listOf(it)) } == true) {
                         menu.add(Menu.NONE, R.id.action_highlight, 0, R.string.highlight)
                     }
@@ -123,6 +124,21 @@ class HighlightTextView(
                     mode: ActionMode,
                     item: MenuItem,
                 ): Boolean {
+                    if (item.itemId == R.string.dictionary_lookup) {
+                        val range = selection() ?: return false
+                        context.startActivity(
+                            android.content
+                                .Intent(
+                                    context,
+                                    com.aljaroudi.muntathir.ui.dictionary.DictionaryActivity::class.java,
+                                ).putExtra(
+                                    android.content.Intent.EXTRA_PROCESS_TEXT,
+                                    text.substring(range.location, range.end),
+                                ),
+                        )
+                        mode.finish()
+                        return true
+                    }
                     if (item.itemId != R.id.action_highlight) return false
                     highlightSelection()
                     mode.finish()

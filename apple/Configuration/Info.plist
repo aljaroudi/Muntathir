@@ -11,8 +11,25 @@
 		<key>QiblaPreciseLocation</key>
 		<string>Your precise location shows your position and the direction to the Kaaba on the map.</string>
 	</dict>
+	<key>INAlternativeAppNames</key>
+	<array>
+		<dict>
+			<key>INAlternativeAppName</key>
+			<string>Muntazir</string>
+		</dict>
+		<dict>
+			<key>INAlternativeAppName</key>
+			<string>Muntadhir</string>
+		</dict>
+		<dict>
+			<key>INAlternativeAppName</key>
+			<string>منتظر</string>
+		</dict>
+	</array>
 	<key>UIPrefersShowingLanguageSettings</key>
 	<true/>
+	<key>ATSApplicationFontsPath</key>
+	<string>.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>QPCHafs.woff2</string>

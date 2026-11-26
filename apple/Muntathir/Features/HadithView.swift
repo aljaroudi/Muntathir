@@ -10,6 +10,8 @@ struct HadithView: View {
     @State private var restoringList = true
     @Environment(\.locale) private var locale
     @FocusState private var searchFocused: Bool
+    /// Search stays presented while results or a scope apply, so Cancel is always the visible way back.
+    @State private var searchPresented = false
     let reader: HadithReader
     var initialRequest: HadithRequest?
     var restoredState: HadithSessionState?
@@ -59,19 +61,20 @@ struct HadithView: View {
         let query: String
         let collectionID: String?
         let chapterID: Int?
+        let group: HadithBookGroup?
         let books: Int
         let chapters: Int
         let locale: Locale
     }
 
     private var titleInputs: TitleInputs {
-        TitleInputs(query: query, collectionID: request.collectionID, chapterID: request.chapterID, books: catalog.count, chapters: chapters.count, locale: locale)
+        TitleInputs(query: query, collectionID: request.collectionID, chapterID: request.chapterID, group: request.group, books: catalog.count, chapters: chapters.count, locale: locale)
     }
 
     private func refreshTitleMatches() {
         let terms = QuranSearchText.queryTerms(query)
         if request.collectionID == nil, HadithSearch.number(query) == nil, HadithSearch.chapter(query) == nil {
-            matchingBooks = catalog.filter { query.isEmpty || $0.matches(terms: terms) }
+            matchingBooks = catalog.filter { (request.group == nil || $0.group == request.group) && (query.isEmpty || $0.matches(terms: terms)) }
         } else {
             matchingBooks = []
         }
@@ -87,7 +90,11 @@ struct HadithView: View {
         } else if query.isEmpty, request.collectionID == nil || request.chapterID != nil {
             matchingChapters = []
         } else {
-            matchingChapters = chapters.filter { (request.chapterID == nil || $0.id == request.chapterID) && (query.isEmpty || $0.matches(terms: terms)) }
+            matchingChapters = chapters.filter {
+                (request.chapterID == nil || $0.id == request.chapterID)
+                    && (request.collectionID != nil || request.group == nil || HadithBookGroup(collectionID: $0.collectionID) == request.group)
+                    && (query.isEmpty || $0.matches(terms: terms))
+            }
         }
     }
 
@@ -108,7 +115,7 @@ struct HadithView: View {
     var body: some View {
         ScrollViewReader { proxy in
             List {
-                if query.isEmpty, request.collectionID == nil, request.chapterID == nil {
+                if query.isEmpty, request.collectionID == nil, request.chapterID == nil, request.group == nil {
                     Section {
                         NavigationLink { HadithSavedView(reader: reader) } label: { Label("Saved", systemImage: "bookmark") }
                             .accessibilityIdentifier("hadith-saved")
@@ -142,7 +149,7 @@ struct HadithView: View {
                     }
                 }
                 if query.isEmpty, !introductions.isEmpty {
-                    Section("Introduction") {
+                    Section {
                         ForEach(introductions) { introduction in
                             HadithIntroductionRow(introduction: introduction, reader: reader)
                                 .modifier(HadithListAnchor(id: "introduction:\(introduction.id)", tracking: scrollTracking, settled: saveVisibleRow))
@@ -166,10 +173,14 @@ struct HadithView: View {
                         if page.rows.isEmpty, matchingBooks.isEmpty, matchingChapters.isEmpty {
                             ContentUnavailableView.search(text: query).accessibilityIdentifier("hadith-empty-results")
                         }
-                        if request.collectionID != nil {
+                        if request.collectionID != nil || request.group != nil {
                             Button("Search all books") {
                                 searchFocused = false
-                                route = SearchRoute(request: HadithRequest(query: request.query))
+                                if request.collectionID == nil {
+                                    update { $0.group = nil }
+                                } else {
+                                    route = SearchRoute(request: HadithRequest(query: request.query))
+                                }
                             }
                             .accessibilityIdentifier("hadith-search-all")
                         }
@@ -250,15 +261,22 @@ struct HadithView: View {
         }
         .readingBackground()
         .navigationTitle(navigationTitle)
-        .navigationBarTitleDisplayMode(.inline)
-        .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search Hadith")
+        .inlineNavigationTitle()
+        .searchable(text: $searchText, isPresented: $searchPresented, placement: .alwaysVisible, prompt: "Search Hadith")
         .searchHistory($searchText, area: .hadith)
+        .modifier(HadithGroupScopes(enabled: request.collectionID == nil, group: groupScope))
         .onChange(of: searchText) { _, value in
             // Searches run on submit; clearing the field resets right away.
             guard value.isEmpty else { return }
             submitted = ""
             guard request.query != value else { return }
             update { $0.query = value; $0.number = nil }
+        }
+        .onChange(of: searchPresented) { _, presented in
+            // Cancel ends the whole search, scope included; the system already clears the text.
+            if !presented, request.group != nil {
+                update { $0.group = nil }
+            }
         }
         .onChange(of: titleInputs, initial: true) { refreshTitleMatches() }
         .searchFocused($searchFocused)
@@ -272,8 +290,8 @@ struct HadithView: View {
         .scrollDismissesKeyboard(.interactively)
         .autocorrectionDisabled()
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Menu { HadithTranslationPicker() } label: {
+            ToolbarItem(placement: .trailingBar) {
+                Menu { TranslationPicker() } label: {
                     Label("Hadith actions", systemImage: "ellipsis.circle")
                 }
                 .accessibilityIdentifier("hadith-library-menu")
@@ -381,6 +399,14 @@ struct HadithView: View {
         session?.state.listRow = row
     }
 
+    /// Writes through `update` so a scope change resets paging like a new query.
+    private var groupScope: Binding<HadithBookGroup?> {
+        Binding { request.group } set: { value in
+            guard request.group != value else { return }
+            update { $0.group = value }
+        }
+    }
+
     private func update(_ change: (inout HadithRequest) -> Void) {
         scrollTracking.offset = 0
         restoredRow = nil
@@ -485,6 +511,7 @@ struct HadithView: View {
             }
         }
         searchText = request.query
+        searchPresented = !query.isEmpty || request.group != nil
         restored = true
         retry += 1
     }
@@ -645,6 +672,7 @@ struct HadithSavedView: View {
     var supplications = false
     @Environment(\.quranUserStore) private var store
     @State private var rows: [String: Int] = [:]
+    @State private var introductions: [String: HadithIntroduction] = [:]
     @State private var availableHighlights: Set<String> = []
     @State private var loading = true
     @State private var failed = false
@@ -652,7 +680,12 @@ struct HadithSavedView: View {
 
     private var highlights: [ReadingHighlight] {
         store?.highlights.filter {
-            $0.isHadith && (Hadith.supplicationCollectionIDs.contains(HadithSource(key: $0.source)?.book ?? "")) == supplications
+            guard $0.isHadith else { return false }
+            // Introductions belong to the hadith library, never to supplications.
+            if $0.source.hasPrefix(HadithIntroduction.highlightPrefix) {
+                return !supplications
+            }
+            return (Hadith.supplicationCollectionIDs.contains(HadithSource(key: $0.source)?.book ?? "")) == supplications
         } ?? []
     }
 
@@ -667,10 +700,12 @@ struct HadithSavedView: View {
     }
 
     var body: some View {
-        SavedList(highlights: highlights, bookmarks: bookmarks, canOpen: { rows[$0.source] != nil },
+        SavedList(highlights: highlights, bookmarks: bookmarks, canOpen: { rows[$0.source] != nil || introductions[$0.source] != nil },
                   available: { availableHighlights.contains($0.id) })
         { entry in
-            if let id = rows[entry.source] {
+            if let introduction = introductions[entry.source] {
+                HadithIntroductionView(introduction: introduction, reader: reader, highlight: entry.highlight)
+            } else if let id = rows[entry.source] {
                 HadithDetailView(initialID: id, reader: reader, query: "", orderedFallback: false,
                                  highlight: entry.highlight, supplication: supplications)
             }
@@ -680,7 +715,7 @@ struct HadithSavedView: View {
         .overlay {
             if store?.unavailable != false || loading || failed {
                 ZStack {
-                    Color(uiColor: .systemGroupedBackground).ignoresSafeArea()
+                    Color.groupedBackground.ignoresSafeArea()
                     Group {
                         if store?.unavailable != false {
                             ContentUnavailableView {
@@ -702,8 +737,18 @@ struct HadithSavedView: View {
             failed = false
             do {
                 var loaded: [String: Int] = [:]
+                var loadedIntroductions: [String: HadithIntroduction] = [:]
                 var available: Set<String> = []
                 for key in keys {
+                    if key.hasPrefix(HadithIntroduction.highlightPrefix) {
+                        guard let introduction = try await reader.introduction(book: String(key.dropFirst(HadithIntroduction.highlightPrefix.count))) else { continue }
+                        loadedIntroductions[key] = introduction
+                        let blocks = introduction.highlightBlocks
+                        for highlight in highlights where highlight.source == key && highlight.isAvailable(in: blocks) {
+                            available.insert(highlight.id)
+                        }
+                        continue
+                    }
                     guard let source = HadithSource(key: key), let id = try await reader.resolve(source) else { continue }
                     let narration = try await reader.detail(id: id).narration
                     loaded[key] = id
@@ -719,6 +764,7 @@ struct HadithSavedView: View {
                     try Task.checkCancellation()
                 }
                 rows = loaded
+                introductions = loadedIntroductions
                 availableHighlights = available
                 loading = false
             } catch is CancellationError {
@@ -741,5 +787,24 @@ extension Hadith {
             blocks[translation.block] = HighlightTextContent.canonical(HadithText.markdown(translation.text))
         }
         return blocks
+    }
+}
+
+/// Native search scope bar for the library; a single book has nothing to scope.
+private struct HadithGroupScopes: ViewModifier {
+    let enabled: Bool
+    @Binding var group: HadithBookGroup?
+
+    func body(content: Content) -> some View {
+        if enabled {
+            content.searchScopes($group, activation: .onSearchPresentation) {
+                Text("All").tag(HadithBookGroup?.none)
+                ForEach(HadithBookGroup.allCases) { group in
+                    Text(group.title).tag(Optional(group))
+                }
+            }
+        } else {
+            content
+        }
     }
 }

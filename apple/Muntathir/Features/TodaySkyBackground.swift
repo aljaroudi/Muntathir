@@ -6,6 +6,8 @@ struct TodaySkyBackground: View {
     var headerHeight: CGFloat = 0
     var moon: MoonPosition?
     var markers: [SolarArcMarker] = []
+    /// Southern-hemisphere observers face north, so the sun crosses right to left.
+    var mirrored = false
 
     var body: some View {
         GeometryReader { geometry in
@@ -16,7 +18,7 @@ struct TodaySkyBackground: View {
                 ))
                 .ignoresSafeArea()
 
-                SolarArc(sun: sun, markers: markers, moon: moon)
+                SolarArc(sun: sun, markers: markers, moon: moon, mirrored: mirrored)
                     .frame(maxWidth: 760)
                     .frame(height: bandHeight)
                     .frame(maxWidth: .infinity)
@@ -34,6 +36,7 @@ private struct SolarArc: View {
     let sun: SolarPosition
     let markers: [SolarArcMarker]
     let moon: MoonPosition?
+    let mirrored: Bool
 
     var body: some View {
         GeometryReader { geometry in
@@ -45,7 +48,7 @@ private struct SolarArc: View {
                 if let arc = sun.arc, progress != nil {
                     Path { path in
                         for step in 0 ... 60 {
-                            let point = SolarArcLayout.point(progress: Double(step) / 60, elevation: arc.elevation(at: Double(step) / 60), in: bounds)
+                            let point = SolarArcLayout.point(progress: Double(step) / 60, elevation: arc.elevation(at: Double(step) / 60), in: bounds, mirrored: mirrored)
                             if step == 0 {
                                 path.move(to: point)
                             } else {
@@ -56,21 +59,21 @@ private struct SolarArc: View {
                     .stroke(.white.opacity(0.18), style: StrokeStyle(lineWidth: 1, dash: [2, 5]))
                 }
                 if let moon, let moonProgress = moon.visibleProgress {
-                    MoonDisc(fraction: moon.illuminatedFraction, waxing: moon.isWaxing)
+                    MoonDisc(moon: moon, sun: sun)
                         .frame(width: 20, height: 20)
                         .opacity(progress == nil ? 0.9 : 0.65)
-                        .position(SolarArcLayout.point(progress: moonProgress, elevation: moon.elevation, in: bounds))
+                        .position(SolarArcLayout.point(progress: moonProgress, elevation: moon.elevation, in: bounds, mirrored: mirrored))
                 }
                 if let progress {
-                    let center = SolarArcLayout.point(progress: progress, elevation: sun.elevation, in: bounds)
-                    SunDisc(warm: sun.elevation < 10)
+                    let center = SolarArcLayout.point(progress: progress, elevation: sun.elevation, in: bounds, mirrored: mirrored)
+                    SunDisc(elevation: sun.elevation, animated: true, hdr: true)
                         .frame(width: 30, height: 30)
                         .position(center)
 
                     ForEach(markers) { marker in
                         SolarPrayerIndicator(marker: marker)
                             .offset(y: 22)
-                            .position(SolarArcLayout.point(progress: marker.progress, elevation: marker.elevation, in: bounds))
+                            .position(SolarArcLayout.point(progress: marker.progress, elevation: marker.elevation, in: bounds, mirrored: mirrored))
                     }
                 }
             }

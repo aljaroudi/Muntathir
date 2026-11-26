@@ -77,7 +77,11 @@ struct PrayerWidgetView: View {
             {
                 PrayerSkyBackground(sun: sun)
             } else {
-                Color(.systemBackground)
+                #if os(macOS)
+                    Color(nsColor: .windowBackgroundColor)
+                #else
+                    Color(.systemBackground)
+                #endif
             }
         }
     }
@@ -175,8 +179,10 @@ struct CombinedPrayerWidget: Widget {
         IslamicCalendarWidget()
         WeatherDateWidget()
         CalendarWeatherWidget()
-        NextPrayerWidget()
-        PrayerCountdownWidget()
+        #if os(iOS)
+            NextPrayerWidget()
+            PrayerCountdownWidget()
+        #endif
         DailyAyahWidget()
     }
 }
@@ -219,7 +225,11 @@ private struct PrayerSkyBackground: View {
 
     private var colors: [Color] {
         let tint: Color = sun.elevation < -6 ? .indigo : sun.elevation < 10 ? .orange : .cyan
-        let base = Color(.systemBackground)
+        #if os(macOS)
+            let base = Color(nsColor: .windowBackgroundColor)
+        #else
+            let base = Color(.systemBackground)
+        #endif
         return [tint.opacity(colorScheme == .dark ? 0.25 : 0.14), base]
     }
 }

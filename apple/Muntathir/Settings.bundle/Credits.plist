@@ -214,6 +214,256 @@
 			<key>DefaultValue</key>
 			<string>https://www.duas.org/ppt/Dua_al_Nudbah_Eng_Urdu.ppsx</string>
 		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Sermon Translations</string>
+			<key>FooterText</key>
+			<string>الخطبة الفدكية — المصادر المعتمدة: الاحتجاج للطبرسي (ج1، ص131-149)، بحار الأنوار للعلامة المجلسي (ج29، ص215-335)، كشف الغمة للإربلي، دلائل الإمامة للطبري الشيعي، بلاغات النساء لابن طيفور.</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Fadak Sermon — en — Ahl al-Bayt World Assembly</string>
+			<key>Key</key>
+			<string>credit-sermon-fadak-en-3</string>
+			<key>DefaultValue</key>
+			<string>en</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Fadak Sermon — en — Yasin T. al-Jibouri (ياسين طه الجبوري)</string>
+			<key>Key</key>
+			<string>credit-sermon-fadak-en-1</string>
+			<key>DefaultValue</key>
+			<string>en</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Fadak Sermon — en — HubeAli Translation Committee</string>
+			<key>Key</key>
+			<string>credit-sermon-fadak-en-2</string>
+			<key>DefaultValue</key>
+			<string>en</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Fadak Sermon — en — Sheikh Abu Muhammad Ordoni (الشيخ أبو محمد الأردوني)</string>
+			<key>Key</key>
+			<string>credit-sermon-fadak-en-4</string>
+			<key>DefaultValue</key>
+			<string>en</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Fadak Sermon — az — Ümumdünya Əhli-Beyt Assambleyası</string>
+			<key>Key</key>
+			<string>credit-sermon-fadak-az-1</string>
+			<key>DefaultValue</key>
+			<string>az</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Fadak Sermon — de — Ahl al-Bayt Weltversammlung</string>
+			<key>Key</key>
+			<string>credit-sermon-fadak-de-1</string>
+			<key>DefaultValue</key>
+			<string>https://de.wikishia.net/view/Khutba_al-Fadakiyya</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Fadak Sermon — es — Fundación Cultural Oriente</string>
+			<key>Key</key>
+			<string>credit-sermon-fadak-es-1</string>
+			<key>DefaultValue</key>
+			<string>es</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Fadak Sermon — fa — مجمع جهانی اهل بیت</string>
+			<key>Key</key>
+			<string>credit-sermon-fadak-fa-1</string>
+			<key>DefaultValue</key>
+			<string>fa</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Fadak Sermon — id — Ahlulbait World Assembly</string>
+			<key>Key</key>
+			<string>credit-sermon-fadak-id-1</string>
+			<key>DefaultValue</key>
+			<string>id</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Fadak Sermon — ru — Всемирная Ассамблея Ахль аль-Байт</string>
+			<key>Key</key>
+			<string>credit-sermon-fadak-ru-1</string>
+			<key>DefaultValue</key>
+			<string>ru</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Fadak Sermon — sw — Ahlulbayt World Assembly</string>
+			<key>Key</key>
+			<string>credit-sermon-fadak-sw-1</string>
+			<key>DefaultValue</key>
+			<string>sw</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Fadak Sermon — tr — Ehlibeyt Dünya Kurultayı</string>
+			<key>Key</key>
+			<string>credit-sermon-fadak-tr-1</string>
+			<key>DefaultValue</key>
+			<string>tr</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Fadak Sermon — ur — اہل بیت عالمی اسمبلی</string>
+			<key>Key</key>
+			<string>credit-sermon-fadak-ur-1</string>
+			<key>DefaultValue</key>
+			<string>ur</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Rulings</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Ishaq al-Fayyad</string>
+			<key>Key</key>
+			<string>credit-rulings-fayadh</string>
+			<key>DefaultValue</key>
+			<string>https://ar.alfayadh.org/</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Bashir al-Najafi</string>
+			<key>Key</key>
+			<string>credit-rulings-najafi</string>
+			<key>DefaultValue</key>
+			<string>https://www.alnajafy.com/</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Sheikh al-Wahid al-Khorasani</string>
+			<key>Key</key>
+			<string>credit-rulings-khorasani</string>
+			<key>DefaultValue</key>
+			<string>https://wahidkhorasani.com/</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Sadiq al-Husayni al-Shirazi</string>
+			<key>Key</key>
+			<string>credit-rulings-shirazi</string>
+			<key>DefaultValue</key>
+			<string>https://alshirazi.org/</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Ali al-Husayni al-Sistani</string>
+			<key>Key</key>
+			<string>credit-rulings-sistani</string>
+			<key>DefaultValue</key>
+			<string>https://www.sistani.org/</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Muhammad al-Rohani</string>
+			<key>Key</key>
+			<string>credit-rulings-alrohani</string>
+			<key>DefaultValue</key>
+			<string>https://alrohani.org/</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Muhammad al-Husayni al-Shirazi</string>
+			<key>Key</key>
+			<string>credit-rulings-mshirazi</string>
+			<key>DefaultValue</key>
+			<string>https://www.alshirazi.com/</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Muhammad Saeed al-Tabatabai al-Hakeem</string>
+			<key>Key</key>
+			<string>credit-rulings-hakeem</string>
+			<key>DefaultValue</key>
+			<string>https://www.alhakeem.com/</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Arabic Dictionary</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Quranic Arabic Corpus</string>
+			<key>Key</key>
+			<string>credit-lexicon-quranic-corpus</string>
+			<key>DefaultValue</key>
+			<string>https://corpus.quran.com</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Quran Morphology — mustafa0x</string>
+			<key>Key</key>
+			<string>credit-lexicon-quran-morphology</string>
+			<key>DefaultValue</key>
+			<string>https://github.com/mustafa0x/quran-morphology</string>
+		</dict>
 	</array>
 </dict>
 </plist>

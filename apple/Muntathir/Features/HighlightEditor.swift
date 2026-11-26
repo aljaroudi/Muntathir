@@ -32,23 +32,38 @@ extension HighlightColor {
     }
 
     /// Opaque pastel/deep fills keep label text readable independently of the reading surface.
-    var textBackground: UIColor {
+    var textBackground: PlatformColor {
         Self.textBackgrounds[self]!
     }
 
     /// Reuse dynamic color objects so unchanged attributed text compares equal across view updates.
     private static let textBackgrounds = Dictionary(uniqueKeysWithValues: allCases.map { color in
-        let swatch = UIColor(color.color)
-        return (color, UIColor { traits in
-            var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-            swatch.resolvedColor(with: traits).getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-            let dark = traits.userInterfaceStyle == .dark
-            let fraction: CGFloat = traits.accessibilityContrast == .high ? 0.22 : 0.28
-            let base: CGFloat = dark ? 0 : 1 - fraction
-            return UIColor(red: base + red * fraction, green: base + green * fraction,
-                           blue: base + blue * fraction, alpha: 1)
-        })
+        let swatch = PlatformColor(color.color)
+        #if os(macOS)
+            return (color, NSColor(name: nil) { appearance in
+                var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+                appearance.performAsCurrentDrawingAppearance {
+                    swatch.usingColorSpace(.sRGB)?.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+                }
+                let dark = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+                let fraction: CGFloat = NSWorkspace.shared.accessibilityDisplayShouldIncreaseContrast ? 0.22 : 0.28
+                return blended(red: red, green: green, blue: blue, fraction: fraction, dark: dark)
+            })
+        #else
+            return (color, UIColor { traits in
+                var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+                swatch.resolvedColor(with: traits).getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+                let fraction: CGFloat = traits.accessibilityContrast == .high ? 0.22 : 0.28
+                return blended(red: red, green: green, blue: blue, fraction: fraction, dark: traits.userInterfaceStyle == .dark)
+            })
+        #endif
     })
+
+    private static func blended(red: CGFloat, green: CGFloat, blue: CGFloat, fraction: CGFloat, dark: Bool) -> PlatformColor {
+        let base: CGFloat = dark ? 0 : 1 - fraction
+        return PlatformColor(red: base + red * fraction, green: base + green * fraction,
+                             blue: base + blue * fraction, alpha: 1)
+    }
 
     var title: String {
         switch self {
@@ -197,7 +212,7 @@ struct HighlightSummary: View {
     @Environment(\.locale) private var locale
 
     private var reference: String {
-        highlight.isHadith || locale.language.languageCode?.identifier != "ar"
+        highlight.isHadith || highlight.ruling != nil || locale.language.languageCode?.identifier != "ar"
             ? highlight.reference : QuranReference.display(highlight.source, locale: locale)
     }
 

@@ -1,38 +1,12 @@
 import XCTest
 
 @MainActor private func marketingLabels() throws -> [String] {
-    let locale = Locale(identifier: Snapshot.deviceLanguage.isEmpty ? "en-US" : Snapshot.deviceLanguage)
-    let language = try XCTUnwrap(locale.language.languageCode?.identifier)
-        + (locale.language.languageCode?.identifier == "zh" ? "-\(locale.language.script!.identifier)" : "")
-    return try XCTUnwrap([
-        "en": ["Calendar", "Next month", "Tools", "None", "Highlight"],
-        "ar": ["التقويم", "الشهر التالي", "الأدوات", "بدون ترجمة", "تظليل"],
-        "fa": ["تقویم", "ماه بعد", "ابزارها", "هیچ‌کدام", "برجسته‌سازی"],
-        "fr": ["Calendrier", "Mois suivant", "Outils", "Aucune", "Surligner"],
-        "de": ["Kalender", "Nächster Monat", "Werkzeuge", "Keine", "Markieren"],
-        "id": ["Kalender", "Bulan berikutnya", "Alat", "Tidak ada", "Sorot"],
-        "it": ["Calendario", "Mese successivo", "Strumenti", "Nessuna", "Evidenzia"],
-        "ja": ["カレンダー", "次の月", "ツール", "なし", "ハイライト"],
-        "ms": ["Kalendar", "Bulan seterusnya", "Alatan", "Tiada", "Serlahkan"],
-        "ru": ["Календарь", "Следующий месяц", "Инструменты", "Нет", "Выделить"],
-        "es": ["Calendario", "Mes siguiente", "Herramientas", "Ninguna", "Resaltar"],
-        "tr": ["Takvim", "Sonraki ay", "Araçlar", "Yok", "Vurgula"],
-        "ur": ["تقویم", "اگلا مہینہ", "اوزار", "کوئی نہیں", "نمایاں کریں"],
-        "zh-Hans": ["日历", "下个月", "工具", "无", "高亮"],
-        "zh-Hant": ["行事曆", "下個月", "工具", "無", "螢光標記"],
-    ][language], "Unsupported capture language: \(Snapshot.deviceLanguage)")
+    try marketingLabels(for: Snapshot.deviceLanguage)
 }
 
 @MainActor private func selectMarketingTranslation(in app: XCUIApplication) throws {
-    let locale = Locale(identifier: Snapshot.deviceLanguage.isEmpty ? "en-US" : Snapshot.deviceLanguage)
-    let language = locale.language.languageCode?.identifier ?? "en"
-    let translationLanguage = switch language {
-    case "de", "ru", "es", "fa": language
-    case "zh": locale.language.script?.identifier == "Hant" ? "zh-Hant" : "zh-Hans"
-    default: "en"
-    }
-    let label = language == "ar" ? try marketingLabels()[3] : try XCTUnwrap(locale.localizedString(forIdentifier: translationLanguage))
-    app.buttons["quran-reading-options"].tap()
+    let label = try marketingTranslationLabel(for: Snapshot.deviceLanguage)
+    app.buttons["quran-reading-options"].firstMatch.tap()
     app.buttons["quran-translation-picker"].tap()
     app.buttons[label].tap()
 }
@@ -61,18 +35,14 @@ final class MarketingScreenshotTests: XCTestCase {
         XCTAssertTrue(verse.waitForExistence(timeout: 5))
         XCTAssertEqual(verse.value as? String ?? verse.label, "إِنَّ مَعَ العُسرِ يُسرًا")
         snapshot("01-Today", timeWaitingForIdle: 2)
-        app.buttons[labels[0]].firstMatch.tap()
+        let calendar = app.buttons[labels[0]].firstMatch
+        (calendar.exists ? calendar : app.cells[labels[0]].firstMatch).tap()
         XCTAssertTrue(app.buttons["calendar-jump"].waitForExistence(timeout: 5))
         // The fixed capture date is 1448-05; show Sha'ban for the store listing.
-        let month = app.buttons["calendar-month-1448-8"]
-        for _ in 0 ..< 8 {
-            if month.exists, month.isHittable {
-                break
-            }
-            app.swipeUp()
+        app.buttons["calendar-jump"].tap()
+        for _ in 0 ..< 3 {
+            app.buttons[labels[1]].tap()
         }
-        XCTAssertTrue(month.isHittable)
-        month.tap()
         let day = app.buttons["calendar-day-1448-8-1"]
         for _ in 0 ..< 6 {
             if day.exists, day.isHittable {
@@ -83,19 +53,16 @@ final class MarketingScreenshotTests: XCTestCase {
         XCTAssertTrue(day.isHittable)
         day.tap()
         snapshot("09-Calendar", timeWaitingForIdle: 2)
-        app.buttons[labels[2]].firstMatch.tap()
-        app.buttons["qibla"].tap()
+        app.openTool("qibla")
         XCTAssertTrue(app.descendants(matching: .any)["qibla-map-ready"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.descendants(matching: .any)["qibla-heading-indicator"].waitForExistence(timeout: 5))
         snapshot("10-Qibla", timeWaitingForIdle: 2)
         app.terminate()
         app.launch()
-        XCTAssertTrue(app.buttons[labels[2]].firstMatch.waitForExistence(timeout: 15))
-        app.buttons[labels[2]].firstMatch.tap()
-        app.buttons["holy-quran"].tap()
-        XCTAssertTrue(app.buttons["quran-reading-options"].waitForExistence(timeout: 10))
+        app.openTool("holy-quran")
+        XCTAssertTrue(app.buttons["quran-reading-options"].firstMatch.waitForExistence(timeout: 10))
         try selectMarketingTranslation(in: app)
-        let result = app.buttons["quran-result-94:6"]
+        let result = app.descendants(matching: .any)["quran-result-94:6"].firstMatch
         XCTAssertTrue(result.waitForExistence(timeout: 10))
         if !result.isHittable {
             app.swipeUp()
@@ -116,9 +83,7 @@ final class MarketingScreenshotTests: XCTestCase {
         snapshot("04-Highlights", timeWaitingForIdle: 2)
         app.terminate()
         app.launch()
-        XCTAssertTrue(app.buttons[labels[2]].firstMatch.waitForExistence(timeout: 15))
-        app.buttons[labels[2]].firstMatch.tap()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         XCTAssertTrue(app.buttons["hadith-saved"].waitForExistence(timeout: 15))
         let book = app.buttons["hadith-book-bukhari"]
         for _ in 0 ..< 12 where !book.isHittable {
@@ -132,23 +97,16 @@ final class MarketingScreenshotTests: XCTestCase {
         func openTool(_ id: String) {
             app.terminate()
             app.launch()
-            XCTAssertTrue(app.buttons[labels[2]].firstMatch.waitForExistence(timeout: 15))
-            app.buttons[labels[2]].firstMatch.tap()
-            let tool = app.buttons[id]
-            for _ in 0 ..< 6 where !tool.isHittable {
-                app.swipeUp()
-            }
-            XCTAssertTrue(tool.isHittable)
-            tool.tap()
+            app.openTool(id)
         }
         openTool("supplications")
-        XCTAssertTrue(app.buttons["supplication-1"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.descendants(matching: .any)["supplication-1"].firstMatch.waitForExistence(timeout: 15))
         snapshot("05-Supplications", timeWaitingForIdle: 2)
         openTool("tasbih")
         XCTAssertTrue(app.staticTexts["tasbih-count"].waitForExistence(timeout: 5))
         snapshot("06-Tasbih", timeWaitingForIdle: 2)
         openTool("rakaat-tracker")
-        XCTAssertTrue(app.buttons["rakaat-target-2"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["rakaat-other"].waitForExistence(timeout: 5))
         snapshot("07-Rakaat", timeWaitingForIdle: 2)
         app.launchArguments += ["--ui-testing-progress-fixture"]
         openTool("prayer-progress")
@@ -165,13 +123,10 @@ final class QuranScreenshotRefreshTests: XCTestCase {
         app.launchArguments += ["--ui-testing", "--ui-testing-mecca", "--marketing-capture", "--marketing-local-translations", "--screenshot-verse",
                                 "--ui-testing-weather", "--sky-date", "2026-10-23T06:00:00Z", "-AppleInterfaceStyle", "Light"]
         app.launch()
-        let tools = try app.buttons[marketingLabels()[2]].firstMatch
-        XCTAssertTrue(tools.waitForExistence(timeout: 15))
-        tools.tap()
-        app.buttons["holy-quran"].tap()
-        XCTAssertTrue(app.buttons["quran-reading-options"].waitForExistence(timeout: 10))
+        app.openTool("holy-quran")
+        XCTAssertTrue(app.buttons["quran-reading-options"].firstMatch.waitForExistence(timeout: 10))
         try selectMarketingTranslation(in: app)
-        let result = app.buttons["quran-result-94:6"]
+        let result = app.descendants(matching: .any)["quran-result-94:6"].firstMatch
         XCTAssertTrue(result.waitForExistence(timeout: 10))
         if !result.isHittable {
             app.swipeUp()

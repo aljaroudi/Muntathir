@@ -1,8 +1,12 @@
 # Jev 1.14 benchmark — 14 November 2026
 
-Status: Jev selected by the user and integrated for optional meaning search. The serving collection remains unchanged; the refreshed collection is still subject to its release gates.
+Jev is integrated for optional meaning-search reranking (setup in
+[SEARCH_SERVICE.md](SEARCH_SERVICE.md#jev-reranking); method in
+[RERANK_BENCHMARK.md](RERANK_BENCHMARK.md)).
 
-150 queries, identical frozen top-20 candidate pools, one sequential request per query, two-second timeout. All 150 requests returned valid rankings; no retries. 142 queries have positive judgments for NDCG and top-result accuracy. Eight queries have no positive labels and are excluded from those means.
+150 queries, identical frozen top-20 candidate pools, sequential requests, 2 s timeout.
+All 150 returned valid rankings, no retries. 142 queries have positive judgments; the 8
+without are excluded from NDCG and top-result accuracy.
 
 | Group | Baseline NDCG@10 | Jev NDCG@10 |
 | --- | ---: | ---: |
@@ -12,22 +16,28 @@ Status: Jev selected by the user and integrated for optional meaning search. The
 | Held-out, seed-positive English | 0.9752 | 0.9646 |
 | Held-out, seed-positive Arabic | 1.0000 | 0.9789 |
 
-Overall top-result accuracy: 70.42% → 71.83%. Candidate recall is unchanged at 91.01%; reranking cannot retrieve omitted passages.
+- Top-result accuracy: 70.42% → 71.83%. Candidate recall unchanged at 91.01%.
+- Reranker-only latency (dev machine, not end-to-end or concurrent): median 236.6 ms,
+  p95 275.0 ms, max 462.1 ms. The retrieval load target is 300 ms, so end-to-end latency
+  needs its own budget and measurement.
+- Usage: 786,139 input tokens; at $0.042 per million input tokens (output free) ≈
+  $0.033017838 total, $0.000220119 per query (from response usage, not an invoice).
+  [Provider pricing](https://help.typesafe.ai/articles/5187202169-how-much-does-jev-cost).
 
-Latency: median 236.6 ms, p95 275.0 ms, maximum 462.1 ms. These are reranker-only measurements from the development machine, not production end-to-end or concurrent load measurements. The existing retrieval load target is 300 ms, so adding this reranker needs a separate end-to-end latency budget and measurement.
+## Caveats
 
-Usage: 786,139 input tokens. At the published $0.042 per million input tokens and free output, estimated usage cost is $0.033017838 total, or $0.000220119 per query. This is calculated from response usage, not an invoice. The pre-run conservative allowance was $1.77322488. [Provider pricing](https://help.typesafe.ai/articles/5187202169-how-much-does-jev-cost).
+- Labels are incomplete seed positives: on average 8.87 of the reranked top ten are
+  unjudged and count as zero. Seed-positive groups declined slightly, so the
+  no-regression gate has **not** passed.
+- Numeric reference queries were included here, but production resolves explicit
+  references before reranking; Jev only orders explicit meaning searches.
+- Do not tune against these held-out outcomes or fill missing labels with model judgments.
+- Re-run full-corpus relevance and end-to-end concurrent load gates before activating a
+  collection; keep the previous collection for rollback.
 
-## Interpretation and release blockers
-
-- Existing labels are incomplete seed positives. An average 8.87 of the reranked top ten passages lack judgments. NDCG treats these as zero only for provisional comparison.
-- Verified held-out language groups improve, but seed-positive groups decline slightly. Do not claim the no-regression gate has passed.
-- Numeric reference queries were intentionally present in this isolated reranker experiment. Production already resolves explicit references before reranking. Their benchmark demotions are not a proposal to change that behavior.
-- Preserve offline exact-first results. Jev should only order candidates for explicit meaning search.
-- Review the comparisons below before updating judgments. Do not tune against these held-out outcomes or replace missing labels with model-generated judgments.
-- Re-run full-corpus relevance and end-to-end concurrent load gates before activation. Keep the previous collection available for rollback.
-
-Raw run: `backend/work/refresh-2026-11-14/jev-results.jsonl`. Grouped report: `jev-report.json` in the same directory. Snapshot SHA-256: `9cafee7626f7618cf54cf3130308d173c6c27779270b356198a4b2407f5428ac`.
+Raw run: `backend/work/refresh-2026-11-14/jev-results.jsonl`; grouped report
+`jev-report.json` alongside. Snapshot SHA-256:
+`9cafee7626f7618cf54cf3130308d173c6c27779270b356198a4b2407f5428ac`.
 
 ## Additional review comparisons
 

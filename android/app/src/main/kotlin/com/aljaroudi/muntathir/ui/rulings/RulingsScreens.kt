@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.BookmarkRemove
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.FormatSize
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -60,6 +59,7 @@ import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.highlight.ReadingBookmark
 import com.aljaroudi.muntathir.core.rulings.Ruling
 import com.aljaroudi.muntathir.core.rulings.RulingsLanguage
+import com.aljaroudi.muntathir.core.rulings.RulingsSection
 import com.aljaroudi.muntathir.core.rulings.RulingsState
 import com.aljaroudi.muntathir.core.rulings.RulingsStatus
 import com.aljaroudi.muntathir.core.text.StyledText
@@ -77,6 +77,7 @@ import com.aljaroudi.muntathir.ui.navigation.RulingDetailRoute
 import com.aljaroudi.muntathir.ui.navigation.RulingSectionRoute
 import com.aljaroudi.muntathir.ui.navigation.RulingsSavedRoute
 import com.aljaroudi.muntathir.ui.quran.ConfirmationPrompt
+import com.aljaroudi.muntathir.ui.quran.ReadingOptionsMenu
 import com.aljaroudi.muntathir.ui.quran.ReadingSizeSheet
 import com.aljaroudi.muntathir.ui.quran.recentSearches
 import com.aljaroudi.muntathir.ui.reader.BookmarkFailedDialog
@@ -155,7 +156,7 @@ fun LazyListScope.rulingsDownload(
                         Text(stringResource(R.string.unable_to_download_please_try_again))
                     }
                     AssetDownloadButton(
-                        pack = "rulings",
+                        pack = "rulings-v2",
                         retry = state.status == RulingsStatus.Failed || state.status == RulingsStatus.Incompatible,
                         onClick = library::download,
                         modifier = Modifier.testTag("downloads-get-rulings"),
@@ -260,6 +261,7 @@ fun RulingsScreen(
                             viewModel.record()
                             onOpen(RulingDetailRoute(ruling.id.authority, ruling.id.language, ruling.id.siteID))
                         }
+                        if (query.isBlank()) sectionRows(value.contents, value.authority, language.id, onOpen)
                         rulingRows(questions, language, true, viewModel::retry, open)
                     }
                 }
@@ -295,6 +297,25 @@ private fun LazyListScope.rulingRows(
     }
 }
 
+private fun LazyListScope.sectionRows(
+    sections: List<RulingsSection>,
+    authority: String,
+    language: String,
+    onOpen: (Route) -> Unit,
+) {
+    items(sections, key = { "section-${it.id}" }) { section ->
+        ListItem(
+            headlineContent = { Text(section.title) },
+            modifier =
+                Modifier.clickable {
+                    onOpen(
+                        RulingSectionRoute(authority, language, section.id, section.title),
+                    )
+                },
+        )
+    }
+}
+
 /** One row per ruling; [tag] prefixes each row's key and test tag. */
 private fun LazyListScope.rulingItems(
     rulings: List<Ruling>,
@@ -307,8 +328,9 @@ private fun LazyListScope.rulingItems(
         CompositionLocalProvider(LocalLayoutDirection provides direction) {
             ListItem(
                 headlineContent = {
-                    Text(ruling.question.readingDisplay(), style = MaterialTheme.typography.titleMedium, maxLines = 3)
+                    Text(ruling.preview.readingDisplay(), style = MaterialTheme.typography.titleMedium, maxLines = 3)
                 },
+                supportingContent = if (ruling.context.isEmpty()) null else ({ Text(ruling.context) }),
                 modifier = Modifier.clickable { onOpen(ruling) }.testTag("$tag-${ruling.id.siteID}"),
             )
         }
@@ -365,9 +387,7 @@ fun RulingDetailScreen(
         stringResource(R.string.rulings),
         onBack = onBack,
         actions = {
-            IconButton(onClick = { sizing = true }, Modifier.testTag("reading-size")) {
-                Icon(Icons.Outlined.FormatSize, stringResource(R.string.text_size))
-            }
+            ReadingOptionsMenu(onTextSize = { sizing = true })
             if (loaded != null) {
                 IconButton(onClick = { viewModel.toggleBookmark(loaded) }, Modifier.testTag("rulings-bookmark")) {
                     Icon(
@@ -457,6 +477,32 @@ private fun RulingContent(
                             modifier = Modifier.fillMaxWidth().testTag("rulings-answer"),
                         )
                     }
+                    if (detail.notes.isNotEmpty()) {
+                        Text(stringResource(R.string.notes), style = MaterialTheme.typography.titleMedium)
+                        for (note in detail.notes) {
+                            var expanded by rememberSaveable(detail.ruling.id.siteID, note.id) { mutableStateOf(false) }
+                            TextButton(onClick = { expanded = !expanded }) {
+                                Text(
+                                    if (note.chapter) {
+                                        stringResource(
+                                            R.string.chapter_note,
+                                        ) + " " + note.label
+                                    } else {
+                                        note.label
+                                    },
+                                )
+                            }
+                            if (expanded) {
+                                ReaderText(
+                                    StyledText(note.body),
+                                    block = "footnote-${note.id}",
+                                    sizeSp = size,
+                                    rightToLeft = rightToLeft,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            }
+                        }
+                    }
                 }
             }
             HorizontalDivider()
@@ -503,8 +549,27 @@ fun RulingSectionScreen(
     onBack: (() -> Unit)?,
 ) {
     val questions by viewModel.questions.collectAsStateWithLifecycle()
+    val children by viewModel.children.collectAsStateWithLifecycle()
     ScreenScaffold(viewModel.route.title, onBack = onBack) { padding ->
         LazyColumn(Modifier.fillMaxSize(), contentPadding = padding) {
+            when (val result = children) {
+                is Loadable.Loaded -> {
+                    sectionRows(
+                        result.value,
+                        viewModel.route.authority,
+                        viewModel.route.language,
+                        onOpen,
+                    )
+                }
+
+                Loadable.Failed -> {
+                    item { EmptyState(stringResource(R.string.try_again), onAction = viewModel::retry) }
+                }
+
+                Loadable.Loading -> {
+                    Unit
+                }
+            }
             val current = questions
             val language =
                 (current as? Loadable.Loaded)?.value?.second

@@ -92,6 +92,11 @@ data class HadithSavedRoute(
     DetailRoute
 
 @Serializable
+data class SermonRoute(
+    val id: String,
+) : DetailRoute
+
+@Serializable
 data class RulingDetailRoute(
     val authority: String,
     val language: String,

@@ -29,11 +29,12 @@ actor HadithReader {
     func commit(_ staged: URL, to destination: URL) throws {
         try HadithDatabase(url: staged).validate()
         try Task.checkCancellation()
+        // SQLite must not hold the file being replaced open.
+        resetCaches()
         guard rename(staged.path, destination.path) == 0 else {
             throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
         }
         database = HadithDatabase(url: destination)
-        resetCaches()
     }
 
     private func resetCaches() {
@@ -93,7 +94,7 @@ actor HadithReader {
 
     func introductions(collectionID: String, chapterID: Int? = nil) throws -> [HadithIntroduction] {
         try sharedConnection().query("""
-        SELECT i.id, i.title, i.arabic, i.english, \(Self.bookName("ar")), \(Self.bookName("en"))
+        SELECT i.id, i.title, i.arabic, i.english, \(Self.bookName("ar")), \(Self.bookName("en")), i.book_id
         FROM introduction i JOIN book b ON b.id=i.book_id
         WHERE b.collection_id=? AND i.id=(
             SELECT first.id FROM introduction first JOIN book volume ON volume.id=first.book_id
@@ -101,24 +102,36 @@ actor HadithReader {
         ) \(chapterID == nil ? "" : "AND i.chapter_id=CAST(? AS INTEGER)")
         ORDER BY b.sort_order, i.sort_order, i.id
         """, parameters: [collectionID] + (chapterID.map { [String($0)] } ?? [])) {
-            HadithIntroduction(id: Int(sqlite3_column_int($0, 0)), title: QuranConnection.text($0, 1),
-                               arabic: "", english: "",
-                               bookArabic: QuranConnection.text($0, 4), bookEnglish: QuranConnection.text($0, 5),
-                               readingWords: ReadingTime.words(arabic: QuranConnection.text($0, 2), english: QuranConnection.text($0, 3)))
+            // Lists only need the reading time, not the full text.
+            let introduction = Self.introduction($0)
+            return HadithIntroduction(id: introduction.id, title: introduction.title, arabic: "", english: "",
+                                      bookArabic: introduction.bookArabic, bookEnglish: introduction.bookEnglish,
+                                      bookID: introduction.bookID, readingWords: introduction.readingWords)
         }
     }
 
     func introduction(id: Int) throws -> HadithIntroduction {
         guard let result = try sharedConnection().query("""
-        SELECT i.id, i.title, i.arabic, i.english, \(Self.bookName("ar")), \(Self.bookName("en"))
+        SELECT i.id, i.title, i.arabic, i.english, \(Self.bookName("ar")), \(Self.bookName("en")), i.book_id
         FROM introduction i JOIN book b ON b.id=i.book_id WHERE i.id=CAST(? AS INTEGER)
-        """, parameters: [String(id)], row: {
-            HadithIntroduction(id: Int(sqlite3_column_int($0, 0)), title: QuranConnection.text($0, 1),
-                               arabic: QuranConnection.text($0, 2), english: QuranConnection.text($0, 3),
-                               bookArabic: QuranConnection.text($0, 4), bookEnglish: QuranConnection.text($0, 5),
-                               readingWords: ReadingTime.words(arabic: QuranConnection.text($0, 2), english: QuranConnection.text($0, 3)))
-        }).first else { throw HadithDatabaseError.invalidReference }
+        """, parameters: [String(id)], row: Self.introduction).first else { throw HadithDatabaseError.invalidReference }
         return result
+    }
+
+    /// Resolves saved introduction highlights, whose book ID survives database rebuilds unlike the row ID.
+    func introduction(book: String) throws -> HadithIntroduction? {
+        try sharedConnection().query("""
+        SELECT i.id, i.title, i.arabic, i.english, \(Self.bookName("ar")), \(Self.bookName("en")), i.book_id
+        FROM introduction i JOIN book b ON b.id=i.book_id WHERE i.book_id=? ORDER BY i.sort_order, i.id LIMIT 1
+        """, parameters: [book], row: Self.introduction).first
+    }
+
+    private static func introduction(_ row: OpaquePointer) -> HadithIntroduction {
+        HadithIntroduction(id: Int(sqlite3_column_int(row, 0)), title: QuranConnection.text(row, 1),
+                           arabic: QuranConnection.text(row, 2), english: QuranConnection.text(row, 3),
+                           bookArabic: QuranConnection.text(row, 4), bookEnglish: QuranConnection.text(row, 5),
+                           bookID: QuranConnection.text(row, 6),
+                           readingWords: ReadingTime.words(arabic: QuranConnection.text(row, 2), english: QuranConnection.text(row, 3)))
     }
 
     func page(_ request: HadithRequest) throws -> HadithPage {
@@ -150,6 +163,10 @@ actor HadithReader {
         if let collectionID = request.collectionID {
             conditions.append("b.collection_id = ?")
             scopeParameters.append(collectionID)
+        } else if let group = request.group {
+            let (condition, parameters) = group.sqlCondition
+            conditions.append(condition)
+            scopeParameters += parameters
         }
         if let chapterID = request.chapterID {
             conditions.append("h.chapter_id = CAST(? AS INTEGER)")
@@ -370,7 +387,15 @@ actor HadithReader {
             guard let source = try chapterSource(id: id) else { throw URLError(.resourceUnavailable) }
             return ([source.book], source.chapterFile)
         }
-        guard let collection = request.collectionID else { return (nil, nil) }
+        guard let collection = request.collectionID else {
+            guard let group = request.group else { return (nil, nil) }
+            let (condition, parameters) = group.sqlCondition
+            let books = try sharedConnection().query("SELECT b.id FROM book b WHERE \(condition) ORDER BY b.id", parameters: parameters) {
+                QuranConnection.text($0, 0)
+            }
+            guard !books.isEmpty else { throw URLError(.resourceUnavailable) }
+            return (books, nil)
+        }
         let books = try sharedConnection().query("SELECT id FROM book WHERE collection_id = ? ORDER BY id", parameters: [collection]) {
             QuranConnection.text($0, 0)
         }
@@ -442,5 +467,18 @@ actor HadithReader {
                    ? ReadingTime.words(arabic: QuranConnection.text(row, 8), english: QuranConnection.text(row, 10))
                    : Int(sqlite3_column_int(row, 14)),
                readingNumber: sqlite3_column_type(row, 15) == SQLITE_NULL ? nil : Int(sqlite3_column_int(row, 15)))
+    }
+}
+
+private extension HadithBookGroup {
+    /// Collection filter against `book b`; "Other" is everything outside the canonical groups.
+    var sqlCondition: (String, [String]) {
+        let ids = switch self {
+        case .four: Self.fourCollectionIDs
+        case .six: Self.sixCollectionIDs
+        case .other: Self.fourCollectionIDs + Self.sixCollectionIDs
+        }
+        let placeholders = Array(repeating: "?", count: ids.count).joined(separator: ",")
+        return ("b.collection_id \(self == .other ? "NOT IN" : "IN") (\(placeholders))", ids)
     }
 }

@@ -87,9 +87,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.currentStateAsState
 import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.app.AppTool
+import com.aljaroudi.muntathir.core.prayer.PrayerName
 import com.aljaroudi.muntathir.core.rakaat.RakaatPreparation
 import com.aljaroudi.muntathir.ui.components.Formats
 import com.aljaroudi.muntathir.ui.components.currentLocale
+import com.aljaroudi.muntathir.ui.components.title
 import com.aljaroudi.muntathir.ui.navigation.RakaatSessionRoute
 import com.aljaroudi.muntathir.ui.navigation.Route
 import com.aljaroudi.muntathir.ui.navigation.ToolRoute
@@ -187,6 +189,7 @@ fun RakaatSessionScreen(
             ) {
                 SessionContent(
                     state,
+                    route.prayer,
                     onTryAgain = leave,
                     onOpenSettings = {
                         context.startActivity(
@@ -219,7 +222,7 @@ private fun SessionScaffold(
         topBar = {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.rakaat_tracker)) },
+                    title = {},
                     navigationIcon = {
                         IconButton(onClick = onBack) {
                             Icon(
@@ -266,6 +269,7 @@ private fun SessionScaffold(
 @Composable
 private fun SessionContent(
     state: RakaatSessionState,
+    prayer: PrayerName?,
     onTryAgain: () -> Unit,
     onOpenSettings: () -> Unit,
     onTasbih: () -> Unit,
@@ -312,6 +316,7 @@ private fun SessionContent(
 
         else -> {
             val label = stringResource(R.string.x_rakaat, state.rakaat)
+            if (prayer != null) Text(stringResource(prayer.title), style = title.copy(fontSize = 28.sp))
             Box(
                 Modifier.clearAndSetSemantics {
                     contentDescription = label

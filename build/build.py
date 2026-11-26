@@ -3,7 +3,6 @@
 import argparse
 from decimal import Decimal
 import fcntl
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -16,11 +15,14 @@ ROOT = Path(__file__).resolve().parents[1]
 QURAN = Path("apple/Muntathir/Resources/Quran")
 HADITH = Path("build/hadith/dist")
 RULINGS = Path("build/rulings/dist/rulings.db")
+# The iOS rulings pack, without the authorities App Review rejects (see assets.APPLE_EXCLUDED_AUTHORITIES).
+APPLE_RULINGS = Path("build/rulings/dist/rulings-apple.db")
 ARCHIVES = Path("apple/build/AssetPacks/archives")
 SIZES = Path("apple/Muntathir/Resources/AssetDownloadSizes.json")
 MANIFESTS = Path("apple/AssetPacks/manifests")
 sys.path[:0] = [str(ROOT / "backend"), str(ROOT / MANIFESTS.parent)]
 import assets
+from assets import archive_matches, db_hash
 from refresh_search import refresh
 
 
@@ -28,37 +30,9 @@ def run(*args, **kwargs):
     subprocess.run(args, cwd=ROOT, check=True, **kwargs)
 
 
-def db_hash(path):
-    with path.open("rb") as file:
-        digest = hashlib.sha256()
-        header = file.read(100)
-        # SQLite changes these header fields when writing equivalent databases.
-        digest.update(header[:24] + header[28:92] + header[100:])
-        while chunk := file.read(1024 * 1024):
-            digest.update(chunk)
-        return digest.hexdigest()
-
-
 def install(source, target):
     target.parent.mkdir(parents=True, exist_ok=True)
     os.replace(source, target)
-
-
-def archive_matches(archive, manifest, stage, scratch):
-    if not archive.is_file():
-        return False
-    with tempfile.TemporaryDirectory(dir=scratch) as extracted:
-        try:
-            run("xcrun", "aa", "extract", "-i", archive, "-d", extracted)
-            packed = Path(extracted)
-            record = json.loads((packed / "Manifest.json").read_text())
-            record.pop("toolsVersion", None)
-            return record == manifest and all(
-                db_hash(packed / "Contents" / entry["fileDestination"])
-                == db_hash(stage / entry["fileSource"]) for entry in manifest["fileSelectors"]
-            )
-        except (OSError, ValueError, subprocess.CalledProcessError):
-            return False
 
 
 def build_assets(stage):
@@ -69,13 +43,20 @@ def build_assets(stage):
     else:
         run("uv", "run", *hadith_builder)
     run(sys.executable, "build/rulings/build.py", "--output", stage / RULINGS)
+    excluded = [flag for code in assets.APPLE_EXCLUDED_AUTHORITIES for flag in ("--exclude", code)]
+    run(sys.executable, "build/rulings/build.py", *excluded, "--output", stage / APPLE_RULINGS)
     shutil.copytree(ROOT / MANIFESTS, stage / MANIFESTS)
     packs = (assets.validate_quran(stage, stage / MANIFESTS)
              + assets.validate_hadith("hadith", stage, stage / MANIFESTS)
              + assets.validate_hadith("supplications", stage, stage / MANIFESTS)
              + assets.validate_rulings(stage, stage / MANIFESTS))
     sizes = json.loads((ROOT / SIZES).read_text()) if (ROOT / SIZES).exists() else {}
-    replacements = {}
+    sermons = Path("shared/sermons/sermons.db")
+    run(sys.executable, "build/sermons/build.py", "--output", stage / sermons)
+    replacements = {stage / sermons: ROOT / sermons}
+    # No iOS manifest names the full rulings database; Android and search still read it.
+    if not (ROOT / RULINGS).exists() or db_hash(ROOT / RULINGS) != db_hash(stage / RULINGS):
+        replacements[stage / RULINGS] = ROOT / RULINGS
     for path in packs:
         pack = json.loads(path.read_text())
         name = path.stem

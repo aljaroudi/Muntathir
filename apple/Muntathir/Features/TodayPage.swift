@@ -21,7 +21,7 @@ struct TodayPage<Content: View>: View {
                 .padding(16)
                 .frame(maxWidth: .infinity)
         }
-        .background(transparentBackground ? Color.clear : Color(.systemGroupedBackground))
+        .background(transparentBackground ? Color.clear : Color.groupedBackground)
     }
 
     private var maximumWidth: CGFloat {
@@ -41,7 +41,7 @@ nonisolated struct TodayPageGeometry: Equatable, Sendable {
 
     static func read(_ proxy: GeometryProxy) -> Self {
         var result = Self()
-        if #available(iOS 27.1, *),
+        if #available(iOS 27.1, macOS 27.1, *),
            let region = proxy.reservedRegions(kind: .division, options: .includeInactive)
            .first(where: { $0.frame.height > $0.frame.width && $0.frame.width > 0 })
         {

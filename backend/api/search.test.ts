@@ -517,3 +517,43 @@ test('exhausted embedding budget still reranks keyword hits with Jev', async () 
     globalThis.fetch = original
   }
 })
+
+test('scattered keyword matches do not outrank meaning, exact phrases do', async () => {
+  const db = new Qdrant('unused')
+  const scattered = point('scattered', 'scattered'),
+    phrase = point('phrase', 'phrase'),
+    meaning = point('meaning', 'meaning')
+  Object.assign(scattered.payload, { search_text: 'mercy is shown by some people' })
+  Object.assign(phrase.payload, { search_text: 'show mercy people said' })
+  db.query = async (_, body: any) =>
+    body.using === 'search_text'
+      ? [{ ...scattered, score: 9 }, { ...phrase, score: 8 }]
+      : [{ ...meaning, score: 0.9 }]
+  db.call = async () =>
+    [scattered, phrase].map((p) => ({ id: p.id, vector: [1, 0] }))
+  const found = await retrieve(db, 'test', parseRequest({ query: 'mercy people' }), [1, 0], null)
+  expect(found.itemIDs).toEqual(['phrase', 'meaning', 'scattered'])
+})
+
+test('tied keyword scores rank the same whatever order Qdrant returns', async () => {
+  const db = new Qdrant('unused')
+  let flip = false
+  db.query = async (_, body: any) => {
+    if (body.using !== 'search_text') return []
+    const tied = [point('a', 'a'), point('b', 'b')]
+    return flip ? tied.reverse() : tied
+  }
+  db.call = async () => [point('a', 'a'), point('b', 'b')].map((p) => ({ id: p.id, vector: [1, 0] }))
+  const run = async () =>
+    (await retrieve(db, 'test', parseRequest({ query: 'patience' }), [1, 0], null)).itemIDs
+  const first = await run()
+  flip = true
+  expect(await run()).toEqual(first)
+})
+
+test('source scopes fit whole multi-volume collections', () => {
+  const sources = Array.from({ length: 256 }, (_, i) => `v-${i}`)
+  expect(parseRequest({ query: 'test', sources }).sources).toHaveLength(256)
+  expect(() => parseRequest({ query: 'test', sources: [...sources, 'extra'] })).toThrow('Invalid sources')
+  expect(() => parseRequest({ query: 'test', languages: sources.slice(0, 21) })).toThrow('Invalid languages')
+})

@@ -11,8 +11,7 @@ final class HadithUITests: XCTestCase {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         }
         app.launch()
-        app.buttons[arabic ? "الأدوات" : "Tools"].firstMatch.tap()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         if app.buttons["hadith-download"].waitForExistence(timeout: 3) {
             throw XCTSkip("Install the Hadith pack through Apple's local asset server or TestFlight before reader UI tests.")
         }
@@ -71,8 +70,7 @@ final class HadithUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["supplications"].tap()
+        app.openTool("supplications")
         if app.buttons["supplications-download"].waitForExistence(timeout: 3) {
             throw XCTSkip("Install the supplications pack before supplication UI tests.")
         }
@@ -98,8 +96,7 @@ final class HadithUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         if app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 3) {
             throw XCTSkip("Remove the installed Hadith pack before testing the missing-library screen.")
         }
@@ -254,8 +251,7 @@ extension HadithUITests {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 15))
         app.buttons["hadith-book-bukhari"].tap()
         app.openFirstHadithChapter()
@@ -288,8 +284,7 @@ extension HadithUITests {
         app.launchArguments.append("--ui-testing-preserve-state")
         app.launch()
         XCTAssertTrue(app.buttons["Today"].firstMatch.isSelected)
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         XCTAssertTrue(app.buttons["hadith-actions"].waitForExistence(timeout: 15))
         let arabic = app.descendants(matching: .any)["hadith-full-arabic"].firstMatch
         XCTAssertTrue(arabic.waitForExistence(timeout: 5))
@@ -314,8 +309,7 @@ extension HadithUITests {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 15))
         app.buttons["hadith-book-bukhari"].tap()
         app.openFirstHadithChapter()
@@ -345,8 +339,7 @@ extension HadithUITests {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(ar)", "-AppleLocale", "ar_SA", "-AppleInterfaceStyle", "Dark", "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         app.launch()
-        app.buttons["الأدوات"].firstMatch.tap()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 10))
         app.buttons["hadith-book-bukhari"].tap()
         app.openFirstHadithChapter()
@@ -375,8 +368,7 @@ extension HadithUITests {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 10))
         let saved = app.buttons["hadith-saved"]
         XCTAssertTrue(saved.exists)
@@ -394,8 +386,7 @@ extension HadithUITests {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 10))
         app.buttons["hadith-book-bukhari"].tap()
         app.openFirstHadithChapter()
@@ -450,8 +441,7 @@ extension HadithUITests {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 10))
         XCTAssertFalse(app.buttons["hadith-book-filter"].exists)
         let globalSearch = app.searchFields.firstMatch
@@ -484,8 +474,7 @@ extension HadithUITests {
         app.launchArguments.append("--ui-testing-preserve-state")
         app.launch()
         XCTAssertTrue(app.buttons["Today"].firstMatch.isSelected)
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         XCTAssertTrue(chapter.waitForExistence(timeout: 15))
         XCTAssertEqual(app.searchFields.firstMatch.value as? String, "ch1")
         app.searchFields.firstMatch.tap()
@@ -499,6 +488,8 @@ extension HadithUITests {
         searchAll.tap()
         XCTAssertTrue(app.descendants(matching: .any)["hadith-empty-results"].firstMatch.waitForExistence(timeout: 10))
         XCTAssertFalse(searchAll.exists)
+        // The pushed search opens with its field active, which hides the back button.
+        app.buttons["Close"].tap()
         app.navigationBars.buttons["BackButton"].tap()
         XCTAssertTrue(searchAll.waitForExistence(timeout: 10))
         XCTAssertEqual(app.searchFields.firstMatch.value as? String, "missing")
@@ -519,8 +510,7 @@ extension HadithUITests {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         let book = app.buttons["hadith-book-bukhari"]
         XCTAssertTrue(book.waitForExistence(timeout: 15))
         book.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
@@ -566,8 +556,7 @@ extension HadithUITests {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-hadith-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         XCTAssertTrue(app.buttons["hadith-book-bukhari"].waitForExistence(timeout: 15))
         app.buttons["hadith-book-bukhari"].tap()
         app.openFirstHadithChapter()
@@ -582,8 +571,7 @@ extension HadithUITests {
         app.launchArguments.append("--ui-testing-preserve-state")
         app.launch()
         XCTAssertTrue(app.buttons["Today"].firstMatch.isSelected)
-        app.buttons["Tools"].firstMatch.tap()
-        app.buttons["hadith"].tap()
+        app.openTool("hadith")
         let restored = app.buttons[identifier]
         XCTAssertTrue(restored.waitForExistence(timeout: 15))
         XCTAssertTrue(restored.isHittable)

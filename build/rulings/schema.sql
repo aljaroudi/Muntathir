@@ -6,6 +6,14 @@
 -- Shirazi question: https://alshirazi.org/estefta?ShareEstefta={id}&langs={language}
 --   That is the link the site itself publishes. Topic pages are the catalog.
 -- Khorasani question: https://wahidkhorasani.com/qna/{slug}
+-- Hakeem question: https://www.alhakeem.com/{language}/question/{id}
+-- Najafi question: https://www.alnajafy.com/list/mainnews-{page}-1-677-{category}-1.html#{id}
+--   Questions have no page of their own; the URL is the category page plus #id.
+-- Fayadh question: the WordPress permalink from https://{language}.alfayadh.org/wp-json/wp/v2/question
+-- Al-Rohani question: https://alrohani.org/index.php?act=qa&action=view&id={id}
+-- Rohani question: https://www.rohani.ir/{language}/idetail/{id}/x
+-- Muhammad al-Shirazi question: https://www.alshirazi.com/rflo/alestiftaatalmarjeyeh/{chapter}.htm
+--   Static pages without anchors; the URL is the chapter page.
 
 PRAGMA application_id = 1364218708;
 PRAGMA user_version = 2;
@@ -27,7 +35,7 @@ VALUES
     'السيد علي السيستاني',
     'Ali al-Husayni al-Sistani',
     'https://www.sistani.org/',
-    1,
+    5,
     'Question URL redirects to the section page fragment.'
   ),
   (
@@ -35,7 +43,7 @@ VALUES
     'السيد صادق الشيرازي',
     'Sadiq al-Husayni al-Shirazi',
     'https://alshirazi.org/',
-    2,
+    4,
     'Question URL is the site share link (?ShareEstefta=&langs=).'
   ),
   (
@@ -45,6 +53,54 @@ VALUES
     'https://wahidkhorasani.com/',
     3,
     'Question URL is https://wahidkhorasani.com/qna/{slug}. Arabic and English locales exist but currently have no Q&A.'
+  ),
+  (
+    'hakeem',
+    'السيد محمد سعيد الحكيم',
+    'Muhammad Saeed al-Tabatabai al-Hakeem',
+    'https://www.alhakeem.com/',
+    8,
+    'Question URL is https://www.alhakeem.com/{language}/question/{id}. Persian uses Arabic category ids; Urdu currently has no Q&A.'
+  ),
+  (
+    'najafi',
+    'الشيخ بشير النجفي',
+    'Bashir al-Najafi',
+    'https://www.alnajafy.com/',
+    2,
+    'Arabic only (site la=1). Question URL is the category page plus #{id}; the site has no per-question page.'
+  ),
+  (
+    'fayadh',
+    'الشيخ إسحاق الفياض',
+    'Ishaq al-Fayyad',
+    'https://ar.alfayadh.org/',
+    1,
+    'Arabic (ar.alfayadh.org) and Persian (fa.alfayadh.org), read through the WordPress REST API.'
+  ),
+  (
+    'alrohani',
+    'السيد محمد الروحاني',
+    'Muhammad al-Rohani',
+    'https://alrohani.org/',
+    6,
+    'Arabic only. Question URL is https://alrohani.org/index.php?act=qa&action=view&id={id}.'
+  ),
+  (
+    'rohani',
+    'السيد محمد صادق الروحاني',
+    'Muhammad Sadiq al-Rohani',
+    'https://www.rohani.ir/',
+    9,
+    'Arabic and Persian. Question URL is https://www.rohani.ir/{language}/idetail/{id}/x. Sharia and belief rulings are separate top-level topics.'
+  ),
+  (
+    'mshirazi',
+    'السيد محمد الشيرازي',
+    'Muhammad al-Husayni al-Shirazi',
+    'https://www.alshirazi.com/',
+    7,
+    'Arabic only. Static windows-1256 pages with no API. Question URL is the chapter page https://www.alshirazi.com/rflo/alestiftaatalmarjeyeh/{chapter}.htm. The book Muntakhab al-Masail is stored in book_edition.'
   )
 ON CONFLICT (code) DO UPDATE SET
   name_ar = excluded.name_ar,

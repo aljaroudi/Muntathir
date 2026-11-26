@@ -122,7 +122,9 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     func stopHeading(owner: UUID) {
         headingOwners.remove(owner)
         guard headingOwners.isEmpty else { return }
-        manager.stopUpdatingHeading()
+        #if os(iOS)
+            manager.stopUpdatingHeading()
+        #endif
         heading = nil
         headingAccuracy = nil
     }

@@ -70,13 +70,14 @@ struct QuranChapterView: View {
         .readingBackground()
         .trackReading(.quranReading, enabled: !loading && !failed && !verses.isEmpty && !isSearching && !textSizePresented)
         .navigationTitle(surah.title(locale: locale))
-        .navigationBarTitleDisplayMode(.inline)
+        .inlineNavigationTitle()
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .trailingBar) {
                 Menu {
                     QuranReadingModePicker()
                     QuranTranslationPicker()
                     ReadingSizeMenu(isPresented: $textSizePresented)
+                    ArabicDiacriticsToggle()
                 } label: {
                     Label("Reading options", systemImage: "textformat")
                 }.accessibilityIdentifier("quran-reading-options")

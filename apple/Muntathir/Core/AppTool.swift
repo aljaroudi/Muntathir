@@ -1,7 +1,7 @@
 import Foundation
 
 enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
-    case calendar, events, quran, hadith, supplications, rulings, figures, tasbih, rakaat, prayerProgress, qibla
+    case calendar, events, quran, hadith, supplications, sermons, dictionary, rulings, figures, tasbih, rakaat, prayerProgress, qibla
 
     var id: String {
         rawValue
@@ -15,6 +15,8 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
         case .hadith: "Hadith"
         case .rulings: "Rulings"
         case .supplications: "Supplications"
+        case .dictionary: "Arabic Dictionary"
+        case .sermons: "Sermons"
         case .figures: "Figures"
         case .tasbih: "Tasbih"
         case .rakaat: "Rakaat Tracker"
@@ -31,22 +33,13 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
         case .hadith: "text.book.closed"
         case .rulings: "text.page"
         case .supplications: "hands.sparkles"
+        case .dictionary: "character.book.closed"
+        case .sermons: "text.quote"
         case .figures: "person.2"
         case .tasbih: "circle.dotted"
         case .rakaat: "camera.metering.center.weighted"
         case .prayerProgress: "chart.bar.fill"
         case .qibla: "location.north.circle"
-        }
-    }
-
-    var emoji: String? {
-        switch self {
-        case .supplications: "🙏"
-        case .calendar: "🗓️"
-        case .tasbih: "📿"
-        case .rakaat: "🧎"
-        case .qibla: "🕋"
-        default: nil
         }
     }
 
@@ -59,15 +52,49 @@ enum AppTool: String, Codable, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    var customizationID: String {
+        "tool.\(rawValue)"
+    }
+
+    /// Qibla and Rakaat rely on a compass and front camera that Macs don't have.
+    var isAvailable: Bool {
+        #if os(macOS)
+            self != .qibla && self != .rakaat
+        #else
+            true
+        #endif
+    }
+
+    /// Tools that show their list beside the open item when the tab sidebar is available.
+    var isSplitCapable: Bool {
+        switch self {
+        case .quran, .supplications, .sermons, .figures, .rulings: true
+        default: false
+        }
+    }
+
+    static var available: [AppTool] {
+        allCases.filter(\.isAvailable)
+    }
+
+    struct ToolGroup: Identifiable, Sendable {
+        let id: String
+        let title: LocalizedStringResource
+        let tools: [AppTool]
+    }
+
     static let maximumShortcuts = 3
-    static let groups: [[AppTool]] = [
-        [.quran, .hadith, .supplications], [.rulings], [.calendar, .events, .figures], [.qibla, .rakaat, .tasbih, .prayerProgress],
-    ]
+    static let groups: [ToolGroup] = [
+        ToolGroup(id: "library", title: "Library", tools: [.quran, .hadith, .supplications, .sermons, .dictionary]),
+        ToolGroup(id: "rulings", title: "Rulings", tools: [.rulings]),
+        ToolGroup(id: "calendar", title: "Calendar", tools: [.calendar, .events, .figures]),
+        ToolGroup(id: "practice", title: "Practice", tools: [.qibla, .rakaat, .tasbih, .prayerProgress]),
+    ].map { ToolGroup(id: $0.id, title: $0.title, tools: $0.tools.filter(\.isAvailable)) }
 
     static func normalized(_ identifiers: [String]) -> [AppTool] {
         var seen: Set<AppTool> = []
         return Array(identifiers.compactMap { identifier in
-            guard let tool = AppTool(rawValue: identifier), seen.insert(tool).inserted else { return nil }
+            guard let tool = AppTool(rawValue: identifier), tool.isAvailable, seen.insert(tool).inserted else { return nil }
             return tool
         }.prefix(maximumShortcuts))
     }

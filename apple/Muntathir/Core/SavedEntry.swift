@@ -12,6 +12,10 @@ struct SavedEntry: Identifiable {
     let highlight: ReadingHighlight?
     let bookmark: ReadingBookmark?
 
+    var ruling: Rulings.ID? {
+        highlight?.ruling ?? bookmark?.ruling
+    }
+
     init(_ highlight: ReadingHighlight) {
         id = "highlight:" + highlight.id
         source = highlight.source
@@ -39,7 +43,7 @@ struct SavedEntry: Identifiable {
     }
 
     func title(locale: Locale) -> String {
-        bookmark?.kind == .ruling || isHadith || locale.language.languageCode?.identifier != "ar"
+        ruling != nil || isHadith || locale.language.languageCode?.identifier != "ar"
             ? reference : QuranReference.display(source, locale: locale)
     }
 
@@ -48,7 +52,7 @@ struct SavedEntry: Identifiable {
     }
 
     func relevance(_ query: String, locale: Locale) -> SearchRelevance? {
-        SearchRelevance.score([isHadith ? "" : source, reference, title(locale: locale), excerpt, note].joined(separator: " "),
+        SearchRelevance.score([isHadith || ruling != nil ? "" : source, reference, title(locale: locale), excerpt, note].joined(separator: " "),
                               terms: QuranSearchText.queryTerms(query))
     }
 
@@ -68,7 +72,8 @@ struct SavedEntry: Identifiable {
         }
         let groups = Dictionary(grouping: entries) { entry in
             byDate ? "date:\(calendar.startOfDay(for: entry.createdAt).timeIntervalSince1970)"
-                : entry.bookmark?.id ?? ((entry.isHadith ? "hadith:" : "quran:") + entry.source)
+                : entry.bookmark?.id ?? entry.ruling.map { "ruling:" + $0.key }
+                ?? ((entry.isHadith ? "hadith:" : "quran:") + entry.source)
         }
         return groups.map { key, values in
             let sorted = values.sorted {

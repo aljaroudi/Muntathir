@@ -75,6 +75,7 @@ import com.aljaroudi.muntathir.ui.navigation.Route
 import com.aljaroudi.muntathir.ui.navigation.RulingDetailRoute
 import com.aljaroudi.muntathir.ui.navigation.RulingSectionRoute
 import com.aljaroudi.muntathir.ui.navigation.RulingsSavedRoute
+import com.aljaroudi.muntathir.ui.navigation.SermonRoute
 import com.aljaroudi.muntathir.ui.navigation.SettingsRoute
 import com.aljaroudi.muntathir.ui.navigation.TabsSettingsRoute
 import com.aljaroudi.muntathir.ui.navigation.TodayRoute
@@ -99,6 +100,7 @@ import com.aljaroudi.muntathir.ui.rulings.RulingSectionScreen
 import com.aljaroudi.muntathir.ui.rulings.RulingSectionViewModel
 import com.aljaroudi.muntathir.ui.rulings.RulingsSavedScreen
 import com.aljaroudi.muntathir.ui.rulings.RulingsScreen
+import com.aljaroudi.muntathir.ui.sermons.SermonsScreen
 import com.aljaroudi.muntathir.ui.settings.CreditsScreen
 import com.aljaroudi.muntathir.ui.settings.HighlightPaletteScreen
 import com.aljaroudi.muntathir.ui.settings.SettingsLinks
@@ -252,6 +254,9 @@ fun AppShell(
                                     onBack = detailBack,
                                 )
                             }
+                            entry<SermonRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
+                                SermonsScreen(route.id, onBack = detailBack, open = { navigator.push(it) })
+                            }
                             entry<RulingDetailRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
                                 RulingDetailScreen(
                                     hiltViewModel<RulingDetailViewModel, RulingDetailViewModel.Factory>(
@@ -334,6 +339,7 @@ private val LIST_TOOLS =
         ToolRoute(AppTool.Quran),
         ToolRoute(AppTool.Hadith),
         ToolRoute(AppTool.Supplications),
+        ToolRoute(AppTool.Sermons),
         ToolRoute(AppTool.Rulings),
         ToolRoute(AppTool.Figures),
     )
@@ -419,6 +425,15 @@ private fun ToolScreen(
 
         AppTool.Supplications -> {
             SupplicationsScreen(hiltViewModel(), open, onBack)
+        }
+
+        AppTool.Dictionary -> {
+            com.aljaroudi.muntathir.ui.dictionary
+                .DictionaryScreen(onBack = onBack)
+        }
+
+        AppTool.Sermons -> {
+            SermonsScreen(onBack = onBack, onOpen = { open(SermonRoute(it)) }, open = open)
         }
 
         AppTool.Rulings -> {

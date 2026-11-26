@@ -1,2 +1,7 @@
-Aggiorna l’app da una versione precedente e aprila. Verifica che appaiano le note di rilascio. Chiudile e riapri l’app per verificare che non compaiano di nuovo.
-Cerca versetti del Corano e hadith mentre digiti. Prova a lasciare incompleta l’ultima parola. Nascondi e mostra di nuovo i segni diacritici arabi, poi riapri un passaggio evidenziato. Verifica di poter sfogliare il mushaf dopo aver evidenziato il testo.
+Apri un hadith e un responso giuridico, quindi richiedi la traduzione in un’altra lingua. Verifica che la traduzione compaia con l’avviso di traduzione automatica.
+Sfoglia i responsi giuridici e verifica che quelli appena aggiunti compaiano e si aprano correttamente.
+Apri la nuova sezione Sermoni. Verifica che i sermoni si carichino e che toccando un oratore si apra il suo profilo.
+Controlla le schermate Oggi e Rakaat ridisegnate su iPhone e iPad, con aspetto chiaro e scuro.
+Naviga tra Corano, Hadith, Responsi e Salvati. Verifica che scorrimento, ricerca e apertura degli elementi risultino rapidi e fluidi.
+Apri Oggi e controlla la nuova animazione di sole e luna nel cielo e che il riconoscimento meteo appaia nella tua lingua.
+Su iPad, usa le schede della barra laterale. Controlla che il Calendario mantenga la posizione ed evidenzi oggi.

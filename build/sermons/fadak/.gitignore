@@ -1,0 +1,12 @@
+node_modules/
+.env
+
+# Generated translation artifacts — keep placeholders and this index
+output/**
+!output/
+!output/README.md
+!output/*/
+!output/*/.gitkeep
+output.zip
+res.txt
+.DS_Store

@@ -13,9 +13,16 @@ in the mirror. This file is the one the app should open.
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
+import re
+import tempfile
 import sqlite3
 import sys
 from pathlib import Path
+
+from books import parse_page
+from db import SCHEMA_PATH
 
 HERE = Path(__file__).resolve().parent
 SOURCE = HERE / "data" / "fatwa.sqlite"
@@ -36,6 +43,17 @@ SITE_LANGUAGE = {
     ("khorasani", "ar"): "ar",
     ("khorasani", "en"): "en",
     ("khorasani", "fa"): "fa",
+    ("hakeem", "ar"): "ar",
+    ("hakeem", "en"): "en",
+    ("hakeem", "fa"): "fa",
+    ("hakeem", "ur"): "ur",
+    ("najafi", "ar"): "ar",
+    ("fayadh", "ar"): "ar",
+    ("fayadh", "fa"): "fa",
+    ("alrohani", "ar"): "ar",
+    ("rohani", "ar"): "ar",
+    ("rohani", "fa"): "fa",
+    ("mshirazi", "ar"): "ar",
 }
 
 LANGUAGES = {
@@ -50,7 +68,7 @@ LANGUAGES = {
 
 SCHEMA = """
 PRAGMA application_id = 1179809601;
-PRAGMA user_version = 1;
+PRAGMA user_version = 2;
 PRAGMA page_size = 4096;
 
 CREATE TABLE authority (
@@ -81,21 +99,38 @@ CREATE TABLE topic (
 
 CREATE INDEX topic_browse ON topic (authority_code, language_code, position);
 
-CREATE TABLE question (
+CREATE TABLE entry (
   id INTEGER PRIMARY KEY,
   authority_code TEXT NOT NULL REFERENCES authority (code),
   language_code TEXT NOT NULL REFERENCES language (code),
   site_id TEXT NOT NULL,
-  question TEXT NOT NULL,
-  answer TEXT NOT NULL,
+  kind TEXT NOT NULL DEFAULT 'qa' CHECK(kind IN ('qa','rule','intro')),
+  context TEXT NOT NULL DEFAULT '',
+  prompt TEXT,
+  body TEXT NOT NULL,
+  label TEXT NOT NULL DEFAULT '',
   url TEXT NOT NULL,
   UNIQUE (authority_code, language_code, site_id)
 ) STRICT;
 
+CREATE TABLE footnote (
+  topic_id INTEGER NOT NULL REFERENCES topic(id),
+  entry_id INTEGER REFERENCES entry(id),
+  label TEXT NOT NULL,
+  body TEXT NOT NULL
+) STRICT;
+CREATE INDEX footnote_lookup ON footnote(topic_id,entry_id);
+
+CREATE VIEW question AS
+SELECT id,authority_code,language_code,site_id,kind,context,
+       CASE WHEN prompt IS NULL THEN label WHEN label='' THEN prompt ELSE label || ' · ' || prompt END AS question,
+       body AS answer,url FROM entry;
+
 CREATE TABLE placement (
   topic_id INTEGER NOT NULL REFERENCES topic (id),
-  question_id INTEGER NOT NULL REFERENCES question (id),
+  question_id INTEGER NOT NULL REFERENCES entry (id),
   number INTEGER NOT NULL,
+  printed_label TEXT,
   position INTEGER NOT NULL,
   PRIMARY KEY (topic_id, position),
   UNIQUE (topic_id, question_id)
@@ -128,7 +163,8 @@ JOIN question AS q ON q.id = p.question_id
 JOIN topic AS t ON t.id = p.topic_id
 JOIN authority AS a ON a.code = q.authority_code
 JOIN language AS l ON l.code = q.language_code
-LEFT JOIN topic AS parent ON parent.id = t.parent_id;
+LEFT JOIN topic AS parent ON parent.id = t.parent_id
+WHERE q.kind = 'qa';
 
 CREATE VIRTUAL TABLE question_fts USING fts5(
   question,
@@ -147,18 +183,34 @@ def language_code(authority: str, site_code: str) -> str:
         raise SystemExit("no language mapping for %s/%s" % (authority, site_code)) from exc
 
 
-def build(source: Path, output: Path) -> None:
+def build(source: Path, output: Path, exclude: frozenset[str] = frozenset()) -> None:
     if not source.is_file():
         raise SystemExit("missing crawl database: %s" % source)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.unlink(missing_ok=True)
-    for suffix in ("-wal", "-shm"):
-        sidecar = Path(str(output) + suffix)
-        if sidecar.exists():
-            sidecar.unlink()
+    with tempfile.TemporaryDirectory(dir=output.parent) as staging:
+        candidate = Path(staging) / "rulings.db"
+        build_candidate(source, candidate, exclude)
+        candidate.replace(output)
 
+
+def build_candidate(source: Path, output: Path, exclude: frozenset[str] = frozenset()) -> None:
     src = sqlite3.connect(source)
     src.row_factory = sqlite3.Row
+    # Refresh authority rows (names, sort_order) from schema.sql; the crawl DB only gets them when scraping.
+    src.executescript(SCHEMA_PATH.read_text())
+    # Excluded authorities are hidden behind temp views, so every read below skips them.
+    # The iOS pack drops rohani (rohani.ir is under US sanctions); Android keeps it.
+    unknown = exclude - {row[0] for row in src.execute("SELECT code FROM authority")}
+    if unknown:
+        raise SystemExit("unknown authority: %s" % " ".join(sorted(unknown)))
+    if exclude:
+        listed = ",".join("'%s'" % code.replace("'", "''") for code in sorted(exclude))
+        for table, column in (("authority", "code"), ("language", "authority_code"), ("topic", "authority_code"),
+                              ("question", "authority_code"), ("placement", "authority_code"),
+                              ("book_edition", "authority")):
+            if src.execute("SELECT 1 FROM sqlite_master WHERE name=?", (table,)).fetchone():
+                src.execute("CREATE TEMP VIEW %s AS SELECT * FROM main.%s WHERE %s NOT IN (%s)"
+                            % (table, table, column, listed))
     out = sqlite3.connect(output)
     try:
         out.executescript(SCHEMA)
@@ -219,7 +271,7 @@ def build(source: Path, output: Path) -> None:
             next_question += 1
         out.executemany(
             """
-            INSERT INTO question (id, authority_code, language_code, site_id, question, answer, url)
+            INSERT INTO entry (id, authority_code, language_code, site_id, prompt, body, url)
             VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
             question_rows,
@@ -263,18 +315,30 @@ def build(source: Path, output: Path) -> None:
             "INSERT INTO placement (topic_id, question_id, number, position) VALUES (?, ?, ?, ?)",
             placements,
         )
+        check_legacy(src, out)
+        add_books(src, out)
+        check_books(out)
+        if exclude:
+            listed = ",".join("?" * len(exclude))
+            for table in ("entry", "topic"):
+                if out.execute("SELECT 1 FROM %s WHERE authority_code IN (%s) LIMIT 1" % (table, listed),
+                               tuple(exclude)).fetchone():
+                    raise ValueError("Excluded authority leaked into %s" % table)
         out.execute("INSERT INTO question_fts (rowid, question, answer) SELECT id, question, answer FROM question")
         out.execute("INSERT INTO question_fts (question_fts) VALUES ('optimize')")
+        if not out.execute("SELECT 1 FROM question_fts WHERE question_fts MATCH 'الصلاة' LIMIT 1").fetchone():
+            raise ValueError("Empty rulings search index")
         out.execute("PRAGMA optimize")
         out.commit()
         out.execute("VACUUM")
-        check(src, out)
+        if out.execute("PRAGMA foreign_key_check").fetchone() or out.execute("PRAGMA quick_check").fetchone()[0] != "ok":
+            raise ValueError("Invalid rulings pack")
     finally:
         src.close()
         out.close()
 
 
-def check(src: sqlite3.Connection, out: sqlite3.Connection) -> None:
+def check_legacy(src: sqlite3.Connection, out: sqlite3.Connection) -> None:
     source_questions = src.execute("SELECT COUNT(*) FROM question").fetchone()[0]
     built_questions = out.execute("SELECT COUNT(*) FROM question").fetchone()[0]
     if built_questions != source_questions:
@@ -295,16 +359,6 @@ def check(src: sqlite3.Connection, out: sqlite3.Connection) -> None:
     """).fetchone():
         raise SystemExit("Built sections must be flat and nonempty")
     built_placements = out.execute("SELECT COUNT(*) FROM placement").fetchone()[0]
-    sample = out.execute(
-        "SELECT language_code, url FROM question WHERE authority_code = 'sistani' AND site_id = '6357'"
-    ).fetchone()
-    if sample is None or sample[0] != "ar" or "6357" not in sample[1]:
-        raise SystemExit("sistani 6357 did not map to ar")
-    hit = out.execute(
-        "SELECT count(*) FROM question_fts WHERE question_fts MATCH 'الصلاة'"
-    ).fetchone()[0]
-    if hit < 1:
-        raise SystemExit("search index returned nothing for الصلاة")
     codes = [row[0] for row in out.execute("SELECT code FROM language ORDER BY code")]
     print("languages: %s" % " ".join(codes))
     for row in out.execute(
@@ -319,12 +373,130 @@ def check(src: sqlite3.Connection, out: sqlite3.Connection) -> None:
     print("questions %s  placements %s" % (built_questions, built_placements))
 
 
+QUESTION_TITLES = dict(ar="أسئلة", en="Questions", fa="پرسش‌ها", ur="سوالات",
+                       az="Suallar", tr="Sorular", fr="Questions")
+
+
+def check_books(out) -> None:
+    """Report final entry totals; check_legacy runs before the books are added."""
+    for kind, count, books in out.execute(
+        "SELECT kind, COUNT(*), SUM(site_id LIKE 'book:%') FROM entry GROUP BY kind ORDER BY kind"
+    ):
+        print("entries %s %s (books %s)" % (kind, count, books))
+    if out.execute("SELECT 1 FROM entry WHERE site_id LIKE 'book:%' AND label = '' AND TRIM(body) = '' LIMIT 1").fetchone():
+        raise SystemExit("Book entry has neither label nor body")
+    # A source can print a ruling number with no text; keep the label and flag it.
+    empty = out.execute("SELECT COUNT(*) FROM entry WHERE site_id LIKE 'book:%' AND TRIM(body) = ''").fetchone()[0]
+    if empty:
+        print("warning: %s book entries have an empty body" % empty)
+
+
+def add_books(src, out):
+    def topic(authority, lang, key, title, url, position, parent=None):
+        return out.execute("""INSERT INTO topic(authority_code,language_code,site_id,title,url,position,parent_id)
+                              VALUES (?,?,?,?,?,?,?)""",
+                           (authority, lang, key, title, url, position, parent)).lastrowid
+
+    for authority, lang in out.execute("SELECT DISTINCT authority_code,language_code FROM topic").fetchall():
+        out.execute("""UPDATE entry SET context=? || COALESCE((SELECT ' · ' || t.title
+                       FROM placement p JOIN topic t ON p.topic_id=t.id WHERE p.question_id=entry.id
+                       ORDER BY t.position,t.id LIMIT 1),'') WHERE authority_code=? AND language_code=?""",
+                    (QUESTION_TITLES[lang], authority, lang))
+        root = topic(authority, lang, "collection:questions", QUESTION_TITLES[lang], "", 0)
+        out.execute("UPDATE topic SET parent_id=? WHERE authority_code=? AND language_code=? AND id!=?",
+                    (root, authority, lang, root))
+    if not src.execute("SELECT 1 FROM sqlite_master WHERE name='book_edition'").fetchone():
+        raise ValueError("Missing book mirror. Run build/rulings/books.py and build/rulings/treatise.py first.")
+    for edition in src.execute("SELECT * FROM book_edition ORDER BY authority,language,position,site_id"):
+        authority = edition["authority"]
+        lang = language_code(authority, edition["language"])
+        out.execute("INSERT OR IGNORE INTO language VALUES (?,?,?)", (lang, *LANGUAGES[lang]))
+        prefix = "book:" + edition["site_id"]
+        root = topic(authority, lang, prefix, edition["title"], edition["url"], edition["position"])
+        parents = {}
+        paths = {}
+        entries_by_source = {}
+        chapter_parent = root
+        for position, chapter in enumerate(json.loads(edition["chapters"]), 1):
+            key = prefix + ":" + chapter["id"]
+            title = chapter["title"]
+            if not title and not chapter["entries"]:
+                continue
+            parent = parents[chapter["parent"]] if chapter.get("parent") else root
+            if authority == "sistani":
+                # A flat HTML contents list can still publish a breadcrumb in the heading.
+                parts = re.split(r"\s*»\s*", title)
+                if parts[0].upper().startswith("CHAPTER "):
+                    chapter_parent = root
+                elif len(parts) > 1:
+                    for depth in range(1, len(parts)):
+                        path = tuple(parts[:depth])
+                        if path not in paths:
+                            paths[path] = topic(authority, lang, prefix + ":heading:" + " » ".join(path),
+                                                path[-1], chapter["url"], position, parent)
+                        parent = paths[path]
+                else:
+                    parent = chapter_parent
+            section = topic(authority, lang, key, title, chapter["url"], position, parent)
+            if authority == "sistani":
+                paths[tuple(parts)] = section
+                if title.upper().startswith("CHAPTER "):
+                    chapter_parent = section
+            parents[chapter["id"]] = section
+            rows = chapter["entries"]
+            notes = []
+            if chapter.get("notes_parsed"):
+                notes = [(note["label"], note["body"], [] if note["chapter"] else [i])
+                         for i, row in enumerate(rows) for note in row.get("footnotes", [])]
+            elif authority == "sistani" and "book-footnote" in chapter["raw"]:
+                rows, notes = parse_page(chapter["raw"], title, edition["site_id"], separate_notes=True)
+                if len(rows) != len(chapter["entries"]):
+                    raise ValueError("Entry boundaries changed: " + chapter["url"])
+            used = {}
+            entry_ids = []
+            for index, entry in enumerate(rows, 1):
+                number = entry["number"]
+                label = entry["label"]
+                if label:
+                    identity = "".join(label.split())
+                elif entry["kind"] == "intro":
+                    identity = "intro"
+                else:
+                    original = chapter["entries"][index - 1]
+                    identity = original.get("identity_digest") or hashlib.sha256((original["prompt"] or original["body"]).encode()).hexdigest()[:20]
+                used[identity] = used.get(identity, 0) + 1
+                if used[identity] > 1:
+                    identity += "." + str(used[identity])
+                url = chapter["url"]
+                share = re.search(r"[?&]ShareTreatise=(\d+)", url)
+                source_key = prefix + ":share:" + share[1] if share else key
+                site_id = source_key + ":" + identity
+                qid = entries_by_source.get(site_id)
+                if qid is None:
+                    context = edition["title"] + " · " + title
+                    qid = out.execute("""
+                        INSERT INTO entry(authority_code,language_code,site_id,kind,context,label,prompt,body,url)
+                        VALUES (?,?,?,?,?,?,?,?,?)
+                    """, (authority, lang, site_id, entry["kind"], context, label or str(number),
+                          entry["prompt"] or None, entry["body"], url)).lastrowid
+                    entries_by_source[site_id] = qid
+                entry_ids.append(qid)
+                out.execute("INSERT INTO placement(topic_id,question_id,number,printed_label,position) VALUES (?,?,?,?,?)",
+                            (section,qid,number,entry["label"] or None,index))
+            for label, body, owners in notes:
+                out.executemany("INSERT INTO footnote VALUES (?,?,?,?)",
+                                [(section, entry_id, label, body) for entry_id in
+                                 ([entry_ids[i] for i in owners] if owners else [None])])
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=OUTPUT)
-    output = parser.parse_args().output
-    build(SOURCE, output)
-    print("db: %s" % output)
+    parser.add_argument("--exclude", action="append", default=[], metavar="AUTHORITY",
+                        help="leave an authority out (repeatable); the iOS pack uses --exclude rohani")
+    args = parser.parse_args()
+    build(SOURCE, args.output, frozenset(args.exclude))
+    print("db: %s" % args.output)
     return 0
 
 

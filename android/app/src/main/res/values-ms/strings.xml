@@ -58,6 +58,7 @@
     <string name="camera_capture_ended_start_a_new_session_to_try">Tangkapan kamera telah tamat. Mulakan sesi baharu untuk mencuba lagi.</string>
     <string name="camera_unavailable">Kamera tidak tersedia</string>
     <string name="cancel">Batal</string>
+    <string name="chapter_note">Nota bab</string>
     <string name="checking_hadith_download">Menyemak muat turun hadis…</string>
     <string name="checking_supplications_download">Menyemak muat turun doa…</string>
     <string name="children">Anak</string>
@@ -69,6 +70,7 @@
     <string name="choose_a_location_in_muntathir">Pilih lokasi dalam Muntathir</string>
     <string name="choose_a_parentage_report">Pilih riwayat keturunan</string>
     <string name="choose_a_translation_to_read_alongside_arabic">Pilih terjemahan untuk dibaca bersama teks Arab.</string>
+    <string name="choose_prayer">Pilih solat</string>
     <string name="choose_rakaat">Pilih bilangan rakaat</string>
     <string name="choose_the_calculation_method_you_follow_you_can">Pilih kaedah pengiraan yang anda ikuti. Anda boleh mengubahnya kemudian dalam Seting.</string>
     <string name="choose_up_to_three_tabs_everything_else_stays_in">Pilih sehingga tiga tab. Yang lain kekal dalam Alatan.</string>
@@ -128,6 +130,7 @@
     <string name="find_the_direction_of_qibla">Cari arah kiblat</string>
     <string name="finding_your_precise_current_location">Mencari lokasi semasa anda yang tepat…</string>
     <string name="finish_setup">Selesaikan persediaan</string>
+    <string name="first_sujood">Sujud pertama</string>
     <string name="from_x_to_x">%1$s – %2$s</string>
     <string name="full_siblings">Adik-beradik kandung</string>
     <string name="future_dates_are_estimates_until_the_month_s_moo">Tarikh akan datang ialah anggaran sehingga cerapan anak bulan disahkan atau bulan tersebut bermula.</string>
@@ -157,6 +160,8 @@
     <string name="hijri_month_x_x">Bulan Hijrah: %1$s / %2$s</string>
     <string name="hizb_x">Hizb %d</string>
     <string name="holy_quran">Al-Quran</string>
+    <string name="horizontal_layout">Susun atur mendatar</string>
+    <string name="horizontal_prayer_times">Waktu solat mendatar</string>
     <string name="hours_and_minutes_until_your_next_prayer">Jam dan minit sehingga solat seterusnya.</string>
     <string name="imsak">Imsak</string>
     <string name="imsak_before_fajr">Imsak sebelum Subuh</string>
@@ -189,6 +194,7 @@
     <string name="local_naked_eye">Cerapan tempatan dengan mata kasar</string>
     <string name="location">Lokasi</string>
     <string name="location_access_is_disabled_search_for_a_city_in">Akses lokasi dinyahdayakan. Cari bandar sebagai ganti.</string>
+    <string name="simplified">Ringkas</string>
     <string name="maghrib">Maghrib</string>
     <string name="maghrib_prayer">Solat Maghrib</string>
     <string name="manual_month_correction">Pembetulan bulan manual</string>
@@ -278,6 +284,7 @@
     <string name="purple">Ungu</string>
     <string name="qibla">Kiblat</string>
     <string name="quran_translations">Terjemahan al-Quran</string>
+    <string name="rakaat">Rakaat</string>
     <string name="rakaat_tracker">Pengira Rakaat</string>
     <string name="read_and_search_hadith_offline">Baca dan cari hadis di luar talian.</string>
     <string name="read_and_search_supplications_offline">Baca dan cari doa di luar talian.</string>
@@ -313,6 +320,7 @@
     <string name="select_text_to_highlight_it">Pilih teks untuk menyerlahkannya.</string>
     <string name="select_text_to_highlight_it_use_the_passage_acti">Pilih teks untuk menyerlahkannya. Gunakan tindakan petikan untuk menambah penanda buku.</string>
     <string name="selected_location">Lokasi dipilih</string>
+    <string name="sermons_unavailable">Khutbah tidak tersedia</string>
     <string name="set_a_location_to_view_prayer_times">Tetapkan lokasi untuk melihat waktu solat.</string>
     <string name="set_location_in_app">Tetapkan lokasi dalam aplikasi</string>
     <string name="set_up_muntathir">Sediakan Muntathir</string>
@@ -331,6 +339,7 @@
     <string name="some_files_remain_on_this_device_please_try_agai">Sesetengah fail masih ada pada peranti ini. Cuba lagi.</string>
     <string name="source">Sumber</string>
     <string name="spouses">Pasangan</string>
+    <string name="start_x">Mulakan %s</string>
     <string name="start_tasbih">Mulakan tasbih</string>
     <string name="step_x_of_x">Langkah %1$s daripada %2$s</string>
     <string name="sunrise">Syuruk</string>
@@ -402,6 +411,7 @@
     <string name="verse_number_or_quran_text">Nombor ayat atau teks al-Quran</string>
     <string name="verse_unavailable">Ayat tidak tersedia</string>
     <string name="verses">Ayat</string>
+    <string name="vertical_layout">Susun atur menegak</string>
     <string name="view_profile">Lihat profil</string>
     <string name="visibility">Keterlihatan</string>
     <string name="weather">Cuaca</string>
@@ -413,4 +423,6 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">Anda masih boleh mencari teks al-Quran dan hadis yang dimuat turun di luar talian.</string>
     <string name="you_can_still_search_downloaded_text_offline">Anda masih boleh mencari teks yang dimuat turun di luar talian.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">Data tersimpan anda tidak dapat dibuka. Sila cuba lagi.</string>
+    <string name="literal">Harfiah</string>
+    <string name="sermons">Khutbah</string>
 </resources>

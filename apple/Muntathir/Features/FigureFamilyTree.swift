@@ -111,7 +111,7 @@ struct FigureFamilyTree: View {
             }
         }
         .navigationTitle("Family tree")
-        .navigationBarTitleDisplayMode(.inline)
+        .inlineNavigationTitle()
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 8) {
                 NavigationLink("View profile", value: FigureRoute.profile(id))

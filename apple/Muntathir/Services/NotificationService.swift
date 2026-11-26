@@ -56,7 +56,11 @@ enum NotificationPlan {
     }
 
     private nonisolated static func playSystemSound() async {
-        AudioServicesPlaySystemSound(1007)
+        #if os(macOS)
+            AudioServicesPlayAlertSound(kSystemSoundID_UserPreferredAlert)
+        #else
+            AudioServicesPlaySystemSound(1007)
+        #endif
     }
 
     private nonisolated static func playAudio(at url: URL) async throws -> AVAudioPlayer {

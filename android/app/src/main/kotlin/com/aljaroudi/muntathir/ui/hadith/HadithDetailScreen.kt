@@ -78,6 +78,7 @@ import com.aljaroudi.muntathir.ui.reader.ReaderText
 import com.aljaroudi.muntathir.ui.reader.ReadingTextStyle
 import com.aljaroudi.muntathir.ui.reader.rememberTextActions
 import com.aljaroudi.muntathir.ui.reader.trackReading
+import com.aljaroudi.muntathir.ui.settings.ArabicDiacriticsMenuItem
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
@@ -410,6 +411,7 @@ private fun DetailMenu(
                 },
                 modifier = Modifier.testTag("reading-size"),
             )
+            ArabicDiacriticsMenuItem()
         }
     }
 }

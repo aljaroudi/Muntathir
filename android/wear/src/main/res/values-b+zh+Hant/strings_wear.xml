@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="open_on_phone">在手機上開啟</string>
+    <string name="open_muntathir_on_your_phone">在手機上開啟 Muntathir</string>
+    <string name="sync_from_phone">在手機上開啟 Muntathir 以同步你的位置和設定。</string>
+</resources>

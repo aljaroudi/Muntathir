@@ -25,6 +25,17 @@ data class Ruling(
     val answer: String,
     /** The official page, when it's an https URL with a host. */
     val source: String?,
+    val context: String = "",
+    val kind: String = "qa",
+) {
+    val preview: String get() = if (kind == "qa") question else "$question · ${answer.take(160)}"
+}
+
+data class RulingFootnote(
+    val id: Long,
+    val label: String,
+    val body: String,
+    val chapter: Boolean,
 )
 
 data class RulingsAuthority(
@@ -53,12 +64,14 @@ data class RulingsSection(
 class RulingsReader(
     private val driver: SqlDriver,
     private val io: CoroutineDispatcher = Dispatchers.IO,
-) {
+) : LibraryPackReader {
+    private var packVersion = 1
+    private val columns get() = QUESTION_COLUMNS + if (packVersion == 2) ", q.context, q.kind" else ", '', 'qa'"
     private val mutex = Mutex()
     private var connection: ContentSql? = null
 
     /** Opens [file] once it passes the schema and integrity checks, or closes the current one. */
-    suspend fun install(file: File?) =
+    override suspend fun install(file: File?) =
         locked {
             runCatching { connection?.close() }
             connection = null
@@ -76,12 +89,13 @@ class RulingsReader(
     private fun validate(sql: ContentSql) {
         val identity = sql.query("PRAGMA application_id") { it.int(0) }.firstOrNull()
         val version = sql.query("PRAGMA user_version") { it.int(0) }.firstOrNull()
-        if (identity != APPLICATION_ID || version != VERSION) throw HadithDatabaseException.Incompatible()
+        if (identity != APPLICATION_ID || version !in 1..VERSION) throw HadithDatabaseException.Incompatible()
         if (sql.query("PRAGMA quick_check") { it.text(0) } != listOf("ok") ||
             sql.query("PRAGMA foreign_key_check") { it.text(0) }.isNotEmpty()
         ) {
             throw HadithDatabaseException.Incompatible()
         }
+        packVersion = version ?: throw HadithDatabaseException.Incompatible()
         sql.query("SELECT code, name_ar, name_en, sort_order FROM authority LIMIT 1") { it.text(0) }
         sql.query("SELECT code, name, direction FROM language LIMIT 1") { it.text(0) }
         sql.query("SELECT id, title, parent_id FROM topic LIMIT 1") { it.text(0) }
@@ -89,6 +103,7 @@ class RulingsReader(
         sql.query(
             "SELECT authority_code, language_code, site_id, question, answer, url FROM question LIMIT 1",
         ) { it.text(0) }
+        sql.query("SELECT $columns FROM question q LIMIT 0", row = ::ruling)
         sql.query("SELECT rowid FROM question_fts WHERE question_fts MATCH ? LIMIT 1", "test") { it.long(0) }
     }
 
@@ -109,9 +124,55 @@ class RulingsReader(
             ) { RulingsLanguage(it.text(0), it.text(1), it.text(2) == "rtl") }
         }
 
+    suspend fun contents(
+        authority: String,
+        language: String,
+        parent: Long? = null,
+    ): List<RulingsSection> =
+        read { sql ->
+            fun children(id: Long?): List<RulingsSection> =
+                sql.query(
+                    "SELECT id,title FROM topic WHERE authority_code=? AND language_code=? AND " +
+                        (if (id == null) "parent_id IS NULL" else "parent_id=?") + " ORDER BY position,id",
+                    listOfNotNull(authority, language, id),
+                ) { RulingsSection(it.long(0), it.text(1)) }
+            val sections = children(parent)
+            if (packVersion == 2 && parent == null && sections.size == 1) children(sections.single().id) else sections
+        }
+
+    suspend fun footnotes(id: RulingID): List<RulingFootnote> =
+        read { sql ->
+            if (sql
+                    .query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='footnote'") {
+                        it.int(0)
+                    }.isEmpty()
+            ) {
+                return@read emptyList()
+            }
+            sql.query(
+                """SELECT f.rowid,f.label,f.body,f.entry_id IS NULL FROM entry e
+            JOIN placement p ON p.question_id=e.id JOIN footnote f ON f.topic_id=p.topic_id
+            WHERE e.authority_code=? AND e.language_code=? AND e.site_id=?
+              AND (f.entry_id=e.id OR f.entry_id IS NULL) ORDER BY f.rowid""",
+                id.authority,
+                id.language,
+                id.siteID,
+            ) { RulingFootnote(it.long(0), it.text(1), it.text(2), it.int(3) != 0) }
+        }
+
     /** The main sections a question sits under; old packs with nested topics resolve to the same ones. */
     suspend fun sections(id: RulingID): List<RulingsSection> =
         read { sql ->
+            if (packVersion == 2) {
+                return@read sql.query(
+                    """SELECT t.id,t.title FROM topic t JOIN placement p ON p.topic_id=t.id
+                       JOIN question q ON q.id=p.question_id WHERE q.authority_code=? AND q.language_code=?
+                       AND q.site_id=? ORDER BY t.position,t.id""",
+                    id.authority,
+                    id.language,
+                    id.siteID,
+                ) { RulingsSection(it.long(0), it.text(1)) }
+            }
             sql.query(
                 """
                 WITH RECURSIVE sections(id, parent_id, title, position) AS (
@@ -146,9 +207,9 @@ class RulingsReader(
                     SELECT id FROM topic WHERE authority_code = ?1 AND language_code = ?2 AND id = ?3
                     UNION
                     SELECT t.id FROM topic t JOIN sections s ON t.parent_id = s.id
-                    WHERE t.authority_code = ?1 AND t.language_code = ?2
+                    WHERE t.authority_code = ?1 AND t.language_code = ?2 AND ${if (packVersion == 1) "1" else "0"}
                 )
-                SELECT q.authority_code, q.language_code, q.site_id, q.question, q.answer, q.url
+                SELECT $columns
                 FROM question q JOIN placement p ON p.question_id = q.id JOIN sections s ON s.id = p.topic_id
                 WHERE q.authority_code = ?1 AND q.language_code = ?2
                 GROUP BY q.id ORDER BY MIN(p.position), q.site_id
@@ -169,7 +230,7 @@ class RulingsReader(
         read { sql ->
             val words = QuranSearchText.searchQuery(query).split(Regex("\\s+")).filter { it.isNotEmpty() }
             val terms = words.map { "\"" + it.replace("\"", "\"\"") + "\"" }
-            val select = "SELECT $QUESTION_COLUMNS FROM question q"
+            val select = "SELECT $columns FROM question q"
             if (terms.isEmpty()) {
                 sql.query(
                     "$select WHERE q.authority_code = ? AND q.language_code = ? ORDER BY random() LIMIT 20",
@@ -194,7 +255,7 @@ class RulingsReader(
         read { sql ->
             sql
                 .query(
-                    "SELECT authority_code, language_code, site_id, question, answer, url FROM question " +
+                    "SELECT $columns FROM question q " +
                         "WHERE authority_code = ? AND language_code = ? AND site_id = ?",
                     id.authority,
                     id.language,
@@ -224,7 +285,7 @@ class RulingsReader(
 
     companion object {
         const val APPLICATION_ID = 1_179_809_601
-        const val VERSION = 1
+        const val VERSION = 2
         private const val QUESTION_COLUMNS = "q.authority_code, q.language_code, q.site_id, q.question, q.answer, q.url"
 
         /** The saved language when the authority has it, else the app language when it does, else none. */
@@ -248,6 +309,8 @@ class RulingsReader(
                     } ==
                         true
                 },
+                row.text(6),
+                row.text(7),
             )
     }
 }

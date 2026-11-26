@@ -12,7 +12,7 @@ apple-format:
 apple-build:
     xcodebuild -project apple/Muntathir.xcodeproj -scheme Muntathir -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
 
-# Validate and package Apple Background Asset Packs
+# Validate and package already-built DBs as Apple Background Asset Packs (rebuild data first with `just data-build --assets-only`)
 [positional-arguments]
 apple-packs content="all":
     python3 apple/AssetPacks/assets.py package --content "$1"
@@ -76,9 +76,9 @@ android_gradle := 'cd android && JAVA_HOME="${JAVA_HOME:-/Applications/Android S
 android-strings:
     python3 android/scripts/strings.py
 
-# Build the Android debug app
+# Build the Android debug app and its Wear OS app
 android-build:
-    {{ android_gradle }} :app:assembleDebug
+    {{ android_gradle }} :app:assembleDebug :wear:assembleDebug
 
 [doc("Check Android strings and run core + app unit and screenshot tests")]
 android-test:
@@ -93,7 +93,7 @@ android-screenshots:
 android-format:
     {{ android_gradle }} spotlessApply
 
-# Validate and stage Google Play Asset Delivery packs
+# Validate and stage already-built DBs as Google Play Asset Delivery packs (rebuild data first with `just data-build --assets-only`)
 [positional-arguments]
 android-packs content="all":
     python3 apple/AssetPacks/assets.py android --content "$1"
@@ -153,6 +153,32 @@ backend-check:
 [doc("Check and restart the search API on the hosting Mac")]
 backend-deploy: backend-check backend-test
     launchctl kickstart -k "gui/$(id -u)/com.muntathir.search"
+
+# Clone the content databases for local Telegram development and tests
+telegram-data:
+    cd telegram && bun scripts/data.ts
+
+[doc("Typecheck, build and test the Telegram bot and Mini App")]
+telegram-check:
+    cd telegram && bun run check && bun run scripts/build.ts && bun test
+
+[positional-arguments]
+[arg("args", help="--rollback")]
+[doc("Release the committed Telegram bot on the hosting Mac")]
+telegram-release *args:
+    cd telegram && bun scripts/release.ts "$@"
+
+[positional-arguments]
+[arg("args", help="--apply")]
+[doc("Install the Telegram bot's launch agent (dry run without --apply)")]
+telegram-install *args:
+    cd telegram && bun scripts/install.ts "$@"
+
+[positional-arguments]
+[arg("args", help="--apply")]
+[doc("Show the bot's settings, or apply commands and menu with --apply")]
+telegram-configure *args:
+    cd telegram && bun scripts/configure.ts "$@"
 
 [arg("args", help="flags for build/build.py: --dry-run | --assets-only | --max-budget USD")]
 [doc("Rebuild reader databases, package assets, and refresh search")]

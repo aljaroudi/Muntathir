@@ -8,12 +8,33 @@ struct PrayerProgressTests {
     private let day = Date(timeIntervalSince1970: 1_794_520_800)
 
     @Test func selection() {
-        #expect(PrayerProgress.choices(for: 2) == [.fajr])
-        #expect(PrayerProgress.choices(for: 3) == [.maghrib])
-        #expect(PrayerProgress.choices(for: 4) == [.dhuhr, .asr, .isha])
-        #expect(PrayerProgress.choices(for: 1).isEmpty)
+        #expect(PrayerProgress.prayers.map(PrayerProgress.rakaat(for:)) == [2, 4, 4, 3, 4])
+        #expect(PrayerProgress.followUp(after: .dhuhr) == .asr)
+        #expect(PrayerProgress.followUp(after: .maghrib) == .isha)
+        #expect([PrayerName.fajr, .asr, .isha].allSatisfy { PrayerProgress.followUp(after: $0) == nil })
         #expect(AppTool.normalized(["prayerProgress"]) == [.prayerProgress])
-        #expect(AppTool.groups.flatMap(\.self).contains(.prayerProgress))
+        #expect(AppTool.groups.flatMap(\.tools).contains(.prayerProgress))
+    }
+
+    @Test func suggestionFollowsOnTimeWindowsAndHistory() throws {
+        let times = PrayerCalculator.times(on: day, location: location, method: .jafari)
+        func time(_ name: PrayerName) throws -> Date {
+            try #require(times.first { $0.name == name }?.date)
+        }
+        func suggestion(at date: Date, completed: [PrayerCompletion] = []) -> PrayerName? {
+            PrayerProgress.suggestedPrayer(at: date, location: location, method: .jafari, completed: completed)
+        }
+        let dhuhr = try time(.dhuhr).addingTimeInterval(60)
+        #expect(suggestion(at: dhuhr) == .dhuhr)
+        let prayedDhuhr = PrayerProgress.snapshot(prayer: .dhuhr, at: dhuhr, location: location, method: .jafari)
+        #expect(suggestion(at: dhuhr, completed: [prayedDhuhr]) == .asr)
+        let prayedAsr = PrayerProgress.snapshot(prayer: .asr, at: dhuhr, location: location, method: .jafari)
+        #expect(suggestion(at: dhuhr, completed: [prayedDhuhr, prayedAsr]) == .maghrib)
+        #expect(try suggestion(at: time(.sunrise).addingTimeInterval(60)) == .dhuhr)
+        #expect(try suggestion(at: time(.maghrib).addingTimeInterval(60)) == .maghrib)
+        #expect(try suggestion(at: time(.fajr).addingTimeInterval(-60)) == .fajr)
+        #expect(try suggestion(at: time(.midnight).addingTimeInterval(60)) == .fajr)
+        #expect(PrayerProgress.suggestedPrayer(at: dhuhr, location: nil, method: .jafari, completed: []) == nil)
     }
 
     @Test(arguments: PrayerProgress.prayers, PrayerMethod.allCases)

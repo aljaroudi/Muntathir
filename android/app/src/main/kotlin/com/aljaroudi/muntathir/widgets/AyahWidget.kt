@@ -32,10 +32,11 @@ import java.time.Instant
 
 /**
  * Swift `DailyAyahWidget` (medium): today's verse in Hafs, with the selected installed translation below when
- * there is room. The verse turns over at sunset, like Today's card.
+ * there is room. The verse turns over at sunset, like Today's card. On the lock screen, only the verse, as in
+ * `accessoryRectangular`.
  */
 class AyahWidget : GlanceAppWidget() {
-    override val sizeMode = SizeMode.Responsive(setOf(SHORT, TALL))
+    override val sizeMode = SizeMode.Responsive(setOf(SHORT, TALL, CARD))
 
     override suspend fun provideGlance(
         context: Context,
@@ -62,6 +63,9 @@ class AyahWidget : GlanceAppWidget() {
     private companion object {
         val SHORT = DpSize(250.dp, 110.dp)
         val TALL = DpSize(250.dp, 150.dp)
+
+        // A lock screen card, with room for four lines of the verse.
+        val CARD = DpSize(250.dp, 220.dp)
     }
 }
 
@@ -74,6 +78,20 @@ private fun AyahContent(
     val context = LocalContext.current
     // Sunset regardless of hidden times, as on Today.
     val ayah = schedule.verse(now, app.engine, app.prayerSettings.copy(hiddenPrayers = emptySet()))
+    if (isOnLockScreen()) {
+        // A line of Hafs at 20 sp takes about 38 sp; like Swift, drop lines before the verse would clip.
+        val room = lockScreenTextRoom() / 38
+        LockScreenSurface(OpenRequest.intent(context, null)) {
+            val width = GlanceModifier.fillMaxWidth()
+            if (ayah == null) {
+                WidgetText(context.getString(R.string.verse_unavailable), 13f, width, WidgetFont.Centered)
+            } else {
+                val lines = room.toInt().coerceIn(1, 4)
+                WidgetText(ayah.text, 20f * room.coerceAtMost(1f), width, WidgetFont.Quran, maxLines = lines)
+            }
+        }
+        return
+    }
     WidgetSurface(R.drawable.widget_ayah_background, OpenRequest.intent(context, null), Alignment.Center) {
         if (ayah == null) {
             WidgetText(context.getString(R.string.verse_unavailable), 13f, font = WidgetFont.Secondary)

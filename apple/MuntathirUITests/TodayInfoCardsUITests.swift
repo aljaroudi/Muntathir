@@ -84,7 +84,7 @@ final class TodayInfoCardsUITests: XCTestCase {
         add(capture)
         let temperature = app.staticTexts["weather-temperature"]
         let originalTemperature = temperature.label
-        app.openSettingsFromTools()
+        app.openSettingsPage("settings-general")
         let toggle = app.switches["Show feels-like temperature"]
         for _ in 0 ..< 6 where !toggle.isHittable || toggle.frame.maxY > app.frame.maxY - 100 {
             app.swipeUp()

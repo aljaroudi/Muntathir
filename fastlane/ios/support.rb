@@ -26,15 +26,21 @@ module MuntathirRelease
   # Apple does not support Persian store metadata; its copy stays in listing-drafts/fa.
   LOCALES = %w[en-US ar-SA fr-FR de-DE id it ja ms ru es-ES tr ur-PK zh-Hans zh-Hant].freeze
   LANGUAGE_ALIASES = { "ar" => "ar-SA", "en" => "en-US" }.freeze
-  DEVICES = ["iPhone 17 Pro Max", "iPad Pro 13-inch (M5)", "iPhone Duo"].freeze
+  DEVICES = ["iPhone 18 Pro Max", "iPad Pro 13-inch (M5)", "iPhone Duo"].freeze
   PREVIEW_DEVICES = DEVICES.reject { |name| name == "iPhone Duo" }.freeze
   WATCH_SCREENSHOT = "Apple Watch Series 12 (46mm)-01-PrayerTimes.png".freeze
   SCREENSHOTS = JSON.parse(File.read(File.join(__dir__, "marketing/screenshots.json"))).freeze
 
   SCREENSHOT_LOCALES = SCREENSHOTS.fetch("headlines").keys.freeze
 
+  # Qibla and Rakaat need a compass and camera, so the Mac app has no such tools.
+  MAC_SCREENS = (SCREENSHOTS.fetch("storeScreens") - %w[07-Rakaat 10-Qibla]).freeze
+  MAC_SCREENSHOT_SIZE = [2880, 1800].freeze
+  # Asset pack and build-upload APIs name platforms differently from fastlane.
+  PLATFORM_NAMES = { "IOS" => "iOS", "MAC_OS" => "macOS" }.freeze
+
   def self.capture_runtime(device)
-    device == "iPhone Duo" ? ENV.fetch("SCREENSHOT_DUO_IOS_VERSION", "27.2") : ENV.fetch("SCREENSHOT_IOS_VERSION", "27.0")
+    device == "iPhone Duo" ? ENV.fetch("SCREENSHOT_DUO_IOS_VERSION", "27.2") : ENV.fetch("SCREENSHOT_IOS_VERSION", "27.2")
   end
 
   def self.capture_locales(value)
@@ -75,18 +81,29 @@ module MuntathirRelease
     passes
   end
 
+  RELEASE_PLATFORMS = {
+    ios: { name: :ios, asc: "IOS", fastlane: "ios", notes: "ios", label: "iOS", destination: "generic/platform=iOS",
+           archive_suffix: "", derived_data: "ArchiveDerivedData", info_plist: "Info.plist", store: "build/marketing/store" },
+    mac: { name: :mac, asc: "MAC_OS", fastlane: "osx", notes: "macos", label: "macOS", destination: "generic/platform=macOS",
+           archive_suffix: "-mac", derived_data: "MacArchiveDerivedData", info_plist: "Contents/Info.plist", store: "build/marketing/mac/store" },
+  }.freeze
+
+  def self.release_platform(name)
+    RELEASE_PLATFORMS.fetch((name || :ios).to_sym)
+  end
+
   LIMITS = { "name" => 30, "subtitle" => 30, "keywords" => 100, "description" => 4000,
              "promotional_text" => 170, "release_notes" => 4000 }.freeze
 
   # App Store Connect rejects these in What’s New / metadata text fields.
   ASC_FORBIDDEN = /[ʿʾˈˌː]/u.freeze
 
-  def self.release_notes(version)
+  def self.release_notes(version, platform: "ios")
     entries = JSON.parse(File.read(File.join(ROOT, "../shared/release-notes/changelog.json")))
-    entry = entries.find { |row| row.fetch("version") == version && row.fetch("platforms").include?("ios") }
-    raise "Missing iOS release notes for #{version}" unless entry
+    entry = entries.find { |row| row.fetch("version") == version && row.fetch("platforms").include?(platform) }
+    raise "Missing #{platform} release notes for #{version} in shared/release-notes/changelog.json" unless entry
 
-    entry.fetch("notes")
+    entry.fetch("notes").transform_values { |items| items.map { |item| "• #{item}" }.join("\n") }
   end
 
   def self.validate_metadata!(root = File.join(__dir__, "metadata"), locales: LOCALES)
@@ -119,22 +136,31 @@ module MuntathirRelease
     value
   end
 
-  def self.stage_marketing_assets!(app)
+  def self.stage_marketing_assets!(app, resources: app)
     raise "Missing capture app: #{app}" unless File.directory?(app)
     run!("python3", "AssetPacks/assets.py", "validate", "--content", "all")
-    FileUtils.mkdir_p(File.join(app, "Hadith"))
-    FileUtils.cp("../build/hadith/dist/hadith.db", File.join(app, "Hadith/hadith.db"))
-    FileUtils.mkdir_p(File.join(app, "Supplications"))
-    FileUtils.cp("../build/hadith/dist/supplications.db", File.join(app, "Supplications/supplications.db"))
-    FileUtils.mkdir_p(File.join(app, "MarketingQuran"))
+    FileUtils.mkdir_p(File.join(resources, "Hadith"))
+    FileUtils.cp("../build/hadith/dist/hadith.db", File.join(resources, "Hadith/hadith.db"))
+    FileUtils.mkdir_p(File.join(resources, "Supplications"))
+    FileUtils.cp("../build/hadith/dist/supplications.db", File.join(resources, "Supplications/supplications.db"))
+    FileUtils.mkdir_p(File.join(resources, "MarketingQuran"))
     Dir.glob("Muntathir/Resources/Quran/*.db").reject { |path| %w[quran.db en.qarai.db].include?(File.basename(path)) }.each do |path|
-      FileUtils.cp(path, File.join(app, "MarketingQuran", File.basename(path)))
+      FileUtils.cp(path, File.join(resources, "MarketingQuran", File.basename(path)))
     end
+  end
+
+  # Staging into a signed Mac bundle breaks its seal, and macOS refuses to launch a sandboxed app with a broken one.
+  def self.resign_mac_app!(app)
+    details = run!("codesign", "-dvv", app)
+    identity = details[/^Authority=(.+)$/, 1] || "-"
+    run!("codesign", "--force", "--sign", identity, "--preserve-metadata=identifier,entitlements,requirements,flags,runtime", app)
+    run!("codesign", "--verify", "--strict", app)
   end
 
   def self.validate_capture!(path)
     brightness = run!("magick", path, "-format", "%[fx:mean]", "info:").to_f
-    raise "Blank capture: #{path}" unless brightness.between?(0.01, 0.99)
+    # Light calendar/list UIs (esp. Urdu) sit just above 0.99; true blanks are ~1.0.
+    raise "Blank capture: #{path}" unless brightness.between?(0.01, 0.995)
   end
 
   CREATIVE_SIZE = SCREENSHOTS.fetch("creative").fetch("size").freeze
@@ -206,6 +232,27 @@ module MuntathirRelease
     end
   end
 
+  def self.validate_mac_media!(root = ROOT, since: nil)
+    expected = MAC_SCREENS.map { |screen| "Mac-#{screen}.png" }
+    directory = File.join(root, "build/marketing/mac/store")
+    raise "Missing Mac screenshots. Run just lane ios mac_screenshots and just lane ios mac_style." unless File.directory?(directory)
+
+    locales = Dir.children(directory).select { |entry| File.directory?(File.join(directory, entry)) }
+    raise "Unexpected Mac screenshot locale directories" unless (locales - SCREENSHOT_LOCALES).empty?
+
+    SCREENSHOT_LOCALES.each do |locale|
+      images = Dir.glob(File.join(directory, locale, "*.{png,jpg,jpeg}"), File::FNM_CASEFOLD)
+      unless images.map { |image| File.basename(image) }.sort == expected.sort &&
+             images.all? { |image| File.size?(image) && (!since || File.mtime(image) >= since) }
+        raise "Missing, unexpected or stale Mac screenshots for #{locale}"
+      end
+      images.each do |image|
+        actual = run!("magick", "identify", "-format", "%wx%h %[channels]", image).strip
+        raise "Invalid Mac screenshot #{image}: #{actual}" unless actual.start_with?(MAC_SCREENSHOT_SIZE.join("x")) && !actual.include?("rgba")
+      end
+    end
+  end
+
   def self.beta_notes
     LOCALES.to_h do |locale|
       notes = File.read(File.join(__dir__, "beta_notes", "#{locale}.txt")).strip
@@ -241,9 +288,9 @@ module MuntathirRelease
     raise "#{context}: expected an HTTPS URL"
   end
 
-  def self.validate_draft!(draft, version, expected_id: nil)
+  def self.validate_draft!(draft, version, expected_id: nil, platform: "IOS")
     if !draft || draft.app_version_state == "WAITING_FOR_REVIEW" || Gem::Version.new(draft.version_string) != Gem::Version.new(version)
-      raise "Create or restore an editable iOS App Store draft for version #{version} before running this lane."
+      raise "Create or restore an editable #{PLATFORM_NAMES.fetch(platform)} App Store draft for version #{version} before running this lane."
     end
     raise "The App Store draft for #{version} changed during the release run." if expected_id && draft.id != expected_id
   end
@@ -257,26 +304,27 @@ module MuntathirRelease
     end
   end
 
-  def self.build_uploads(app_id, version)
+  def self.build_uploads(app_id, version, platform: "IOS")
     versions = [version]
     versions << version.delete_suffix(".0") if version.count(".") == 2 && version.end_with?(".0")
     versions << "#{version}.0" if version.count(".") == 1
     pages = Spaceship::ConnectAPI.get_build_uploads(app_id: app_id, includes: "build", limit: 200,
-                                                  filter: { cfBundleShortVersionString: versions.join(","), platform: "IOS" }).all_pages
+                                                  filter: { cfBundleShortVersionString: versions.join(","), platform: platform }).all_pages
     pages.flat_map { |page| page.body.fetch("data") }.select do |upload|
       attributes = upload.fetch("attributes")
-      attributes.fetch("platform") == "IOS" && Gem::Version.new(attributes.fetch("cfBundleShortVersionString")) == Gem::Version.new(version)
+      attributes.fetch("platform") == platform && Gem::Version.new(attributes.fetch("cfBundleShortVersionString")) == Gem::Version.new(version)
     end
   end
 
-  def self.wait_for_uploaded_build(app_id, version, existing_ids, timeout: 1800)
+  def self.wait_for_uploaded_build(app_id, version, existing_ids, timeout: 1800, platform: "IOS")
+    name = PLATFORM_NAMES.fetch(platform)
     deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + timeout
     observed_ids = []
     retry_message = "Check Build Uploads in App Store Connect before retrying."
     loop do
-      uploads = build_uploads(app_id, version).reject { |upload| existing_ids.include?(upload.fetch("id")) }
+      uploads = build_uploads(app_id, version, platform: platform).reject { |upload| existing_ids.include?(upload.fetch("id")) }
       observed_ids |= uploads.map { |upload| upload.fetch("id") }
-      raise "Multiple new iOS uploads for #{version}. #{retry_message}" if observed_ids.size > 1
+      raise "Multiple new #{name} uploads for #{version}. #{retry_message}" if observed_ids.size > 1
 
       if (upload = uploads.first)
         attributes = upload.fetch("attributes")
@@ -290,7 +338,7 @@ module MuntathirRelease
           raise "Build #{version} (#{number}) failed processing. #{retry_message}" if %w[FAILED INVALID].include?(build&.processing_state)
 
           if build&.processing_state == "VALID"
-            unless build.platform == "IOS" && build.version == number && Gem::Version.new(build.app_version) == Gem::Version.new(version)
+            unless build.platform == platform && build.version == number && Gem::Version.new(build.app_version) == Gem::Version.new(version)
               raise "App Store Connect returned an unexpected build for #{version} (#{number}). #{retry_message}"
             end
             return build
@@ -299,7 +347,7 @@ module MuntathirRelease
       end
 
       remaining = deadline - Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      raise "Timed out waiting for the new iOS build for #{version}. #{retry_message}" if remaining <= 0
+      raise "Timed out waiting for the new #{name} build for #{version}. #{retry_message}" if remaining <= 0
 
       sleep([15, remaining].min)
     end
@@ -333,10 +381,10 @@ module MuntathirRelease
     selected
   end
 
-  def self.project_version
+  def self.project_version(destination: "generic/platform=iOS")
     # Xcode 27 JSON projects are not readable by Fastlane's xcodeproj dependency.
     settings = JSON.parse(run!("xcodebuild", "-project", File.join(ROOT, "Muntathir.xcodeproj"), "-scheme", "Muntathir", "-configuration", "Release",
-                               "-destination", "generic/platform=iOS", "-showBuildSettings", "-json"))
+                               "-destination", destination, "-showBuildSettings", "-json"))
     settings.find { |target| target["target"] == "Muntathir" }.fetch("buildSettings").fetch("MARKETING_VERSION")
   end
 
@@ -382,12 +430,17 @@ module MuntathirRelease
     raise "Parallel command failed with #{failed.last.exitstatus || "signal #{failed.last.termsig}"}" if failed
   end
 
+  # Unedited screen capture, only scaled to the store canvas: App Review rejects previews with device
+  # frames, bezels, borders or other styling (guideline 2.3.4). Store canvases match the simulator aspect within a few
+  # pixels, so the center crop trims at most a sliver. The Duo outer display is narrower than its
+  # canvas, so it is fitted and centred on plain black instead of being cropped.
   def self.preview_filter(size, duo: false)
+    width, height = size
     if duo
-      "scale=830:1800:force_original_aspect_ratio=decrease:force_divisible_by=2," \
-        "pad=iw+16:ih+16:8:8:color=0x0d1117,pad=886:1920:(ow-iw)/2:(oh-ih)/2:color=0x10263f,setsar=1"
+      "scale=#{width}:#{height}:force_original_aspect_ratio=decrease:force_divisible_by=2," \
+        "pad=#{width}:#{height}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1"
     else
-      "scale=#{size.join(':')}:force_original_aspect_ratio=decrease,pad=#{size.join(':')}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1"
+      "scale=#{width}:#{height}:force_original_aspect_ratio=increase,crop=#{width}:#{height},setsar=1"
     end
   end
 

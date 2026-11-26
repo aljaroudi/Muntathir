@@ -10,9 +10,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FormatSize
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +39,7 @@ import com.aljaroudi.muntathir.ui.components.LoadingState
 import com.aljaroudi.muntathir.ui.components.ScreenScaffold
 import com.aljaroudi.muntathir.ui.components.currentLocale
 import com.aljaroudi.muntathir.ui.navigation.HadithIntroductionRoute
+import com.aljaroudi.muntathir.ui.quran.ReadingOptionsMenu
 import com.aljaroudi.muntathir.ui.quran.ReadingSizeSheet
 import com.aljaroudi.muntathir.ui.reader.ReaderText
 import com.aljaroudi.muntathir.ui.reader.ReadingTextStyle
@@ -113,9 +112,7 @@ fun HadithIntroductionScreen(
         stringResource(R.string.introduction),
         onBack = onBack,
         actions = {
-            IconButton(onClick = { sizing = true }, Modifier.testTag("reading-size")) {
-                Icon(Icons.Outlined.FormatSize, stringResource(R.string.text_size))
-            }
+            ReadingOptionsMenu(onTextSize = { sizing = true })
         },
     ) { padding ->
         val result = content

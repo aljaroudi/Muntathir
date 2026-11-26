@@ -2,9 +2,26 @@ import Foundation
 import Observation
 import OSLog
 
-@MainActor @Observable final class RulingsAssetStore {
+protocol LibraryPackReader: Actor {
+    init()
+    func install(_ url: URL?) throws
+    func replace(_ destination: URL, with staged: URL) throws
+}
+
+extension RulingsReader: LibraryPackReader {}
+typealias RulingsAssetStore = LibraryPackStore<RulingsReader>
+
+extension LibraryPackStore where Reader == RulingsReader {
+    convenience init(backend: any AssetPackBackend = AppleAssetPackBackend(identifier: "rulings-v2", resourcePath: "Rulings/rulings.db"),
+                     defaults: UserDefaults = .standard, library: URL? = nil)
+    {
+        self.init(packID: "rulings-v2", filename: "rulings/rulings.db", backend: backend, defaults: defaults, library: library)
+    }
+}
+
+@MainActor @Observable final class LibraryPackStore<Reader: LibraryPackReader> {
     enum State { case checking, missing, downloading, ready, failed, incompatible }
-    let reader = RulingsReader()
+    let reader = Reader()
     private let backend: any AssetPackBackend
     private(set) var state: State = .checking
     private(set) var progress: Progress?
@@ -21,34 +38,32 @@ import OSLog
     private let defaults: UserDefaults
     /// The app-owned copy that is read. Without one (tests and UI tests), the managed pack is read in place.
     private let library: URL?
-    private let installedVersionKey = "rulings.installedPackVersion"
+    private let packID: String
+    private var installedVersionKey: String {
+        "\(packID).installedPackVersion"
+    }
 
     private var installedVersion: Int? {
         defaults.object(forKey: installedVersionKey) as? Int
     }
 
     private var policy: AssetPackUpdatePolicy {
-        AssetPackUpdatePolicy(packID: "rulings", defaults: defaults)
+        AssetPackUpdatePolicy(packID: packID, defaults: defaults)
     }
 
-    init(backend: any AssetPackBackend = AppleAssetPackBackend(identifier: "rulings", resourcePath: "Rulings/rulings.db"),
-         defaults: UserDefaults = .standard, library: URL? = nil)
-    {
+    init(packID: String, filename: String, backend: any AssetPackBackend, defaults: UserDefaults = .standard, library: URL? = nil) {
+        self.packID = packID
         self.backend = backend
         self.defaults = defaults
-        self.library = library ?? Self.defaultLibrary(backend: backend)
+        let usesLibrary = backend is AppleAssetPackBackend && !ProcessInfo.processInfo.arguments.contains("--ui-testing")
+        self.library = library ?? (usesLibrary ? URL.applicationSupportDirectory.appending(path: "Libraries/" + filename) : nil)
     }
 
-    private static func defaultLibrary(backend: any AssetPackBackend) -> URL? {
-        guard backend is AppleAssetPackBackend, !ProcessInfo.processInfo.arguments.contains("--ui-testing") else { return nil }
-        return URL.applicationSupportDirectory.appending(path: "Libraries/rulings/rulings.db")
-    }
-
-    /// Downloads a newer hosted pack at most once per day; `refresh()` adopts it only if it passes validation.
-    func checkForUpdates(now: Date = .now) async {
-        // An incompatible copy is unreadable anyway, so it may update too.
-        guard library != nil, state == .ready || state == .incompatible, !busy, !downloading, !checkingForUpdates,
-              policy.isDue(now) else { return }
+    /// Downloads a newer hosted pack when due; `refresh()` adopts it only if it passes validation.
+    /// Any local copy qualifies, whatever its state, so a refresh still in flight cannot skip the check.
+    func checkForUpdates(now: Date = .now, trigger: AssetPackUpdateTrigger = .foreground) async {
+        guard let library, FileManager.default.fileExists(atPath: library.path), !downloading, !checkingForUpdates,
+              policy.isDue(now, trigger: trigger) else { return }
         checkingForUpdates = true
         defer { checkingForUpdates = false }
         do {
@@ -57,15 +72,15 @@ import OSLog
             guard policy.accepts(remote, over: installedVersion) else { return }
             if let installedVersion {
                 Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
-                    .notice("Updating rulings from \(installedVersion) to \(remote).")
+                    .notice("Updating \(self.packID) from \(installedVersion) to \(remote).")
             }
-            if await backend.localVersion().map({ $0 < remote }) ?? true {
+            if await backend.localVersion() != remote {
                 try await backend.download()
             }
             await refresh()
         } catch {
             Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
-                .error("Rulings update check failed: \(String(describing: error), privacy: .public)")
+                .error("Library update check failed: \(String(describing: error), privacy: .public)")
         }
     }
 
@@ -87,11 +102,15 @@ import OSLog
         }
         let log = Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
         do {
-            try await RulingsReader().install(managed)
+            try await Reader().install(managed)
         } catch {
+            // An interrupted check proves nothing about the pack; keep it for the next refresh.
+            if Task.isCancelled, let local {
+                return local
+            }
             // Without a copy to keep, the error surfaces as incompatible or failed.
             guard let local else { throw error }
-            log.error("Rejected rulings pack \(version ?? 0): \(String(describing: error), privacy: .public)")
+            log.error("Rejected \(self.packID) pack \(version ?? 0): \(String(describing: error), privacy: .public)")
             if let version {
                 policy.reject(version)
             }
@@ -99,22 +118,30 @@ import OSLog
             return local
         }
         do {
-            try await Self.copy(managed, to: library)
+            let staged = try await Self.stage(managed, beside: library)
+            defer { try? FileManager.default.removeItem(at: staged) }
+            // Whatever file ends up in place, the next install must reopen it.
+            signature = nil
+            try await reader.replace(library, with: staged)
         } catch {
+            if Task.isCancelled, let local {
+                return local
+            }
             guard let local else { throw error }
             // Storage failures are transient; the managed pack stays for the next refresh.
-            log.error("Could not install rulings pack \(version ?? 0): \(String(describing: error), privacy: .public)")
+            log.error("Could not install library pack \(version ?? 0): \(String(describing: error), privacy: .public)")
             return local
         }
         if let version {
             defaults.set(version, forKey: installedVersionKey)
         }
+        log.notice("Installed \(self.packID) pack \(version ?? 0).")
         try? await backend.remove()
         return library
     }
 
-    /// Readers of the previous file keep it open until they reinstall; the swap itself is atomic.
-    @concurrent private nonisolated static func copy(_ source: URL, to destination: URL) async throws {
+    /// Copies a pack next to the library so the final swap is an atomic rename on the same volume.
+    @concurrent private nonisolated static func stage(_ source: URL, beside destination: URL) async throws -> URL {
         let fm = FileManager.default
         var directory = destination.deletingLastPathComponent()
         try fm.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -122,11 +149,13 @@ import OSLog
         values.isExcludedFromBackup = true
         try directory.setResourceValues(values)
         let staged = directory.appending(path: "staging-\(UUID().uuidString).db")
-        defer { try? fm.removeItem(at: staged) }
-        try fm.copyItem(at: source, to: staged)
-        guard rename(staged.path, destination.path) == 0 else {
-            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+        do {
+            try fm.copyItem(at: source, to: staged)
+        } catch {
+            try? fm.removeItem(at: staged)
+            throw error
         }
+        return staged
     }
 
     func refresh() async {
@@ -172,6 +201,21 @@ import OSLog
         state = .downloading
         progress = nil
         do {
+            try await backend.download()
+            downloading = false
+            signature = nil
+            replaceRequested = true
+            await refresh()
+            // The system keeps a pack it already holds instead of fetching it, so a copy this app cannot
+            // read (an old format served again, a corrupt file) would be confirmed and rejected forever.
+            // Discard it and fetch the hosted copy once.
+            guard state == .incompatible || state == .failed, await (try? backend.localURL()) != nil else { return }
+            Logger(subsystem: "com.aljaroudi.Muntathir", category: "AssetPacks")
+                .notice("Replacing the unreadable \(self.packID) pack with a fresh download.")
+            downloading = true
+            state = .downloading
+            progress = nil
+            try await backend.remove()
             try await backend.download()
             downloading = false
             signature = nil

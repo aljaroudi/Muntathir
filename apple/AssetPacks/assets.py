@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Package Hadith and Quran asset packs and verify shipping bundles; no network or credentials."""
 import argparse
+import hashlib
 import json
+import os
 from pathlib import Path
 import plistlib
 import shutil
 import sqlite3
 import subprocess
+import tempfile
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -16,8 +19,48 @@ ANDROID_PACKS = {
     'hadith': ('hadith', 'on-demand'),
     'supplications': ('supplications', 'fast-follow'),
     'quran-translations': ('quran_translations', 'on-demand'),
-    'rulings': ('rulings', 'on-demand'),
+    'lexicon': ('lexicon', 'on-demand'),
+    'rulings-v2': ('rulings', 'on-demand'),
 }
+# Android ships a different file than the iOS manifest names: the iOS rulings pack leaves out
+# rohani (rohani.ir is under US sanctions, App Review guideline 5), Android keeps it.
+ANDROID_SOURCES = {
+    'build/rulings/dist/rulings-apple.db': 'build/rulings/dist/rulings.db',
+}
+# Authorities App Review rejects; checked in the iOS rulings pack.
+APPLE_EXCLUDED_AUTHORITIES = ('rohani',)
+APPLE_EXCLUDED_HOSTS = ('rohani.ir',)
+
+
+def db_hash(path):
+    with path.open("rb") as file:
+        digest = hashlib.sha256()
+        header = file.read(100)
+        # SQLite changes these header fields when writing equivalent databases.
+        digest.update(header[:24] + header[28:92] + header[100:])
+        while chunk := file.read(1024 * 1024):
+            digest.update(chunk)
+        return digest.hexdigest()
+
+
+def archive_matches(archive, manifest, root, scratch):
+    """True when an .aar already holds this manifest and equivalent databases; ba-package output is not byte-reproducible."""
+    if not archive.is_file():
+        return False
+    with tempfile.TemporaryDirectory(dir=scratch) as extracted:
+        try:
+            subprocess.run(["xcrun", "aa", "extract", "-i", str(archive), "-d", extracted], check=True, capture_output=True)
+            packed = Path(extracted)
+            record = json.loads((packed / "Manifest.json").read_text())
+            record.pop("toolsVersion", None)
+            # ba-package stores platforms as a set, so their order varies between runs.
+            ordered = lambda pack: {**pack, "platforms": sorted(pack.get("platforms", []))}
+            return ordered(record) == ordered(manifest) and all(
+                db_hash(packed / "Contents" / entry["fileDestination"])
+                == db_hash(root / entry["fileSource"]) for entry in manifest["fileSelectors"]
+            )
+        except (OSError, ValueError, subprocess.CalledProcessError):
+            return False
 
 
 def validate_quran(root=ROOT, manifests=MANIFESTS):
@@ -27,7 +70,7 @@ def validate_quran(root=ROOT, manifests=MANIFESTS):
     pack = json.loads(path.read_text())
     assert pack['assetPackID'] == 'quran-translations'
     assert pack['downloadPolicy'] == {'onDemand': {}} and 'language' not in pack
-    assert pack['platforms'] == ['iOS']
+    assert pack['platforms'] == ['iOS', 'macOS']
     found = set()
     for selector in pack['fileSelectors']:
         source = (path.parent / pack['sourceRoot'] / selector['fileSource']).resolve()
@@ -57,7 +100,7 @@ def validate_hadith(pack_id="hadith", root=ROOT, manifests=MANIFESTS):
     else:
         assert pack['downloadPolicy'] == {'onDemand': {}}
     assert 'language' not in pack
-    assert pack['platforms'] == ['iOS']
+    assert pack['platforms'] == ['iOS', 'macOS']
     assert source == root / f'build/hadith/dist/{pack_id}.db'
     assert selector['fileDestination'] == f'{folder}/{pack_id}.db'
     with sqlite3.connect(source.as_uri() + '?mode=ro', uri=True) as db:
@@ -81,24 +124,32 @@ def validate_hadith(pack_id="hadith", root=ROOT, manifests=MANIFESTS):
 
 
 def validate_rulings(root=ROOT, manifests=MANIFESTS):
-    path = manifests / 'rulings.json'
+    path = manifests / 'rulings-v2.json'
     pack = json.loads(path.read_text())
     selector, = pack['fileSelectors']
     source = (path.parent / pack['sourceRoot'] / selector['fileSource']).resolve()
-    assert pack['assetPackID'] == 'rulings'
+    assert pack['assetPackID'] == 'rulings-v2'
     assert pack['downloadPolicy'] == {'onDemand': {}} and 'language' not in pack
-    assert pack['platforms'] == ['iOS']
-    assert source == root / 'build/rulings/dist/rulings.db'
+    assert pack['platforms'] == ['iOS', 'macOS']
+    assert source == root / 'build/rulings/dist/rulings-apple.db'
     assert selector['fileDestination'] == 'Rulings/rulings.db'
     with sqlite3.connect(source.as_uri() + '?mode=ro', uri=True) as db:
         assert db.execute('PRAGMA quick_check').fetchall() == [('ok',)]
         assert db.execute('PRAGMA application_id').fetchone() == (1179809601,)
-        assert db.execute('PRAGMA user_version').fetchone() == (1,)
+        assert db.execute('PRAGMA user_version').fetchone() == (2,)
         assert not db.execute('PRAGMA foreign_key_check').fetchall()
         assert db.execute('SELECT count(*) FROM question').fetchone()[0] > 0
         assert not db.execute("SELECT 1 FROM question WHERE trim(question || answer) = '' LIMIT 1").fetchall()
         assert not db.execute("SELECT 1 FROM placement p JOIN topic t ON t.id=p.topic_id JOIN question q ON q.id=p.question_id WHERE t.authority_code != q.authority_code OR t.language_code != q.language_code LIMIT 1").fetchall()
         assert db.execute("SELECT count(*) FROM question_fts WHERE question_fts MATCH 'الصلاة'").fetchone()[0] > 0
+        for code in APPLE_EXCLUDED_AUTHORITIES:
+            for table, column in (('authority', 'code'), ('topic', 'authority_code'), ('entry', 'authority_code')):
+                assert not db.execute(f'SELECT 1 FROM {table} WHERE {column} = ? LIMIT 1', (code,)).fetchall(), \
+                    f'{code} must not ship in the iOS rulings pack; build it with --exclude {code}'
+        for host in APPLE_EXCLUDED_HOSTS:
+            for table in ('topic', 'entry'):
+                assert not db.execute(f"SELECT 1 FROM {table} WHERE url LIKE ? OR url LIKE ? LIMIT 1",
+                                      (f'%//{host}%', f'%.{host}%')).fetchall(), f'{host} link in iOS rulings {table}'
     return [path]
 
 
@@ -114,7 +165,8 @@ def android_pack(manifest, root=ROOT):
         f'{build.relative_to(root)} must declare pack {name} as {delivery}'
     copied = []
     for selector in pack['fileSelectors']:
-        source = (Path(manifest).parent / pack['sourceRoot'] / selector['fileSource']).resolve()
+        file_source = ANDROID_SOURCES.get(selector['fileSource'], selector['fileSource'])
+        source = (Path(manifest).parent / pack['sourceRoot'] / file_source).resolve()
         target = module / 'src/main/assets' / selector['fileDestination']
         if not target.exists() or target.stat().st_size != source.stat().st_size \
                 or target.stat().st_mtime < source.stat().st_mtime:
@@ -132,10 +184,15 @@ def check_bundle(path):
     else:
         assert path.is_dir() and path.suffix == '.app', 'Expected an .app directory or .ipa'
         files = [str(f.relative_to(path)) for f in path.rglob('*') if f.is_file()]
+    # Mac bundles keep Info.plist and extensions in Contents/ and resources in Contents/Resources/.
+    mac = path.suffix == '.app' and (path / 'Contents/Info.plist').is_file()
+    contents = path / 'Contents' if mac else path
+    resources = contents / 'Resources' if mac else path
     expected = {'quran.db', 'en.qarai.db'}
     app_databases = {Path(f).name for f in files if f.endswith('.db') and '.appex/' not in f and '.xctest/' not in f and '/Watch/' not in f}
     widget_databases = {Path(f).name for f in files if f.endswith('.db') and 'MuntathirWidgets.appex/' in f}
-    assert app_databases == expected, f'Unexpected app databases: {app_databases}'
+    # The Sermons section reads its small database straight from the app bundle.
+    assert app_databases == expected | {'sermons.db'}, f'Unexpected app databases: {app_databases}'
     assert widget_databases == expected, f'Unexpected widget databases: {widget_databases}'
     assert any('Extensions/MuntathirAssetDownloader.appex/' in f for f in files), 'Missing Hadith downloader extension'
     def metadata(relative):
@@ -143,16 +200,16 @@ def check_bundle(path):
             with zipfile.ZipFile(path) as archive:
                 name, = [f for f in files if f.endswith('.app/' + relative) and '/Watch/' not in f and '.appex/' not in f.split('/' + relative)[0]]
                 return plistlib.loads(archive.read(name))
-        return plistlib.loads((path / relative).read_bytes())
+        return plistlib.loads((contents / relative).read_bytes())
     if path.suffix == '.ipa':
         with zipfile.ZipFile(path) as archive:
             size_file, = [f for f in files if f.endswith('.app/AssetDownloadSizes.json') and '/Watch/' not in f]
             sizes = json.loads(archive.read(size_file))
     else:
-        sizes = json.loads((path / 'AssetDownloadSizes.json').read_text())
-    assert all(isinstance(sizes.get(pack), int) and sizes[pack] > 0 for pack in ('hadith', 'supplications', 'quran-translations', 'rulings')), 'Missing download size estimates'
+        sizes = json.loads((resources / 'AssetDownloadSizes.json').read_text())
+    assert all(isinstance(sizes.get(pack), int) and sizes[pack] > 0 for pack in ('hadith', 'supplications', 'quran-translations', 'rulings-v2')), 'Missing download size estimates'
     info = metadata('Info.plist')
-    downloader = metadata('Extensions/MuntathirAssetDownloader.appex/Info.plist')
+    downloader = metadata('Extensions/MuntathirAssetDownloader.appex/' + ('Contents/Info.plist' if mac else 'Info.plist'))
     assert downloader.get('CFBundleDisplayName'), 'Missing downloader display name required by App Store validation'
     assert info.get('BAHasManagedAssetPacks') is True
     assert info.get('BAUsesAppleHosting') is True
@@ -166,13 +223,18 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=['validate', 'package', 'android', 'check-bundle'])
     parser.add_argument('path', nargs='?')
-    parser.add_argument('--content', choices=['hadith', 'supplications', 'quran', 'rulings', 'all'], default='hadith')
+    parser.add_argument('--content', choices=['hadith', 'supplications', 'quran', 'rulings', 'lexicon', 'all'], default='hadith')
     args = parser.parse_args()
     manifests = []
     if args.command != 'check-bundle':
         if args.content in ('hadith', 'all'): manifests += validate_hadith()
         if args.content in ('supplications', 'all'): manifests += validate_hadith('supplications')
         if args.content in ('quran', 'all'): manifests += validate_quran()
+        if args.content in ('lexicon', 'all'):
+            import runpy
+            builder = runpy.run_path(str(ROOT / 'shared/lexicon/build.py'))
+            builder['validate'](builder['PACK'])
+            manifests.append(MANIFESTS / 'lexicon.json')
         if args.content in ('rulings', 'all'): manifests += validate_rulings()
     if args.command == 'package':
         output = Path(args.path).resolve() if args.path else ROOT / 'apple/build/AssetPacks/archives'
@@ -181,17 +243,30 @@ def main():
             # Old per-language archives would collide with the new pack in Xcode local testing.
             for obsolete in output.glob('quran-*.aar'):
                 if obsolete.name != 'quran-translations.aar': obsolete.unlink()
+        repackaged = 0
         for manifest in manifests:
             archive = output / (manifest.stem + '.aar')
-            archive.unlink(missing_ok=True)
-            subprocess.run(['xcrun', 'ba-package', 'package', str(manifest), '--output-path', str(archive)], check=True)
+            # Repackaging identical content still changes the archive by a few bytes, so keep matching archives.
+            if archive_matches(archive, json.loads(manifest.read_text()), ROOT, output):
+                print(f'{manifest.stem}: unchanged, {archive.stat().st_size:,} B')
+                continue
+            # Package beside the archive first so a failed run never leaves the pack missing.
+            with tempfile.TemporaryDirectory(dir=output) as stage:
+                staged = Path(stage) / archive.name
+                subprocess.run(['xcrun', 'ba-package', 'package', str(manifest), '--output-path', str(staged)], check=True)
+                os.replace(staged, archive)
+            repackaged += 1
+            print(f'{manifest.stem}: repackaged, {archive.stat().st_size:,} B')
         # The UI uses archive byte counts, never rounded MB constants treated as bytes.
         metadata_path = ROOT / 'apple/Muntathir/Resources/AssetDownloadSizes.json'
-        sizes = json.loads(metadata_path.read_text()) if metadata_path.exists() else {}
+        old_metadata = metadata_path.read_text() if metadata_path.exists() else '{}'
+        sizes = json.loads(old_metadata)
         for manifest in manifests:
             sizes[manifest.stem] = (output / (manifest.stem + '.aar')).stat().st_size
-        metadata_path.write_text(json.dumps(sizes, indent=2) + '\n')
-        print(f'Packaged {len(manifests)} asset packs in {output}')
+        metadata = json.dumps(sizes, indent=2) + '\n'
+        if metadata != old_metadata:
+            metadata_path.write_text(metadata)
+        print(f'Repackaged {repackaged} of {len(manifests)} asset packs in {output}')
     elif args.command == 'android':
         copied = [path for manifest in manifests for path in android_pack(manifest)]
         print(f'Copied {len(copied)} files into {len(manifests)} Android asset-pack modules')

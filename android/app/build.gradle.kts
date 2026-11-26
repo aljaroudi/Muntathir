@@ -91,6 +91,7 @@ android {
             signingConfig = signingConfigs.findByName("upload") ?: signingConfigs.getByName("debug")
             isMinifyEnabled = true
             isShrinkResources = true
+            ndk.debugSymbolLevel = "FULL"
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
@@ -109,7 +110,8 @@ android {
     bundle.language.enableSplit = false
 
     // Content databases ship as Play Asset Delivery packs; only the Quran text is in the base APK.
-    assetPacks += listOf(":packs:hadith", ":packs:supplications", ":packs:quran_translations", ":packs:rulings")
+    assetPacks +=
+        listOf(":packs:hadith", ":packs:supplications", ":packs:quran_translations", ":packs:rulings", ":packs:lexicon")
     // Databases are copied out once; storing them uncompressed keeps that a plain stream copy.
     androidResources.noCompress += "db"
 
@@ -171,7 +173,16 @@ val figureAssets =
         outputDir = layout.buildDirectory.dir("generated/shared/figures")
     }
 
+val sermonAssets =
+    tasks.register<SharedContent>("sermonAssets") {
+        files.from(rootProject.file("../shared/sermons/sermons.db"))
+        subdirectory = "sermons"
+        lowercase = false
+        outputDir = layout.buildDirectory.dir("generated/shared/sermons")
+    }
+
 androidComponents.onVariants { variant ->
+    variant.sources.assets?.addGeneratedSourceDirectory(sermonAssets, SharedContent::outputDir)
     variant.sources.assets?.addGeneratedSourceDirectory(quranAssets, SharedContent::outputDir)
     variant.sources.assets?.addGeneratedSourceDirectory(figureAssets, SharedContent::outputDir)
     variant.sources.assets?.addGeneratedSourceDirectory(licenseAssets, SharedContent::outputDir)
@@ -224,6 +235,9 @@ dependencies {
     implementation(libs.androidx.camera.compose)
     // Home screen widgets (prayer, daily ayah, Hijri date).
     implementation(libs.androidx.glance.appwidget)
+    // Sends the Wear OS app its settings snapshot over the Data Layer.
+    implementation(libs.play.services.wearable)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)

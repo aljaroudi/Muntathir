@@ -48,3 +48,15 @@ backend/api/node_modules/
 
 # Agent skill scratch output (e.g. play-policy-insights)
 .scratch/
+
+# Sermon sources and offline reader builder
+!/build/sermons/**
+/build/sermons/**/__pycache__/
+
+# Telegram bot secrets and build output
+/telegram/.env*
+/telegram/node_modules/
+/telegram/dist/
+/telegram/.data/
+/telegram/.state/
+.githooks/commit-msg

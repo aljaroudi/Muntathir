@@ -58,6 +58,7 @@
     <string name="camera_capture_ended_start_a_new_session_to_try">相机采集已结束。请开始新会话重试。</string>
     <string name="camera_unavailable">相机不可用</string>
     <string name="cancel">取消</string>
+    <string name="chapter_note">章节注释</string>
     <string name="checking_hadith_download">正在检查圣训下载…</string>
     <string name="checking_supplications_download">正在检查祈祷下载…</string>
     <string name="children">子女</string>
@@ -69,6 +70,7 @@
     <string name="choose_a_location_in_muntathir">在 Muntathir 中选择位置</string>
     <string name="choose_a_parentage_report">选择亲子关系记载</string>
     <string name="choose_a_translation_to_read_alongside_arabic">选择与阿拉伯语原文一起阅读的译文。</string>
+    <string name="choose_prayer">选择礼拜</string>
     <string name="choose_rakaat">选择拜数</string>
     <string name="choose_the_calculation_method_you_follow_you_can">选择您遵循的计算方法。稍后可在设置中更改。</string>
     <string name="choose_up_to_three_tabs_everything_else_stays_in">最多选择三个标签页。其余项目保留在工具中。</string>
@@ -128,6 +130,7 @@
     <string name="find_the_direction_of_qibla">查找礼拜朝向</string>
     <string name="finding_your_precise_current_location">正在获取您当前的精确位置…</string>
     <string name="finish_setup">完成设置</string>
+    <string name="first_sujood">第一次叩头</string>
     <string name="from_x_to_x">%1$s至%2$s</string>
     <string name="full_siblings">同父同母的兄弟姐妹</string>
     <string name="future_dates_are_estimates_until_the_month_s_moo">未来日期为估计日期，直到该月的新月观测得到确认或该月开始。</string>
@@ -157,6 +160,8 @@
     <string name="hijri_month_x_x">伊斯兰历月份：%1$s / %2$s</string>
     <string name="hizb_x">第 %d 册</string>
     <string name="holy_quran">尊贵的《古兰经》</string>
+    <string name="horizontal_layout">横向布局</string>
+    <string name="horizontal_prayer_times">横向显示礼拜时间</string>
     <string name="hours_and_minutes_until_your_next_prayer">距离下次礼拜的小时和分钟数。</string>
     <string name="imsak">封斋</string>
     <string name="imsak_before_fajr">晨礼前封斋</string>
@@ -189,6 +194,7 @@
     <string name="local_naked_eye">本地肉眼观月</string>
     <string name="location">位置</string>
     <string name="location_access_is_disabled_search_for_a_city_in">位置访问已停用。请改为搜索城市。</string>
+    <string name="simplified">简明译文</string>
     <string name="maghrib">昏礼</string>
     <string name="maghrib_prayer">昏礼拜功</string>
     <string name="manual_month_correction">手动月份修正</string>
@@ -278,6 +284,7 @@
     <string name="purple">紫色</string>
     <string name="qibla">礼拜朝向</string>
     <string name="quran_translations">古兰经译本</string>
+    <string name="rakaat">拜数</string>
     <string name="rakaat_tracker">拜数计数器</string>
     <string name="read_and_search_hadith_offline">离线阅读和搜索圣训。</string>
     <string name="read_and_search_supplications_offline">离线阅读和搜索祈祷。</string>
@@ -313,6 +320,7 @@
     <string name="select_text_to_highlight_it">选择文本以高亮显示。</string>
     <string name="select_text_to_highlight_it_use_the_passage_acti">选择文本以高亮显示。通过段落操作添加书签。</string>
     <string name="selected_location">所选位置</string>
+    <string name="sermons_unavailable">无法载入讲辞</string>
     <string name="set_a_location_to_view_prayer_times">请设置位置以查看礼拜时间。</string>
     <string name="set_location_in_app">在 App 中设置位置</string>
     <string name="set_up_muntathir">设置 Muntathir</string>
@@ -331,6 +339,7 @@
     <string name="some_files_remain_on_this_device_please_try_agai">部分文件仍保留在此设备上。请重试。</string>
     <string name="source">来源</string>
     <string name="spouses">配偶</string>
+    <string name="start_x">开始%s</string>
     <string name="start_tasbih">开始赞念</string>
     <string name="step_x_of_x">第 %1$s 步，共 %2$s 步</string>
     <string name="sunrise">日出</string>
@@ -402,6 +411,7 @@
     <string name="verse_number_or_quran_text">经文编号或古兰经文本</string>
     <string name="verse_unavailable">经文不可用</string>
     <string name="verses">经文</string>
+    <string name="vertical_layout">纵向布局</string>
     <string name="view_profile">查看资料</string>
     <string name="visibility">显示设置</string>
     <string name="weather">天气</string>
@@ -413,4 +423,6 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">您仍可离线搜索已下载的古兰经和圣训文本。</string>
     <string name="you_can_still_search_downloaded_text_offline">您仍可离线搜索已下载的文本。</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">无法打开已保存的数据。请重试。</string>
+    <string name="literal">直译</string>
+    <string name="sermons">讲辞</string>
 </resources>

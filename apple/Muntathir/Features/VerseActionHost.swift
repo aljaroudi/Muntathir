@@ -53,7 +53,7 @@ struct VerseActionMenu: View {
 
     var body: some View {
         Button("Copy text", systemImage: "doc.on.doc") {
-            UIPasteboard.general.string = VerseShareContent(ayah: ayah, translation: translation, locale: locale).text
+            Clipboard.copy(VerseShareContent(ayah: ayah, translation: translation, locale: locale).text)
             if !contextMenu {
                 actions.copied = true
             }

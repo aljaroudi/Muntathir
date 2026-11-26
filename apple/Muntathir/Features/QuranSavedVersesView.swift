@@ -17,7 +17,7 @@ struct QuranSavedVersesView: View {
     }
 
     private var highlights: [ReadingHighlight] {
-        store?.highlights.filter { !$0.isHadith } ?? []
+        store?.highlights.filter { !$0.isHadith && $0.ruling == nil } ?? []
     }
 
     private var bookmarks: [ReadingBookmark] {
@@ -47,7 +47,7 @@ struct QuranSavedVersesView: View {
         .overlay {
             if store?.unavailable != false || loading || failed {
                 ZStack {
-                    Color(uiColor: .systemGroupedBackground).ignoresSafeArea()
+                    Color.groupedBackground.ignoresSafeArea()
                     Group {
                         if store?.unavailable != false {
                             ContentUnavailableView {

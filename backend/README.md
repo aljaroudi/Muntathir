@@ -1,60 +1,43 @@
 # Semantic search
 
-Qdrant + Gemini Embedding 2, served by a TypeScript Bun API on this Mac through
-Cloudflare Tunnel. Apple and Android submit public-library searches to the service.
-The backend tries hybrid retrieval, falls back to its keyword index, and uses Jev
-to rerank candidates when available. Clients open locally stored content and search
-installed libraries when online retrieval fails.
+Qdrant + Gemini Embedding 2, served by a Bun API on the hosting Mac through
+Cloudflare Tunnel. The API tries hybrid retrieval, falls back to keyword search,
+and reranks with Jev when enabled. Apple and Android clients hydrate results from
+local content and fall back to local search when the service fails.
 
 - [Service API and operations](SEARCH_SERVICE.md)
 - [Current validation and capacity results](QDRANT_SERVICE_RESULTS.md)
-- [Historical engine comparison](QDRANT_BENCHMARK.md)
+- [Reranker benchmark](RERANK_BENCHMARK.md) · [Jev results](JEV_BENCHMARK_RESULTS.md)
+- Historical (retired PostgreSQL/Supabase): [Qdrant comparison](QDRANT_BENCHMARK.md),
+  [benchmark results](BENCHMARK_RESULTS.md), [local hosting](LOCAL_HOSTING.md)
 
-## Corpus preparation
+## Setup
 
-Use Python 3.11+ with `backend/requirements.txt`. Optional evaluation dependencies
-are in `requirements-eval.txt`. Credentials belong in ignored `backend/.env`.
+Python 3.11+ with `backend/requirements.txt` (`requirements-eval.txt` for
+evaluation). Put credentials in ignored `backend/.env`. Only `submit` and `poll`
+need `GEMINI_API_KEY` and incur cost.
+
+## Refresh production after database changes
+
+From the repository root:
 
 ```sh
-python3 backend/ingest.py prepare --workdir backend/work/pilot \
-  --quran apple/Muntathir/Resources/Quran/quran.db --limit 100
-python3 backend/ingest.py estimate --workdir backend/work/pilot
-python3 backend/ingest.py submit --workdir backend/work/pilot --max-usd 1
-python3 backend/ingest.py poll --workdir backend/work/pilot
-python3 backend/ingest.py upload --workdir backend/work/pilot
-python3 backend/ingest.py activate --workdir backend/work/pilot
+python3 build/build.py               # rebuild/package libraries, embed, validate, activate
+python3 build/build.py --dry-run     # estimate only, from existing databases
+python3 build/build.py --assets-only # local packaging, no search refresh
 ```
 
-Supply `GEMINI_API_KEY` in the process environment for submit/poll. Preparation,
-upload and activation do not make paid embedding calls. Upload now targets Qdrant.
-Activation atomically switches the serving alias after completeness validation;
-run relevance and load checks before a production revision switch.
+- Costs up to $10 are auto-approved; change with `--max-budget USD`. Above it, the
+  script asks in the terminal.
+- Rerun the same command to poll outstanding batches and continue.
+- Needs the backend virtualenv plus the validated manifest and vectors of the active
+  Qdrant collection. Vectors from other `backend/work/*` dirs with the same embedding
+  profile are reused, so nothing is embedded twice.
 
-For the full corpus, omit `--limit`, add `--hadith build/hadith/dist/hadith.db`, and
-add translations explicitly with `--translation language:edition:SQLite-path`.
-`--pilot` chooses judged positives plus a deterministic representative sample.
-Existing full-corpus artifacts in `backend/work/full` have already been imported.
-Do not submit the completed full corpus again.
+## Manual corpus pipeline (recovery path)
 
-Submission saves batch manifests. Poll can resume without redownloading completed
-jobs; submit retries missing/failed entries. `--reuse <old-workdir>` reuses saved
-vectors with matching input hashes. Canonical artifacts keep 3,072 dimensions;
-upload derives normalized 1,536-dimensional prefixes without re-embedding.
-
-### Refresh production after database changes
-
-From the repository root, run `python3 build/build.py` to rebuild and package the
-four libraries, estimate new Gemini Batch embeddings, and activate the candidate
-after validation. Use `--dry-run` to estimate from the existing databases or
-`--assets-only` for local packaging. Costs up to $10 are approved by default.
-Set `--max-budget USD` to change that threshold. Above it, the script asks for
-approval in a terminal. Rerun the same command to poll outstanding batches and
-continue the refresh. The script needs the backend virtualenv and the validated
-manifest and vectors for the active Qdrant collection. New reader references
-without installed-pack compatibility evidence block activation.
-
-The commands below document the manual recovery path. Use a new workdir for each
-revision and retain the previous validated workdir and its source provenance.
+Use a new workdir per revision; keep the previous validated workdir and its
+provenance. Do not resubmit the already-imported full corpus in `backend/work/full`.
 
 ```bash
 work=backend/work/refresh-YYYY-MM-DD
@@ -74,16 +57,15 @@ for db in "$quran"/*.db; do
 done
 backend/.venv/bin/python backend/ingest.py prepare --workdir "$work" \
   --quran "$quran/quran.db" --hadith build/hadith/dist/hadith.db \
+  --rulings build/rulings/dist/rulings.db \
   --provenance backend/work/provenance.json "${translations[@]}"
 backend/.venv/bin/python backend/ingest.py estimate --workdir "$work" --reuse "$prior"
 ```
 
-Review the estimate, export `GEMINI_API_KEY`, and replace `15` with the approved
-USD cap for the revision. The offline estimate deduplicates new inputs and uses
-UTF-8 bytes as a conservative token proxy at the
-[Gemini Embedding 2 Batch text rate](https://ai.google.dev/gemini-api/docs/pricing/#gemini-embedding-2).
-The cap includes prior accepted or unresolved batches. Recheck the estimate
-before increasing it to cover retries of failed billed inputs.
+Review the estimate, export `GEMINI_API_KEY`, and set `--max-usd` to the approved cap
+(it includes prior accepted or unresolved batches; recheck the estimate before raising
+it for retries). The estimate uses UTF-8 bytes as a conservative token proxy at the
+[Gemini Embedding 2 Batch rate](https://ai.google.dev/gemini-api/docs/pricing/#gemini-embedding-2).
 
 ```bash
 backend/.venv/bin/python backend/ingest.py submit --workdir "$work" --reuse "$prior" --max-usd 15
@@ -91,8 +73,8 @@ backend/.venv/bin/python backend/ingest.py poll --workdir "$work"
 backend/.venv/bin/python backend/ingest.py estimate --workdir "$work" --reuse "$prior"
 ```
 
-Poll and resubmit as needed until pending and missing are both zero, then stage
-the candidate and read its collection name from `$work/qdrant-progress.json`.
+Repeat poll/submit until pending and missing are both zero (poll resumes without
+redownloading; submit retries missing/failed entries). Then stage and validate:
 
 ```bash
 backend/.venv/bin/python backend/ingest.py upload --workdir "$work"
@@ -104,25 +86,61 @@ SEARCH_COLLECTION="$collection" TEST_RATE=20 TEST_SECONDS=10 bun backend/api/ver
 ```
 
 Record the active collection for rollback. Once all checks pass and the matching
-Hadith pack is available to external testers, run
-`backend/.venv/bin/python backend/ingest.py activate --workdir "$work"`. Smoke-test
-Quran and scoped Hadith search against the running API.
+Hadith pack is available to testers, activate (atomic alias switch after completeness
+validation), then smoke-test Quran and scoped Hadith search against the running API:
 
-Content IDs preserve source identity. Text revisions retain original text,
-translation edition/attribution and exact code-point passage offsets. The compact
-API omits this metadata, but the importer and index retain it internally.
-Optional `--provenance file.json` overrides known source metadata; license metadata
-is not an embedding prerequisite. Preserve available credits and source terms.
-
-Dua input (`--dua file.json`) is supported now; the app's dua reader remains deferred:
-
-```json
-[{"id":"stable-dua-id","title":"Name","source_id":"collection","source_name":"Collection",
-  "texts":[{"language":"ar","edition":"edition-id","attribution":"Source","text":"Full supplication"}]}]
+```bash
+backend/.venv/bin/python backend/ingest.py activate --workdir "$work"
 ```
 
-Titles are labels, not identity. Short duas remain whole; longer texts use meaningful
-paragraph chunks. Passage numbering is not assumed to align across translations.
+For a quick pilot, add `--limit 100` (or `--pilot` for judged positives plus a
+representative sample) to `prepare`.
+
+### Notes
+
+- `--reuse <workdir>` (repeatable) reuses vectors with matching input hashes.
+  Artifacts keep 3,072 dimensions; upload derives normalized 1,536-dim prefixes.
+- Content IDs preserve source identity; the index keeps text, edition/attribution and
+  code-point passage offsets internally (the API response omits them). `--provenance`
+  overrides source metadata; preserve credits and source terms.
+- Duas: `--dua file.json` (the app's dua reader is deferred). Short duas stay whole;
+  long ones are chunked by paragraph. Titles are labels, not identity.
+
+  ```json
+  [{"id":"stable-dua-id","title":"Name","source_id":"collection","source_name":"Collection",
+    "texts":[{"language":"ar","edition":"edition-id","attribution":"Source","text":"Full supplication"}]}]
+  ```
+
+- Rulings: `--rulings build/rulings/dist/rulings.db`; API kind `rulings`. One item per
+  authority/language/site ID (includes book introductions and standalone rules with
+  chapter context). Filter with `kinds: ["rulings"]`, `sources: ["sistani"]`,
+  `languages: ["ar"]`; filters apply before ranking. Results (`kind`, `authority`,
+  `language`, `id`, `score`) are hydrated from the app's `Rulings/rulings.db`.
+- Production additions must build on the currently active corpus, not an unactivated
+  local refresh.
+
+Current rollout (2026-11-22): active
+`search_6e7450bd147940f0ae95c6d384705644_a3667cba9881` (245,174 items, 397,920 passages).
+Artifacts: `backend/work/refresh-0d6f494de5fa3ab2978db00c9e9db933b3445a29a0ad2f9e405534344960ae36/`.
+
+- Rollback target `search_c6d8394dc7714732937c9f30d7176249_fdcc5a4c48a8`. Switch the alias
+  **and** set the `sources` limit in `api/core.ts` back to 20, then `just backend-deploy`:
+  the older index lacks Bihar and Wasa'il, and an empty success stops clients falling back
+  to local search.
+
+  ```sh
+  curl -X POST 127.0.0.1:56333/collections/aliases -H 'content-type: application/json' -d '{"actions":[{"delete_alias":{"alias_name":"search"}},{"create_alias":{"alias_name":"search","collection_name":"search_c6d8394dc7714732937c9f30d7176249_fdcc5a4c48a8"}}]}'
+  ```
+
+- nDCG@10 is measured on the judged books (`judged_sources` in `evaluation.json`). Its
+  minimum was lowered from 0.780596 to 0.780157 for this rollout, whose corrected chapter
+  titles re-embedded 26,472 passages of older books. Unscoped it is 0.762881.
+- Only the `rulings-v2` pack is supported. iOS 1.1.0 reads the retired `rulings` pack and
+  fails a Rulings smart search if any hit is missing from it.
+
+Removed 2026-11-22: `search_a6924d0407894f02a372bca8bce23f25_163940aeaabf` (unused, used
+by the historical rerank benchmark). Rebuild it without Gemini calls:
+`backend/.venv/bin/python backend/ingest.py upload --workdir backend/work/refresh-2026-11-14`.
 
 ## Verification
 
@@ -135,40 +153,8 @@ bun backend/api/verify.ts quality backend/work/qdrant-only-quality.json
 python3 apple/scripts/check_localizations.py
 ```
 
-The quality command enforces exact-vector agreement, candidate counts, and the
-accepted relevance baseline. It uses saved query embeddings. The 150-query fixture
-contains 80 previously reviewed queries and 70 seed-positive additions needing
-expert review; judgments are not exhaustive.
-
-`exact_reference.py` can generate new exhaustive references from corpus artifacts.
-Historical PostgreSQL benchmark reports remain for comparison; their retired
-commands and infrastructure are not part of current deployment.
-
-### Hosted reranker benchmark
-
-See [RERANK_BENCHMARK.md](RERANK_BENCHMARK.md) for the frozen-candidate comparison of OpenAI Decisions, Jev, and Gemini Flash-Lite. Preparation and dry runs need no provider keys; paid runs require explicit execution. Production uses Jev for eligible meaning-search reranking.
-
-### Rulings
-
-Pass `--rulings build/rulings/dist/rulings.db` to corpus preparation. The source folder, API kind, and asset pack are `rulings`. Each item is
-one authority/language/site-ID combination, regardless of SQLite row IDs or topic
-placements. The text retains the original question and answer; empty answer fields
-remain empty when the source supplies its text in the question field.
-
-Requests use `kinds: ["rulings"]`, `sources: ["sistani"]`, and `languages: ["ar"]`.
-Compact results contain `kind`, `authority`, `language`, `id`, and `score`.
-The app hydrates these references from its downloaded `Rulings/rulings.db`.
-Authority and language filters apply before semantic and lexical ranking.
-
-Production corpus additions must retain the currently active corpus, not an
-unactivated local refresh. Reuse saved vectors, validate the candidate collection,
-and retain the previous alias target for rollback before activating.
-
-The November 14, 2026 rollout activated
-`search_c6d8394dc7714732937c9f30d7176249_fdcc5a4c48a8` (81,921 items;
-225,870 passages). Rollback target retained:
-`search_a521108e91d54bda8fbe324c4e3bea67_476773511098`.
-Candidate validation passed 150 relevance queries, all 11 authority/language
-scopes, and 320 load requests without errors. Public Quran, Hadith, and Arabic
-and English Sistani searches passed after activation. Artifacts are stored locally
-under `work/rulings-production-2026-11-14/`.
+The quality check enforces exact-vector agreement, candidate counts and the accepted
+relevance baseline, using saved query embeddings (no Gemini calls). The 150-query
+fixture has 80 reviewed queries and 70 seed-positive queries awaiting expert review;
+judgments are not exhaustive. Regenerate exhaustive references with
+`exact_reference.py`.

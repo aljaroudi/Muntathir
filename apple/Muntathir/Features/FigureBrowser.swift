@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum FigureRoute: Hashable {
+enum FigureRoute: Hashable, Codable {
     case tool(AppTool)
     case browser
     case profile(String)
@@ -8,6 +8,13 @@ enum FigureRoute: Hashable {
     case observance(eventID: String, figureIDs: [String])
     case hadith
     case supplications
+    case sermon(id: String, title: String, speakerID: String)
+    case quran(QuranSelection)
+    case supplication(id: Int, query: String)
+    case supplicationsSaved
+    case rulings(RulingsRoute)
+    /// A route opened from search results, which records the search once its screen appears.
+    indirect case opened(FigureRoute, search: String, area: SearchHistory.Area)
 }
 
 struct FigureBrowser: View {
@@ -32,18 +39,25 @@ struct FigureBrowser: View {
     }
 
     var body: some View {
+        AdaptiveSplit(restorationKey: "figures", defaultSelection: firstFigure) { selection in
+            browser(selection: selection)
+        }
+    }
+
+    private var firstFigure: FigureRoute? {
+        (remote ?? local).first?.figures.first.map { .profile($0.id) }
+    }
+
+    private func browser(selection: Binding<FigureRoute?>) -> some View {
         Group {
             switch library {
             case let .success(library):
                 let sections = remote ?? local
-                List {
+                AdaptiveList(selection: selection) {
                     ForEach(sections) { section in
                         Section {
                             ForEach(section.figures) { person in
-                                NavigationLink {
-                                    FigureProfile(figure: person, library: library)
-                                        .recordSearchOnOpen(submitted, area: .figures)
-                                } label: {
+                                AdaptiveLink(route: .profile(person.id), search: (submitted, .figures)) {
                                     Text(verbatim: person.title(locale))
                                 }
                                 .accessibilityIdentifier("figure-\(person.id)")
@@ -84,9 +98,10 @@ struct FigureBrowser: View {
                 ProgressView()
             }
         }
-        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always))
+        .searchable(text: $query, placement: .alwaysVisible)
         .searchHistory($query, area: .figures)
         .submitsSearch($query, submitted: $submitted)
+        .intentSearch(.figures) { query = $0; submitted = $0 }
         .onChange(of: LocalFilter(query: submitted, locale: locale, loaded: library != nil), initial: true) { refreshLocalMatches() }
         .navigationTitle("Figures")
         .task {
@@ -129,22 +144,52 @@ struct FigureDestination: View {
 extension View {
     func figureDestinations(hadithAssets: HadithAssetStore? = nil, supplicationAssets: HadithAssetStore? = nil) -> some View {
         navigationDestination(for: FigureRoute.self) { route in
-            switch route {
-            case let .tool(tool): ToolDestination(tool: tool)
-            case .browser: FigureBrowser()
-            case let .profile(id): FigureDestination(id: id)
-            case let .tree(id): FigureDestination(id: id, showsTree: true)
-            case let .observance(_, figureIDs): ObservanceFigurePicker(figureIDs: figureIDs)
-            case .hadith:
-                if let hadithAssets {
-                    HadithLibraryView(assets: hadithAssets)
-                }
-            case .supplications:
-                if let supplicationAssets {
-                    HadithLibraryView(assets: supplicationAssets, supplications: true)
-                        .environment(\.hadithAssets, supplicationAssets)
-                        .environment(\.hadithSession, nil)
-                }
+            FigureRouteView(route: route, hadithAssets: hadithAssets, supplicationAssets: supplicationAssets)
+        }
+    }
+}
+
+/// The screen a route opens, pushed on a stack or shown in a split view's detail column.
+struct FigureRouteView: View {
+    let route: FigureRoute
+    var hadithAssets: HadithAssetStore?
+    var supplicationAssets: HadithAssetStore?
+
+    var body: some View {
+        switch route {
+        case let .tool(tool): ToolDestination(tool: tool)
+        case .browser: FigureBrowser()
+        case let .profile(id): FigureDestination(id: id).onscreenEntity(FigureEntity.self, id: id)
+        case let .tree(id): FigureDestination(id: id, showsTree: true)
+        case let .observance(_, figureIDs): ObservanceFigurePicker(figureIDs: figureIDs)
+        case let .sermon(id, title, speakerID): SermonDestination(id: id, title: title, speakerID: speakerID)
+        case let .quran(selection): QuranSelectionDetail(selection: selection)
+        case .hadith:
+            if let hadithAssets {
+                HadithLibraryView(assets: hadithAssets)
+            }
+        case .supplications:
+            if let supplicationAssets {
+                HadithLibraryView(assets: supplicationAssets, supplications: true)
+                    .environment(\.hadithAssets, supplicationAssets)
+                    .environment(\.hadithSession, nil)
+            }
+        case let .supplication(id, query):
+            if let supplicationAssets {
+                HadithDetailView(initialID: id, reader: supplicationAssets.reader, query: query, orderedFallback: false, supplication: true)
+                    .environment(\.hadithAssets, supplicationAssets)
+                    .environment(\.hadithSession, nil)
+            }
+        case let .rulings(route):
+            RulingsRouteView(route: route)
+        case let .opened(route, search, area):
+            FigureRouteView(route: route, hadithAssets: hadithAssets, supplicationAssets: supplicationAssets)
+                .recordSearchOnOpen(search, area: area)
+        case .supplicationsSaved:
+            if let supplicationAssets {
+                HadithSavedView(reader: supplicationAssets.reader, supplications: true)
+                    .environment(\.hadithAssets, supplicationAssets)
+                    .environment(\.hadithSession, nil)
             }
         }
     }

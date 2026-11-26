@@ -31,12 +31,12 @@ struct OnboardingView: View {
                 .padding(24)
                 .frame(maxWidth: .infinity)
             }
-            .background(Color(.systemGroupedBackground))
+            .background(Color.groupedBackground)
             .navigationTitle("Set up Muntathir")
-            .navigationBarTitleDisplayMode(.inline)
+            .inlineNavigationTitle()
             .toolbar {
                 if step > 0 {
-                    ToolbarItem(placement: .topBarLeading) {
+                    ToolbarItem(placement: .leadingBar) {
                         Button("Back", systemImage: "chevron.backward") { model.moveOnboarding(by: -1) }
                             .disabled(requestingNotifications)
                             .accessibilityIdentifier("onboarding-back")
@@ -67,7 +67,11 @@ struct OnboardingView: View {
                 .accessibilityAddTraits(.isHeader)
             Text(locale.localizedString(forIdentifier: locale.identifier) ?? locale.identifier)
                 .font(.title2)
-            Text("Choose your preferred language in iOS Settings. Return here to continue setup.")
+            #if os(macOS)
+                Text("Choose your preferred language in System Settings. Return here to continue setup.")
+            #else
+                Text("Choose your preferred language in iOS Settings. Return here to continue setup.")
+            #endif
             AppLanguageLink()
                 .buttonStyle(.bordered)
         case 2:

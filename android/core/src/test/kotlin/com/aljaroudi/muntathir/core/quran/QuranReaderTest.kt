@@ -155,6 +155,27 @@ class QuranReaderTest {
     }
 
     @Test
+    fun typedStandardSpellingsFindTheMushafsSpellings() =
+        runBlocking {
+            // The index holds the Uthmani spelling (الصلوه, الكتب, النبين, ءامنوا); typed text is standard.
+            for ((typed, verse) in listOf(
+                "الصلاة" to "2:43",
+                "الزكاة" to "2:43",
+                "الكتاب" to "2:2",
+                "النبيين" to "2:61",
+                "آمنوا" to "2:25",
+                "إسرائيل" to "2:40",
+                "السماوات" to "2:164",
+                "القرآن" to "2:185",
+            )) {
+                assertTrue(reader.search(typed, null, limit = 6236).any { it.id == verse }, typed)
+            }
+            // Only spellings the index holds are used, so typos and unknown words still find nothing.
+            assertTrue(reader.search("الرحمم", null).isEmpty())
+            assertTrue(reader.search("كمبيوتر", null).isEmpty())
+        }
+
+    @Test
     fun shortVersesAreExcludedExceptForReferences() =
         runBlocking {
             assertFalse(QuranSearchText.isSearchableVerse("أَبْجَدْ هَوَ"))

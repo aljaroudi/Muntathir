@@ -10,6 +10,8 @@ struct MoonPosition: Sendable {
     let isWaxing: Bool
     /// Schematic rise → transit → set progress using the current declination, not a rise/set forecast.
     let visibleProgress: Double?
+    /// Screen angle of lunar (≈ celestial) north as seen by the observer, clockwise from the zenith.
+    let parallacticAngle: Double
 
     static func calculate(at date: Date, latitude: Double, longitude: Double) -> Self? {
         guard date.timeIntervalSince1970.isFinite, latitude.isFinite, longitude.isFinite,
@@ -102,6 +104,18 @@ struct MoonPosition: Sendable {
         let phaseAngle = atan2(solarDistance * sin(separation), distance - solarDistance * cos(separation))
         return Self(elevation: elevation, azimuth: azimuth,
                     illuminatedFraction: (1 + cos(phaseAngle)) / 2,
-                    isWaxing: sin(lunarLongitude - solarLongitude) >= 0, visibleProgress: progress)
+                    isWaxing: sin(lunarLongitude - solarLongitude) >= 0, visibleProgress: progress,
+                    parallacticAngle: atan2(sin(hourAngle), tan(phi) * cos(declination) - sin(declination) * cos(hourAngle)) / radians)
+    }
+
+    /// Screen angle of the lit limb, clockwise from the zenith: the bearing from the Moon to the Sun across the sky.
+    /// Looking at the Moon, larger azimuths lie to the right whichever way the observer faces.
+    func brightLimbAngle(toward sun: SolarPosition) -> Double {
+        let radians = Double.pi / 180
+        let moonAltitude = elevation * radians
+        let sunAltitude = sun.elevation * radians
+        let separation = (sun.azimuth - azimuth) * radians
+        return atan2(cos(sunAltitude) * sin(separation),
+                     cos(moonAltitude) * sin(sunAltitude) - sin(moonAltitude) * cos(sunAltitude) * cos(separation)) / radians
     }
 }

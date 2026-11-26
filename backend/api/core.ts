@@ -25,15 +25,13 @@ export function parseRequest(value: unknown): SearchRequest {
   if (!query || [...query].length > 512 || [...query].some((c) => c.codePointAt(0)! < 32)) {
     throw new Error('Query must contain 1–512 characters')
   }
-  const arrays = (key: string): string[] | null => {
+  function arrays(key: string, max = 20): string[] | null {
     const a = v[key]
     if (a === undefined) return null
-    if (
-      !Array.isArray(a) ||
+    if (!Array.isArray(a) ||
       !a.length ||
-      a.length > 20 ||
-      a.some((x) => typeof x !== 'string' || !/^[\p{L}\p{N}_.:-]{1,100}$/u.test(x))
-    )
+      a.length > max ||
+      a.some((x) => typeof x !== 'string' || !/^[\p{L}\p{N}_.:-]{1,100}$/u.test(x)))
       throw new Error(`Invalid ${key}`)
     return [...new Set(a as string[])].sort()
   }
@@ -41,7 +39,8 @@ export function parseRequest(value: unknown): SearchRequest {
   if (kinds?.some((x) => !['quran', 'hadith', 'dua', 'rulings', 'figure'].includes(x))) {
     throw new Error('Invalid kinds')
   }
-  const sources = arrays('sources')
+  // A scope lists every volume: Bihar has 106 and the whole Hadith library 164.
+  const sources = arrays('sources', 256)
   if (
     v.chapter !== undefined &&
     (typeof v.chapter !== 'string' ||

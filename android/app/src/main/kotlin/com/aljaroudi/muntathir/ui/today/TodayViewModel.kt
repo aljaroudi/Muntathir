@@ -52,6 +52,8 @@ data class TodayUi(
     val event: UpcomingEvent?,
     val ayah: Ayah?,
     val surahNames: Map<Int, String> = emptyMap(),
+    /** Prayer times as a sideways-scrolling row of cards (Swift `horizontalPrayerTimes`). */
+    val horizontalPrayerTimes: Boolean = true,
 ) {
     companion object {
         fun make(
@@ -94,6 +96,7 @@ data class TodayUi(
                 event = library.upcomingEvent(now, engine, sunset::sunset),
                 ayah = daily.verse(now, engine, sunset),
                 surahNames = surahNames,
+                horizontalPrayerTimes = preferences.horizontalPrayerTimes,
             )
         }
     }
@@ -140,6 +143,11 @@ class TodayViewModel
             enabled: Boolean,
             allowed: Boolean,
         ) = viewModelScope.launch { model.setPrayer(prayer, enabled, allowed) }
+
+        fun toggleLayout() =
+            viewModelScope.launch {
+                model.update { it.copy(horizontalPrayerTimes = !it.horizontalPrayerTimes) }
+            }
 
         fun hide(prayer: PrayerName) =
             viewModelScope.launch {

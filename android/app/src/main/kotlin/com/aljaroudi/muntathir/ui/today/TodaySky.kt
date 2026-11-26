@@ -136,8 +136,10 @@ fun SolarArc(
     moon: MoonPosition?,
     markers: List<SolarArcMarker>,
     modifier: Modifier = Modifier,
+    mirrored: Boolean = false,
 ) {
-    // The arc reads left to right in every language, like the iOS view.
+    // The arc ignores the language's direction, like the iOS view: it follows the sky, which runs left to
+    // right facing south and right to left (mirrored) in the southern hemisphere.
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         BoxWithConstraints(modifier.clearAndSetSemantics {}) {
             val bounds =
@@ -153,7 +155,7 @@ fun SolarArc(
                 if (arc != null && progress != null) {
                     val path = Path()
                     for (step in 0..60) {
-                        val point = SolarArcLayout.point(step / 60.0, arc.elevation(step / 60.0), bounds)
+                        val point = SolarArcLayout.point(step / 60.0, arc.elevation(step / 60.0), bounds, mirrored)
                         val offset = Offset(point.x.toFloat() * density, point.y.toFloat() * density)
                         if (step == 0) path.moveTo(offset.x, offset.y) else path.lineTo(offset.x, offset.y)
                     }
@@ -170,7 +172,7 @@ fun SolarArc(
             }
             val moonProgress = moon?.visibleProgress
             if (moon != null && moonProgress != null) {
-                val point = SolarArcLayout.point(moonProgress, moon.elevation, bounds)
+                val point = SolarArcLayout.point(moonProgress, moon.elevation, bounds, mirrored)
                 MoonDisc(
                     moon.illuminatedFraction,
                     moon.isWaxing,
@@ -186,10 +188,10 @@ fun SolarArc(
                 )
             }
             if (progress != null) {
-                val point = SolarArcLayout.point(progress, sun.elevation, bounds)
+                val point = SolarArcLayout.point(progress, sun.elevation, bounds, mirrored)
                 SunDisc(sun.elevation < 10, Modifier.centeredAt(point.x, point.y, 30.dp))
                 markers.forEach { marker ->
-                    val at = SolarArcLayout.point(marker.progress, marker.elevation, bounds)
+                    val at = SolarArcLayout.point(marker.progress, marker.elevation, bounds, mirrored)
                     val upcoming = marker.state == SolarArcMarker.State.Upcoming
                     Icon(
                         marker.name.icon,

@@ -156,7 +156,7 @@ extension FeedClientTests {
         model.select(.init(latitude: 24, longitude: 46, name: "Riyadh", countryCode: "SA", timeZoneID: "Asia/Riyadh"))
         FeedURLProtocol.state.withLock {
             $0 = .init(statuses: [200], bodies: [body], beforeDelivery: {
-                await MainActor.run { model.update { $0.tabShortcuts = [.events] } }
+                _ = await MainActor.run { model.update { $0.tabShortcuts = [.events] } }
             })
         }
         #expect(await model.refreshInBackground() == false)

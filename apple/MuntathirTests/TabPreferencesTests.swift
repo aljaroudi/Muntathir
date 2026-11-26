@@ -23,6 +23,17 @@ struct TabPreferencesTests {
         #expect(AppTab.tools.available(in: []) == .tools)
     }
 
+    @Test func selectionSurvivesSidebarChanges() {
+        #expect(AppTab.tool(.qibla).withoutSidebar(shortcuts: [.calendar]) == .tools)
+        #expect(AppTab.tool(.calendar).withoutSidebar(shortcuts: [.calendar]) == .tool(.calendar))
+        #expect(AppTab.settings.withoutSidebar(shortcuts: []) == .tools)
+        #expect(AppTab.today.withoutSidebar(shortcuts: []) == .today)
+        #expect(AppTab.tools.withSidebar(toolsRoot: .tool(.qibla)) == .tool(.qibla))
+        #expect(AppTab.tools.withSidebar(toolsRoot: nil) == .today)
+        #expect(AppTab.tools.withSidebar(toolsRoot: .browser) == .today)
+        #expect(AppTab.tool(.hadith).withSidebar(toolsRoot: nil) == .tool(.hadith))
+    }
+
     @MainActor @Test func localChangesAndIncomingCloudPreferencesPersist() throws {
         let suite = "TabPreferences.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))

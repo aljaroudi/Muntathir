@@ -59,6 +59,7 @@
     <string name="camera_capture_ended_start_a_new_session_to_try">La capture s’est arrêtée. Lancez une nouvelle session pour réessayer.</string>
     <string name="camera_unavailable">Caméra indisponible</string>
     <string name="cancel">Annuler</string>
+    <string name="chapter_note">Note de chapitre</string>
     <string name="checking_hadith_download">Vérification du téléchargement des hadiths…</string>
     <string name="checking_supplications_download">Vérification du téléchargement des invocations…</string>
     <string name="children">Enfants</string>
@@ -70,6 +71,7 @@
     <string name="choose_a_location_in_muntathir">Choisir un lieu dans Muntathir</string>
     <string name="choose_a_parentage_report">Choisir un récit de filiation</string>
     <string name="choose_a_translation_to_read_alongside_arabic">Choisissez une traduction à lire avec le texte arabe.</string>
+    <string name="choose_prayer">Choisir la prière</string>
     <string name="choose_rakaat">Choisir les rakats</string>
     <string name="choose_the_calculation_method_you_follow_you_can">Choisissez votre méthode de calcul. Vous pourrez la modifier dans Réglages.</string>
     <string name="choose_up_to_three_tabs_everything_else_stays_in">Choisissez jusqu’à trois onglets. Le reste reste dans Outils.</string>
@@ -129,6 +131,7 @@
     <string name="find_the_direction_of_qibla">Trouver la direction de la Qibla</string>
     <string name="finding_your_precise_current_location">Recherche de votre position actuelle précise…</string>
     <string name="finish_setup">Terminer la configuration</string>
+    <string name="first_sujood">Première prosternation</string>
     <string name="from_x_to_x">%1$s – %2$s</string>
     <string name="full_siblings">Frères et sœurs germains</string>
     <string name="future_dates_are_estimates_until_the_month_s_moo">Les dates futures sont estimatives jusqu’à la confirmation de l’observation du croissant lunaire ou au début du mois.</string>
@@ -158,6 +161,8 @@
     <string name="hijri_month_x_x">Mois hégirien : %1$s / %2$s</string>
     <string name="hizb_x">Hizb %d</string>
     <string name="holy_quran">Le Saint Coran</string>
+    <string name="horizontal_layout">Disposition horizontale</string>
+    <string name="horizontal_prayer_times">Horaires de prière à l’horizontale</string>
     <string name="hours_and_minutes_until_your_next_prayer">Heures et minutes avant la prochaine prière.</string>
     <string name="imsak">Imsak</string>
     <string name="imsak_before_fajr">Imsak avant le Fajr</string>
@@ -190,6 +195,7 @@
     <string name="local_naked_eye">Observation locale à l’œil nu</string>
     <string name="location">Position</string>
     <string name="location_access_is_disabled_search_for_a_city_in">L’accès à la position est désactivé. Recherchez plutôt une ville.</string>
+    <string name="simplified">Simplifiée</string>
     <string name="maghrib">Maghrib</string>
     <string name="maghrib_prayer">Prière du Maghrib</string>
     <string name="manual_month_correction">Correction manuelle du mois</string>
@@ -279,6 +285,7 @@
     <string name="purple">Violet</string>
     <string name="qibla">Qibla</string>
     <string name="quran_translations">Traductions du Coran</string>
+    <string name="rakaat">Rakats</string>
     <string name="rakaat_tracker">Compteur de rakats</string>
     <string name="read_and_search_hadith_offline">Lisez et recherchez des hadiths hors ligne.</string>
     <string name="read_and_search_supplications_offline">Lisez et recherchez des invocations hors ligne.</string>
@@ -314,6 +321,7 @@
     <string name="select_text_to_highlight_it">Sélectionnez du texte pour le surligner.</string>
     <string name="select_text_to_highlight_it_use_the_passage_acti">Sélectionnez du texte pour le surligner. Utilisez les actions du passage pour ajouter un signet.</string>
     <string name="selected_location">Lieu sélectionné</string>
+    <string name="sermons_unavailable">Sermons indisponibles</string>
     <string name="set_a_location_to_view_prayer_times">Définissez un lieu pour afficher les horaires de prière.</string>
     <string name="set_location_in_app">Définir le lieu dans l’app</string>
     <string name="set_up_muntathir">Configurer Muntathir</string>
@@ -332,6 +340,7 @@
     <string name="some_files_remain_on_this_device_please_try_agai">Des fichiers restent sur cet appareil. Réessayez.</string>
     <string name="source">Source</string>
     <string name="spouses">Conjoints</string>
+    <string name="start_x">Commencer %s</string>
     <string name="start_tasbih">Commencer le tasbih</string>
     <string name="step_x_of_x">Étape %1$s sur %2$s</string>
     <string name="sunrise">Lever du soleil</string>
@@ -403,6 +412,7 @@
     <string name="verse_number_or_quran_text">Numéro de verset ou texte du Coran</string>
     <string name="verse_unavailable">Verset indisponible</string>
     <string name="verses">Versets</string>
+    <string name="vertical_layout">Disposition verticale</string>
     <string name="view_profile">Voir le profil</string>
     <string name="visibility">Visibilité</string>
     <string name="weather">Météo</string>
@@ -414,4 +424,6 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">Vous pouvez toujours rechercher hors ligne dans les textes du Coran et des hadiths téléchargés.</string>
     <string name="you_can_still_search_downloaded_text_offline">Vous pouvez toujours rechercher dans les textes téléchargés hors ligne.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">Impossible d’ouvrir vos données enregistrées. Veuillez réessayer.</string>
+    <string name="literal">Littérale</string>
+    <string name="sermons">Sermons</string>
 </resources>

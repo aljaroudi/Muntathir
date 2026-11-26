@@ -2,8 +2,9 @@ import Foundation
 @testable import Muntathir
 import Testing
 
-struct SharedWeatherTests {
-    private let location = SavedLocation(latitude: 21.42, longitude: 39.82, name: "Mecca", countryCode: "SA", timeZoneID: "Asia/Riyadh")
+@MainActor struct SharedWeatherTests {
+    // Unique per test, since concurrent refreshes for the same location share one request.
+    private let location = SavedLocation(latitude: 21.42, longitude: 39.82, name: UUID().uuidString, countryCode: "SA", timeZoneID: "Asia/Riyadh")
     private let now = Date(timeIntervalSince1970: 1_790_000_000)
 
     private func reading(at date: Date) -> WeatherReading {
@@ -33,7 +34,7 @@ struct SharedWeatherTests {
             throw URLError(.userAuthenticationRequired)
         }
         #expect(result?.date == now)
-        let expired = await SharedWeatherStore.refresh(for: location, at: now.addingTimeInterval(3600), defaults: defaults) { _ in
+        let expired = await SharedWeatherStore.refresh(for: location, at: now.addingTimeInterval(3 * 3600), defaults: defaults) { _ in
             throw URLError(.notConnectedToInternet)
         }
         #expect(expired == nil)
@@ -62,5 +63,55 @@ struct SharedWeatherTests {
         let result = await SharedWeatherStore.refresh(for: location, at: now, defaults: defaults) { _ in reading(at: now) }
         #expect(result?.date == now)
         #expect(SharedWeatherStore.read(for: location, at: now, from: defaults)?.date == now)
+    }
+
+    @Test func concurrentRefreshesShareOneRequest() async throws {
+        let suite = UUID().uuidString
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        var calls = 0
+        var pending: CheckedContinuation<WeatherReading, any Error>?
+        let fetch: (SavedLocation) async throws -> WeatherReading = { _ in
+            calls += 1
+            return try await withCheckedThrowingContinuation { pending = $0 }
+        }
+        let first = Task { await SharedWeatherStore.refresh(for: location, at: now, defaults: defaults, fetch: fetch) }
+        while pending == nil {
+            await Task.yield()
+        }
+        let second = Task { await SharedWeatherStore.refresh(for: location, at: now, defaults: defaults, fetch: fetch) }
+        for _ in 0 ..< 3 {
+            await Task.yield()
+        }
+        // Old enough that a caller arriving after completion would fetch again, so one call proves sharing.
+        let old = now.addingTimeInterval(-1000)
+        pending?.resume(returning: reading(at: old))
+        #expect(await first.value?.date == old)
+        #expect(await second.value?.date == old)
+        #expect(calls == 1)
+    }
+
+    @Test func appRefreshIgnoresWidgetBackoff() async throws {
+        let suite = UUID().uuidString
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        _ = await SharedWeatherStore.refresh(for: location, at: now, defaults: defaults) { _ in throw URLError(.timedOut) }
+        let result = await SharedWeatherStore.refresh(for: location, at: now.addingTimeInterval(10), backoff: false,
+                                                      defaults: defaults) { _ in reading(at: now) }
+        #expect(result?.date == now)
+    }
+
+    @Test func successfulRefreshDoesNotBlockOtherCallers() async throws {
+        let suite = UUID().uuidString
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        // The reading is old enough to refetch, but a success must not start the failure backoff.
+        _ = await SharedWeatherStore.refresh(for: location, at: now, defaults: defaults) { _ in reading(at: now.addingTimeInterval(-1000)) }
+        var calls = 0
+        _ = await SharedWeatherStore.refresh(for: location, at: now.addingTimeInterval(10), defaults: defaults) { _ in
+            calls += 1
+            return reading(at: now)
+        }
+        #expect(calls == 1)
     }
 }

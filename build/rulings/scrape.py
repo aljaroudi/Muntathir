@@ -5,7 +5,8 @@
     python3 scrape.py --authority khorasani --language fa
     python3 scrape.py --authority sistani --language arabic
 
-Authorities: sistani.py, shirazi.py, khorasani.py.
+Authorities: sistani.py, shirazi.py, khorasani.py, hakeem.py, najafi.py,
+fayadh.py, alrohani.py, rohani.py, mshirazi.py (the last five share mirror.py).
 Shared HTML walking: htmlutil.py. Database setup: db.py.
 """
 
@@ -16,15 +17,25 @@ import sys
 from pathlib import Path
 
 from db import DEFAULT_DB, init_db, rebuild_fts, utc_now
+import alrohani
+import books
+import fayadh
+import hakeem
+import najafi
+import rohani
+import treatise
 import khorasani
+import mshirazi
 import shirazi
 import sistani
 
+AUTHORITIES = ("fayadh", "najafi", "khorasani", "shirazi", "sistani", "alrohani", "mshirazi", "hakeem", "rohani")
+
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Mirror Sistani, Shirazi, and Khorasani Q&A into SQLite.")
+    parser = argparse.ArgumentParser(description="Mirror marja Q&A into SQLite.")
     parser.add_argument("--db", type=Path, default=DEFAULT_DB)
-    parser.add_argument("--authority", action="append", default=[], help="sistani, shirazi, khorasani; omit for all")
+    parser.add_argument("--authority", action="append", default=[], help=", ".join(AUTHORITIES) + "; omit for all")
     parser.add_argument("--language", action="append", default=[], help="language code as that authority's site publishes it")
     parser.add_argument("--reset", action="store_true", help="delete the database before crawling")
     parser.add_argument("--concurrency", type=int, default=4)
@@ -39,12 +50,18 @@ def main() -> int:
     sistani.self_test()
     shirazi.self_test()
     khorasani.self_test()
+    hakeem.self_test()
+    najafi.self_test()
+    fayadh.self_test()
+    alrohani.self_test()
+    rohani.self_test()
+    mshirazi.self_test()
     if args.self_test:
         return 0
     if args.concurrency < 1:
         raise SystemExit("--concurrency must be >= 1")
-    authorities = args.authority or ["sistani", "shirazi", "khorasani"]
-    unknown = sorted(set(authorities) - {"sistani", "shirazi", "khorasani"})
+    authorities = args.authority or list(AUTHORITIES)
+    unknown = sorted(set(authorities) - set(AUTHORITIES))
     if unknown:
         raise SystemExit("unknown authority %s" % ", ".join(unknown))
     lang_filter = set(args.language)
@@ -52,6 +69,12 @@ def main() -> int:
         "sistani": {item[0] for item in sistani.FALLBACK_LANGUAGES},
         "shirazi": set(shirazi.LANGUAGES),
         "khorasani": set(khorasani.LANGUAGES),
+        "hakeem": set(hakeem.LANGUAGES),
+        "najafi": set(najafi.LANGUAGES),
+        "fayadh": set(fayadh.LANGUAGES),
+        "alrohani": set(alrohani.LANGUAGES),
+        "rohani": set(rohani.LANGUAGES),
+        "mshirazi": set(mshirazi.LANGUAGES),
     }
     known = set().union(*codes.values())
     if lang_filter - known:
@@ -60,6 +83,12 @@ def main() -> int:
         "sistani": sistani.crawl,
         "shirazi": shirazi.crawl,
         "khorasani": khorasani.crawl,
+        "hakeem": hakeem.crawl,
+        "najafi": najafi.crawl,
+        "fayadh": fayadh.crawl,
+        "alrohani": alrohani.crawl,
+        "rohani": rohani.crawl,
+        "mshirazi": mshirazi.crawl,
     }
     conn = init_db(args.db, args.reset)
     started = utc_now()
@@ -71,7 +100,7 @@ def main() -> int:
     conn.commit()
     reports = []
     try:
-        for name in ("sistani", "shirazi", "khorasani"):
+        for name in AUTHORITIES:
             if name not in authorities:
                 continue
             if lang_filter and not (lang_filter & codes[name]):
@@ -84,6 +113,20 @@ def main() -> int:
                 delay=args.delay,
                 limit=args.limit,
             ))
+            if not args.limit and name in ("sistani", "shirazi", "mshirazi"):
+                books.ensure_mirror(conn)
+                if name == "mshirazi":
+                    for failure in mshirazi.crawl_book(conn, args.delay):
+                        reports.append(dict(ok=False, authority=name, error=failure))
+                elif name == "sistani":
+                    for failure in books.crawl(conn, selected or books.LANGS, None):
+                        reports.append(dict(ok=False, authority=name, error=failure))
+                else:
+                    for language in selected or shirazi.LANGUAGES:
+                        try:
+                            treatise.crawl(conn, language)
+                        except Exception as exc:
+                            reports.append(dict(ok=False, authority=name, language=language, error=str(exc)))
         if not args.limit:
             rebuild_fts(conn)
         conn.execute("ANALYZE")

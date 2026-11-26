@@ -1,0 +1,17 @@
+{
+  "assetPackID": "rulings-v2",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "build/rulings/dist/rulings-apple.db",
+      "fileDestination": "Rulings/rulings.db"
+    }
+  ],
+  "platforms": [
+    "iOS",
+    "macOS"
+  ],
+  "sourceRoot": "../../.."
+}

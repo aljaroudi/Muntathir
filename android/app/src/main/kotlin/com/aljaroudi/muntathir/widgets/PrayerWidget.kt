@@ -22,7 +22,8 @@ import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.core.app.AppState
-import com.aljaroudi.muntathir.core.prayer.WidgetPrayerSettings
+import com.aljaroudi.muntathir.core.location.SavedLocation
+import com.aljaroudi.muntathir.core.prayer.PrayerMoment
 import com.aljaroudi.muntathir.core.sky.SolarPosition
 import com.aljaroudi.muntathir.ui.components.Formats
 import com.aljaroudi.muntathir.ui.components.title
@@ -31,7 +32,7 @@ import java.time.Instant
 
 /**
  * Swift `CombinedPrayerWidget` (small): the next prayer with its time and countdown, then as many upcoming
- * prayers as fit, on a sky tint that follows the sun.
+ * prayers as fit, on a sky tint that follows the sun. On the lock screen, Swift `NextPrayerWidget`.
  */
 class PrayerWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Responsive(setOf(COMPACT, MEDIUM, TALL))
@@ -55,15 +56,28 @@ class PrayerWidget : GlanceAppWidget() {
     }
 }
 
-/** The prayer settings every surface (widget, tile, refresh alarm) reads from the app state. */
-val AppState.prayerSettings: WidgetPrayerSettings
-    get() =
-        WidgetPrayerSettings(
-            location,
-            preferences.prayerMethod,
-            preferences.hiddenPrayers,
-            preferences.imsakMinutes,
-        )
+/** Swift `LockScreenPrayerView` without the countdown: the next prayer's name and time. */
+@Composable
+private fun LockScreenPrayer(
+    location: SavedLocation?,
+    next: PrayerMoment?,
+) {
+    val context = LocalContext.current
+    val width = GlanceModifier.fillMaxWidth()
+    // Both lines, or three of the message, take about 72 sp.
+    val fit = (lockScreenTextRoom() / 72).coerceAtMost(1f)
+    LockScreenSurface(OpenRequest.intent(context, null)) {
+        if (location == null || next == null) {
+            val message =
+                if (location == null) R.string.set_location_in_app else R.string.prayer_times_unavailable_f2c66b
+            WidgetText(context.getString(message), 15f * fit, width, WidgetFont.Centered, maxLines = 3)
+        } else {
+            WidgetText(context.getString(next.name.title), 17f * fit, width, WidgetFont.StrongCentered)
+            val time = Formats.clockTime(next.time, location.zone, context.widgetLocale)
+            WidgetText(time, 32f * fit, width, WidgetFont.StrongCentered)
+        }
+    }
+}
 
 @Composable
 private fun PrayerContent(
@@ -74,6 +88,10 @@ private fun PrayerContent(
     val locale = context.widgetLocale
     val location = app.location
     val upcoming = app.prayerSettings.upcomingPrayers(now)
+    if (isOnLockScreen()) {
+        LockScreenPrayer(location, upcoming.firstOrNull())
+        return
+    }
     val elevation = location?.let { SolarPosition.calculate(now, it.latitude, it.longitude) }?.elevation
     val background =
         when {

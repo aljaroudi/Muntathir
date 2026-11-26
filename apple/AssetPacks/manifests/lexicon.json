@@ -1,0 +1,17 @@
+{
+  "assetPackID": "lexicon",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "apple/build/Lexicon/lexicon.db",
+      "fileDestination": "Lexicon/lexicon.db"
+    }
+  ],
+  "platforms": [
+    "iOS",
+    "macOS"
+  ],
+  "sourceRoot": "../../.."
+}

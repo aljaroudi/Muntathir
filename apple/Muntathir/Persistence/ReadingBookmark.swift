@@ -16,8 +16,7 @@ struct ReadingBookmark: Codable, Equatable, Identifiable, Sendable {
 
     var id: String {
         if let ruling {
-            // Length prefixes keep source identifiers unambiguous even when they contain punctuation.
-            return "ruling:" + [ruling.authority, ruling.language, ruling.siteID].map { "\($0.utf8.count):\($0)" }.joined()
+            return "ruling:" + ruling.key
         }
         return (isHadith ? "hadith:" : "quran:") + source
     }

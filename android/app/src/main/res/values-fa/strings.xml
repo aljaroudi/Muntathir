@@ -59,6 +59,7 @@
     <string name="camera_capture_ended_start_a_new_session_to_try">دریافت تصویر دوربین پایان یافت. برای تلاش دوباره، جلسهٔ جدیدی شروع کنید.</string>
     <string name="camera_unavailable">دوربین در دسترس نیست</string>
     <string name="cancel">لغو</string>
+    <string name="chapter_note">یادداشت فصل</string>
     <string name="checking_hadith_download">در حال بررسی دانلود حدیث…</string>
     <string name="checking_supplications_download">در حال بررسی دانلود دعاها…</string>
     <string name="children">فرزندان</string>
@@ -70,6 +71,7 @@
     <string name="choose_a_location_in_muntathir">انتخاب مکان در منتظر</string>
     <string name="choose_a_parentage_report">روایت نسب را انتخاب کنید</string>
     <string name="choose_a_translation_to_read_alongside_arabic">ترجمه‌ای را برای خواندن در کنار متن عربی انتخاب کنید.</string>
+    <string name="choose_prayer">نماز را انتخاب کنید</string>
     <string name="choose_rakaat">تعداد رکعت را انتخاب کنید</string>
     <string name="choose_the_calculation_method_you_follow_you_can">روش محاسبهٔ مورد نظر را انتخاب کنید. بعداً می‌توانید آن را در تنظیمات تغییر دهید.</string>
     <string name="choose_up_to_three_tabs_everything_else_stays_in">حداکثر سه زبانه انتخاب کنید. بقیه در ابزارها باقی می‌مانند.</string>
@@ -129,6 +131,7 @@
     <string name="find_the_direction_of_qibla">یافتن جهت قبله</string>
     <string name="finding_your_precise_current_location">در حال یافتن موقعیت مکانی دقیق فعلی شما…</string>
     <string name="finish_setup">پایان راه‌اندازی</string>
+    <string name="first_sujood">سجده اول</string>
     <string name="from_x_to_x">%1$s – %2$s</string>
     <string name="full_siblings">خواهران و برادران تنی</string>
     <string name="future_dates_are_estimates_until_the_month_s_moo">تاریخ‌های آینده تخمینی هستند تا رؤیت هلال ماه تأیید شود یا ماه آغاز شود.</string>
@@ -158,6 +161,8 @@
     <string name="hijri_month_x_x">ماه هجری: %1$s / %2$s</string>
     <string name="hizb_x">حزب %d</string>
     <string name="holy_quran">قرآن کریم</string>
+    <string name="horizontal_layout">چیدمان افقی</string>
+    <string name="horizontal_prayer_times">اوقات نماز به‌صورت افقی</string>
     <string name="hours_and_minutes_until_your_next_prayer">ساعت و دقیقه تا نماز بعدی.</string>
     <string name="imsak">امساک</string>
     <string name="imsak_before_fajr">امساک پیش از صبح</string>
@@ -190,6 +195,7 @@
     <string name="local_naked_eye">رؤیت محلی با چشم غیرمسلح</string>
     <string name="location">مکان</string>
     <string name="location_access_is_disabled_search_for_a_city_in">دسترسی به مکان غیرفعال است. به‌جای آن شهری را جست‌وجو کنید.</string>
+    <string name="simplified">ساده</string>
     <string name="maghrib">مغرب</string>
     <string name="maghrib_prayer">نماز مغرب</string>
     <string name="manual_month_correction">اصلاح دستی ماه</string>
@@ -279,6 +285,7 @@
     <string name="purple">بنفش</string>
     <string name="qibla">قبله</string>
     <string name="quran_translations">ترجمه‌های قرآن</string>
+    <string name="rakaat">رکعت</string>
     <string name="rakaat_tracker">شمارندهٔ رکعت</string>
     <string name="read_and_search_hadith_offline">حدیث را آفلاین بخوانید و جستجو کنید.</string>
     <string name="read_and_search_supplications_offline">دعاها را آفلاین بخوانید و جستجو کنید.</string>
@@ -314,6 +321,7 @@
     <string name="select_text_to_highlight_it">برای برجسته‌سازی، متن را انتخاب کنید.</string>
     <string name="select_text_to_highlight_it_use_the_passage_acti">متن را برای برجسته‌سازی انتخاب کنید. از گزینه‌های بخش برای افزودن نشانک استفاده کنید.</string>
     <string name="selected_location">مکان انتخاب‌شده</string>
+    <string name="sermons_unavailable">خطبه‌ها در دسترس نیستند</string>
     <string name="set_a_location_to_view_prayer_times">برای دیدن اوقات نماز مکانی تنظیم کنید.</string>
     <string name="set_location_in_app">تنظیم مکان در برنامه</string>
     <string name="set_up_muntathir">راه‌اندازی منتظر</string>
@@ -332,6 +340,7 @@
     <string name="some_files_remain_on_this_device_please_try_agai">برخی فایل‌ها در این دستگاه باقی مانده‌اند. دوباره تلاش کنید.</string>
     <string name="source">منبع</string>
     <string name="spouses">همسران</string>
+    <string name="start_x">شروع %s</string>
     <string name="start_tasbih">شروع تسبیح</string>
     <string name="step_x_of_x">مرحلهٔ %1$s از %2$s</string>
     <string name="sunrise">طلوع آفتاب</string>
@@ -403,6 +412,7 @@
     <string name="verse_number_or_quran_text">شماره آیه یا متن قرآن</string>
     <string name="verse_unavailable">آیه در دسترس نیست</string>
     <string name="verses">آیات</string>
+    <string name="vertical_layout">چیدمان عمودی</string>
     <string name="view_profile">نمایش نمایه</string>
     <string name="visibility">نمایش</string>
     <string name="weather">آب‌وهوا</string>
@@ -414,4 +424,6 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">همچنان می‌توانید متن‌های دریافت‌شدهٔ قرآن و حدیث را آفلاین جستجو کنید.</string>
     <string name="you_can_still_search_downloaded_text_offline">همچنان می‌توانید متن‌های دانلودشده را آفلاین جستجو کنید.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">داده‌های ذخیره‌شده باز نشدند. لطفاً دوباره تلاش کنید.</string>
+    <string name="literal">لفظ‌به‌لفظ</string>
+    <string name="sermons">خطبه‌ها</string>
 </resources>

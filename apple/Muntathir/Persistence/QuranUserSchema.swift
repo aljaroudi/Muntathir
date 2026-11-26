@@ -45,6 +45,8 @@ struct ReadingHighlight: Codable, Equatable, Identifiable, Sendable {
     var id = UUID().uuidString
     var source: String
     var isHadith: Bool
+    /// Set for ruling passages, whose `source` is the ruling's site ID.
+    var ruling: Rulings.ID? = nil
     // nil denotes the entire item; other values identify Arabic or a translation edition.
     var block: String?
     var ranges: [HighlightRange] = []

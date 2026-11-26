@@ -24,9 +24,9 @@ struct TasbihView: View {
         .padding(24)
         .frame(maxWidth: 560)
         .frame(maxWidth: .infinity)
-        .background(Color(.systemGroupedBackground))
+        .background(Color.groupedBackground)
         .navigationTitle("Tasbih")
-        .navigationBarTitleDisplayMode(.inline)
+        .inlineNavigationTitle()
         .sensoryFeedback(trigger: session) { old, new in
             guard new.total > old.total else { return nil }
             return old.phrase == new.phrase ? .impact(weight: .light) : .success

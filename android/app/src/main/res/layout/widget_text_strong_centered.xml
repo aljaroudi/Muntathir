@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Full-width centered strong text, so a wrapped name stays centered on the lock screen. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_text"
+    style="@style/Widget.Muntathir.Text.Strong"
+    android:layout_width="match_parent"
+    android:textAlignment="center" />

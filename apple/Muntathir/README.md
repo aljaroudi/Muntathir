@@ -1,59 +1,37 @@
 # iPhone and iPad
 
-Today shows the current date, prayer schedule, and daily ayah. Calendar shows plain observance names, localized through `Localizable.xcstrings`; bundled JSON retains only their IDs and dates. Fresh calendar settings use naked-eye sightings from the Middle East; saved settings are preserved. Tools contains Qibla; Settings is available from the navigation toolbar; 15 interface locales (Arabic, English, French, German, Indonesian, Italian, Japanese, Malay, Persian, Russian, Spanish, Turkish, Urdu, Simplified Chinese, Traditional Chinese); Adhan 1.5.0 prayer calculations; source-relative manual month offsets (−2 through +2 days); bundled observances and daily Quran verses; saved-place iCloud preferences; local prayer notifications. A foreground GPS fix is remembered locally across launches and never uploaded to iCloud; reverse geocoding is not used.
+Today (date, prayer schedule, daily ayah), Calendar, and Tools (Qibla, Tasbih, Quran, Hadith, Supplications, and more). Settings → Tabs lets users pin up to three shortcuts beside the fixed Today and Tools tabs.
 
-Supported prayer methods are Jafari/Qum, Jafari/Tehran, and Umm al-Qura. New preferences default to Jafari/Tehran. Tehran's Maghrib must be later than calculated sunset; if the library cannot produce that result, the app reports unavailable times. Umm al-Qura's Ramadan Isha interval uses the independent Foundation baseline, not manual religious-date corrections. No prayer engine is implemented here.
+## Prayer times
 
-## Prayer preferences and notifications
+- Methods: Jafari/Qum, Jafari/Tehran (default), and Umm al-Qura. Asr is always standard.
+- Tehran's Maghrib must fall after sunset. If the library can't produce that, the app shows times as unavailable.
+- Imsak defaults to 10 minutes before Fajr (adjustable from 0 to 120) and is never the "upcoming" prayer.
+- Fajr, Dhuhr, and Maghrib are always visible.
+- The device's GPS fix is kept locally and never uploaded to iCloud. No reverse geocoding.
 
-Prayer calculations now always use standard Asr. Legacy Hanafi preferences are ignored without losing location, visibility, or notification choices. Imsak defaults to a precautionary 10 minutes before calculated Fajr, adjustable from 0–120 minutes in prayer calculations; it syncs to watch and widgets. It never becomes the upcoming prayer.
+## Notifications
 
-Settings → Prayers contains Visibility and Notifications. Fajr, Dhuhr, and Maghrib remain visible; new notification preferences enable those three, while existing choices are preserved. Opening Notifications requests device permission. Prayer alerts are independent of visibility; the nearest 50 fit the local notification budget. Each alert defaults to the bundled chime (نغمة), with Alhalwachi, Ali Mulla, and Al-Sarraf adhans, bell, system sound, and silent also available. Adhan clips are under 30 seconds, Apple's notification-sound limit. Prayers, Sunset, and Other Times have independent sound choices. Existing prayer sounds are preserved; Sunset and Other Times default to system sound. Month announcements use system sound. Long-press a time on Today to toggle its alert or hide an optional time; Fajr, Dhuhr, and Maghrib remain visible. The Time Sensitive switch controls interruption level; the entitlement enables the corresponding iOS setting. Sound previews play immediately in the app without requesting notification permission or scheduling a notification.
+- Alerts are planned 10 days ahead and capped at the nearest 50 requests, the iOS local notification budget. They're rebuilt on launch, foreground, settings changes, time-zone changes, and background refresh.
+- Adhan clips must stay under 30 seconds (Apple's notification-sound limit).
+- Calendar-event reminders are off by default, silent, and fire once at sunset for the observances starting that evening.
 
-Local alerts are planned across ten days, limited to the nearest 50 combined prayer and calendar-event requests. Optional calendar-event reminders are off by default, silent, and never Time Sensitive. One reminder at calculated sunset combines the observances beginning that evening, using the corrected Hijri date for tomorrow. Without calculable sunset, no event reminder is scheduled. Launch, foreground, preferences, date/time-zone changes, and opportunistic background refresh rebuild them. iOS controls background execution; open the app regularly. Permissions stay device-local.
+## Calendar
+
+Sources: System (Foundation Umm al-Qura), Local naked eye (Middle East, default), and Government (Saudi Arabia). Manual offsets of −2 to +2 days are stored per Hijri month; +1 starts the month a day earlier. Offsets affect observances, daily verses, widgets, and Watch, but never prayer times. See [calendar rules](../Shared/).
 
 ## Daily ayah
 
-The daily ayah uses a fine-grained emerald-to-ivory background with soft lighting, shared by the app, widgets, and exported images. The background is static. Its share button opens the native share sheet with a 1080-pixel-wide image that expands vertically for the entire verse, including its verse reference. Rendering uses a fixed readable type size and light appearance, independent of the current screen settings. The displayed verse follows the corrected Islamic month and day and advances at sunset in the selected location, independent of prayer method, remaining fixed through midnight. Without a location or calculable sunset, it changes at midnight. The card reads bundled Arabic and the selected installed translation from read-only SQLite databases. Sources and licenses credits each translator. Sharing includes the translation currently shown and omits the translator name from copied text and images. The native image share sheet supports saving to Photos with add-only permission. See [daily verse schedule](../content/daily-verses/) for the complete corrected Hijri month/day schedule.
+The verse follows the corrected Hijri month and day. It advances at sunset in the selected location, or at midnight without one. Shared images are 1080 px wide, with height sized to fit the verse. They include the translation shown but not the translator's name.
 
-See [widgets](../MuntathirWidgets/), [calendar and content](../Shared/), and [Apple setup](../).
+## Qibla
 
-## Tasbih
+Qibla opens its own foreground location session. It needs Precise Location, an accuracy of 20 m or better, and a fix under 15 seconds old. It never saves coordinates. The heading glyph appears only when heading error is ≤ 10°. "Aligned" means within 5° and holds until the error passes 8°. Check permissions, heading, and imagery on a physical device. UI tests use debug-only location fixtures.
 
-Open **Tools → Tasbih**. Pull the front strand of the native 3D bead loop down; the rear strand rises. Each downward pull over 40 points counts once, regardless of its length. The counter follows 34 الله أكبر, 33 الحمد لله, then 33 سبحان الله and stops at 100. Leaving the screen starts the next visit at zero. Backgrounding preserves the open round. VoiceOver provides a “Count one bead” action, and Reduce Motion removes bead travel animations.
+## Personal data
 
-## Qibla map
+Highlights (each with a color and an optional note) sync through SwiftData with private iCloud. Narrations are identified by source book, chapter filename, source number, and source ID, never by SQLite row IDs, so highlights survive library rebuilds and deletion. Hadith navigation state stays on the device.
 
-Open **Tools → Qibla**. A full-screen, locked north-up hybrid map stays centered on your current location at approximately 150-meter scale. A geodesic line points to the Kaaba. The native location marker shows a system direction glyph only when true-heading error is at most 10° and the reading is fresh.
+## Onboarding
 
-A compact turn cue guides alignment. Within 60°, haptic pulses grow stronger and faster as the heading approaches Qibla. Within 5°, a green ring, line, and checkmark confirm alignment with one success haptic. Alignment persists until the error exceeds 8° to prevent jitter. Pulses stop while aligned, when readings are unavailable, and when the screen is inactive. Haptics require supported hardware.
-
-Qibla requests its own foreground location session; saved prayer cities and cached fixes never enable it. Precise Location permission, horizontal accuracy of at most 20 meters, and a fix received since opening (at most 15 seconds old) are required. The map disappears when the fix expires or access changes. Retry and Settings actions handle unavailable GPS or permissions. Returning from the background starts a fresh session; leaving stops updates. This session never saves coordinates or changes prayer settings.
-
-Validate permission prompts, heading recovery, indoor/outdoor accuracy, and hybrid imagery on a physical device. Imagery detail depends on Apple Maps coverage. UI tests use explicit debug-only location fixtures; production never uses them.
-
-## First-run setup
-
-Onboarding introduces the app, offers an app-language step that opens iOS Settings, requires a city or device location, lets users choose a prayer calculation method (Jafari/Tehran by default), and offers optional notification permission. Denying notifications does not block setup. Location denial or GPS failure leaves city search available; city search requires a network connection.
-
-Completion is stored on this device and does not sync through iCloud. Existing saved locations do not bypass setup. Interrupted setup resumes at the current step and retains saved choices, including when changing the app language restarts the app. The app-language link is also available in Settings. After completion, launch opens Today.
-
-Quran Arabic and English are bundled; twelve other translations use one [Apple-hosted on-demand pack](../AssetPacks/), and Hadith uses another. Settings → Downloads manages local copies, including individual Quran languages. Auto matches preferred languages; explicit selection and None persist and also control daily ayah and widgets. Hadith downloads never block Quran reading.
-
-## Calendar sources and month offsets
-
-Settings offers System calendar (Apple Foundation Umm al-Qura), Local naked eye (Middle East), and Government announcement (Saudi Arabia). Country names follow the app locale. Source selection applies worldwide and is independent of GPS coverage. With no published announcement, the system calendar provides dates.
-
-Calendar’s Adjust this month sheet stores an offset for that Hijri month. Positive values advance the displayed Hijri date: +1 starts the month one Gregorian day earlier than the selected source. The sheet previews the resulting start date. Zero removes that month’s adjustment. All months remain 29 or 30 days; unconfirmed neighboring boundaries may move, and conflicting anchors are rejected without changing saved choices. Offsets survive source changes and apply to observances, dated daily verses, widgets, and Watch snapshots. Prayer calculations and prayer notification times remain unchanged.
-
-Legacy absolute month corrections reset to zero; unrelated settings remain intact. The production feed refreshes on launch/foreground, source changes, and background refresh, using ETag and a last-good cache. Month notifications follow successful refreshes rather than immediate push delivery.
-
-Today reuses current App Group weather on launch and refreshes every 15 minutes while displayed. App and widget retries back off for five minutes after failure, retaining only matching readings younger than one hour. WidgetKit controls actual Home Screen refresh timing; expired weather is hidden rather than shown as current.
-
-## Hadith personal data and reading position
-
-Quran and Hadith actions include Highlights, copying text, and image sharing. Each highlight has a color and an optional note, and covers an entire item or selected passages in one text block/translation edition. The Highlights sections replace favorites and standalone notes. Personal data uses a fresh SwiftData store with private iCloud synchronization; earlier development annotations are not migrated. Per-installation records resolve by modification date and stable record ID, including deletion tombstones. Overlapping highlights retain their notes and display the newest color. The compact palette saves a highlight when a color is tapped; note entry stays behind an accessible note icon. Highlight lists show excerpts with color markers and optional note previews; rows open their source, and swipe or context-menu actions open the editor. Tapping highlighted text previews its note in the reader, with a chooser for overlapping highlights. Source book, chapter filename, source number, and source ID identify narrations independently of generated SQLite row numbers. Removing the downloaded library does not delete personal data.
-
-Image sharing includes the full Arabic and, when enabled in the reader, English narrator and text. Both Quran and Hadith images use content-sized artwork at 1080 pixels wide, capped at 1920 pixels tall. Sharing as an image is disabled when the complete layout exceeds that limit. Notes, personal highlights, and search highlights are excluded. Quran image references use numeric surah:verse outside Arabic and the surah name plus Arabic-Indic verse number in Arabic.
-
-The last Hadith screen, filters, page history, and scroll offsets persist on this device. When Hadith was active at exit, relaunch restores that route after assets become available. Missing source references fall back to the saved book or library. Library opening runs lightweight compatibility checks. New or changed assets receive a cancellable full integrity scan in the background, without blocking reading; a failed scan invalidates the reader. Successful scans are cached by file identity, size, modification time, and validator version. Hadith highlights, translation choices, and number navigation live in an adaptive toolbar that collapses into a menu when space is limited. Download removal appears only in the Debug menu of Debug builds.
+Onboarding requires a city or device location. Completion is stored per device and doesn't sync. Interrupted setup resumes at the same step, including after the app restarts for a language change.

@@ -74,7 +74,7 @@ struct HadithShareContent {
         ShareImageRenderer.canShare(HadithShareArtwork(content: content, highlights: highlights), locale: content.locale)
     }
 
-    static func image(for content: HadithShareContent, highlights: [ReadingHighlight] = []) -> UIImage? {
+    static func image(for content: HadithShareContent, highlights: [ReadingHighlight] = []) -> PlatformImage? {
         ShareImageRenderer.image(HadithShareArtwork(content: content, highlights: highlights), locale: content.locale)
     }
 }
@@ -137,7 +137,7 @@ struct HadithActions: View {
         Menu {
             let canShare = HadithImageRenderer.canShare(content, highlights: highlights)
             Button("Copy text", systemImage: "doc.on.doc") {
-                UIPasteboard.general.string = content.text
+                Clipboard.copy(content.text)
                 copied = true
             }
             let shareTitle: LocalizedStringKey = canShare ? "Share as image" : "Share"
@@ -150,11 +150,12 @@ struct HadithActions: View {
             }
             Divider()
             if narration.isSupplication {
-                SupplicationTranslationPicker(languages: translationLanguages)
+                TranslationPicker(supplicationLanguages: translationLanguages)
             } else {
-                HadithTranslationPicker()
+                TranslationPicker()
             }
             ReadingSizeMenu(isPresented: $textSizePresented)
+            ArabicDiacriticsToggle()
             BookmarkButton(source: narration.source?.key ?? "", isHadith: true, excerpt: content.body, reference: content.reference, failed: $bookmarkFailed)
         } label: {
             Label {

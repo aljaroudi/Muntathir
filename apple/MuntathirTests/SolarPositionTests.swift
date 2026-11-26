@@ -84,6 +84,14 @@ struct SolarPositionTests {
         }
     }
 
+    @Test func southernHemisphereArcRunsRightToLeft() {
+        let bounds = CGRect(x: 36, y: 24, width: 330, height: 100)
+        #expect(SolarArcLayout.point(progress: 0, elevation: 0, in: bounds, mirrored: true) == CGPoint(x: 366, y: 124))
+        #expect(SolarArcLayout.point(progress: 1, elevation: 0, in: bounds, mirrored: true) == CGPoint(x: 36, y: 124))
+        #expect(SolarArcLayout.point(progress: 0.25, elevation: 45, in: bounds, mirrored: true).y
+            == SolarArcLayout.point(progress: 0.25, elevation: 45, in: bounds).y)
+    }
+
     @Test func heightUsesFixedDegreesIndependentlyOfProgress() {
         let bounds = CGRect(x: 36, y: 24, width: 330, height: 100)
         for progress in [0.0, 0.25, 0.5, 1.0] {

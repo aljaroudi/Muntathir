@@ -1,6 +1,34 @@
 {
   "version": 1,
   "notes": "80 existing reviewed queries plus 70 new seed-positive queries. New judgments need expert review. Relevance sets are not exhaustive. Do not treat repeated topic/language pairs as independent samples.",
+  "judged_sources": {
+    "hadith": [
+      "abudawud",
+      "additional-Man-La-Yahduruh-al-Faqih-Volume-1-Saduq",
+      "additional-Man-La-Yahduruh-al-Faqih-Volume-2-Saduq",
+      "additional-Man-La-Yahduruh-al-Faqih-Volume-3-Saduq",
+      "additional-Man-La-Yahduruh-al-Faqih-Volume-4-Saduq",
+      "additional-Man-La-Yahduruh-al-Faqih-Volume-5-Saduq",
+      "additional-Nahj-al-Balagha-Radi",
+      "additional-Tahdhib-al-Ahkam-Volume-1-Tusi",
+      "additional-Tahdhib-al-Ahkam-Volume-2-Tusi",
+      "additional-Tahdhib-al-Ahkam-Volume-3-Tusi",
+      "additional-Tahdhib-al-Ahkam-Volume-4-Tusi",
+      "alkafi-1",
+      "alkafi-2",
+      "alkafi-3",
+      "alkafi-4",
+      "alkafi-5",
+      "alkafi-6",
+      "alkafi-7",
+      "alkafi-8",
+      "bukhari",
+      "ibnmajah",
+      "muslim",
+      "nasai",
+      "tirmidhi"
+    ]
+  },
   "queries": [
     {
       "id": "quran-animals-en",

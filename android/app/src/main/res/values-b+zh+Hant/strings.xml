@@ -58,6 +58,7 @@
     <string name="camera_capture_ended_start_a_new_session_to_try">相機擷取已結束。請開始新的工作階段重試。</string>
     <string name="camera_unavailable">相機無法使用</string>
     <string name="cancel">取消</string>
+    <string name="chapter_note">章節註釋</string>
     <string name="checking_hadith_download">正在檢查聖訓下載…</string>
     <string name="checking_supplications_download">正在檢查祈禱下載…</string>
     <string name="children">子女</string>
@@ -69,6 +70,7 @@
     <string name="choose_a_location_in_muntathir">在 Muntathir 中選擇位置</string>
     <string name="choose_a_parentage_report">選擇親子關係記載</string>
     <string name="choose_a_translation_to_read_alongside_arabic">選擇與阿拉伯語原文一起閱讀的譯文。</string>
+    <string name="choose_prayer">選擇禮拜</string>
     <string name="choose_rakaat">選擇拜數</string>
     <string name="choose_the_calculation_method_you_follow_you_can">選擇您遵循的計算方法。稍後可在設定中更改。</string>
     <string name="choose_up_to_three_tabs_everything_else_stays_in">最多選擇三個分頁。其餘項目保留在工具中。</string>
@@ -128,6 +130,7 @@
     <string name="find_the_direction_of_qibla">尋找禮拜朝向</string>
     <string name="finding_your_precise_current_location">正在取得您目前的精確位置…</string>
     <string name="finish_setup">完成設定</string>
+    <string name="first_sujood">第一次叩頭</string>
     <string name="from_x_to_x">%1$s至%2$s</string>
     <string name="full_siblings">同父同母的兄弟姊妹</string>
     <string name="future_dates_are_estimates_until_the_month_s_moo">未來日期為估計日期，直到該月的新月觀測獲得確認或該月開始。</string>
@@ -157,6 +160,8 @@
     <string name="hijri_month_x_x">伊斯蘭曆月份：%1$s / %2$s</string>
     <string name="hizb_x">第 %d 冊</string>
     <string name="holy_quran">尊貴的《古蘭經》</string>
+    <string name="horizontal_layout">橫向版面</string>
+    <string name="horizontal_prayer_times">橫向顯示禮拜時間</string>
     <string name="hours_and_minutes_until_your_next_prayer">距離下次禮拜的小時和分鐘數。</string>
     <string name="imsak">封齋</string>
     <string name="imsak_before_fajr">晨禮前封齋</string>
@@ -189,6 +194,7 @@
     <string name="local_naked_eye">本地肉眼觀月</string>
     <string name="location">位置</string>
     <string name="location_access_is_disabled_search_for_a_city_in">位置取用已停用。請改為搜尋城市。</string>
+    <string name="simplified">簡明譯文</string>
     <string name="maghrib">昏禮</string>
     <string name="maghrib_prayer">昏禮拜功</string>
     <string name="manual_month_correction">手動月份修正</string>
@@ -278,6 +284,7 @@
     <string name="purple">紫色</string>
     <string name="qibla">禮拜朝向</string>
     <string name="quran_translations">古蘭經譯本</string>
+    <string name="rakaat">拜數</string>
     <string name="rakaat_tracker">拜數計數器</string>
     <string name="read_and_search_hadith_offline">離線閱讀和搜尋聖訓。</string>
     <string name="read_and_search_supplications_offline">離線閱讀和搜尋祈禱。</string>
@@ -313,6 +320,7 @@
     <string name="select_text_to_highlight_it">選取文字以醒目標示。</string>
     <string name="select_text_to_highlight_it_use_the_passage_acti">選取文字以標示重點。透過段落操作加入書籤。</string>
     <string name="selected_location">所選位置</string>
+    <string name="sermons_unavailable">無法載入講辭</string>
     <string name="set_a_location_to_view_prayer_times">請設定位置以查看禮拜時間。</string>
     <string name="set_location_in_app">在 App 中設定位置</string>
     <string name="set_up_muntathir">設定 Muntathir</string>
@@ -331,6 +339,7 @@
     <string name="some_files_remain_on_this_device_please_try_agai">部分檔案仍保留在此裝置上。請再試一次。</string>
     <string name="source">來源</string>
     <string name="spouses">配偶</string>
+    <string name="start_x">開始%s</string>
     <string name="start_tasbih">開始讚念</string>
     <string name="step_x_of_x">第 %1$s 步，共 %2$s 步</string>
     <string name="sunrise">日出</string>
@@ -402,6 +411,7 @@
     <string name="verse_number_or_quran_text">經文編號或古蘭經文字</string>
     <string name="verse_unavailable">經文無法使用</string>
     <string name="verses">經文</string>
+    <string name="vertical_layout">縱向版面</string>
     <string name="view_profile">查看資料</string>
     <string name="visibility">顯示設定</string>
     <string name="weather">天氣</string>
@@ -413,4 +423,6 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">您仍可離線搜尋已下載的古蘭經和聖訓文字。</string>
     <string name="you_can_still_search_downloaded_text_offline">您仍可離線搜尋已下載的文字。</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">無法打開已儲存的資料。請再試一次。</string>
+    <string name="literal">直譯</string>
+    <string name="sermons">講辭</string>
 </resources>

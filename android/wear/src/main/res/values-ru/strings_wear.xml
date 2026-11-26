@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="open_on_phone">Открыть на телефоне</string>
+    <string name="open_muntathir_on_your_phone">Откройте Muntathir на телефоне</string>
+    <string name="sync_from_phone">Откройте Muntathir на телефоне, чтобы синхронизировать местоположение и настройки.</string>
+</resources>

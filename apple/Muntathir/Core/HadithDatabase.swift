@@ -40,24 +40,18 @@ enum HadithDatabaseError: Error {
 
 /// A connection stays inside one synchronous actor operation, including its progress callback.
 final class HadithConnection {
-    private let handle: OpaquePointer
+    private let connection: SQLiteConnection
+    private var handle: OpaquePointer {
+        connection.handle
+    }
 
     init(url: URL) throws {
-        var pointer: OpaquePointer?
-        guard sqlite3_open_v2(url.path, &pointer, SQLITE_OPEN_READONLY, nil) == SQLITE_OK, let pointer else {
-            if let pointer {
-                sqlite3_close(pointer)
-            }
-            throw HadithDatabaseError.unavailable
-        }
-        handle = pointer
+        connection = try SQLiteConnection(path: url.path, flags: SQLITE_OPEN_READONLY, failure: HadithDatabaseError.unavailable)
         sqlite3_progress_handler(handle, 1000, { _ in
             Task<Never, Never>.isCancelled ? 1 : 0
         }, nil)
         try registerLiteralRank()
     }
-
-    deinit { sqlite3_close(handle) }
 
     private func registerLiteralRank() throws {
         guard sqlite3_create_function_v2(handle, "hadith_literal_rank", 3, SQLITE_UTF8 | SQLITE_DETERMINISTIC, nil, { context, _, values in
@@ -76,30 +70,7 @@ final class HadithConnection {
         }, nil, nil, nil) == SQLITE_OK else { throw HadithDatabaseError.unavailable }
     }
 
-    func query<T>(_ sql: String, parameters: [String] = [], row: (OpaquePointer) throws -> T) throws -> [T] {
-        try Task.checkCancellation()
-        var statement: OpaquePointer?
-        guard sqlite3_prepare_v2(handle, sql, -1, &statement, nil) == SQLITE_OK, let statement else {
-            try Task.checkCancellation()
-            throw HadithDatabaseError.unavailable
-        }
-        defer { sqlite3_finalize(statement) }
-        for (index, value) in parameters.enumerated() {
-            let status = value.withCString {
-                sqlite3_bind_text(statement, Int32(index + 1), $0, -1, unsafeBitCast(-1, to: sqlite3_destructor_type.self))
-            }
-            guard status == SQLITE_OK else { throw HadithDatabaseError.unavailable }
-        }
-        var rows: [T] = []
-        while true {
-            try Task.checkCancellation()
-            switch sqlite3_step(statement) {
-            case SQLITE_ROW: try rows.append(row(statement))
-            case SQLITE_DONE: return rows
-            default:
-                try Task.checkCancellation()
-                throw HadithDatabaseError.unavailable
-            }
-        }
+    func query<T>(_ sql: String, parameters: [any SQLiteBindable] = [], row: (OpaquePointer) throws -> T) throws -> [T] {
+        try connection.query(sql, parameters: parameters, row: row)
     }
 }

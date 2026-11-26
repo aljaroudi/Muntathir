@@ -5,6 +5,9 @@ struct QuranSurah: Decodable, Identifiable, Hashable, Sendable {
     let arabic: String
     let transliteration: String
 
+    /// The bundled chapter list, read once for screens opened by chapter number.
+    static let bundled: [QuranSurah] = (try? load()) ?? []
+
     static func load(bundle: Bundle = .main) throws -> [QuranSurah] {
         guard let url = bundle.url(forResource: "quran-surahs", withExtension: "json") else { throw QuranDatabaseError.unavailable }
         let surahs = try JSONDecoder().decode([QuranSurah].self, from: Data(contentsOf: url))

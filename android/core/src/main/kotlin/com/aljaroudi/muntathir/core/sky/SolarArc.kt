@@ -60,14 +60,19 @@ data class ArcPoint(
     val y: Double,
 )
 
-/** A stable left-to-right path in both Arabic and English: progress sets x; elevation uses a fixed 0–90° scale. */
+/**
+ * A stable path in both Arabic and English, matching the sky as seen facing the sun: left to right in the
+ * northern hemisphere, [mirrored] (right to left) in the southern. Progress sets x; elevation uses a fixed
+ * 0–90° scale.
+ */
 object SolarArcLayout {
     fun point(
         progress: Double,
         elevation: Double,
         bounds: ArcRect,
+        mirrored: Boolean = false,
     ) = ArcPoint(
-        x = bounds.x + bounds.width * progress.coerceIn(0.0, 1.0),
+        x = bounds.x + bounds.width * progress.coerceIn(0.0, 1.0).let { if (mirrored) 1 - it else it },
         y = bounds.maxY - bounds.height * (elevation.coerceIn(0.0, 90.0) / 90),
     )
 }

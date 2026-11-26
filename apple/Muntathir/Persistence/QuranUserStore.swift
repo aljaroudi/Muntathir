@@ -155,8 +155,8 @@ import SwiftData
         }
     }
 
-    func highlights(for source: String, isHadith: Bool = false) -> [ReadingHighlight] {
-        highlights.filter { $0.source == source && $0.isHadith == isHadith }
+    func highlights(for source: String, isHadith: Bool = false, ruling: Rulings.ID? = nil) -> [ReadingHighlight] {
+        highlights.filter { $0.source == source && $0.isHadith == isHadith && $0.ruling == ruling }
     }
 
     func save(_ highlight: ReadingHighlight, now: Date = .now) throws {
@@ -164,7 +164,9 @@ import SwiftData
     }
 
     func save(_ highlights: [ReadingHighlight], now: Date = .now) throws {
-        guard !highlights.isEmpty, highlights.allSatisfy({ !$0.source.isEmpty && ($0.block == nil || !$0.ranges.isEmpty) }) else {
+        guard !highlights.isEmpty, highlights.allSatisfy({
+            !$0.source.isEmpty && ($0.block == nil || !$0.ranges.isEmpty) && ($0.ruling.map(\.siteID) ?? $0.source) == $0.source
+        }) else {
             throw QuranUserStoreError.invalidHighlight
         }
         try update(highlights, deleted: false, now: now)

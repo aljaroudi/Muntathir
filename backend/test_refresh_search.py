@@ -1,10 +1,11 @@
 from decimal import Decimal
+import io
 from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
-from refresh_search import alias, authorize, check_client_references, keys, preserve_other_sources, promote
+from refresh_search import alias, authorize, keys, preserve_other_sources, promote, public_results, reusable_workdirs
 
 
 def corpus(revision, kind="dua"):
@@ -35,11 +36,18 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(candidate["texts"][0]["revision_id"], "new")
         self.assertEqual(candidate["passages"][0]["text_id"], candidate["texts"][0]["id"])
 
-    def test_new_reader_reference_requires_compatibility(self):
-        candidate = corpus("new", "quran")
-        check_client_references(candidate, corpus("old", "quran"))
-        with self.assertRaisesRegex(ValueError, "compatibility"):
-            check_client_references(candidate, corpus("old"))
+    def test_reuse_includes_active_and_profile_compatible_workdirs_only(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp)
+            for name, profile, vectors in (("active", "p", True), ("paid", "p", True), ("other", "q", True),
+                                           ("bare", "p", False), ("current", "p", True)):
+                (base / name).mkdir()
+                (base / name / "manifest.json").write_text('{"revision": "r", "profile": "%s", "items": []}' % profile)
+                if vectors:
+                    (base / name / "vectors").mkdir()
+            with patch("refresh_search.ingest.PROFILE", "p"):
+                self.assertEqual(reusable_workdirs(base, base / "active", base / "current"),
+                                 [base / "active", base / "paid"])
 
     def test_budget_and_approval(self):
         self.assertEqual(authorize(Decimal("10"), Decimal("10")), Decimal("10"))
@@ -70,3 +78,8 @@ class RefreshTests(unittest.TestCase):
                 promote(client, "previous", "target", Path(temp), activate, {})
             activate.assert_called_once()
             rollback.assert_called_once_with(client, "previous")
+
+    def test_public_requests_identify_the_client_to_cloudflare(self):
+        with patch("refresh_search.urllib.request.urlopen", return_value=io.BytesIO(b'{"results": []}')) as send:
+            self.assertEqual(public_results({}, {"query": "test"}), [])
+        self.assertEqual(send.call_args.args[0].get_header("User-agent"), "Muntathir/1.0")

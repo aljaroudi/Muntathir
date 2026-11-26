@@ -170,6 +170,21 @@ struct QuranReaderTests {
         #expect(exact.first.map { QuranSearchText.normalize($0.text).contains("الرحيم") } == true)
     }
 
+    @Test func typedStandardSpellingsFindTheMushafsSpellings() async throws {
+        let reader = QuranReader(database: database)
+        // The index holds the Uthmani spelling (الصلوه, الكتب, النبين, ءامنوا); typed text is standard.
+        for (typed, verse) in [("الصلاة", "2:43"), ("الزكاة", "2:43"), ("الكتاب", "2:2"), ("النبيين", "2:61"),
+                               ("آمنوا", "2:25"), ("إسرائيل", "2:40"), ("السماوات", "2:164"), ("القرآن", "2:185")]
+        {
+            #expect(try await reader.search(typed, translationID: nil, limit: 6236).map(\.id).contains(verse), "\(typed)")
+        }
+        // Search as you type: a partial word reaches the mushaf's spelling too.
+        #expect(try await reader.search("الصلا", translationID: nil).isEmpty == false)
+        // Only spellings the index holds are used, so typos and unknown words still find nothing.
+        #expect(try await reader.search("الرحمم", translationID: nil).isEmpty)
+        #expect(try await reader.search("كمبيوتر", translationID: nil).isEmpty)
+    }
+
     @Test func fullTextSearchRespectsTranslationSelectionAndPagination() async throws {
         let reader = QuranReader(database: database)
         #expect(try await reader.search("merciful", translationID: nil).isEmpty)

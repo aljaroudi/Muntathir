@@ -37,7 +37,11 @@ struct DailyAyahWidgetView: View {
     @Environment(\.locale) private var locale
     @Environment(\.widgetFamily) private var family
     private var isAccessory: Bool {
-        family == .accessoryRectangular
+        #if os(iOS)
+            family == .accessoryRectangular
+        #else
+            false
+        #endif
     }
 
     var body: some View {
@@ -94,13 +98,19 @@ struct DailyAyahWidgetView: View {
 }
 
 struct DailyAyahWidget: Widget {
+    #if os(iOS)
+        static let families: [WidgetFamily] = [.accessoryRectangular, .systemMedium]
+    #else
+        static let families: [WidgetFamily] = [.systemMedium]
+    #endif
+
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "DailyAyah", provider: DailyAyahProvider()) {
             DailyAyahWidgetView(entry: $0)
         }
         .configurationDisplayName("Daily ayah")
         .description("Today's verse from the Quran.")
-        .supportedFamilies([.accessoryRectangular, .systemMedium])
+        .supportedFamilies(Self.families)
     }
 }
 
@@ -109,9 +119,11 @@ private enum AyahWidgetPreview {
     static let long = DailyAyahEntry(date: .now, ayah: ContentLibrary().verses.max { $0.text.count < $1.text.count })
 }
 
-#Preview("Ayah · Lock Screen", as: .accessoryRectangular) {
-    DailyAyahWidget()
-} timeline: { AyahWidgetPreview.short; AyahWidgetPreview.long }
+#if os(iOS)
+    #Preview("Ayah · Lock Screen", as: .accessoryRectangular) {
+        DailyAyahWidget()
+    } timeline: { AyahWidgetPreview.short; AyahWidgetPreview.long }
+#endif
 
 #Preview("Ayah · Medium", as: .systemMedium) {
     DailyAyahWidget()
@@ -119,7 +131,7 @@ private enum AyahWidgetPreview {
 
 private struct DailyAyahWidgetTextSizePreviews: PreviewProvider {
     static var previews: some View {
-        ForEach([WidgetFamily.systemMedium, .accessoryRectangular], id: \.self) { family in
+        ForEach(DailyAyahWidget.families, id: \.self) { family in
             ForEach([DynamicTypeSize.large, .xxxLarge, .accessibility3], id: \.self) { size in
                 ForEach(["en_US", "ar_SA"], id: \.self) { language in
                     DailyAyahWidgetView(entry: AyahWidgetPreview.long)

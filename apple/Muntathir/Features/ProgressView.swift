@@ -45,7 +45,7 @@ struct ActivityProgressView: View {
             .frame(maxWidth: 700)
             .frame(maxWidth: .infinity)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Color.groupedBackground)
         .navigationTitle("Activity")
         .accessibilityIdentifier("progress-screen")
     }
@@ -142,6 +142,6 @@ private extension View {
     func card() -> some View {
         padding(18)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 24))
+            .background(Color.secondaryGroupedBackground, in: .rect(cornerRadius: 24))
     }
 }

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="open_on_phone">Telefonda aç</string>
+    <string name="open_muntathir_on_your_phone">Muntathir\'ı telefonunuzda açın</string>
+    <string name="sync_from_phone">Konumunuzu ve ayarlarınızı eşitlemek için Muntathir\'ı telefonunuzda açın.</string>
+</resources>

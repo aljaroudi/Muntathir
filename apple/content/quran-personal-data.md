@@ -1,63 +1,32 @@
-# Quran favorites, notes, and sharing
+# Highlights, bookmarks, and sharing
 
-Quran text and translations remain in the bundled read-only SQLite database.
-Personal data uses a separate SwiftData store named `QuranPersonal`, configured
-for the private CloudKit database in `iCloud.com.aljaroudi.Muntathir`.
+Quran text and translations stay in the bundled read-only SQLite database. Personal data is a SwiftData store, `ReadingHighlights` (`HighlightRecord`, `BookmarkRecord`), synced through the private CloudKit database `iCloud.com.aljaroudi.Muntathir`. See `Persistence/QuranUserStore.swift` and `QuranUserSchema.swift`.
 
-## Schema and updates
+## Records and conflicts
 
-`QuranUserSchemaV1` is the released schema. Keep it immutable. Future persisted
-changes need a new `VersionedSchema`, an entry in `QuranUserMigrationPlan`, and
-an appropriate migration stage. Do not add a fictional migration for V1.
-The disk-backed V1 fixture test creates data with the frozen V1 schema and
-reopens it through the current migration plan; extend it as schemas evolve.
-CloudKit production schema changes must remain compatible with older clients.
+- Each installation writes its own record per highlight or bookmark. The installation ID lives in `QuranIdentity`, excluded from device backups, so a restored device doesn't write the same records.
+- The winner for an item is the newest `modifiedAt`, ties broken by `recordID`. Deleting writes a tombstone (`isTombstone`) with a new timestamp rather than removing the record, so stale offline values can't reappear. Device clock skew can affect ordering of simultaneous offline edits.
+- CloudKit production schema changes must stay compatible with older clients.
 
-Each installation writes its own record for a verse. The installation ID lives
-in a directory excluded from device backups, so restored devices do not write
-the same record. Favorite and note values have independent timestamps. Resolve
-each field by newest timestamp, breaking ties by record ID. Clearing a note or
-unfavoriting writes an empty state with a new timestamp; it does not delete the
-record. These timestamps prevent stale offline values from reappearing.
-Device clock differences can influence simultaneous offline conflict ordering.
-There is one visible note per verse and no note revision history UI.
+## Store behavior
 
-The main-actor store explicitly saves changes and rolls back failed saves.
-Editors retain unsaved text outside SwiftData. Store-open failures never delete
-data or silently substitute an in-memory store. Reading and sharing remain
-available, and the saved lists provide a retry action.
-SwiftUI observes imports with `@Query`; managed models never cross actors.
-
-Copy and image sharing include Arabic, the displayed translation and attribution,
-and the surah/verse reference. Personal notes are never included.
+- The main-actor store saves explicitly and rolls back failed saves. Editors keep unsaved text outside SwiftData.
+- A store-open failure never deletes data or substitutes an in-memory store. Reading and sharing stay available, and saved lists offer a retry.
+- Managed models never cross actors.
+- Copy and image sharing include the Arabic, the displayed translation and attribution, and the reference. Personal notes are never included.
 
 ## Tests
 
-Unit tests and previews must use an isolated configuration with CloudKit disabled.
-UI tests use a separate disk store, reset only by the explicit `--ui-testing`
-launch mode. `--ui-testing-preserve-state` preserves that store across relaunches.
-The save-failure UI test injects a failed save and verifies the draft remains.
+- Unit tests and previews use an in-memory configuration with CloudKit disabled.
+- UI tests use a separate disk store (`HighlightsUITests`), reset only by `--ui-testing`; `--ui-testing-preserve-state` keeps it across relaunches. `--ui-testing-quran-save-failure` injects a failed save to check the draft survives.
 
 ## CloudKit release checks
 
-The app entitlements include CloudKit, `iCloud.com.aljaroudi.Muntathir`, and push;
-background modes include remote notifications. Existing iCloud key-value
-preferences remain separate. Offline edits save locally and synchronize when
-CloudKit is available; sync is not immediate.
+Entitlements include CloudKit, the container and push; background modes include remote notifications. Sync isn't immediate: offline edits save locally and sync when CloudKit is available.
 
-1. Verify the signed app's provisioning profile includes this container and push.
-2. Run a development-signed build on two devices signed into the same iCloud
-   account. Add a favorite and note, edit different fields offline, reconnect,
-   and verify convergence in both directions. Repeat with note deletion and
-   unfavoriting. Verify relaunch, account unavailability, and interrupted sync.
-3. Inspect the development CloudKit schema in CloudKit Console or with an
-   authorized `cktool export-schema` command. Launching the development app and
-   saving a test annotation initializes the model's record types.
-4. Deploy the verified schema to production in CloudKit Console before shipping.
-   Validate a TestFlight build against production. Never reset production data.
+1. Verify the signed app's provisioning profile includes the container and push.
+2. On two devices with the same iCloud account (development build): add highlights, notes and bookmarks, edit different items offline, reconnect, and check both directions converge. Repeat with deletions. Check relaunch, account unavailability and interrupted sync.
+3. Inspect the development CloudKit schema in CloudKit Console or with `cktool export-schema` (needs a management token). Saving a test annotation in the development app creates the record types.
+4. Deploy the verified schema to production in CloudKit Console before shipping, then validate a TestFlight build against production. Never reset production data.
 
-Implementation validation on 2026-10-22: the signed device build succeeded and
-its embedded profile includes the container and development push entitlement.
-Development schema inspection could not run because no CloudKit management
-token was configured. Only one physical device was connected, so two-device
-sync and production schema deployment remain release checks.
+Two-device sync and production schema deployment haven't been verified yet.

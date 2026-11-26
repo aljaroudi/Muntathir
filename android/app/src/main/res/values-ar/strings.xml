@@ -63,6 +63,7 @@
     <string name="camera_capture_ended_start_a_new_session_to_try">توقف التصوير. ابدأ جلسة جديدة للمحاولة مجددًا.</string>
     <string name="camera_unavailable">الكاميرا غير متاحة</string>
     <string name="cancel">إلغاء</string>
+    <string name="chapter_note">هامش الفصل</string>
     <string name="checking_hadith_download">جارٍ التحقق من تنزيل الحديث…</string>
     <string name="checking_supplications_download">جارٍ التحقق من تنزيل الأدعية…</string>
     <string name="children">الأبناء</string>
@@ -74,6 +75,7 @@
     <string name="choose_a_location_in_muntathir">اختر موقعًا في منتظِر</string>
     <string name="choose_a_parentage_report">اختر رواية عن النسب</string>
     <string name="choose_a_translation_to_read_alongside_arabic">اختر ترجمة لقراءتها إلى جانب النص العربي.</string>
+    <string name="choose_prayer">اختر الصلاة</string>
     <string name="choose_rakaat">اختر عدد الركعات</string>
     <string name="choose_the_calculation_method_you_follow_you_can">اختر طريقة الحساب التي تتبعها. يمكنك تغييرها لاحقًا في الإعدادات.</string>
     <string name="choose_up_to_three_tabs_everything_else_stays_in">اختر حتى ثلاث علامات تبويب. تبقى بقية الأقسام في الأدوات.</string>
@@ -133,6 +135,7 @@
     <string name="find_the_direction_of_qibla">اعرف اتجاه القبلة</string>
     <string name="finding_your_precise_current_location">جارٍ تحديد موقعك الحالي بدقة…</string>
     <string name="finish_setup">إنهاء الإعداد</string>
+    <string name="first_sujood">السجدة الأولى</string>
     <string name="from_x_to_x">%1$s – %2$s</string>
     <string name="full_siblings">الإخوة الأشقاء</string>
     <string name="future_dates_are_estimates_until_the_month_s_moo">التواريخ المستقبلية تقديرية حتى تثبت رؤية هلال الشهر أو يبدأ الشهر.</string>
@@ -162,6 +165,8 @@
     <string name="hijri_month_x_x">الشهر الهجري: %1$s / %2$s</string>
     <string name="hizb_x">الحزب %d</string>
     <string name="holy_quran">القرآن الكريم</string>
+    <string name="horizontal_layout">تخطيط أفقي</string>
+    <string name="horizontal_prayer_times">أوقات الصلاة أفقيًا</string>
     <string name="hours_and_minutes_until_your_next_prayer">الساعات والدقائق المتبقية حتى الصلاة القادمة.</string>
     <string name="imsak">الإمساك</string>
     <string name="imsak_before_fajr">الإمساك قبل الفجر</string>
@@ -194,6 +199,7 @@
     <string name="local_naked_eye">الرؤية المحلية بالعين المجردة</string>
     <string name="location">الموقع</string>
     <string name="location_access_is_disabled_search_for_a_city_in">الوصول إلى الموقع معطّل. ابحث عن مدينة بدلًا من ذلك.</string>
+    <string name="simplified">مبسّطة</string>
     <string name="maghrib">المغرب</string>
     <string name="maghrib_prayer">صلاة المغرب</string>
     <string name="manual_month_correction">تعديل يدوي للشهر</string>
@@ -283,6 +289,7 @@
     <string name="purple">بنفسجي</string>
     <string name="qibla">القبلة</string>
     <string name="quran_translations">ترجمات القرآن</string>
+    <string name="rakaat">الركعات</string>
     <string name="rakaat_tracker">عدّاد الركعات</string>
     <string name="read_and_search_hadith_offline">اقرأ الحديث وابحث فيه دون اتصال.</string>
     <string name="read_and_search_supplications_offline">اقرأ الأدعية وابحث فيها دون اتصال.</string>
@@ -293,7 +300,7 @@
     <string name="red">أحمر</string>
     <string name="related_matches">نتائج ذات صلة</string>
     <string name="related_observances">المناسبات المرتبطة</string>
-    <string name="religious_authority">المرجع الديني</string>
+    <string name="religious_authority">المرجع</string>
     <string name="remove_bookmark">إزالة الإشارة المرجعية</string>
     <string name="remove_all_translations">إزالة جميع الترجمات</string>
     <string name="remove_download">إزالة التنزيل</string>
@@ -318,6 +325,7 @@
     <string name="select_text_to_highlight_it">حدد نصًا لتظليله.</string>
     <string name="select_text_to_highlight_it_use_the_passage_acti">حدد النص لتظليله. استخدم إجراءات المقطع لإضافة إشارة مرجعية.</string>
     <string name="selected_location">الموقع المحدّد</string>
+    <string name="sermons_unavailable">تعذّر تحميل الخُطب</string>
     <string name="set_a_location_to_view_prayer_times">حدد موقعًا لعرض أوقات الصلاة</string>
     <string name="set_location_in_app">حدّد الموقع في التطبيق</string>
     <string name="set_up_muntathir">إعداد منتظر</string>
@@ -336,6 +344,7 @@
     <string name="some_files_remain_on_this_device_please_try_agai">بقيت بعض الملفات على هذا الجهاز. حاول مرة أخرى.</string>
     <string name="source">المصدر</string>
     <string name="spouses">أزواج</string>
+    <string name="start_x">ابدأ %s</string>
     <string name="start_tasbih">ابدأ التسبيح</string>
     <string name="step_x_of_x">الخطوة %1$s من %2$s</string>
     <string name="sunrise">الشروق</string>
@@ -407,6 +416,7 @@
     <string name="verse_number_or_quran_text">رقم الآية أو نص قرآني</string>
     <string name="verse_unavailable">الآية غير متاحة</string>
     <string name="verses">الآيات</string>
+    <string name="vertical_layout">تخطيط عمودي</string>
     <string name="view_profile">عرض الملف</string>
     <string name="visibility">الظهور</string>
     <string name="weather">الطقس</string>
@@ -418,4 +428,6 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">يمكنك البحث في نصوص القرآن والحديث المحمّلة دون اتصال.</string>
     <string name="you_can_still_search_downloaded_text_offline">لا يزال بإمكانك البحث في النصوص المحمّلة دون اتصال.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">تعذر فتح بياناتك المحفوظة. يرجى المحاولة مرة أخرى.</string>
+    <string name="literal">حرفية</string>
+    <string name="sermons">الخُطب</string>
 </resources>

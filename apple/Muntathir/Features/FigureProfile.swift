@@ -136,7 +136,7 @@ struct FigureProfile: View {
         }
         .accessibilityIdentifier("figure-profile-\(id)")
         .navigationTitle(figure.title(locale))
-        .navigationBarTitleDisplayMode(.inline)
+        .inlineNavigationTitle()
     }
 
     private func formattedAge(_ age: DateComponents) -> String {

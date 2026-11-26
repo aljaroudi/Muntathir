@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 struct QuranPageReader: View {
     let page: QuranPage
@@ -19,7 +18,7 @@ struct QuranPageReader: View {
 
     var body: some View {
         let content = QuranPageText(page: page, surahs: surahs)
-        let highlights = (store?.highlights ?? []).filter { !$0.isHadith && content.verses[$0.source] != nil }
+        let highlights = (store?.highlights ?? []).filter { !$0.isHadith && $0.ruling == nil && content.verses[$0.source] != nil }
         let missingFocus = highlight.flatMap { value in highlights.contains { $0.id == value.id } ? nil : value }
         let mappedHighlights = highlights + [missingFocus].compactMap(\.self)
         let ranges = Dictionary(uniqueKeysWithValues: mappedHighlights.map { ($0.id, content.displayRanges(for: $0)) })
@@ -44,7 +43,7 @@ struct QuranPageReader: View {
                 additionalActions: { selection in
                     content.sources(in: selection).compactMap { source in
                         guard let ayah = content.verses[source] else { return nil }
-                        return UIAction(title: String(localized: "Actions for verse \(QuranReference.display(source, locale: locale))"), image: UIImage(systemName: "ellipsis.circle")) { _ in
+                        return HighlightTextAction(title: String(localized: "Actions for verse \(QuranReference.display(source, locale: locale))"), systemImage: "ellipsis.circle") {
                             select(ayah)
                             actionVerse = ayah
                         }
@@ -80,12 +79,12 @@ struct QuranPageReader: View {
     }
 
     static func attributed(_ content: QuranPageText, width: CGFloat, lineHeight: CGFloat) -> NSMutableAttributedString {
-        let reference = UIFont(name: "KFGQPCHAFSUthmanicScript-Regula", size: 100) ?? .systemFont(ofSize: 100)
+        let reference = PlatformFont(name: "KFGQPCHAFSUthmanicScript-Regula", size: 100) ?? .systemFont(ofSize: 100)
         let text = content.text as NSString
         let widest = content.lines.map { text.substring(with: $0.range).size(withAttributes: [.font: reference]).width }.max() ?? 1
         let size = min(100 * max(1, width - 2) / max(1, widest), lineHeight * 0.6)
         let font = reference.withSize(size)
-        let result = NSMutableAttributedString(string: content.text, attributes: [.font: font, .foregroundColor: UIColor.label])
+        let result = NSMutableAttributedString(string: content.text, attributes: [.font: font, .foregroundColor: PlatformColor.label])
         for line in content.lines {
             let style = NSMutableParagraphStyle()
             style.baseWritingDirection = .rightToLeft

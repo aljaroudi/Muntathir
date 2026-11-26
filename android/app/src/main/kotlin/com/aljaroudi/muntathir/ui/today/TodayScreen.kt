@@ -5,27 +5,36 @@ import android.content.ContextWrapper
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ViewList
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.NotificationsOff
 import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.ViewWeek
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -34,17 +43,22 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalDensity
@@ -61,6 +75,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
@@ -76,6 +91,7 @@ import com.aljaroudi.muntathir.ui.components.currentLocale
 import com.aljaroudi.muntathir.ui.components.icon
 import com.aljaroudi.muntathir.ui.components.rememberNotificationPermission
 import com.aljaroudi.muntathir.ui.components.title
+import kotlinx.coroutines.flow.first
 import java.time.Duration
 import java.util.Locale
 
@@ -85,6 +101,7 @@ class TodayActions(
     val onOpenCalendar: () -> Unit = {},
     val onAlert: (PrayerName, Boolean) -> Unit = { _, _ -> },
     val onHide: (PrayerName) -> Unit = {},
+    val onToggleLayout: () -> Unit = {},
     val onShare: (TodayUi) -> Unit = {},
 )
 
@@ -116,6 +133,7 @@ fun TodayScreen(
                 }
             },
             onHide = viewModel::hide,
+            onToggleLayout = { viewModel.toggleLayout() },
         ),
         modifier,
     )
@@ -182,6 +200,7 @@ fun TodayContent(
                             .widthIn(max = 760.dp)
                             .height(band)
                             .align(Alignment.CenterHorizontally),
+                        mirrored = (state.location?.latitude ?: 0.0) < 0,
                     )
                 }
                 Column(
@@ -262,12 +281,35 @@ private fun PrayerCard(
         colors = skyCardColors(onSky),
     ) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(
-                Formats.date(state.engine.localDate(state.now), "EEEMMMd", locale),
-                style = MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().semantics { heading() }.testTag("gregorian-date"),
-            )
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text(
+                    Formats.date(state.engine.localDate(state.now), "EEEMMMd", locale),
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center,
+                    // Clear of the layout button so the date stays centred in the card.
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 40.dp)
+                            .semantics { heading() }
+                            .testTag("gregorian-date"),
+                )
+                if (state.location != null && state.prayers.isNotEmpty()) {
+                    IconButton(
+                        onClick = actions.onToggleLayout,
+                        modifier = Modifier.align(Alignment.CenterEnd).size(40.dp).testTag("prayer-layout"),
+                    ) {
+                        val horizontal = state.horizontalPrayerTimes
+                        Icon(
+                            if (horizontal) Icons.AutoMirrored.Outlined.ViewList else Icons.Outlined.ViewWeek,
+                            contentDescription =
+                                stringResource(
+                                    if (horizontal) R.string.vertical_layout else R.string.horizontal_layout,
+                                ),
+                        )
+                    }
+                }
+            }
             when {
                 state.location == null -> {
                     Unavailable(stringResource(R.string.set_a_location_to_view_prayer_times), actions.onChooseLocation)
@@ -278,6 +320,11 @@ private fun PrayerCard(
                         stringResource(R.string.this_location_needs_to_be_updated_to_calculate_p),
                         actions.onChooseLocation,
                     )
+                }
+
+                state.horizontalPrayerTimes -> {
+                    HorizontalDivider()
+                    HorizontalPrayerTimes(state, locale, actions)
                 }
 
                 else -> {
@@ -316,7 +363,8 @@ private fun Unavailable(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+private fun TodayUi.isNext(prayer: PrayerMoment) = prayer.name == next?.name && prayer.time == next.time
+
 @Composable
 private fun PrayerRow(
     prayer: PrayerMoment,
@@ -324,36 +372,15 @@ private fun PrayerRow(
     locale: Locale,
     actions: TodayActions,
 ) {
-    val isNext = prayer.name == state.next?.name && prayer.time == state.next.time
+    val isNext = state.isNext(prayer)
     val color = if (isNext) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-    val enabled = prayer.name in state.enabledPrayers
-    var menu by remember { mutableStateOf(false) }
-    val alertLabel = stringResource(if (enabled) R.string.mute else R.string.alert)
-    val hideLabel = stringResource(R.string.hide)
     val zone = state.location?.zone ?: state.engine.zone
-    Box {
+    PrayerActions(prayer, state, actions) { interaction ->
         Row(
             Modifier
                 .fillMaxWidth()
-                .combinedClickable(onClick = {}, onLongClick = { menu = true }, onLongClickLabel = alertLabel)
-                .padding(vertical = 5.dp)
-                .semantics(mergeDescendants = true) {
-                    customActions =
-                        listOfNotNull(
-                            CustomAccessibilityAction(alertLabel) {
-                                actions.onAlert(prayer.name, !enabled)
-                                true
-                            },
-                            if (prayer.name.isRequired) {
-                                null
-                            } else {
-                                CustomAccessibilityAction(hideLabel) {
-                                    actions.onHide(prayer.name)
-                                    true
-                                }
-                            },
-                        )
-                }.testTag("prayer-${prayer.name.id}"),
+                .then(interaction)
+                .padding(vertical = 5.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -376,6 +403,142 @@ private fun PrayerRow(
             }
             PrayerTime(Formats.clockTime(prayer.time, zone, locale), color)
         }
+    }
+}
+
+/** Swift's horizontal layout: equal-width cards in a sideways-scrolling row that keeps the next prayer in view. */
+@Composable
+private fun HorizontalPrayerTimes(
+    state: TodayUi,
+    locale: Locale,
+    actions: TodayActions,
+) {
+    val listState = rememberLazyListState()
+    val nextIndex = state.prayers.indexOfFirst(state::isNext)
+    LaunchedEffect(nextIndex) {
+        if (nextIndex < 0) return@LaunchedEffect
+        // Wait for the first layout so the visibility check below sees real items.
+        val info = snapshotFlow { listState.layoutInfo }.first { it.visibleItemsInfo.isNotEmpty() }
+        val item = info.visibleItemsInfo.firstOrNull { it.index == nextIndex }
+        when {
+            item == null || item.offset < info.viewportStartOffset -> {
+                listState.animateScrollToItem(nextIndex)
+            }
+
+            // Cut off at the end: scroll only far enough to bring its trailing edge into view.
+            item.offset + item.size > info.viewportEndOffset -> {
+                listState.animateScrollBy((item.offset + item.size - info.viewportEndOffset).toFloat())
+            }
+        }
+    }
+    LazyRow(
+        state = listState,
+        modifier = Modifier.fillMaxWidth().testTag("prayer-row"),
+    ) {
+        itemsIndexed(state.prayers, key = { _, prayer -> prayer.name.id }) { index, prayer ->
+            // Divided like the list's rows; the divider spans the column's height.
+            Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                PrayerTile(prayer, state, locale, actions)
+                if (index < state.prayers.lastIndex) VerticalDivider()
+            }
+        }
+    }
+}
+
+/** One column in [HorizontalPrayerTimes]; the next prayer is tinted and shows its countdown, like the list's row. */
+@Composable
+private fun PrayerTile(
+    prayer: PrayerMoment,
+    state: TodayUi,
+    locale: Locale,
+    actions: TodayActions,
+) {
+    val isNext = state.isNext(prayer)
+    val colors = MaterialTheme.colorScheme
+    val color = if (isNext) colors.primary else colors.onSurface
+    val zone = state.location?.zone ?: state.engine.zone
+    PrayerActions(prayer, state, actions) { interaction ->
+        Column(
+            Modifier
+                .width(84.dp)
+                .then(interaction)
+                .padding(horizontal = 4.dp, vertical = 6.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Icon(prayer.name.icon, contentDescription = null, tint = color)
+            Text(
+                stringResource(prayer.name.title),
+                color = color,
+                style =
+                    MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = if (isNext) FontWeight.SemiBold else null,
+                    ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            PrayerTime(
+                Formats.clockTime(prayer.time, zone, locale),
+                color,
+                if (isNext) FontWeight.SemiBold else FontWeight.Medium,
+                padded = false,
+            )
+            // Other columns reserve the countdown's height so every column matches.
+            Text(
+                if (isNext) Formats.duration(Duration.between(state.now, prayer.time), locale) else " ",
+                style = MaterialTheme.typography.labelSmall,
+                color = color,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier =
+                    Modifier
+                        .alpha(if (isNext) 1f else 0f)
+                        .background(colors.primary.copy(alpha = 0.1f), RoundedCornerShape(50))
+                        .padding(horizontal = 6.dp, vertical = 3.dp)
+                        .then(if (isNext) Modifier.testTag("prayer-countdown") else Modifier.clearAndSetSemantics {}),
+            )
+        }
+    }
+}
+
+/**
+ * Long-press menu and TalkBack actions (Alert/Mute, Hide) shared by the list rows and cards. [content] applies
+ * the given modifier to its container.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun PrayerActions(
+    prayer: PrayerMoment,
+    state: TodayUi,
+    actions: TodayActions,
+    content: @Composable (Modifier) -> Unit,
+) {
+    val enabled = prayer.name in state.enabledPrayers
+    var menu by remember { mutableStateOf(false) }
+    val alertLabel = stringResource(if (enabled) R.string.mute else R.string.alert)
+    val hideLabel = stringResource(R.string.hide)
+    Box {
+        content(
+            Modifier
+                .combinedClickable(onClick = {}, onLongClick = { menu = true }, onLongClickLabel = alertLabel)
+                .semantics(mergeDescendants = true) {
+                    customActions =
+                        listOfNotNull(
+                            CustomAccessibilityAction(alertLabel) {
+                                actions.onAlert(prayer.name, !enabled)
+                                true
+                            },
+                            if (prayer.name.isRequired) {
+                                null
+                            } else {
+                                CustomAccessibilityAction(hideLabel) {
+                                    actions.onHide(prayer.name)
+                                    true
+                                }
+                            },
+                        )
+                }.testTag("prayer-${prayer.name.id}"),
+        )
         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
             DropdownMenuItem(
                 text = { Text(alertLabel) },
@@ -405,22 +568,27 @@ private fun PrayerRow(
     }
 }
 
-/** Tabular digits; a 3-digit time gets an invisible leading digit so columns align (Swift `prayerTime`). */
+/**
+ * Tabular digits; when [padded], a 3-digit time gets an invisible leading digit so list columns align (Swift
+ * `prayerTime`). Centred cards don't need it.
+ */
 @Composable
 private fun PrayerTime(
     time: String,
     color: Color,
+    weight: FontWeight = FontWeight.Medium,
+    padded: Boolean = true,
 ) {
     val digits = time.filter(Char::isDigit)
     val text =
         buildAnnotatedString {
-            if (digits.length == 3) withStyle(SpanStyle(color = Color.Transparent)) { append(digits.first()) }
+            if (padded && digits.length == 3) withStyle(SpanStyle(color = Color.Transparent)) { append(digits.first()) }
             append(time)
         }
     Text(
         text,
         color = color,
-        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium, fontFeatureSettings = "tnum"),
+        style = MaterialTheme.typography.titleLarge.copy(fontWeight = weight, fontFeatureSettings = "tnum"),
         // The alignment digit is only visual; TalkBack must read the real time ("4:31", not "44:31").
         modifier = Modifier.clearAndSetSemantics { contentDescription = time },
     )

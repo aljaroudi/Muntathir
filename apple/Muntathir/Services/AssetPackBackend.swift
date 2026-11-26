@@ -9,9 +9,9 @@ protocol AssetPackBackend: Sendable {
     func download() async throws
     func remove() async throws
     func updates() -> AsyncStream<AssetPackEvent>
-    /// The version of the managed pack currently on the device, if any.
+    /// The revision of the managed pack currently on the device, if any. See `AssetPackUpdatePolicy`.
     func localVersion() async -> Int?
-    /// The latest version published on the server.
+    /// The latest revision published on the server. See `AssetPackUpdatePolicy`.
     func remoteVersion() async throws -> Int?
 }
 
@@ -25,9 +25,22 @@ extension AssetPackBackend {
     }
 }
 
-/// Throttles update checks and remembers hosted versions that failed validation on this device.
+/// What prompted an update check.
+enum AssetPackUpdateTrigger: Sendable {
+    /// Every launch checks, so people see the latest content when they open the app.
+    case launch
+    /// Returning to the app or a background refresh checks about daily.
+    case foreground, background
+}
+
+/// Throttles update checks and remembers hosted revisions that failed validation on this device.
+///
+/// A revision is the hosted pack version, which App Store and TestFlight packs increase with each release.
+/// Xcode-served packs all report version 0, so their revision is the negated download size instead: a
+/// rebuilt archive differs, and any revision of 0 or less is new whenever it differs from the installed one.
 struct AssetPackUpdatePolicy {
-    static let interval: TimeInterval = 86400
+    /// Slightly under a day, so a daily background refresh is not skipped by scheduling drift.
+    static let interval: TimeInterval = 20 * 60 * 60
     let packID: String
     let defaults: UserDefaults?
     var build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
@@ -40,8 +53,8 @@ struct AssetPackUpdatePolicy {
         "\(packID).rejectedPackVersion"
     }
 
-    func isDue(_ now: Date) -> Bool {
-        guard let checked = defaults?.object(forKey: checkedKey) as? Date else { return true }
+    func isDue(_ now: Date, trigger: AssetPackUpdateTrigger) -> Bool {
+        guard trigger != .launch, let checked = defaults?.object(forKey: checkedKey) as? Date else { return true }
         return now.timeIntervalSince(checked) >= Self.interval
     }
 
@@ -64,9 +77,11 @@ struct AssetPackUpdatePolicy {
             .error("Skipping \(packID, privacy: .public) version \(version): it failed validation.")
     }
 
-    /// Copies made before versions were recorded accept any version once.
+    /// Copies made before revisions were recorded accept any revision once.
     func accepts(_ version: Int, over installed: Int?) -> Bool {
-        (installed.map { $0 < version } ?? true) && !isRejected(version)
+        guard !isRejected(version) else { return false }
+        guard let installed else { return true }
+        return version > 0 ? installed < version : installed != version
     }
 }
 
@@ -88,7 +103,7 @@ struct AppleAssetPackBackend: AssetPackBackend {
 
     @concurrent func localURL() async throws -> URL? {
         #if DEBUG
-            if identifier == "rulings", ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+            if identifier == "rulings-v2", ProcessInfo.processInfo.arguments.contains("--ui-testing") {
                 guard ProcessInfo.processInfo.arguments.contains("--ui-testing-rulings-fixture") else { return nil }
                 return try Self.rulingsFixture.get()
             }
@@ -96,11 +111,12 @@ struct AppleAssetPackBackend: AssetPackBackend {
                 let marker = fixture.appending(path: "Removed")
                 return FileManager.default.fileExists(atPath: marker.path) ? nil : try HadithUITestFixture.url()
             }
+            // Capture builds stage Hadith/Supplications only; AssetPackManager traps without a managed pack.
             if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
-               ProcessInfo.processInfo.arguments.contains("--marketing-capture"),
-               let url = Bundle.main.url(forResource: identifier, withExtension: "db", subdirectory: identifier == "supplications" ? "Supplications" : "Hadith")
+               ProcessInfo.processInfo.arguments.contains("--marketing-capture")
             {
-                return url
+                return Bundle.main.url(forResource: identifier, withExtension: "db",
+                                       subdirectory: identifier == "supplications" ? "Supplications" : "Hadith")
             }
             if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
                (identifier == Self.packID && ProcessInfo.processInfo.arguments.contains("--ui-testing-hadith-fixture")) ||
@@ -123,7 +139,7 @@ struct AppleAssetPackBackend: AssetPackBackend {
     func isDownloading() async -> Bool {
         #if DEBUG
             let arguments = ProcessInfo.processInfo.arguments
-            if identifier == "rulings", arguments.contains("--ui-testing") {
+            if identifier == "rulings-v2", arguments.contains("--ui-testing") {
                 return false
             }
             if arguments.contains("--ui-testing"),
@@ -148,18 +164,22 @@ struct AppleAssetPackBackend: AssetPackBackend {
         log.notice("Requesting asset manifest: \(identifier, privacy: .public).")
         let pack = try await remotePack()
         log.notice("Manifest resolved; requesting local availability.")
-        if #available(iOS 26.4, *) {
+        if #available(iOS 26.4, macOS 26.4, *) {
             try await manager.ensureLocalAvailability(of: pack, requireLatestVersion: true)
         } else {
             try await manager.ensureLocalAvailability(of: pack)
         }
-        UserDefaults.standard.set(pack.version, forKey: downloadedVersionKey)
+        UserDefaults.standard.set(Self.revision(of: pack), forKey: downloadedVersionKey)
         log.notice("Asset local availability confirmed.")
+    }
+
+    private static func revision(of pack: AssetPack) -> Int {
+        pack.version > 0 ? pack.version : -pack.downloadSize
     }
 
     private func remotePack() async throws -> AssetPack {
         let manager = AssetPackManager.shared
-        if #available(iOS 27, *) {
+        if #available(iOS 27, macOS 27, *) {
             guard let value = try await manager.manifest.assetPack(withID: identifier) else {
                 throw HadithDatabaseError.unavailable
             }
@@ -174,13 +194,15 @@ struct AppleAssetPackBackend: AssetPackBackend {
                 return nil
             }
         #endif
-        let manager = AssetPackManager.shared
-        if #available(iOS 27.2, *) {
-            return try? manager.localVersion(ofAssetPackWithID: identifier)
+        let downloaded = UserDefaults.standard.object(forKey: downloadedVersionKey) as? Int
+        if #available(iOS 27.2, macOS 27.2, *) {
+            guard let version = try? AssetPackManager.shared.localVersion(ofAssetPackWithID: identifier) else { return nil }
+            // Xcode-served packs report version 0; their size-based revision is known from the download.
+            return version > 0 ? version : downloaded.flatMap { $0 <= 0 ? $0 : nil }
         }
-        // Earlier systems expose no local version; use the version this app last downloaded.
+        // Earlier systems expose no local version; use the revision this app last downloaded.
         guard await (try? localURL()) != nil else { return nil }
-        return UserDefaults.standard.object(forKey: downloadedVersionKey) as? Int
+        return downloaded
     }
 
     private var downloadedVersionKey: String {
@@ -194,7 +216,7 @@ struct AppleAssetPackBackend: AssetPackBackend {
                 return nil
             }
         #endif
-        return try await remotePack().version
+        return try await Self.revision(of: remotePack())
     }
 
     func remove() async throws {
@@ -211,7 +233,7 @@ struct AppleAssetPackBackend: AssetPackBackend {
         #if DEBUG
             // Capture/test databases have no hosted download events or hosting entitlements.
             let arguments = ProcessInfo.processInfo.arguments
-            if identifier == "rulings", arguments.contains("--ui-testing") {
+            if identifier == "rulings-v2", arguments.contains("--ui-testing") {
                 return AsyncStream { $0.finish() }
             }
             if arguments.contains("--ui-testing"),

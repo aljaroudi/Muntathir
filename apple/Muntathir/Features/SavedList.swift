@@ -87,9 +87,9 @@ struct SavedList<Destination: View>: View {
                 }
             }
         }
-        .listStyle(.insetGrouped)
+        .groupedListStyle()
         .navigationTitle("Saved")
-        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: (bookmarksOnly || showingBookmarks) ? "Search bookmarks" : "Search highlights")
+        .searchable(text: $query, placement: .alwaysVisible, prompt: (bookmarksOnly || showingBookmarks) ? "Search bookmarks" : "Search highlights")
         .searchHistory($query, area: .saved)
         .submitsSearch($query, submitted: $submitted)
         .onChange(
@@ -126,7 +126,7 @@ struct SavedList<Destination: View>: View {
     @ViewBuilder private func row(_ entry: SavedEntry) -> some View {
         if canOpen(entry) {
             NavigationLink { destination(entry).recordSearchOnOpen(submitted, area: .saved) } label: { summary(entry) }
-                .accessibilityIdentifier((entry.bookmark?.kind == .ruling ? "saved-ruling-" : entry.isHadith ? "saved-hadith-" : "saved-verse-") + entry.source)
+                .accessibilityIdentifier((entry.ruling != nil ? "saved-ruling-" : entry.isHadith ? "saved-hadith-" : "saved-verse-") + entry.source)
         } else if let highlight = entry.highlight {
             Button { SearchHistory.shared.record(submitted, in: .saved); editing = highlight } label: { summary(entry) }
                 .tint(.primary)

@@ -7,6 +7,7 @@ module MuntathirRelease
     build/marketing/TranslationDerivedData build/marketing/PreviewDerivedData
     build/marketing/ReleaseCapture-phone build/marketing/ReleaseCapture-duo
     build/marketing/workers
+    build/MacArchiveDerivedData build/marketing/mac/DerivedData build/marketing/mac/results
   ].freeze
 
   def self.cleanup_build_artifacts!(root: ROOT, paths: BUILD_ARTIFACTS)

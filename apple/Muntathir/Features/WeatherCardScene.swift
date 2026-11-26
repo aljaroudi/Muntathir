@@ -23,14 +23,9 @@ struct WeatherCardScene: View {
                 }
                 Group {
                     if daylight {
-                        SunDisc(warm: (sun?.elevation ?? 20) < 10)
-                    } else {
-                        ZStack {
-                            Circle().fill(Color.gray.opacity(0.18))
-                            if let moon {
-                                MoonDisc(fraction: moon.illuminatedFraction, waxing: moon.isWaxing)
-                            }
-                        }
+                        SunDisc(elevation: sun?.elevation ?? 20)
+                    } else if let moon {
+                        MoonDisc(moon: moon, sun: sun)
                     }
                 }
                 .frame(width: 38, height: 38)

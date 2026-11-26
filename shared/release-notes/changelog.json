@@ -5,21 +5,96 @@
       "ios"
     ],
     "notes": {
-      "en-US": "• Highlight Quran and Hadith passages and revisit them in Highlights.\n• Search Hadith collections in Arabic or English.\n• Read downloaded Hadith collections offline.\n• Save favorite hadiths, add notes, and share them.",
-      "ar-SA": "• ظلّل مقاطع من القرآن والحديث وارجع إليها في قسم التظليلات.\n• ابحث في مجموعات الحديث بالعربية أو الإنجليزية.\n• اقرأ مجموعات الحديث التي نزّلتها دون اتصال بالإنترنت.\n• احفظ أحاديثك المفضلة وأضف ملاحظات وشارك الأحاديث.",
-      "de-DE": "• Markiere Passagen aus Koran und Hadith und lies sie unter „Markierungen“ erneut.\n• Durchsuche Hadith-Sammlungen auf Arabisch oder Englisch.\n• Lies heruntergeladene Hadith-Sammlungen offline.\n• Speichere deine Lieblingshadithe, ergänze Notizen und teile Hadithe.",
-      "es-ES": "• Resalta pasajes del Corán y de los hadices y vuelve a leerlos en Destacados.\n• Busca en las colecciones de hadices en árabe o en inglés.\n• Lee sin conexión las colecciones de hadices descargadas.\n• Guarda tus hadices favoritos, añade notas y compártelos.",
-      "fa": "• بخش‌هایی از قرآن و حدیث را برجسته کنید و در بخش برجسته‌ها دوباره بخوانید.\n• در مجموعه‌های حدیث به عربی یا انگلیسی جست‌وجو کنید.\n• مجموعه‌های حدیث دانلودشده را آفلاین بخوانید.\n• حدیث‌های موردعلاقه را ذخیره کنید، یادداشت بنویسید و حدیث‌ها را به اشتراک بگذارید.",
-      "fr-FR": "• Surlignez des passages du Coran et des hadiths, puis retrouvez-les dans les surlignages.\n• Recherchez des hadiths en arabe ou en anglais dans les recueils.\n• Lisez les recueils de hadiths téléchargés hors connexion.\n• Enregistrez vos hadiths favoris, ajoutez des notes et partagez-les.",
-      "id": "• Sorot bagian Al-Qur’an dan hadis, lalu baca kembali di Sorotan.\n• Telusuri koleksi hadis dalam bahasa Arab atau Inggris.\n• Baca koleksi hadis yang telah diunduh tanpa koneksi internet.\n• Simpan hadis favorit, tambahkan catatan, dan bagikan hadis.",
-      "it": "• Evidenzia passi del Corano e degli hadith e ritrovali tra le evidenziazioni.\n• Cerca nelle raccolte di hadith in arabo o in inglese.\n• Leggi offline le raccolte di hadith scaricate.\n• Salva gli hadith preferiti, aggiungi note e condividili.",
-      "ja": "• クルアーンやハディースの一節をハイライトし、後からハイライト一覧で読み返せます。\n• アラビア語または英語でハディース集を検索できます。\n• ダウンロードしたハディース集はオフラインでも読めます。\n• お気に入りのハディースを保存し、メモを付けたり共有したりできます。",
-      "ms": "• Serlahkan petikan al-Quran dan hadis, kemudian baca semula dalam bahagian Sorotan.\n• Cari dalam koleksi hadis menggunakan bahasa Arab atau Inggeris.\n• Baca koleksi hadis yang telah dimuat turun secara luar talian.\n• Simpan hadis kegemaran, tambah nota dan kongsikan hadis.",
-      "ru": "• Выделяйте отрывки из Корана и хадисов и перечитывайте их в разделе выделений.\n• Ищите по сборникам хадисов на арабском или английском языке.\n• Читайте скачанные сборники хадисов без интернета.\n• Сохраняйте любимые хадисы, добавляйте заметки и делитесь хадисами.",
-      "tr": "• Kur’an ve hadislerden bölümleri vurgulayın ve Vurgular bölümünde yeniden okuyun.\n• Hadis derlemelerinde Arapça veya İngilizce arama yapın.\n• İndirdiğiniz hadis derlemelerini çevrimdışı okuyun.\n• Sevdiğiniz hadisleri kaydedin, not ekleyin ve paylaşın.",
-      "ur-PK": "• قرآن اور حدیث کے اقتباسات نمایاں کریں اور انہیں جھلکیوں کے حصے میں دوبارہ پڑھیں۔\n• حدیث کے مجموعوں میں عربی یا انگریزی میں تلاش کریں۔\n• ڈاؤن لوڈ کیے گئے حدیث کے مجموعے انٹرنیٹ کے بغیر پڑھیں۔\n• پسندیدہ احادیث محفوظ کریں، نوٹس شامل کریں اور احادیث شیئر کریں۔",
-      "zh-Hans": "• 高亮标记《古兰经》和圣训中的段落，稍后可在高亮列表中重读。\n• 用阿拉伯语或英语搜索圣训集。\n• 离线阅读已下载的圣训集。\n• 收藏喜爱的圣训、添加笔记，或与他人分享。",
-      "zh-Hant": "• 醒目標示《古蘭經》和聖訓中的段落，稍後可在標示清單中重讀。\n• 用阿拉伯語或英語搜尋聖訓集。\n• 離線閱讀已下載的聖訓集。\n• 收藏喜愛的聖訓、加入筆記，或與他人分享。"
+      "en-US": [
+        "Highlight Quran and Hadith passages and revisit them in Highlights.",
+        "Search Hadith collections in Arabic or English.",
+        "Read downloaded Hadith collections offline.",
+        "Save favorite hadiths, add notes, and share them."
+      ],
+      "ar-SA": [
+        "ظلّل مقاطع من القرآن والحديث وارجع إليها في قسم التظليلات.",
+        "ابحث في مجموعات الحديث بالعربية أو الإنجليزية.",
+        "اقرأ مجموعات الحديث التي نزّلتها دون اتصال بالإنترنت.",
+        "احفظ أحاديثك المفضلة وأضف ملاحظات وشارك الأحاديث."
+      ],
+      "de-DE": [
+        "Markiere Passagen aus Koran und Hadith und lies sie unter „Markierungen“ erneut.",
+        "Durchsuche Hadith-Sammlungen auf Arabisch oder Englisch.",
+        "Lies heruntergeladene Hadith-Sammlungen offline.",
+        "Speichere deine Lieblingshadithe, ergänze Notizen und teile Hadithe."
+      ],
+      "es-ES": [
+        "Resalta pasajes del Corán y de los hadices y vuelve a leerlos en Destacados.",
+        "Busca en las colecciones de hadices en árabe o en inglés.",
+        "Lee sin conexión las colecciones de hadices descargadas.",
+        "Guarda tus hadices favoritos, añade notas y compártelos."
+      ],
+      "fa": [
+        "بخش‌هایی از قرآن و حدیث را برجسته کنید و در بخش برجسته‌ها دوباره بخوانید.",
+        "در مجموعه‌های حدیث به عربی یا انگلیسی جست‌وجو کنید.",
+        "مجموعه‌های حدیث دانلودشده را آفلاین بخوانید.",
+        "حدیث‌های موردعلاقه را ذخیره کنید، یادداشت بنویسید و حدیث‌ها را به اشتراک بگذارید."
+      ],
+      "fr-FR": [
+        "Surlignez des passages du Coran et des hadiths, puis retrouvez-les dans les surlignages.",
+        "Recherchez des hadiths en arabe ou en anglais dans les recueils.",
+        "Lisez les recueils de hadiths téléchargés hors connexion.",
+        "Enregistrez vos hadiths favoris, ajoutez des notes et partagez-les."
+      ],
+      "id": [
+        "Sorot bagian Al-Qur’an dan hadis, lalu baca kembali di Sorotan.",
+        "Telusuri koleksi hadis dalam bahasa Arab atau Inggris.",
+        "Baca koleksi hadis yang telah diunduh tanpa koneksi internet.",
+        "Simpan hadis favorit, tambahkan catatan, dan bagikan hadis."
+      ],
+      "it": [
+        "Evidenzia passi del Corano e degli hadith e ritrovali tra le evidenziazioni.",
+        "Cerca nelle raccolte di hadith in arabo o in inglese.",
+        "Leggi offline le raccolte di hadith scaricate.",
+        "Salva gli hadith preferiti, aggiungi note e condividili."
+      ],
+      "ja": [
+        "クルアーンやハディースの一節をハイライトし、後からハイライト一覧で読み返せます。",
+        "アラビア語または英語でハディース集を検索できます。",
+        "ダウンロードしたハディース集はオフラインでも読めます。",
+        "お気に入りのハディースを保存し、メモを付けたり共有したりできます。"
+      ],
+      "ms": [
+        "Serlahkan petikan al-Quran dan hadis, kemudian baca semula dalam bahagian Sorotan.",
+        "Cari dalam koleksi hadis menggunakan bahasa Arab atau Inggeris.",
+        "Baca koleksi hadis yang telah dimuat turun secara luar talian.",
+        "Simpan hadis kegemaran, tambah nota dan kongsikan hadis."
+      ],
+      "ru": [
+        "Выделяйте отрывки из Корана и хадисов и перечитывайте их в разделе выделений.",
+        "Ищите по сборникам хадисов на арабском или английском языке.",
+        "Читайте скачанные сборники хадисов без интернета.",
+        "Сохраняйте любимые хадисы, добавляйте заметки и делитесь хадисами."
+      ],
+      "tr": [
+        "Kur’an ve hadislerden bölümleri vurgulayın ve Vurgular bölümünde yeniden okuyun.",
+        "Hadis derlemelerinde Arapça veya İngilizce arama yapın.",
+        "İndirdiğiniz hadis derlemelerini çevrimdışı okuyun.",
+        "Sevdiğiniz hadisleri kaydedin, not ekleyin ve paylaşın."
+      ],
+      "ur-PK": [
+        "قرآن اور حدیث کے اقتباسات نمایاں کریں اور انہیں جھلکیوں کے حصے میں دوبارہ پڑھیں۔",
+        "حدیث کے مجموعوں میں عربی یا انگریزی میں تلاش کریں۔",
+        "ڈاؤن لوڈ کیے گئے حدیث کے مجموعے انٹرنیٹ کے بغیر پڑھیں۔",
+        "پسندیدہ احادیث محفوظ کریں، نوٹس شامل کریں اور احادیث شیئر کریں۔"
+      ],
+      "zh-Hans": [
+        "高亮标记《古兰经》和圣训中的段落，稍后可在高亮列表中重读。",
+        "用阿拉伯语或英语搜索圣训集。",
+        "离线阅读已下载的圣训集。",
+        "收藏喜爱的圣训、添加笔记，或与他人分享。"
+      ],
+      "zh-Hant": [
+        "醒目標示《古蘭經》和聖訓中的段落，稍後可在標示清單中重讀。",
+        "用阿拉伯語或英語搜尋聖訓集。",
+        "離線閱讀已下載的聖訓集。",
+        "收藏喜愛的聖訓、加入筆記，或與他人分享。"
+      ]
     },
     "releaseDates": {
       "ios": "2026-11-06"
@@ -31,47 +106,303 @@
       "ios"
     ],
     "notes": {
-      "en-US": "• Track daily prayers, reading, and remembrance in Activity.\n• Browse dedicated sections for supplications, Islamic rulings, and events.\n• Bookmark Quran passages to return to them later.\n• Use smart search across the Quran and Hadith.\n• Count with 3D tasbih beads or track rakaat with the front camera.\n• See the Qibla direction on the map.",
-      "ar-SA": "• تابع صلاتك وقراءتك وأذكارك اليومية في قسم النشاط.\n• تصفّح الأقسام المخصّصة للأدعية والأحكام الشرعية والمناسبات الإسلامية.\n• ضع علامات مرجعية على مقاطع القرآن للعودة إليها لاحقًا.\n• استخدم البحث الذكي في القرآن والحديث.\n• سبّح بمسبحة ثلاثية الأبعاد أو عُدّ الركعات بالكاميرا الأمامية.\n• شاهد اتجاه القبلة على الخريطة.",
-      "de-DE": "• Verfolge unter „Aktivität“ deine täglichen Gebete, deine Lesezeit und dein Gottesgedenken.\n• Entdecke eigene Bereiche für Bittgebete, islamische Rechtsurteile und islamische Anlässe.\n• Setze Lesezeichen, um Koranstellen später wiederzufinden.\n• Nutze die intelligente Suche in Koran und Hadith.\n• Zähle mit einer 3D-Gebetskette oder erfasse Gebetseinheiten mit der Frontkamera.\n• Sieh dir die Gebetsrichtung auf der Karte an.",
-      "es-ES": "• Lleva un registro de tus oraciones, lecturas y recuerdos de Dios diarios en Actividad.\n• Explora las secciones de súplicas, dictámenes islámicos y acontecimientos islámicos.\n• Marca pasajes del Corán para volver a ellos más tarde.\n• Usa la búsqueda inteligente en el Corán y los hadices.\n• Cuenta con un tasbih en 3D o registra las rakats con la cámara frontal.\n• Consulta la dirección de la alquibla en el mapa.",
-      "fa": "• در بخش «فعالیت»، نمازها، مطالعه و ذکرهای روزانه‌تان را پیگیری کنید.\n• دعاها، احکام شرعی و مناسبت‌های اسلامی را در بخش‌های جداگانه ببینید.\n• بخش‌هایی از قرآن را نشانک‌گذاری کنید تا بعداً به آن‌ها برگردید.\n• در قرآن و حدیث از جست‌وجوی هوشمند استفاده کنید.\n• با تسبیح سه‌بعدی ذکر بشمارید یا با دوربین جلو تعداد رکعت‌ها را ثبت کنید.\n• جهت قبله را روی نقشه ببینید.",
-      "fr-FR": "• Suivez vos prières, vos lectures et vos invocations quotidiennes dans Activité.\n• Parcourez les rubriques consacrées aux supplications, aux avis juridiques et aux événements islamiques.\n• Ajoutez des marque-pages pour retrouver vos passages du Coran.\n• Utilisez la recherche intelligente dans le Coran et les hadiths.\n• Comptez avec un chapelet en 3D ou suivez vos unités de prière avec la caméra avant.\n• Consultez la direction de la qibla sur la carte.",
-      "id": "• Pantau salat, bacaan, dan zikir harian di Aktivitas.\n• Jelajahi bagian khusus untuk doa, hukum Islam, dan peristiwa Islam.\n• Tandai bagian Al-Qur’an untuk dibaca kembali nanti.\n• Gunakan pencarian pintar di Al-Qur’an dan hadis.\n• Hitung zikir dengan tasbih 3D atau hitung rakaat dengan kamera depan.\n• Lihat arah kiblat pada peta.",
-      "it": "• Tieni traccia delle preghiere, delle letture e del ricordo di Dio quotidiani in Attività.\n• Esplora le sezioni dedicate a suppliche, responsi giuridici ed eventi islamici.\n• Aggiungi segnalibri ai passi del Corano per ritrovarli in seguito.\n• Usa la ricerca intelligente nel Corano e negli hadith.\n• Conta con un tasbih in 3D o registra le unità di preghiera con la fotocamera anteriore.\n• Visualizza la direzione della qibla sulla mappa.",
-      "ja": "• 「アクティビティ」で毎日の礼拝、読書、ズィクルを記録できます。\n• ドゥアー、イスラム法の見解、イスラムの行事をそれぞれのセクションで確認できます。\n• クルアーンにしおりを付けて、後からその箇所に戻れます。\n• クルアーンとハディースをスマート検索できます。\n• 3Dの数珠でズィクルを数えたり、前面カメラで礼拝のラカア数を記録したりできます。\n• 地図でキブラの方向を確認できます。",
-      "ms": "• Jejaki solat, bacaan dan zikir harian anda dalam Aktiviti.\n• Terokai bahagian khusus untuk doa, hukum Islam dan peristiwa Islam.\n• Tandakan petikan al-Quran supaya mudah dibaca semula.\n• Gunakan carian pintar dalam al-Quran dan hadis.\n• Kira zikir dengan tasbih 3D atau kira rakaat menggunakan kamera hadapan.\n• Lihat arah kiblat pada peta.",
-      "ru": "• Отмечайте ежедневные молитвы, чтение и поминание Аллаха в разделе «Активность».\n• Изучайте дуа, исламские правовые решения и события в отдельных разделах.\n• Добавляйте закладки, чтобы возвращаться к отрывкам из Корана.\n• Используйте умный поиск по Корану и хадисам.\n• Считайте зикр на трёхмерных чётках или отслеживайте ракааты с помощью фронтальной камеры.\n• Смотрите направление киблы на карте.",
-      "tr": "• Günlük namazlarınızı, okumalarınızı ve zikirlerinizi Etkinlik bölümünde takip edin.\n• Dualara, dinî hükümlere ve İslami günlere ayrılan bölümlere göz atın.\n• Daha sonra dönmek istediğiniz Kur’an bölümlerine yer imi ekleyin.\n• Kur’an ve hadislerde akıllı aramayı kullanın.\n• Üç boyutlu tespihle zikir sayın veya ön kamerayla rekâtları takip edin.\n• Kıble yönünü haritada görün.",
-      "ur-PK": "• سرگرمی کے حصے میں اپنی روزانہ کی نمازوں، مطالعے اور ذکر کا ریکارڈ رکھیں۔\n• دعاؤں، شرعی احکام اور اسلامی مناسبتوں کے لیے مخصوص حصے دیکھیں۔\n• قرآن کے اقتباسات پر بُک مارک لگائیں تاکہ بعد میں انہیں دوبارہ پڑھ سکیں۔\n• قرآن اور حدیث میں اسمارٹ تلاش استعمال کریں۔\n• تھری ڈی تسبیح سے ذکر گنیں یا سامنے والے کیمرے سے رکعتوں کی گنتی کریں۔\n• نقشے پر قبلے کی سمت دیکھیں۔",
-      "zh-Hans": "• 在“活动”中记录每天的礼拜、阅读和记主。\n• 在各自的专区中浏览祈祷词、教法裁决和伊斯兰纪念日。\n• 为《古兰经》段落添加书签，方便日后重读。\n• 使用智能搜索查找《古兰经》和圣训中的内容。\n• 使用三维念珠计数，或用前置摄像头记录礼拜的拜数。\n• 在地图上查看朝拜方向。",
-      "zh-Hant": "• 在「活動」中記錄每天的禮拜、閱讀和記主。\n• 在各自的專區中瀏覽祈禱詞、教法裁決和伊斯蘭紀念日。\n• 為《古蘭經》段落加入書籤，方便日後重讀。\n• 使用智慧搜尋尋找《古蘭經》和聖訓中的內容。\n• 使用立體念珠計數，或用前置鏡頭記錄禮拜的拜數。\n• 在地圖上查看朝拜方向。"
+      "en-US": [
+        "Track daily prayers, reading, and remembrance in Activity.",
+        "Browse dedicated sections for supplications, Islamic rulings, and events.",
+        "Bookmark Quran passages to return to them later.",
+        "Use smart search across the Quran and Hadith.",
+        "Count with 3D tasbih beads or track rakaat with the front camera.",
+        "See the Qibla direction on the map."
+      ],
+      "ar-SA": [
+        "تابع صلاتك وقراءتك وأذكارك اليومية في قسم النشاط.",
+        "تصفّح الأقسام المخصّصة للأدعية والأحكام الشرعية والمناسبات الإسلامية.",
+        "ضع علامات مرجعية على مقاطع القرآن للعودة إليها لاحقًا.",
+        "استخدم البحث الذكي في القرآن والحديث.",
+        "سبّح بمسبحة ثلاثية الأبعاد أو عُدّ الركعات بالكاميرا الأمامية.",
+        "شاهد اتجاه القبلة على الخريطة."
+      ],
+      "de-DE": [
+        "Verfolge unter „Aktivität“ deine täglichen Gebete, deine Lesezeit und dein Gottesgedenken.",
+        "Entdecke eigene Bereiche für Bittgebete, islamische Rechtsurteile und islamische Anlässe.",
+        "Setze Lesezeichen, um Koranstellen später wiederzufinden.",
+        "Nutze die intelligente Suche in Koran und Hadith.",
+        "Zähle mit einer 3D-Gebetskette oder erfasse Gebetseinheiten mit der Frontkamera.",
+        "Sieh dir die Gebetsrichtung auf der Karte an."
+      ],
+      "es-ES": [
+        "Lleva un registro de tus oraciones, lecturas y recuerdos de Dios diarios en Actividad.",
+        "Explora las secciones de súplicas, dictámenes islámicos y acontecimientos islámicos.",
+        "Marca pasajes del Corán para volver a ellos más tarde.",
+        "Usa la búsqueda inteligente en el Corán y los hadices.",
+        "Cuenta con un tasbih en 3D o registra las rakats con la cámara frontal.",
+        "Consulta la dirección de la alquibla en el mapa."
+      ],
+      "fa": [
+        "در بخش «فعالیت»، نمازها، مطالعه و ذکرهای روزانه‌تان را پیگیری کنید.",
+        "دعاها، احکام شرعی و مناسبت‌های اسلامی را در بخش‌های جداگانه ببینید.",
+        "بخش‌هایی از قرآن را نشانک‌گذاری کنید تا بعداً به آن‌ها برگردید.",
+        "در قرآن و حدیث از جست‌وجوی هوشمند استفاده کنید.",
+        "با تسبیح سه‌بعدی ذکر بشمارید یا با دوربین جلو تعداد رکعت‌ها را ثبت کنید.",
+        "جهت قبله را روی نقشه ببینید."
+      ],
+      "fr-FR": [
+        "Suivez vos prières, vos lectures et vos invocations quotidiennes dans Activité.",
+        "Parcourez les rubriques consacrées aux supplications, aux avis juridiques et aux événements islamiques.",
+        "Ajoutez des marque-pages pour retrouver vos passages du Coran.",
+        "Utilisez la recherche intelligente dans le Coran et les hadiths.",
+        "Comptez avec un chapelet en 3D ou suivez vos unités de prière avec la caméra avant.",
+        "Consultez la direction de la qibla sur la carte."
+      ],
+      "id": [
+        "Pantau salat, bacaan, dan zikir harian di Aktivitas.",
+        "Jelajahi bagian khusus untuk doa, hukum Islam, dan peristiwa Islam.",
+        "Tandai bagian Al-Qur’an untuk dibaca kembali nanti.",
+        "Gunakan pencarian pintar di Al-Qur’an dan hadis.",
+        "Hitung zikir dengan tasbih 3D atau hitung rakaat dengan kamera depan.",
+        "Lihat arah kiblat pada peta."
+      ],
+      "it": [
+        "Tieni traccia delle preghiere, delle letture e del ricordo di Dio quotidiani in Attività.",
+        "Esplora le sezioni dedicate a suppliche, responsi giuridici ed eventi islamici.",
+        "Aggiungi segnalibri ai passi del Corano per ritrovarli in seguito.",
+        "Usa la ricerca intelligente nel Corano e negli hadith.",
+        "Conta con un tasbih in 3D o registra le unità di preghiera con la fotocamera anteriore.",
+        "Visualizza la direzione della qibla sulla mappa."
+      ],
+      "ja": [
+        "「アクティビティ」で毎日の礼拝、読書、ズィクルを記録できます。",
+        "ドゥアー、イスラム法の見解、イスラムの行事をそれぞれのセクションで確認できます。",
+        "クルアーンにしおりを付けて、後からその箇所に戻れます。",
+        "クルアーンとハディースをスマート検索できます。",
+        "3Dの数珠でズィクルを数えたり、前面カメラで礼拝のラカア数を記録したりできます。",
+        "地図でキブラの方向を確認できます。"
+      ],
+      "ms": [
+        "Jejaki solat, bacaan dan zikir harian anda dalam Aktiviti.",
+        "Terokai bahagian khusus untuk doa, hukum Islam dan peristiwa Islam.",
+        "Tandakan petikan al-Quran supaya mudah dibaca semula.",
+        "Gunakan carian pintar dalam al-Quran dan hadis.",
+        "Kira zikir dengan tasbih 3D atau kira rakaat menggunakan kamera hadapan.",
+        "Lihat arah kiblat pada peta."
+      ],
+      "ru": [
+        "Отмечайте ежедневные молитвы, чтение и поминание Аллаха в разделе «Активность».",
+        "Изучайте дуа, исламские правовые решения и события в отдельных разделах.",
+        "Добавляйте закладки, чтобы возвращаться к отрывкам из Корана.",
+        "Используйте умный поиск по Корану и хадисам.",
+        "Считайте зикр на трёхмерных чётках или отслеживайте ракааты с помощью фронтальной камеры.",
+        "Смотрите направление киблы на карте."
+      ],
+      "tr": [
+        "Günlük namazlarınızı, okumalarınızı ve zikirlerinizi Etkinlik bölümünde takip edin.",
+        "Dualara, dinî hükümlere ve İslami günlere ayrılan bölümlere göz atın.",
+        "Daha sonra dönmek istediğiniz Kur’an bölümlerine yer imi ekleyin.",
+        "Kur’an ve hadislerde akıllı aramayı kullanın.",
+        "Üç boyutlu tespihle zikir sayın veya ön kamerayla rekâtları takip edin.",
+        "Kıble yönünü haritada görün."
+      ],
+      "ur-PK": [
+        "سرگرمی کے حصے میں اپنی روزانہ کی نمازوں، مطالعے اور ذکر کا ریکارڈ رکھیں۔",
+        "دعاؤں، شرعی احکام اور اسلامی مناسبتوں کے لیے مخصوص حصے دیکھیں۔",
+        "قرآن کے اقتباسات پر بُک مارک لگائیں تاکہ بعد میں انہیں دوبارہ پڑھ سکیں۔",
+        "قرآن اور حدیث میں اسمارٹ تلاش استعمال کریں۔",
+        "تھری ڈی تسبیح سے ذکر گنیں یا سامنے والے کیمرے سے رکعتوں کی گنتی کریں۔",
+        "نقشے پر قبلے کی سمت دیکھیں۔"
+      ],
+      "zh-Hans": [
+        "在“活动”中记录每天的礼拜、阅读和记主。",
+        "在各自的专区中浏览祈祷词、教法裁决和伊斯兰纪念日。",
+        "为《古兰经》段落添加书签，方便日后重读。",
+        "使用智能搜索查找《古兰经》和圣训中的内容。",
+        "使用三维念珠计数，或用前置摄像头记录礼拜的拜数。",
+        "在地图上查看朝拜方向。"
+      ],
+      "zh-Hant": [
+        "在「活動」中記錄每天的禮拜、閱讀和記主。",
+        "在各自的專區中瀏覽祈禱詞、教法裁決和伊斯蘭紀念日。",
+        "為《古蘭經》段落加入書籤，方便日後重讀。",
+        "使用智慧搜尋尋找《古蘭經》和聖訓中的內容。",
+        "使用立體念珠計數，或用前置鏡頭記錄禮拜的拜數。",
+        "在地圖上查看朝拜方向。"
+      ]
     },
     "releaseDates": {
       "ios": "2026-11-17"
     }
   },
   {
-    "version": "1.1.1",
+    "version": "1.2.0",
     "platforms": [
-      "ios"
+      "ios",
+      "macos"
     ],
     "notes": {
-      "en-US": "• Smart Search is now the default and returns more relevant results.\n• Show or hide Arabic diacritics while reading.",
-      "ar-SA": "• أصبح البحث الذكي طريقة البحث الافتراضية، ويعرض نتائج أكثر صلة بما تبحث عنه.\n• أظهر التشكيل أو أخفِه أثناء القراءة.",
-      "de-DE": "• Die intelligente Suche ist jetzt die Standardsuche und liefert passendere Ergebnisse.\n• Blende beim Lesen arabische Vokalzeichen ein oder aus.",
-      "es-ES": "• La búsqueda inteligente es ahora el método predeterminado y ofrece resultados más relevantes.\n• Muestra u oculta los signos diacríticos del árabe durante la lectura.",
-      "fa": "• جست‌وجوی هوشمند اکنون روش پیش‌فرض جست‌وجو است و نتایج مرتبط‌تری نشان می‌دهد.\n• هنگام خواندن، اعراب متن عربی را نمایش دهید یا پنهان کنید.",
-      "fr-FR": "• La recherche intelligente est désormais le mode par défaut et propose des résultats plus pertinents.\n• Affichez ou masquez les signes diacritiques arabes pendant la lecture.",
-      "id": "• Pencarian pintar kini menjadi metode pencarian bawaan dan memberikan hasil yang lebih relevan.\n• Tampilkan atau sembunyikan harakat saat membaca.",
-      "it": "• La ricerca intelligente è ora il metodo predefinito e offre risultati più pertinenti.\n• Mostra o nascondi i segni diacritici arabi durante la lettura.",
-      "ja": "• スマート検索が標準になり、検索内容により合った結果が表示されます。\n• 読書中にアラビア語の発音記号の表示を切り替えられます。",
-      "ms": "• Carian pintar kini menjadi kaedah carian lalai dan memberikan hasil yang lebih relevan.\n• Paparkan atau sembunyikan tanda baris Arab semasa membaca.",
-      "ru": "• Умный поиск теперь используется по умолчанию и находит более подходящие результаты.\n• Показывайте или скрывайте арабские огласовки при чтении.",
-      "tr": "• Akıllı arama artık varsayılan arama yöntemi ve daha alakalı sonuçlar sunuyor.\n• Okurken Arapça harekeleri gösterin veya gizleyin.",
-      "ur-PK": "• اسمارٹ تلاش اب تلاش کا طے شدہ طریقہ ہے اور زیادہ متعلقہ نتائج دکھاتی ہے۔\n• پڑھتے وقت عربی اعراب دکھائیں یا چھپائیں۔",
-      "zh-Hans": "• 智能搜索现已成为默认搜索方式，搜索结果也更切合你的需求。\n• 阅读时可显示或隐藏阿拉伯语注音符号。",
-      "zh-Hant": "• 智慧搜尋現已成為預設搜尋方式，搜尋結果也更切合你的需求。\n• 閱讀時可顯示或隱藏阿拉伯語注音符號。"
+      "en-US": [
+        "Translate Hadiths and rulings on demand.",
+        "Explore newly added rulings.",
+        "Enjoy faster, smoother performance.",
+        "Discover the new Sermons section.",
+        "Meet the redesigned Today and Rakaat screens.",
+        "Smart Search is now the default and returns more relevant results.",
+        "Show or hide Arabic diacritics while reading.",
+        "Use Siri and Shortcuts to reach Muntathir content.",
+        "Look up Arabic roots more accurately, with summaries written on your device."
+      ],
+      "ar-SA": [
+        "ترجمة الأحاديث والأحكام الشرعية",
+        "اطّلع على الأحكام الشرعية المضافة حديثًا.",
+        "استمتع بأداء أسرع وأكثر سلاسة.",
+        "اكتشف قسم الخطب الجديد.",
+        "تعرّف على شاشتي اليوم والركعات بتصميمهما الجديد.",
+        "أصبح البحث الذكي طريقة البحث الافتراضية، ويعرض نتائج أكثر صلة بما تبحث عنه.",
+        "أظهر التشكيل أو أخفِه أثناء القراءة.",
+        "استخدم سيري والاختصارات للوصول إلى محتوى منتظِر.",
+        "ابحث عن الجذور العربية بدقة أكبر مع ملخصات تُكتب على جهازك."
+      ],
+      "de-DE": [
+        "Übersetze Hadithe und Rechtsgutachten bei Bedarf.",
+        "Entdecke neu hinzugefügte Rechtsgutachten.",
+        "Profitiere von schnellerer, flüssigerer Leistung.",
+        "Entdecke den neuen Bereich „Predigten“.",
+        "Lerne die neu gestalteten Bildschirme „Heute“ und „Rakaat“ kennen.",
+        "Die intelligente Suche ist jetzt die Standardsuche und liefert passendere Ergebnisse.",
+        "Blende beim Lesen arabische Vokalzeichen ein oder aus.",
+        "Greife mit Siri und Kurzbefehlen auf Inhalte von Muntathir zu.",
+        "Suche arabische Wurzeln genauer, mit Zusammenfassungen, die auf deinem Gerät entstehen."
+      ],
+      "es-ES": [
+        "Traduce hadices y dictámenes cuando lo necesites.",
+        "Explora los nuevos dictámenes añadidos.",
+        "Disfruta de un rendimiento más rápido y fluido.",
+        "Descubre la nueva sección de Sermones.",
+        "Descubre las pantallas Hoy y Rakaat, ahora rediseñadas.",
+        "La búsqueda inteligente es ahora el método predeterminado y ofrece resultados más relevantes.",
+        "Muestra u oculta los signos diacríticos del árabe durante la lectura.",
+        "Usa Siri y Atajos para acceder al contenido de Muntathir.",
+        "Busca raíces árabes con más precisión, con resúmenes generados en tu dispositivo."
+      ],
+      "fa": [
+        "حدیث‌ها و احکام را در صورت نیاز ترجمه کنید.",
+        "احکام تازه‌اضافه‌شده را مرور کنید.",
+        "از عملکرد سریع‌تر و روان‌تر لذت ببرید.",
+        "بخش جدید خطبه‌ها را کشف کنید.",
+        "با صفحه‌های بازطراحی‌شدهٔ امروز و رکعت آشنا شوید.",
+        "جست‌وجوی هوشمند اکنون روش پیش‌فرض جست‌وجو است و نتایج مرتبط‌تری نشان می‌دهد.",
+        "هنگام خواندن، اعراب متن عربی را نمایش دهید یا پنهان کنید.",
+        "با سیری و میان‌برها به محتوای Muntathir دسترسی پیدا کنید.",
+        "ریشه‌های عربی را دقیق‌تر جست‌وجو کنید، با خلاصه‌هایی که روی دستگاه شما نوشته می‌شوند."
+      ],
+      "fr-FR": [
+        "Traduisez les hadiths et les avis juridiques à la demande.",
+        "Découvrez les nouveaux avis juridiques ajoutés.",
+        "Profitez de performances plus rapides et plus fluides.",
+        "Découvrez la nouvelle section Sermons.",
+        "Découvrez les écrans Aujourd’hui et Rakaat entièrement repensés.",
+        "La recherche intelligente est désormais le mode par défaut et propose des résultats plus pertinents.",
+        "Affichez ou masquez les signes diacritiques arabes pendant la lecture.",
+        "Accédez au contenu de Muntathir avec Siri et Raccourcis.",
+        "Recherchez les racines arabes plus précisément, avec des résumés rédigés sur votre appareil."
+      ],
+      "id": [
+        "Terjemahkan hadis dan fatwa sesuai kebutuhan.",
+        "Jelajahi fatwa yang baru ditambahkan.",
+        "Nikmati performa yang lebih cepat dan mulus.",
+        "Temukan bagian Khotbah yang baru.",
+        "Lihat tampilan Hari Ini dan Rakaat yang didesain ulang.",
+        "Pencarian pintar kini menjadi metode pencarian bawaan dan memberikan hasil yang lebih relevan.",
+        "Tampilkan atau sembunyikan harakat saat membaca.",
+        "Gunakan Siri dan Pintasan untuk membuka konten Muntathir.",
+        "Cari akar kata Arab dengan lebih akurat, lengkap dengan ringkasan yang dibuat di perangkat Anda."
+      ],
+      "it": [
+        "Traduci hadith e responsi giuridici su richiesta.",
+        "Scopri i responsi giuridici appena aggiunti.",
+        "Goditi prestazioni più rapide e fluide.",
+        "Scopri la nuova sezione Sermoni.",
+        "Prova le schermate Oggi e Rakaat completamente ridisegnate.",
+        "La ricerca intelligente è ora il metodo predefinito e offre risultati più pertinenti.",
+        "Mostra o nascondi i segni diacritici arabi durante la lettura.",
+        "Usa Siri e Comandi rapidi per accedere ai contenuti di Muntathir.",
+        "Cerca le radici arabe con maggiore precisione, con riepiloghi creati sul tuo dispositivo."
+      ],
+      "ja": [
+        "ハディースと法的見解を必要に応じて翻訳できます。",
+        "新たに追加された法的見解をご覧ください。",
+        "より速く、よりスムーズに動作します。",
+        "新しい「説教」セクションが登場しました。",
+        "「今日」と「ラカア」の画面を刷新しました。",
+        "スマート検索が標準になり、検索内容により合った結果が表示されます。",
+        "読書中にアラビア語の発音記号の表示を切り替えられます。",
+        "SiriとショートカットでMuntathirのコンテンツを利用できます。",
+        "アラビア語の語根をより正確に検索でき、要約はデバイス上で作成されます。"
+      ],
+      "ms": [
+        "Terjemahkan hadis dan fatwa mengikut keperluan.",
+        "Terokai fatwa yang baru ditambah.",
+        "Nikmati prestasi yang lebih pantas dan lancar.",
+        "Temui bahagian Khutbah yang baharu.",
+        "Lihat skrin Hari Ini dan Rakaat yang direka bentuk semula.",
+        "Carian pintar kini menjadi kaedah carian lalai dan memberikan hasil yang lebih relevan.",
+        "Paparkan atau sembunyikan tanda baris Arab semasa membaca.",
+        "Gunakan Siri dan Pintasan untuk mengakses kandungan Muntathir.",
+        "Cari akar kata Arab dengan lebih tepat, lengkap dengan ringkasan yang dihasilkan pada peranti anda."
+      ],
+      "ru": [
+        "Переводите хадисы и фетвы по запросу.",
+        "Изучайте новые добавленные фетвы.",
+        "Наслаждайтесь более быстрой и плавной работой.",
+        "Откройте для себя новый раздел «Проповеди».",
+        "Оцените обновлённый дизайн экранов «Сегодня» и «Ракаат».",
+        "Умный поиск теперь используется по умолчанию и находит более подходящие результаты.",
+        "Показывайте или скрывайте арабские огласовки при чтении.",
+        "Открывайте материалы Muntathir через Siri и «Быстрые команды».",
+        "Ищите арабские корни точнее — с краткими пересказами, которые создаются на вашем устройстве."
+      ],
+      "tr": [
+        "Hadisleri ve fetvaları istediğiniz zaman çevirin.",
+        "Yeni eklenen fetvaları keşfedin.",
+        "Daha hızlı ve akıcı performansın keyfini çıkarın.",
+        "Yeni Hutbeler bölümünü keşfedin.",
+        "Yeniden tasarlanan Bugün ve Rekât ekranlarını deneyin.",
+        "Akıllı arama artık varsayılan arama yöntemi ve daha alakalı sonuçlar sunuyor.",
+        "Okurken Arapça harekeleri gösterin veya gizleyin.",
+        "Siri ve Kısayollar ile Muntathir içeriğine ulaşın.",
+        "Arapça kökleri daha doğru arayın; özetler cihazınızda hazırlanır."
+      ],
+      "ur-PK": [
+        "احادیث اور فتاویٰ کا ضرورت کے مطابق ترجمہ کریں۔",
+        "نئے شامل کیے گئے فتاویٰ دیکھیں۔",
+        "تیز اور زیادہ رواں کارکردگی سے لطف اٹھائیں۔",
+        "خطبات کا نیا سیکشن دریافت کریں۔",
+        "نئے ڈیزائن والی آج اور رکعات کی اسکرینیں دیکھیں۔",
+        "اسمارٹ تلاش اب تلاش کا طے شدہ طریقہ ہے اور زیادہ متعلقہ نتائج دکھاتی ہے۔",
+        "پڑھتے وقت عربی اعراب دکھائیں یا چھپائیں۔",
+        "سری اور شارٹ کٹس کے ذریعے منتظر کے مواد تک پہنچیں۔",
+        "عربی جڑوں کو زیادہ درستی سے تلاش کریں، خلاصے آپ کے آلے پر تیار ہوتے ہیں۔"
+      ],
+      "zh-Hans": [
+        "按需翻译圣训和教法裁决。",
+        "探索新增的教法裁决。",
+        "享受更快、更流畅的性能。",
+        "发现全新的“讲道”板块。",
+        "体验焕然一新的“今日”和“拜数”界面。",
+        "智能搜索现已成为默认搜索方式，搜索结果也更切合你的需求。",
+        "阅读时可显示或隐藏阿拉伯语注音符号。",
+        "通过Siri和快捷指令使用Muntathir内容。",
+        "更准确地查询阿拉伯语词根，摘要在设备上生成。"
+      ],
+      "zh-Hant": [
+        "依需求翻譯聖訓與教法裁決。",
+        "探索新增的教法裁決。",
+        "享受更快、更流暢的效能。",
+        "探索全新的「講道」區塊。",
+        "體驗煥然一新的「今日」與「拜數」畫面。",
+        "智慧搜尋現已成為預設搜尋方式，搜尋結果也更切合你的需求。",
+        "閱讀時可顯示或隱藏阿拉伯語注音符號。",
+        "透過Siri和捷徑使用Muntathir內容。",
+        "更準確地查詢阿拉伯語詞根，摘要在裝置上生成。"
+      ]
     }
   }
 ]

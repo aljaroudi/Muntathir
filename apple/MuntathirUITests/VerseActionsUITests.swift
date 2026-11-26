@@ -9,9 +9,8 @@ final class VerseActionsUITests: XCTestCase {
         return app
     }
 
-    @MainActor private func openQuran(_ app: XCUIApplication, arabic: Bool = false) {
-        app.buttons[arabic ? "الأدوات" : "Tools"].firstMatch.tap()
-        app.buttons["holy-quran"].tap()
+    @MainActor private func openQuran(_ app: XCUIApplication, arabic _: Bool = false) {
+        app.openTool("holy-quran")
         XCTAssertTrue(app.buttons["quran-surah-1"].waitForExistence(timeout: 10))
     }
 
@@ -199,8 +198,7 @@ final class VerseActionsUITests: XCTestCase {
     @MainActor func testPaletteCountAndOrderPersistIntoPicker() {
         let app = launch()
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        app.openSettingsFromTools()
-        app.buttons["settings-highlight-colors"].tap()
+        app.openSettingsPage("settings-highlight-colors")
         let count = app.steppers["highlight-color-count"]
         XCTAssertTrue(count.waitForExistence(timeout: 5))
         XCTAssertEqual(count.value as? String, "6")

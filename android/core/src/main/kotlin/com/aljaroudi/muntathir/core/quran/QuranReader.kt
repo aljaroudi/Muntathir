@@ -4,6 +4,8 @@ import com.aljaroudi.muntathir.core.sql.ContentSql
 import com.aljaroudi.muntathir.core.sql.query
 import com.aljaroudi.muntathir.core.text.InvalidReferenceException
 import com.aljaroudi.muntathir.core.text.QuranSearchText
+import com.aljaroudi.muntathir.core.text.QuranSpelling
+import com.aljaroudi.muntathir.core.text.QuranVocabulary
 import com.aljaroudi.muntathir.core.text.ReadingTime
 import com.aljaroudi.muntathir.core.text.SearchRelevance
 import kotlinx.coroutines.CancellationException
@@ -45,6 +47,8 @@ class QuranReader(
         val texts: Map<Int, String>,
         val surahs: IntArray,
         val searchable: BooleanArray,
+        /** The word index's terms, for matching typed spellings to the mushaf's; absent without an index. */
+        val vocabulary: QuranVocabulary?,
     )
 
     private val mutex = Mutex()
@@ -177,7 +181,10 @@ class QuranReader(
         val terms = QuranSearchText.queryTerms(query)
         if (terms.isEmpty()) return emptyList()
         val corpus = corpus()
-        val arabicRanks = guarded { ranked(matches(terms, arabicSql(), corpus.texts, job), terms, corpus.texts, job) }
+        // Typed spellings are matched to the mushaf's only for the Arabic text; translations keep what was typed.
+        val arabicTerms = corpus.vocabulary?.let { QuranSpelling.resolve(terms, it) } ?: terms
+        val arabicRanks =
+            guarded { ranked(matches(arabicTerms, arabicSql(), corpus.texts, job), arabicTerms, corpus.texts, job) }
         val translated =
             translation?.let { id ->
                 // Optional assets can disappear or be invalid; Arabic search must still work.
@@ -257,7 +264,13 @@ class QuranReader(
                         searchable[index] = QuranSearchText.isSearchableVerse(text)
                     }
                 }
-            ArabicCorpus(texts, surahs, searchable).also { corpus = it }
+            val vocabulary =
+                runCatching {
+                    QuranVocabulary(
+                        arabicQuery("SELECT term, doc FROM quran_words_vocab") { it.text(0) to it.int(1) }.toMap(),
+                    )
+                }.getOrNull()
+            ArabicCorpus(texts, surahs, searchable, vocabulary).also { corpus = it }
         }
 
     private fun translationTexts(

@@ -59,6 +59,7 @@
     <string name="camera_capture_ended_start_a_new_session_to_try">Kamera çekimi sona erdi. Tekrar denemek için yeni bir oturum başlatın.</string>
     <string name="camera_unavailable">Kamera kullanılamıyor</string>
     <string name="cancel">İptal</string>
+    <string name="chapter_note">Bölüm notu</string>
     <string name="checking_hadith_download">Hadis indirmesi kontrol ediliyor…</string>
     <string name="checking_supplications_download">Dua indirmesi kontrol ediliyor…</string>
     <string name="children">Çocuklar</string>
@@ -70,6 +71,7 @@
     <string name="choose_a_location_in_muntathir">Muntathir’de konum seç</string>
     <string name="choose_a_parentage_report">Bir soy rivayeti seç</string>
     <string name="choose_a_translation_to_read_alongside_arabic">Arapça metnin yanında okumak için bir çeviri seçin.</string>
+    <string name="choose_prayer">Namazı seçin</string>
     <string name="choose_rakaat">Rekât sayısını seçin</string>
     <string name="choose_the_calculation_method_you_follow_you_can">Takip ettiğiniz hesaplama yöntemini seçin. Daha sonra Ayarlar’dan değiştirebilirsiniz.</string>
     <string name="choose_up_to_three_tabs_everything_else_stays_in">En fazla üç sekme seçin. Diğerleri Araçlar’da kalır.</string>
@@ -129,6 +131,7 @@
     <string name="find_the_direction_of_qibla">Kıble yönünü bul</string>
     <string name="finding_your_precise_current_location">Geçerli tam konumunuz bulunuyor…</string>
     <string name="finish_setup">Kurulumu tamamla</string>
+    <string name="first_sujood">İlk secde</string>
     <string name="from_x_to_x">%1$s – %2$s</string>
     <string name="full_siblings">Öz kardeşler</string>
     <string name="future_dates_are_estimates_until_the_month_s_moo">Gelecekteki tarihler, ayın hilal gözlemi doğrulanana veya ay başlayana kadar tahminidir.</string>
@@ -158,6 +161,8 @@
     <string name="hijri_month_x_x">Hicri ay: %1$s / %2$s</string>
     <string name="hizb_x">Hizb %d</string>
     <string name="holy_quran">Kur’an-ı Kerim</string>
+    <string name="horizontal_layout">Yatay düzen</string>
+    <string name="horizontal_prayer_times">Yatay namaz vakitleri</string>
     <string name="hours_and_minutes_until_your_next_prayer">Sonraki namaza kalan saat ve dakika.</string>
     <string name="imsak">İmsak</string>
     <string name="imsak_before_fajr">Sabahtan önce imsak</string>
@@ -190,6 +195,7 @@
     <string name="local_naked_eye">Yerel çıplak gözle gözlem</string>
     <string name="location">Konum</string>
     <string name="location_access_is_disabled_search_for_a_city_in">Konum erişimi kapalı. Bunun yerine bir şehir arayın.</string>
+    <string name="simplified">Sadeleştirilmiş</string>
     <string name="maghrib">Akşam</string>
     <string name="maghrib_prayer">Akşam namazı</string>
     <string name="manual_month_correction">Elle ay düzeltmesi</string>
@@ -279,6 +285,7 @@
     <string name="purple">Mor</string>
     <string name="qibla">Kıble</string>
     <string name="quran_translations">Kur’an çevirileri</string>
+    <string name="rakaat">Rekât</string>
     <string name="rakaat_tracker">Rekât Sayacı</string>
     <string name="read_and_search_hadith_offline">Hadisleri çevrimdışı okuyun ve arayın.</string>
     <string name="read_and_search_supplications_offline">Duaları çevrimdışı okuyun ve arayın.</string>
@@ -314,6 +321,7 @@
     <string name="select_text_to_highlight_it">Vurgulamak için metni seçin.</string>
     <string name="select_text_to_highlight_it_use_the_passage_acti">Vurgulamak için metni seçin. Yer imi eklemek için metin bölümünün işlemlerini kullanın.</string>
     <string name="selected_location">Seçilen konum</string>
+    <string name="sermons_unavailable">Hutbelere erişilemiyor</string>
     <string name="set_a_location_to_view_prayer_times">Namaz vakitlerini görmek için bir konum ayarlayın.</string>
     <string name="set_location_in_app">Konumu uygulamada ayarla</string>
     <string name="set_up_muntathir">Muntathir’i kur</string>
@@ -332,6 +340,7 @@
     <string name="some_files_remain_on_this_device_please_try_agai">Bazı dosyalar bu aygıtta kaldı. Tekrar deneyin.</string>
     <string name="source">Kaynak</string>
     <string name="spouses">Eşler</string>
+    <string name="start_x">%s namazını başlat</string>
     <string name="start_tasbih">Tesbihe başla</string>
     <string name="step_x_of_x">Adım %1$s / %2$s</string>
     <string name="sunrise">Güneşin doğuşu</string>
@@ -403,6 +412,7 @@
     <string name="verse_number_or_quran_text">Ayet numarası veya Kur’an metni</string>
     <string name="verse_unavailable">Ayet kullanılamıyor</string>
     <string name="verses">Ayetler</string>
+    <string name="vertical_layout">Dikey düzen</string>
     <string name="view_profile">Profili görüntüle</string>
     <string name="visibility">Görünürlük</string>
     <string name="weather">Hava durumu</string>
@@ -414,4 +424,6 @@
     <string name="you_can_still_search_downloaded_quran_and_hadith">İndirilen Kuran ve hadis metinlerinde çevrimdışı arama yapabilirsiniz.</string>
     <string name="you_can_still_search_downloaded_text_offline">İndirilen metinlerde çevrimdışı arama yapabilirsiniz.</string>
     <string name="your_saved_data_could_not_be_opened_please_try_a">Kayıtlı verileriniz açılamadı. Lütfen tekrar deneyin.</string>
+    <string name="literal">Kelimesi kelimesine</string>
+    <string name="sermons">Hutbeler</string>
 </resources>

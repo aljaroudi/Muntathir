@@ -5,7 +5,7 @@ module MuntathirRelease
   def self.export_web_media!(marketing: File.join(ROOT, "build/marketing"), destination: File.expand_path("../../web/public/marketing", __dir__))
     locales = { "en" => "en-US", "ar" => "ar-SA" }
     inputs = locales.values.flat_map do |locale|
-      SCREENSHOTS.fetch("screens").map { |screen| File.join(marketing, "raw", locale, "iPhone 17 Pro Max-#{screen}.png") } +
+      SCREENSHOTS.fetch("screens").map { |screen| File.join(marketing, "raw", locale, "#{DEVICES.first}-#{screen}.png") } +
         [File.join(marketing, "previews", locale, "01-IPHONE_67-SunriseToSunset.mp4")]
     end
     missing = inputs.reject { |path| File.file?(path) && File.size?(path) }
@@ -20,7 +20,7 @@ module MuntathirRelease
         FileUtils.mkdir_p(folder)
         arabic_names = %w[اليوم القرآن الحديث التظليلات الأدعية التسبيح الركعات النشاط التقويم القبلة]
         images = SCREENSHOTS.fetch("screens").each_with_index.map do |screen, index|
-          input = File.join(marketing, "raw", locale, "iPhone 17 Pro Max-#{screen}.png")
+          input = File.join(marketing, "raw", locale, "#{DEVICES.first}-#{screen}.png")
           width, height = run!("magick", "identify", "-format", "%w %h", input).split.map(&:to_i)
           raise "Invalid portrait capture: #{input}" unless width.positive? && height > width
           validate_capture!(input)

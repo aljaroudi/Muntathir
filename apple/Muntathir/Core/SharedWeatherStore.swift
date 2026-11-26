@@ -25,32 +25,46 @@ enum SharedWeatherStore {
         return snapshot.reading
     }
 
-    static func refresh(for location: SavedLocation, at date: Date = .now,
-                        defaults: UserDefaults? = UserDefaults(suiteName: WidgetPrayerStore.groupID),
-                        fetch: (SavedLocation) async throws -> WeatherReading = WeatherReading.fetch) async -> WeatherReading?
+    /// Both weather widgets reload together, so concurrent callers share one WeatherKit request.
+    @MainActor private static var inFlight: [SavedLocation: Task<WeatherReading?, Never>] = [:]
+
+    /// Returns a fresh reading, fetching at most once per 15 minutes. With `backoff`, a failure in the
+    /// last 5 minutes from any process skips the fetch; the app passes `false` because it throttles itself.
+    @MainActor static func refresh(for location: SavedLocation, at date: Date = .now, backoff: Bool = true,
+                                   defaults: UserDefaults? = UserDefaults(suiteName: WidgetPrayerStore.groupID),
+                                   fetch: @escaping (SavedLocation) async throws -> WeatherReading = WeatherReading.fetch) async -> WeatherReading?
     {
         let cached = read(for: location, at: date, from: defaults)
         if let cached, date.timeIntervalSince(cached.date) < 900 {
             return cached
         }
+        if let running = inFlight[location] {
+            return await running.value ?? cached
+        }
         // Bound retries across timeline reloads, including failures without a usable reading.
-        if let data = defaults?.data(forKey: attemptKey),
+        if backoff, let data = defaults?.data(forKey: attemptKey),
            let attempt = try? JSONDecoder().decode(Attempt.self, from: data),
            attempt.location == location, (0 ..< 300).contains(date.timeIntervalSince(attempt.date))
         {
             return cached
         }
-        defaults?.set(try? JSONEncoder().encode(Attempt(location: location, date: date)), forKey: attemptKey)
-        do {
-            let reading = try await fetch(location)
-            write(reading, for: location, to: defaults)
-            return reading
-        } catch {
-            let failure = error as NSError
-            Logger(subsystem: "com.aljaroudi.Muntathir", category: "CalendarWeather")
-                .error("Weather refresh failed: \(failure.domain, privacy: .public) (\(failure.code))")
-            return cached
+        let task = Task { () -> WeatherReading? in
+            do {
+                let reading = try await fetch(location)
+                write(reading, for: location, to: defaults)
+                return reading
+            } catch {
+                // Recorded only on failure, so a fetch killed mid-flight doesn't block other callers.
+                defaults?.set(try? JSONEncoder().encode(Attempt(location: location, date: date)), forKey: attemptKey)
+                let failure = error as NSError
+                Logger(subsystem: "com.aljaroudi.Muntathir", category: "CalendarWeather")
+                    .error("Weather refresh failed: \(failure.domain, privacy: .public) (\(failure.code))")
+                return nil
+            }
         }
+        inFlight[location] = task
+        defer { inFlight[location] = nil }
+        return await task.value ?? cached
     }
 
     static func write(_ reading: WeatherReading, for location: SavedLocation,

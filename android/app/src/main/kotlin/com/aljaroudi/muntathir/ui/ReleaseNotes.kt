@@ -2,6 +2,7 @@ package com.aljaroudi.muntathir.ui
 
 import android.content.Context
 import android.icu.util.ULocale
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -27,16 +29,19 @@ import com.aljaroudi.muntathir.R
 import com.aljaroudi.muntathir.ui.components.currentLocale
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.util.Locale
 
 @Serializable
 internal data class ReleaseNote(
     val version: String,
     val platforms: List<String>,
-    val notes: Map<String, String>,
+    val notes: Map<String, List<String>>,
     val releaseDates: Map<String, String> = emptyMap(),
 ) {
-    fun text(locale: Locale): String {
+    fun items(locale: Locale): List<String> {
         val script = ULocale.addLikelySubtags(ULocale.forLocale(locale)).script
         val key =
             notes.keys.firstOrNull { tag ->
@@ -138,10 +143,23 @@ internal fun ReleaseNotesSheet(
                     Modifier.padding(top = 16.dp).semantics { heading() },
                     style = MaterialTheme.typography.titleMedium,
                 )
-                entry.releaseDates["android"]?.let { day ->
-                    Text(day, style = MaterialTheme.typography.bodySmall)
+                entry.items(locale).forEach { item ->
+                    Row(Modifier.padding(top = 6.dp)) {
+                        Text("•", Modifier.padding(end = 8.dp).clearAndSetSemantics {})
+                        Text(item)
+                    }
                 }
-                Text(entry.text(locale))
+                entry.releaseDates["android"]?.let { day ->
+                    Text(
+                        LocalDate
+                            .parse(
+                                day,
+                            ).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).withLocale(locale)),
+                        Modifier.padding(top = 4.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
             item { TextButton(onClick = dismiss) { Text(stringResource(R.string.done)) } }
         }

@@ -8,6 +8,7 @@ struct Preferences: Codable, Equatable, Sendable {
     var imsakMinutes = 10
     var enabledPrayers: Set<PrayerName> = [.fajr, .dhuhr, .maghrib]
     var showFeelsLikeTemperature = false
+    var horizontalPrayerTimes = true
     var announcementNotifications = false
     var timeSensitiveNotifications = true
     var notificationSound: PrayerAlertSound = .chime
@@ -28,13 +29,14 @@ struct Preferences: Codable, Equatable, Sendable {
 
     enum CodingKeys: String, CodingKey {
         case timeSensitiveNotifications, notificationSound, sunsetSound, otherTimesSound, calendarEventNotifications
-        case showFeelsLikeTemperature, savedLocation, prayerMethod, imsakMinutes, enabledPrayers, announcementNotifications, tabShortcuts, monthOffsets, hiddenPrayers
+        case showFeelsLikeTemperature, horizontalPrayerTimes, savedLocation, prayerMethod, imsakMinutes, enabledPrayers, announcementNotifications, tabShortcuts, monthOffsets, hiddenPrayers
     }
 
     init() {}
     init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         showFeelsLikeTemperature = try c.decodeIfPresent(Bool.self, forKey: .showFeelsLikeTemperature) ?? false
+        horizontalPrayerTimes = try c.decodeIfPresent(Bool.self, forKey: .horizontalPrayerTimes) ?? true
         savedLocation = try c.decodeIfPresent(SavedLocation.self, forKey: .savedLocation)
         prayerMethod = try c.decodeIfPresent(PrayerMethod.self, forKey: .prayerMethod) ?? .tehran
         imsakMinutes = try min(120, max(0, c.decodeIfPresent(Int.self, forKey: .imsakMinutes) ?? 10))
@@ -247,7 +249,9 @@ struct Preferences: Codable, Equatable, Sendable {
                                               manual: manual, confirmed: confirmations.map(\.correction))
         let prayersChanged = WidgetPrayerStore.write(prayers)
         let calendarChanged = calendar.write()
-        WatchConnectivityService.shared.send(.init(prayers: prayers, calendar: calendar))
+        #if canImport(WatchConnectivity)
+            WatchConnectivityService.shared.send(.init(prayers: prayers, calendar: calendar))
+        #endif
         if prayersChanged || calendarChanged {
             WidgetCenter.shared.reloadAllTimelines()
         }

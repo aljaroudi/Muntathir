@@ -12,10 +12,11 @@ import WeatherKit
                        condition: "Clear", weatherCondition: .clear, date: now, attribution: nil)
     }
 
-    @Test func widgetWeatherExpiresAfterAnHour() {
-        #expect(!reading().isCurrent(at: now.addingTimeInterval(-1)))
-        #expect(reading().isCurrent(at: now.addingTimeInterval(3599)))
-        #expect(!reading().isCurrent(at: now.addingTimeInterval(3600)))
+    @Test func weatherExpiresAfterThreeHoursAndToleratesClockSkew() {
+        #expect(reading().isCurrent(at: now.addingTimeInterval(-120)))
+        #expect(!reading().isCurrent(at: now.addingTimeInterval(-600)))
+        #expect(reading().isCurrent(at: now.addingTimeInterval(2 * 3600)))
+        #expect(!reading().isCurrent(at: now.addingTimeInterval(3 * 3600)))
         #expect(!reading().isCurrent(at: now.addingTimeInterval(86400)))
     }
 

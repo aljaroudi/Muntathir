@@ -152,7 +152,7 @@ def prepare(args):
 
     if getattr(args, "rulings", None):
         db = read_db(args.rulings)
-        if db.execute("PRAGMA application_id").fetchone()[0] != 1179809601 or db.execute("PRAGMA user_version").fetchone()[0] != 1:
+        if db.execute("PRAGMA application_id").fetchone()[0] != 1179809601 or db.execute("PRAGMA user_version").fetchone()[0] not in (1, 2):
             raise ValueError("Incompatible rulings database")
         for authority in db.execute("SELECT * FROM authority ORDER BY sort_order"):
             source(authority["code"], authority["name_en"] or authority["name_ar"])
@@ -160,8 +160,10 @@ def prepare(args):
             if not (row["question"] + row["answer"]).strip():
                 raise ValueError("Empty rulings entry")
             ref = {"authority": row["authority_code"], "language": row["language_code"], "id": row["site_id"]}
-            add("rulings", row["authority_code"], ref, ref,
-                sources[row["authority_code"]]["name"] + " · " + row["site_id"],
+            title = sources[row["authority_code"]]["name"] + " · " + row["site_id"]
+            if "context" in row.keys() and row["site_id"].startswith("book:"):
+                title = row["context"]
+            add("rulings", row["authority_code"], ref, ref, title,
                 [{"language": row["language_code"], "edition": row["url"],
                   "attribution": sources[row["authority_code"]]["name"],
                   "text": row["question"] + "\n\n" + row["answer"]}])
@@ -233,10 +235,20 @@ def batch_cost(utf8_bytes):
     return utf8_bytes * BATCH_USD_PER_MILLION_TOKENS / 1_000_000
 
 
+def reuse_vector_dirs(reuse):
+    """Normalize one path or a list of paths to vector directories."""
+    if not reuse:
+        return []
+    return [Path(r) for r in ([reuse] if isinstance(reuse, (str, Path)) else reuse)]
+
+
 def submission_plan(manifest, vector_dir, reuse):
     inputs = {p["input_hash"]: p for p in manifest["passages"]}
     cached = {p.stem for p in vector_dir.glob("*.json")} & inputs.keys()
-    reusable = ({p.stem for p in reuse.glob("*.json")} & inputs.keys()) - cached if reuse else set()
+    reusable = set()
+    for directory in reuse_vector_dirs(reuse):
+        reusable |= {p.stem for p in directory.glob("*.json")} & inputs.keys()
+    reusable -= cached
     reserved_jobs = [job for job in manifest["jobs"] if job["name"] or job["state"] != "failed"]
     pending = {key for job in reserved_jobs if job["state"] not in ("done", "failed") for key in job["keys"]}
     pending -= cached | reusable
@@ -266,7 +278,7 @@ def run(args):
     work = path.parent
     vector_dir = work / "vectors"
     if args.command in ("estimate", "submit"):
-        previous = Path(args.reuse) / "vectors" if args.reuse else None
+        previous = [d / "vectors" for d in reuse_vector_dirs(args.reuse)]
         reusable, values, estimate = submission_plan(manifest, vector_dir, previous)
         print(json.dumps(estimate, indent=2), flush=True)
         if args.command == "estimate":
@@ -280,7 +292,7 @@ def run(args):
         # Stored vectors are immutable and keyed by exact input hash.
         for key in reusable:
             name = key + ".json"
-            candidate = previous / name
+            candidate = next(d / name for d in previous if (d / name).exists())
             vector = json.loads(candidate.read_text())
             validate_vector(vector)
             if candidate.stat().st_dev == vector_dir.stat().st_dev:
@@ -382,7 +394,7 @@ def main():
     parser.add_argument("--provenance")
     parser.add_argument("--limit", type=int, help="Pilot item limit")
     parser.add_argument("--pilot", action="store_true", help="Include judged positives and representative distractors")
-    parser.add_argument("--reuse", help="Reuse a previous workdir's exact-input vectors")
+    parser.add_argument("--reuse", action="append", help="Reuse a previous workdir's exact-input vectors; repeatable, first match wins")
     parser.add_argument("--max-usd", type=Decimal, help="Maximum estimated Gemini Batch cost for this revision")
     args = parser.parse_args()
     if args.limit is not None and args.limit < 1:

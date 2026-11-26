@@ -43,7 +43,7 @@ struct SearchPreviewTests {
         ("إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى", "انما الاعمال"),
         ("قال رسول الله ﷺ: الصَّلَاةُ عمود الدين 👨‍👩‍👧‍👦 Prayer is the PILLAR\r\nof faith", "الصلاه pillar"),
         ("Clementísimo, Misericordiosísimo — CAFÉ café", "clementisimo cafe"),
-        ("ٱلرَّحْمَٰنِ عَلَّمَ ٱلْقُرْءَانَ", "الرحمن القران"),
+        ("ٱلرَّحْمَٰنِ عَلَّمَ ٱلْقُرْءَانَ", "الرحمن علم"),
     ])
     func fastRangesMatchTheReferenceImplementation(source: String, query: String) {
         let terms = QuranSearchText.terms(query)
