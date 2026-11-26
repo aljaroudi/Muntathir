@@ -59,3 +59,4 @@ backend/api/node_modules/
 /telegram/dist/
 /telegram/.data/
 /telegram/.state/
+.githooks/commit-msg
