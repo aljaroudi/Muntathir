@@ -430,4 +430,8 @@
     <string name="your_saved_data_could_not_be_opened_please_try_a">تعذر فتح بياناتك المحفوظة. يرجى المحاولة مرة أخرى.</string>
     <string name="literal">حرفية</string>
     <string name="sermons">الخُطب</string>
+    <string name="search_sermons">البحث في الخطب</string>
+    <string name="find_in_sermon">البحث في الخطبة</string>
+    <string name="previous_sermon_match">النتيجة السابقة</string>
+    <string name="next_sermon_match">النتيجة التالية</string>
 </resources>

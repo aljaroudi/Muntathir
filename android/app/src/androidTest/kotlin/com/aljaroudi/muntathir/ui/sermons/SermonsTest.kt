@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToKey
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performTextInput
 import com.aljaroudi.muntathir.FakeLocator
 import com.aljaroudi.muntathir.MainActivity
 import com.aljaroudi.muntathir.MemoryStorage
@@ -74,6 +75,21 @@ class SermonsTest {
             compose.onAllNodes(hasTestTag("sermon-passages")).fetchSemanticsNodes().isEmpty()
         }
         compose.onNodeWithText(title).assertIsDisplayed()
+    }
+
+    @Test
+    fun opensUnvocalizedArabicSearchResultAtItsPassage() {
+        compose.onNodeWithTag("tab-tools").performClick()
+        compose.onNodeWithTag("sermons").performClick()
+        val search = compose.onNodeWithTag("search-field")
+        compose.waitUntil(10_000) {
+            compose.onAllNodes(hasText("Search sermons")).fetchSemanticsNodes().isNotEmpty()
+        }
+        search.performTextInput("الشكر")
+        val result = "خطبة الزهراء · العربية"
+        compose.waitUntil(10_000) { compose.onAllNodes(hasText(result)).fetchSemanticsNodes().isNotEmpty() }
+        compose.onAllNodes(hasText(result))[0].performClick()
+        compose.onNodeWithTag("s009").assertIsDisplayed()
     }
 
     @Test

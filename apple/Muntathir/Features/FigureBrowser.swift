@@ -9,6 +9,8 @@ enum FigureRoute: Hashable, Codable {
     case hadith
     case supplications
     case sermon(id: String, title: String, speakerID: String)
+    case sermonPassage(id: String, title: String, speakerID: String, segment: String, edition: String?, query: String)
+    case sermonsSaved
     case quran(QuranSelection)
     case supplication(id: Int, query: String)
     case supplicationsSaved
@@ -162,6 +164,9 @@ struct FigureRouteView: View {
         case let .profile(id): FigureDestination(id: id).onscreenEntity(FigureEntity.self, id: id)
         case let .tree(id): FigureDestination(id: id, showsTree: true)
         case let .observance(_, figureIDs): ObservanceFigurePicker(figureIDs: figureIDs)
+        case let .sermonPassage(id, title, speakerID, segment, edition, query):
+            SermonDestination(id: id, title: title, speakerID: speakerID, segment: segment, edition: edition, query: query)
+        case .sermonsSaved: SermonsSavedView()
         case let .sermon(id, title, speakerID): SermonDestination(id: id, title: title, speakerID: speakerID)
         case let .quran(selection): QuranSelectionDetail(selection: selection)
         case .hadith:

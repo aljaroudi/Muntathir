@@ -94,6 +94,10 @@ data class HadithSavedRoute(
 @Serializable
 data class SermonRoute(
     val id: String,
+    val segment: String? = null,
+    val edition: String? = null,
+    val query: String = "",
+    val highlight: String? = null,
 ) : DetailRoute
 
 @Serializable
