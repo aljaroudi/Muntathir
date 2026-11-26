@@ -55,6 +55,7 @@ Outputs (git-ignored, under `apple/build/marketing/`):
 - `creative/universal.png`, `creative/<locale>/universal.png`: brand creative.
 - `frames/`: intermediate bezels (disposable). `watch/`: native Watch captures.
 - `previews/`: 15 s iPhone/iPad videos plus QA frames. `duo-previews/`: 15 s Duo videos on Apple's 886 × 1920 canvas, plus QA frames.
+  Previews are unedited screen recordings, only scaled to the store canvas: no device frame, bezel, rounded-corner mask, border, overlay or other styling. App Review rejected one under guideline 2.3.4 for device frames. Recording uses `--mask=ignored`; iPhone/iPad fill the canvas; Duo is fitted on plain black.
 
 ## Upload recovery
 

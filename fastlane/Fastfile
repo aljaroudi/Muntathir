@@ -169,6 +169,11 @@ platform :ios do
     sh("bundle", "exec", "ruby", File.join(__dir__, "ios/previews.rb"), options[:devices].to_s)
   end
 
+  desc "Replace the editable iOS version's App Preview videos (iPhone, iPad, Duo) with the recorded ones"
+  lane :upload_previews do
+    sh("bundle", "exec", "ruby", File.join(__dir__, "ios/upload_previews.rb"))
+  end
+
   desc "Capture required localized Apple Watch store screenshots"
   lane :watch_screenshots do |options|
     sh("bundle", "exec", "ruby", File.join(__dir__, "ios/watch_screenshots.rb"), options[:languages].to_s)

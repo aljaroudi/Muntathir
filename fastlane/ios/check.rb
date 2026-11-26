@@ -171,7 +171,19 @@ if check_media
     assert(MuntathirRelease.run!("magick", "identify", "-format", "%wx%h", output).strip == "886x1920", "Duo preview canvas mismatch")
     bounds = MuntathirRelease.run!("magick", output, "-threshold", "99%", "-format", "%@", "info:").split(/[x+]/).map(&:to_i)
     assert((bounds[0].to_f / bounds[1] - 1398.0 / 2034).abs < 0.001, "Duo preview stretched the captured screen")
-    assert(bounds[2] > 0 && bounds[3] > 0, "Duo frame/background missing")
+    # No drawn bezel or coloured backdrop (App Review guideline 2.3.4): the screen spans the canvas width.
+    assert(bounds[0] == 886 && bounds[2].zero?, "Duo preview draws a frame around the screen")
+    corner = MuntathirRelease.run!("magick", output, "-format", "%[hex:p{0,0}]", "info:").strip
+    assert(corner.start_with?("000000"), "Duo preview background must be plain black, got #{corner}")
+  end
+
+  # iPhone/iPad previews fill the canvas edge to edge, with no bars or frame.
+  Dir.mktmpdir do |dir|
+    output = File.join(dir, "iphone.png")
+    MuntathirRelease.run!("ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=white:s=1320x2868", "-frames:v", "1",
+                         "-vf", MuntathirRelease.preview_filter([886, 1920]), output)
+    size, darkest = MuntathirRelease.run!("magick", output, "-format", "%wx%h %[fx:minima]", "info:").split
+    assert(size == "886x1920" && darkest.to_f > 0.9, "iPhone preview is letterboxed or framed")
   end
 
   # Every supported device/locale must include Quran, not merely four arbitrary images.

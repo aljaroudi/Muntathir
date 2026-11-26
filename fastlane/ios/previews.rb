@@ -10,7 +10,10 @@ raise "Unknown capture device" unless (names - MuntathirRelease::DEVICES).empty?
 names.each do |name|
   version = MuntathirRelease.capture_runtime(name)
   runtime = "com.apple.CoreSimulator.SimRuntime.iOS-#{version.tr('.', '-')}"
-  devices = all_devices.fetch(runtime) { raise "Install iOS #{version} in Xcode." }
+  # Some devices (iPhone Duo) ship their own runtime build, keyed e.g. iOS-27-2-iPhone19-4.
+  runtimes = all_devices.keys.select { |key| key == runtime || key.start_with?("#{runtime}-") }
+  raise "Install iOS #{version} in Xcode." if runtimes.empty?
+  devices = runtimes.flat_map { |key| all_devices[key] }
   device = devices.find { |d| d["name"] == name && d["state"] == "Shutdown" } || devices.find { |d| d["name"] == name }
   raise "Missing simulator #{name}" unless device
   id = device.fetch("udid")
@@ -42,7 +45,9 @@ names.each do |name|
                            "--ui-testing-weather", "--weather-condition", "clear",
                            "-AppleLanguages", "(#{locale})", "-AppleLocale", locale.tr('-', '_'), "-AppleInterfaceStyle", "Light")
       log = "#{recording}.log"
-      record_command = ["xcrun", "simctl", "io", id, "recordVideo", "--codec=h264"]
+      # App Review rejects previews with device frames (guideline 2.3.4); a black mask traces the
+      # rounded corners and Dynamic Island, so record the full rectangular framebuffer.
+      record_command = ["xcrun", "simctl", "io", id, "recordVideo", "--codec=h264", "--mask=ignored"]
       record_command << "--display=primary" if duo
       recorder = Process.spawn(*record_command, recording, out: log, err: [:child, :out])
       begin
@@ -72,7 +77,7 @@ names.each do |name|
         brightness = MuntathirRelease.run!("magick", frame, *content_crop, "-format", "%[fx:mean]", "info:").to_f
         raise "Blank simulator display captured for #{name}; inspect #{frame}" if brightness < 0.01
       end
-      FileUtils.rm_f(recording)
+      FileUtils.rm_f([recording, log])
       puts "Validated #{output}"
     end
   ensure

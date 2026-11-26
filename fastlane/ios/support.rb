@@ -430,12 +430,17 @@ module MuntathirRelease
     raise "Parallel command failed with #{failed.last.exitstatus || "signal #{failed.last.termsig}"}" if failed
   end
 
+  # Unedited screen capture, only scaled to the store canvas: App Review rejects previews with device
+  # frames, bezels, borders or other styling (guideline 2.3.4). Store canvases match the simulator aspect within a few
+  # pixels, so the center crop trims at most a sliver. The Duo outer display is narrower than its
+  # canvas, so it is fitted and centred on plain black instead of being cropped.
   def self.preview_filter(size, duo: false)
+    width, height = size
     if duo
-      "scale=830:1800:force_original_aspect_ratio=decrease:force_divisible_by=2," \
-        "pad=iw+16:ih+16:8:8:color=0x0d1117,pad=886:1920:(ow-iw)/2:(oh-ih)/2:color=0x10263f,setsar=1"
+      "scale=#{width}:#{height}:force_original_aspect_ratio=decrease:force_divisible_by=2," \
+        "pad=#{width}:#{height}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1"
     else
-      "scale=#{size.join(':')}:force_original_aspect_ratio=decrease,pad=#{size.join(':')}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1"
+      "scale=#{width}:#{height}:force_original_aspect_ratio=increase,crop=#{width}:#{height},setsar=1"
     end
   end
 
