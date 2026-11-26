@@ -183,21 +183,34 @@ def language_code(authority: str, site_code: str) -> str:
         raise SystemExit("no language mapping for %s/%s" % (authority, site_code)) from exc
 
 
-def build(source: Path, output: Path) -> None:
+def build(source: Path, output: Path, exclude: frozenset[str] = frozenset()) -> None:
     if not source.is_file():
         raise SystemExit("missing crawl database: %s" % source)
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=output.parent) as staging:
         candidate = Path(staging) / "rulings.db"
-        build_candidate(source, candidate)
+        build_candidate(source, candidate, exclude)
         candidate.replace(output)
 
 
-def build_candidate(source: Path, output: Path) -> None:
+def build_candidate(source: Path, output: Path, exclude: frozenset[str] = frozenset()) -> None:
     src = sqlite3.connect(source)
     src.row_factory = sqlite3.Row
     # Refresh authority rows (names, sort_order) from schema.sql; the crawl DB only gets them when scraping.
     src.executescript(SCHEMA_PATH.read_text())
+    # Excluded authorities are hidden behind temp views, so every read below skips them.
+    # The iOS pack drops rohani (rohani.ir is under US sanctions); Android keeps it.
+    unknown = exclude - {row[0] for row in src.execute("SELECT code FROM authority")}
+    if unknown:
+        raise SystemExit("unknown authority: %s" % " ".join(sorted(unknown)))
+    if exclude:
+        listed = ",".join("'%s'" % code.replace("'", "''") for code in sorted(exclude))
+        for table, column in (("authority", "code"), ("language", "authority_code"), ("topic", "authority_code"),
+                              ("question", "authority_code"), ("placement", "authority_code"),
+                              ("book_edition", "authority")):
+            if src.execute("SELECT 1 FROM sqlite_master WHERE name=?", (table,)).fetchone():
+                src.execute("CREATE TEMP VIEW %s AS SELECT * FROM main.%s WHERE %s NOT IN (%s)"
+                            % (table, table, column, listed))
     out = sqlite3.connect(output)
     try:
         out.executescript(SCHEMA)
@@ -305,6 +318,12 @@ def build_candidate(source: Path, output: Path) -> None:
         check_legacy(src, out)
         add_books(src, out)
         check_books(out)
+        if exclude:
+            listed = ",".join("?" * len(exclude))
+            for table in ("entry", "topic"):
+                if out.execute("SELECT 1 FROM %s WHERE authority_code IN (%s) LIMIT 1" % (table, listed),
+                               tuple(exclude)).fetchone():
+                    raise ValueError("Excluded authority leaked into %s" % table)
         out.execute("INSERT INTO question_fts (rowid, question, answer) SELECT id, question, answer FROM question")
         out.execute("INSERT INTO question_fts (question_fts) VALUES ('optimize')")
         if not out.execute("SELECT 1 FROM question_fts WHERE question_fts MATCH 'الصلاة' LIMIT 1").fetchone():
@@ -473,9 +492,11 @@ def add_books(src, out):
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=OUTPUT)
-    output = parser.parse_args().output
-    build(SOURCE, output)
-    print("db: %s" % output)
+    parser.add_argument("--exclude", action="append", default=[], metavar="AUTHORITY",
+                        help="leave an authority out (repeatable); the iOS pack uses --exclude rohani")
+    args = parser.parse_args()
+    build(SOURCE, args.output, frozenset(args.exclude))
+    print("db: %s" % args.output)
     return 0
 
 

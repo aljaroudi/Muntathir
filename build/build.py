@@ -15,6 +15,8 @@ ROOT = Path(__file__).resolve().parents[1]
 QURAN = Path("apple/Muntathir/Resources/Quran")
 HADITH = Path("build/hadith/dist")
 RULINGS = Path("build/rulings/dist/rulings.db")
+# The iOS rulings pack, without the authorities App Review rejects (see assets.APPLE_EXCLUDED_AUTHORITIES).
+APPLE_RULINGS = Path("build/rulings/dist/rulings-apple.db")
 ARCHIVES = Path("apple/build/AssetPacks/archives")
 SIZES = Path("apple/Muntathir/Resources/AssetDownloadSizes.json")
 MANIFESTS = Path("apple/AssetPacks/manifests")
@@ -41,6 +43,8 @@ def build_assets(stage):
     else:
         run("uv", "run", *hadith_builder)
     run(sys.executable, "build/rulings/build.py", "--output", stage / RULINGS)
+    excluded = [flag for code in assets.APPLE_EXCLUDED_AUTHORITIES for flag in ("--exclude", code)]
+    run(sys.executable, "build/rulings/build.py", *excluded, "--output", stage / APPLE_RULINGS)
     shutil.copytree(ROOT / MANIFESTS, stage / MANIFESTS)
     packs = (assets.validate_quran(stage, stage / MANIFESTS)
              + assets.validate_hadith("hadith", stage, stage / MANIFESTS)
@@ -50,6 +54,9 @@ def build_assets(stage):
     sermons = Path("shared/sermons/sermons.db")
     run(sys.executable, "build/sermons/build.py", "--output", stage / sermons)
     replacements = {stage / sermons: ROOT / sermons}
+    # No iOS manifest names the full rulings database; Android and search still read it.
+    if not (ROOT / RULINGS).exists() or db_hash(ROOT / RULINGS) != db_hash(stage / RULINGS):
+        replacements[stage / RULINGS] = ROOT / RULINGS
     for path in packs:
         pack = json.loads(path.read_text())
         name = path.stem

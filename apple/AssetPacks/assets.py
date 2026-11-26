@@ -22,6 +22,14 @@ ANDROID_PACKS = {
     'lexicon': ('lexicon', 'on-demand'),
     'rulings-v2': ('rulings', 'on-demand'),
 }
+# Android ships a different file than the iOS manifest names: the iOS rulings pack leaves out
+# rohani (rohani.ir is under US sanctions, App Review guideline 5), Android keeps it.
+ANDROID_SOURCES = {
+    'build/rulings/dist/rulings-apple.db': 'build/rulings/dist/rulings.db',
+}
+# Authorities App Review rejects; checked in the iOS rulings pack.
+APPLE_EXCLUDED_AUTHORITIES = ('rohani',)
+APPLE_EXCLUDED_HOSTS = ('rohani.ir',)
 
 
 def db_hash(path):
@@ -123,7 +131,7 @@ def validate_rulings(root=ROOT, manifests=MANIFESTS):
     assert pack['assetPackID'] == 'rulings-v2'
     assert pack['downloadPolicy'] == {'onDemand': {}} and 'language' not in pack
     assert pack['platforms'] == ['iOS', 'macOS']
-    assert source == root / 'build/rulings/dist/rulings.db'
+    assert source == root / 'build/rulings/dist/rulings-apple.db'
     assert selector['fileDestination'] == 'Rulings/rulings.db'
     with sqlite3.connect(source.as_uri() + '?mode=ro', uri=True) as db:
         assert db.execute('PRAGMA quick_check').fetchall() == [('ok',)]
@@ -134,6 +142,14 @@ def validate_rulings(root=ROOT, manifests=MANIFESTS):
         assert not db.execute("SELECT 1 FROM question WHERE trim(question || answer) = '' LIMIT 1").fetchall()
         assert not db.execute("SELECT 1 FROM placement p JOIN topic t ON t.id=p.topic_id JOIN question q ON q.id=p.question_id WHERE t.authority_code != q.authority_code OR t.language_code != q.language_code LIMIT 1").fetchall()
         assert db.execute("SELECT count(*) FROM question_fts WHERE question_fts MATCH 'الصلاة'").fetchone()[0] > 0
+        for code in APPLE_EXCLUDED_AUTHORITIES:
+            for table, column in (('authority', 'code'), ('topic', 'authority_code'), ('entry', 'authority_code')):
+                assert not db.execute(f'SELECT 1 FROM {table} WHERE {column} = ? LIMIT 1', (code,)).fetchall(), \
+                    f'{code} must not ship in the iOS rulings pack; build it with --exclude {code}'
+        for host in APPLE_EXCLUDED_HOSTS:
+            for table in ('topic', 'entry'):
+                assert not db.execute(f"SELECT 1 FROM {table} WHERE url LIKE ? OR url LIKE ? LIMIT 1",
+                                      (f'%//{host}%', f'%.{host}%')).fetchall(), f'{host} link in iOS rulings {table}'
     return [path]
 
 
@@ -149,7 +165,8 @@ def android_pack(manifest, root=ROOT):
         f'{build.relative_to(root)} must declare pack {name} as {delivery}'
     copied = []
     for selector in pack['fileSelectors']:
-        source = (Path(manifest).parent / pack['sourceRoot'] / selector['fileSource']).resolve()
+        file_source = ANDROID_SOURCES.get(selector['fileSource'], selector['fileSource'])
+        source = (Path(manifest).parent / pack['sourceRoot'] / file_source).resolve()
         target = module / 'src/main/assets' / selector['fileDestination']
         if not target.exists() or target.stat().st_size != source.stat().st_size \
                 or target.stat().st_mtime < source.stat().st_mtime:

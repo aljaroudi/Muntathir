@@ -5,7 +5,7 @@
   },
   "fileSelectors": [
     {
-      "fileSource": "build/rulings/dist/rulings.db",
+      "fileSource": "build/rulings/dist/rulings-apple.db",
       "fileDestination": "Rulings/rulings.db"
     }
   ],

@@ -7,7 +7,7 @@ The app bundles only Quran Arabic and English. Everything else is an Apple-hoste
 | `quran-translations` | The other 12 Quran translations | On demand |
 | `hadith` | `Hadith/hadith.db` | On demand |
 | `supplications` | `Supplications/supplications.db` | Essential (installed with the app) |
-| `rulings-v2` | `Rulings/rulings.db` | On demand |
+| `rulings-v2` | `Rulings/rulings.db` (built from `rulings-apple.db`) | On demand |
 
 The app copies each validated pack into the shared App Group and reads only that copy, so iOS can't update it in place. Settings → Downloads removes content per language or library. Arabic and English can't be removed, and missing translations never trigger a download. Downloaded Quran files are excluded from backup.
 
@@ -53,10 +53,13 @@ Don't publish compact outputs over existing packs. v7-only builds reject v8 Hadi
 python3 build/rulings/scrape.py      # refresh all sources
 python3 build/rulings/books.py       # books only
 python3 build/rulings/treatise.py    # treatises only (official API)
-python3 build/rulings/build.py       # → build/rulings/dist/rulings.db
+python3 build/rulings/build.py       # → build/rulings/dist/rulings.db (Android, search)
+python3 build/rulings/build.py --exclude rohani --output build/rulings/dist/rulings-apple.db  # iOS pack
 just apple-packs rulings
 bundle exec ruby fastlane/ios/asset_pack_delivery.rb --upload rulings
 ```
+
+The iOS pack leaves out Muhammad Sadiq al-Rohani. App Review rejected the app under guideline 5 (US sanctions) for links to rohani.ir, an Iranian site. Android ships the full `rulings.db`, and validation fails if the iOS database still has that authority or any rohani.ir link. Keep rohani.ir out of the app's credits too.
 
 Upload from the repository root using the [Fastlane Ruby environment](../../fastlane/SETUP.md). Keep the crawl mirror at `build/rulings/data/fatwa.sqlite`, since existing connections depend on that path. The reader checks application ID `1179809601`, schema versions 1–2, integrity, and FTS. Questions are identified by authority, language, and source question ID.
 
